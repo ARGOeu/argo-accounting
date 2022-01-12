@@ -2,6 +2,7 @@ package org.accounting.system;
 
 import io.quarkus.test.common.http.TestHTTPEndpoint;
 import io.quarkus.test.junit.QuarkusTest;
+import io.quarkus.test.junit.mockito.InjectMock;
 import io.restassured.http.ContentType;
 import org.accounting.system.dtos.InformativeResponse;
 import org.accounting.system.dtos.MetricRegistrationDtoRequest;
@@ -9,12 +10,16 @@ import org.accounting.system.dtos.MetricRegistrationDtoResponse;
 import org.accounting.system.endpoints.MetricRegistrationEndpoint;
 import org.accounting.system.repositories.MetricRegistrationRepository;
 import org.junit.jupiter.api.BeforeEach;
+import org.accounting.system.services.ReadPredefinedTypesService;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 
 import javax.inject.Inject;
+import java.util.Optional;
 
 import static io.restassured.RestAssured.given;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.ArgumentMatchers.any;
 
 @QuarkusTest
 @TestHTTPEndpoint(MetricRegistrationEndpoint.class)
@@ -23,10 +28,14 @@ public class MetricRegistrationEndpointTest {
     @Inject
     MetricRegistrationRepository metricRegistrationRepository;
 
+    @InjectMock
+    ReadPredefinedTypesService readPredefinedTypesService;
+
     @BeforeEach
-    public void setup(){
+    public void setup() {
         metricRegistrationRepository.deleteAll();
     }
+
 
     @Test
     public void create_metric_registration_bad_request() {
@@ -41,7 +50,6 @@ public class MetricRegistrationEndpointTest {
                 .as(InformativeResponse.class);
 
         assertEquals("The request body is empty.", response.message);
-
     }
 
     @Test
@@ -56,7 +64,30 @@ public class MetricRegistrationEndpointTest {
                 .as(InformativeResponse.class);
 
         assertEquals("Cannot consume content type.", response.message);
+    }
 
+    @Test
+    public void create_metric_registration_no_unit_type() {
+
+        Mockito.when(readPredefinedTypesService.searchForUnit(any())).thenReturn(Optional.empty());
+        MetricRegistrationDtoRequest request= new MetricRegistrationDtoRequest();
+
+        request.metricName = "metric";
+        request.metricDescription = "description";
+        request.unitType = "SECOND";
+        request.metricType = "Aggregated";
+
+        InformativeResponse response = given()
+                .body(request)
+                .contentType(ContentType.JSON)
+                .post()
+                .then()
+                .assertThat()
+                .statusCode(400)
+                .extract()
+                .as(InformativeResponse.class);
+
+        assertEquals("There is no unit type : SECOND", response.message);
     }
 
     @Test
@@ -127,6 +158,7 @@ public class MetricRegistrationEndpointTest {
     @Test
     public void create_metric_registration() {
 
+        Mockito.when(readPredefinedTypesService.searchForUnit(any())).thenReturn(Optional.of("SECOND"));
         var request= new MetricRegistrationDtoRequest();
 
         request.metricName = "metric";
@@ -143,12 +175,12 @@ public class MetricRegistrationEndpointTest {
                 .statusCode(201)
                 .extract()
                 .as(MetricRegistrationDtoResponse.class);
-
     }
 
     @Test
     public void metric_registration_similar() {
 
+        Mockito.when(readPredefinedTypesService.searchForUnit(any())).thenReturn(Optional.of("SECOND"));
         var request= new MetricRegistrationDtoRequest();
 
         request.metricName = "metric";
