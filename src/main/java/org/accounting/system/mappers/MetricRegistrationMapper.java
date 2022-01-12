@@ -10,6 +10,8 @@ import org.mapstruct.MappingTarget;
 import org.mapstruct.NullValuePropertyMappingStrategy;
 import org.mapstruct.factory.Mappers;
 
+import java.util.List;
+
 @Mapper
 public interface MetricRegistrationMapper {
 
@@ -19,6 +21,10 @@ public interface MetricRegistrationMapper {
 
     @Mapping( target="id", expression="java(metricRegistration.getId().toString())")
     MetricRegistrationDtoResponse metricRegistrationToResponse(MetricRegistration metricRegistration);
+
+    @Mapping( target="id", expression="java(metricRegistration.getId().toString())")
+    List<MetricRegistrationDtoResponse> metricRegistrationsToResponse(List<MetricRegistration> metricRegistrations);
+
 
     @Mapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE, source = "metricName", target = "metricName")
     @Mapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE, source = "metricDescription", target = "metricDescription")

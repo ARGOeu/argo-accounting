@@ -8,6 +8,7 @@ import org.eclipse.microprofile.openapi.annotations.Operation;
 import org.eclipse.microprofile.openapi.annotations.enums.SchemaType;
 import org.eclipse.microprofile.openapi.annotations.media.Content;
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
+import org.eclipse.microprofile.openapi.annotations.parameters.Parameter;
 import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
 import org.eclipse.microprofile.openapi.annotations.tags.Tag;
 
@@ -15,14 +16,18 @@ import javax.inject.Inject;
 import javax.validation.Valid;
 import javax.ws.rs.BadRequestException;
 import javax.ws.rs.Consumes;
+import javax.ws.rs.GET;
+import javax.ws.rs.NotFoundException;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 import java.util.Objects;
+import java.util.Optional;
 
 @Path("/metric-registration")
 public class MetricRegistrationEndpoint {
@@ -95,5 +100,82 @@ public class MetricRegistrationEndpoint {
         var response = metricRegistrationService.save(metricRegistrationDtoRequest);
 
         return Response.created(uriInfo.getAbsolutePathBuilder().path(response.id).build()).entity(response).build();
+    }
+
+    @Tag(name = "Retrieve all Metric Registrations.")
+    @Operation(
+            summary = "Returns the recorded Metric Registrations.",
+            description = "This operation fetches all database records of Metric Registration.")
+    @APIResponse(
+            responseCode = "200",
+            description = "Array of Metric Registrations.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.ARRAY,
+                    implementation = MetricRegistrationDtoResponse.class)))
+    @APIResponse(
+            responseCode = "401",
+            description = "User has not been authenticated.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "500",
+            description = "Internal Server Errors.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+
+    @GET
+    @Produces(value = MediaType.APPLICATION_JSON)
+    public Response getAll(){
+
+        return Response.ok().entity(metricRegistrationService.fetchAllMetricRegistrations()).build();
+    }
+
+    @Tag(name = "Search a Metric Registration.")
+    @Operation(
+            summary = "Returns an existing Metric Registration.",
+            description = "This operation accepts the id of a Metric Registration and fetches from the database the corresponding record.")
+    @APIResponse(
+            responseCode = "200",
+            description = "The corresponding Metric Registration.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = MetricRegistrationDtoResponse.class)))
+    @APIResponse(
+            responseCode = "401",
+            description = "User has not been authenticated.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "404",
+            description = "Metric Registration has not been found.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "500",
+            description = "Internal Server Errors.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+
+    @GET
+    @Path("/{id}")
+    @Produces(value = MediaType.APPLICATION_JSON)
+    public Response get(
+            @Parameter(
+                    description = "The Metric Registration to be retrieved.",
+                    required = true,
+                    example = "507f1f77bcf86cd799439011",
+                    schema = @Schema(type = SchemaType.STRING))
+            @PathParam("id") String id){
+
+        Optional<MetricRegistrationDtoResponse> response = metricRegistrationService.fetchMetricRegistration(id);
+
+        return response
+                .map(dto->Response.ok().entity(response.get()).build())
+                .orElseThrow(()-> new NotFoundException("The Metric Registration has not been found."));
     }
 }

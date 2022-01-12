@@ -5,9 +5,12 @@ import org.accounting.system.dtos.MetricRegistrationDtoResponse;
 import org.accounting.system.exceptions.ConflictException;
 import org.accounting.system.mappers.MetricRegistrationMapper;
 import org.accounting.system.repositories.MetricRegistrationRepository;
+import org.bson.types.ObjectId;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
+import java.util.List;
+import java.util.Optional;
 
 @ApplicationScoped
 public class MetricRegistrationService {
@@ -26,7 +29,20 @@ public class MetricRegistrationService {
         metricRegistrationRepository.persist(metricRegistration);
 
         return MetricRegistrationMapper.INSTANCE.metricRegistrationToResponse(metricRegistration);
+    }
 
+    public Optional<MetricRegistrationDtoResponse> fetchMetricRegistration(String id){
+
+        var optionalMetricRegistration = metricRegistrationRepository.findByIdOptional(new ObjectId(id));
+
+        return optionalMetricRegistration.map(MetricRegistrationMapper.INSTANCE::metricRegistrationToResponse).stream().findAny();
+    }
+
+    public List<MetricRegistrationDtoResponse> fetchAllMetricRegistrations(){
+
+        var list = metricRegistrationRepository.findAll().list();
+
+        return MetricRegistrationMapper.INSTANCE.metricRegistrationsToResponse(list);
     }
 
     /**
