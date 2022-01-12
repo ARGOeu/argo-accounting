@@ -5,6 +5,7 @@ import org.accounting.system.dtos.MetricRegistrationDtoRequest;
 import org.accounting.system.dtos.MetricRegistrationDtoResponse;
 import org.accounting.system.dtos.UpdateMetricRegistrationDtoRequest;
 import org.accounting.system.services.MetricRegistrationService;
+import org.accounting.system.services.ReadPredefinedTypesService;
 import org.eclipse.microprofile.openapi.annotations.Operation;
 import org.eclipse.microprofile.openapi.annotations.enums.SchemaType;
 import org.eclipse.microprofile.openapi.annotations.media.Content;
@@ -17,9 +18,9 @@ import javax.inject.Inject;
 import javax.validation.Valid;
 import javax.ws.rs.BadRequestException;
 import javax.ws.rs.Consumes;
-import javax.ws.rs.PATCH;
 import javax.ws.rs.GET;
 import javax.ws.rs.NotFoundException;
+import javax.ws.rs.PATCH;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
@@ -37,6 +38,9 @@ public class MetricRegistrationEndpoint {
     @Inject
     private MetricRegistrationService metricRegistrationService;
 
+    @Inject
+    private ReadPredefinedTypesService readPredefinedTypesService;
+
 
     public MetricRegistrationEndpoint(MetricRegistrationService metricRegistrationService) {
         this.metricRegistrationService = metricRegistrationService;
@@ -45,11 +49,15 @@ public class MetricRegistrationEndpoint {
 
     @Tag(name = "Submit Metric Registration.")
     @Operation(
+            operationId = "submit-metric-registration",
             summary = "Records a new Metric Registration.",
             description = "Retrieves and inserts a Metric Registration into the database. Typically, " +
                     "a Metric Registration is the metadata describing a Virtual Access Metric. " +
                     "It should be noted that the combination of unit_type and metric_name should be unique. " +
-                    "If you execute a request with a unit_type and metric_name, which have already been generated, you receive an error response.")
+                    "If you execute a request with a unit_type and metric_name, which have already been generated, you receive an error response. " +
+                    "The unit_type is a predefined value and you can retrieve " +
+                    "[here](#/Get%20Unit%20Types./unit-type) the " +
+                    "possible values of unit type.")
     @APIResponse(
             responseCode = "201",
             description = "Metric Registration has been created successfully.",
@@ -98,6 +106,11 @@ public class MetricRegistrationEndpoint {
         }
 
         metricRegistrationService.exist(metricRegistrationDtoRequest.unitType, metricRegistrationDtoRequest.metricName);
+
+        if(readPredefinedTypesService.searchForUnit(metricRegistrationDtoRequest.unitType).isEmpty()){
+
+            throw new BadRequestException("There is no unit type : " + metricRegistrationDtoRequest.unitType);
+        }
 
         var response = metricRegistrationService.save(metricRegistrationDtoRequest);
 
@@ -240,4 +253,58 @@ public class MetricRegistrationEndpoint {
         return Response.ok().entity(response).build();
 
     }
+
+    @Tag(name = "Get Unit Types.")
+    @Operation(
+            operationId = "unit-type",
+            summary = "Returns the unit types.",
+            description = "The unit type is an attribute of Metric Registration and defines the unit of a Metric." +
+                    " This operation reads a file containing the possible unit types and returns them as a JSON structure.")
+    @APIResponse(
+            responseCode = "200",
+            description = "Successful operation.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = String.class,
+            example = "{\n" +
+                    "    \"weight\": [\n" +
+                    "        {\n" +
+                    "            \"name\": \"kg\",\n" +
+                    "            \"description\": \"kilogram\"\n" +
+                    "        },\n" +
+                    "        {\n" +
+                    "            \"name\": \"gr\",\n" +
+                    "            \"description\": \"gram\"\n" +
+                    "        }\n" +
+                    "    ],\n" +
+                    "    \"time\": [\n" +
+                    "        {\n" +
+                    "            \"name\": \"s\",\n" +
+                    "            \"description\": \"second\"\n" +
+                    "        }\n" +
+                    "    ]\n" +
+                    "}")))
+    @APIResponse(
+            responseCode = "401",
+            description = "User has not been authenticated.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "500",
+            description = "Internal Server Errors.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+
+    @GET
+    @Path("/unit-types")
+    @Produces(value = MediaType.APPLICATION_JSON)
+    public Response getUnitTypes() {
+
+        String json = readPredefinedTypesService.getUnitTypes();
+
+        return Response.ok().entity(json).build();
+    }
+
 }
