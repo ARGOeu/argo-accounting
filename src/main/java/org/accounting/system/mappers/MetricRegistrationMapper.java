@@ -11,6 +11,8 @@ import org.mapstruct.Mapping;
 import org.mapstruct.MappingTarget;
 import org.mapstruct.factory.Mappers;
 
+import java.util.List;
+
 @Mapper(imports = StringUtils.class)
 public interface MetricRegistrationMapper {
 
@@ -20,6 +22,10 @@ public interface MetricRegistrationMapper {
 
     @Mapping( target="id", expression="java(metricRegistration.getId().toString())")
     MetricRegistrationDtoResponse metricRegistrationToResponse(MetricRegistration metricRegistration);
+
+    @Mapping( target="id", expression="java(metricRegistration.getId().toString())")
+    List<MetricRegistrationDtoResponse> metricRegistrationsToResponse(List<MetricRegistration> metricRegistrations);
+
 
     @Mapping(target = "metricName", expression = "java(StringUtils.isNotEmpty(request.metricName) ? request.metricName : metricRegistration.getMetricName())")
     @Mapping(target = "metricDescription", expression = "java(StringUtils.isNotEmpty(request.metricDescription) ? request.metricDescription : metricRegistration.getMetricDescription())")
