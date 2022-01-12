@@ -20,6 +20,10 @@
     <mapstruct.version>1.4.2.Final</mapstruct.version>
     <quarkus.liquibase.mongo.version>2.6.2.Final</quarkus.liquibase.mongo.version>
     <apache.common3.version>3.12.0</apache.common3.version>
+    <json.simple.version>1.1.1</json.simple.version>
+    <vavr.version>0.10.4</vavr.version>
+    <quarkus.mockito.version>2.6.2.Final</quarkus.mockito.version>
+    <mockito.core.version>4.2.0</mockito.core.version>
   </properties>
   <dependencyManagement>
     <dependencies>
@@ -55,6 +59,10 @@
     </dependency>
     <dependency>
       <groupId>io.quarkus</groupId>
+      <artifactId>quarkus-cache</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>io.quarkus</groupId>
       <artifactId>quarkus-smallrye-health</artifactId>
     </dependency>
     <dependency>
@@ -69,6 +77,18 @@
     <dependency>
       <groupId>io.rest-assured</groupId>
       <artifactId>rest-assured</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>io.quarkus</groupId>
+      <artifactId>quarkus-junit5-mockito</artifactId>
+      <version>${quarkus.mockito.version}</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.mockito</groupId>
+      <artifactId>mockito-core</artifactId>
+      <version>${mockito.core.version}</version>
       <scope>test</scope>
     </dependency>
     <dependency>
@@ -100,6 +120,16 @@
       <groupId>io.quarkus</groupId>
       <artifactId>quarkus-liquibase-mongodb</artifactId>
       <version>${quarkus.liquibase.mongo.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>com.googlecode.json-simple</groupId>
+      <artifactId>json-simple</artifactId>
+      <version>${json.simple.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>io.vavr</groupId>
+      <artifactId>vavr</artifactId>
+      <version>${vavr.version}</version>
     </dependency>
   </dependencies>
   <build>
