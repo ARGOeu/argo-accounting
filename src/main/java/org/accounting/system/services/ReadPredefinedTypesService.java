@@ -1,9 +1,7 @@
 package org.accounting.system.services;
 
-import io.vavr.control.Try;
-import org.accounting.system.parsetypes.Common;
-import org.accounting.system.parsetypes.FileToJson;
-import org.accounting.system.parsetypes.ParseJson;
+import org.accounting.system.parsetypes.ParseType;
+import org.accounting.system.parsetypes.MetricType;
 import org.accounting.system.parsetypes.UnitType;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 
@@ -17,24 +15,27 @@ public class ReadPredefinedTypesService {
     String unitFile;
 
     @UnitType
-    ParseJson parseJson;
+    ParseType unitType;
+
+    @ConfigProperty(name = "metric.types.file")
+    String metricFile;
+
+    @MetricType
+    ParseType metricType;
 
     public String getUnitTypes(){
-        return Try
-                .of(()-> Common.fileToJson(unitFile, parseJson))
-                .map(FileToJson::getFileToString)
-                .getOrElseThrow(throwable -> {
-                    throw new RuntimeException("Internal Server Error.");});
+        return unitType.getTypes(unitFile);
     }
 
-    public Optional<String> searchForUnit(String unit){
-        return Try
-                .of(()-> Common.fileToJson(unitFile, parseJson))
-                .map(FileToJson::getAvailableTypes)
-                .getOrElseThrow(throwable -> {throw new RuntimeException("Internal Server Error.");})
-                .stream()
-                .filter(type->type.equals(unit))
-                .findAny();
+    public Optional<String> searchForUnitType(String type){
+        return unitType.searchForType(unitFile, type);
+    }
 
+    public String getMetricTypes(){
+        return metricType.getTypes(metricFile);
+    }
+
+    public Optional<String> searchForMetricType(String type){
+        return metricType.searchForType(metricFile, type);
     }
 }

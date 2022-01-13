@@ -17,6 +17,7 @@ import javax.validation.Valid;
 import javax.ws.rs.BadRequestException;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
+import javax.ws.rs.NotFoundException;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
@@ -51,7 +52,10 @@ public class MetricRegistrationEndpoint {
                     "If you execute a request with a unit_type and metric_name, which have already been generated, you receive an error response. " +
                     "The unit_type is a predefined value and you can retrieve " +
                     "[here](#/Get%20Unit%20Types./unit-type) the " +
-                    "possible values of unit type.")
+                    "possible values of unit type. " +
+                    "The metric_type is also a predefined value and you can retrieve " +
+                    "[here](#/Get%20Metric%20Types./metric-type) the " +
+                    "possible values of metric type.")
     @APIResponse(
             responseCode = "201",
             description = "Metric Registration has been created successfully.",
@@ -67,6 +71,12 @@ public class MetricRegistrationEndpoint {
     @APIResponse(
             responseCode = "401",
             description = "User has not been authenticated.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "404",
+            description = "Unit/Metric type not found.",
             content = @Content(schema = @Schema(
                     type = SchemaType.OBJECT,
                     implementation = InformativeResponse.class)))
@@ -101,9 +111,14 @@ public class MetricRegistrationEndpoint {
 
         metricRegistrationService.exist(metricRegistrationDtoRequest.unitType, metricRegistrationDtoRequest.metricName);
 
-        if(readPredefinedTypesService.searchForUnit(metricRegistrationDtoRequest.unitType).isEmpty()){
+        if(readPredefinedTypesService.searchForUnitType(metricRegistrationDtoRequest.unitType).isEmpty()){
 
-            throw new BadRequestException("There is no unit type : " + metricRegistrationDtoRequest.unitType);
+            throw new NotFoundException("There is no unit type : " + metricRegistrationDtoRequest.unitType);
+        }
+
+        if(readPredefinedTypesService.searchForMetricType(metricRegistrationDtoRequest.metricType).isEmpty()){
+
+            throw new NotFoundException("There is no metric type : " + metricRegistrationDtoRequest.metricType);
         }
 
         var response = metricRegistrationService.save(metricRegistrationDtoRequest);
@@ -160,6 +175,51 @@ public class MetricRegistrationEndpoint {
     public Response getUnitTypes() {
 
         String json = readPredefinedTypesService.getUnitTypes();
+
+        return Response.ok().entity(json).build();
+    }
+
+    @Tag(name = "Get Metric Types.")
+    @Operation(
+            operationId = "metric-type",
+            summary = "Returns the metric types.",
+            description = "The metric type is an attribute of Metric Registration and defines the metric type of a Metric." +
+                    " This operation reads a file containing the possible metric types and returns them as a JSON structure.")
+    @APIResponse(
+            responseCode = "200",
+            description = "Successful operation.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = String.class,
+                    example = "{\n" +
+                            "    \"metric_types\": [\n" +
+                            "        {\n" +
+                            "            \"metric_type\": \"aggregated\"\n" +
+                            "        },\n" +
+                            "        {\n" +
+                            "            \"metric_type\": \"count\"\n" +
+                            "        }\n" +
+                            "    ]\n" +
+                            "}")))
+    @APIResponse(
+            responseCode = "401",
+            description = "User has not been authenticated.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "500",
+            description = "Internal Server Errors.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+
+    @GET
+    @Path("/metric-types")
+    @Produces(value = MediaType.APPLICATION_JSON)
+    public Response getMetricTypes() {
+
+        String json = readPredefinedTypesService.getMetricTypes();
 
         return Response.ok().entity(json).build();
     }
