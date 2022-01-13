@@ -74,7 +74,7 @@ public class MetricRegistrationEndpointTest {
     @Test
     public void create_metric_registration_no_unit_type() {
 
-        Mockito.when(readPredefinedTypesService.searchForUnit(any())).thenReturn(Optional.empty());
+        Mockito.when(readPredefinedTypesService.searchForUnitType(any())).thenReturn(Optional.empty());
         MetricRegistrationDtoRequest request= new MetricRegistrationDtoRequest();
 
         request.metricName = "metric";
@@ -88,11 +88,36 @@ public class MetricRegistrationEndpointTest {
                 .post()
                 .then()
                 .assertThat()
-                .statusCode(400)
+                .statusCode(404)
                 .extract()
                 .as(InformativeResponse.class);
 
         assertEquals("There is no unit type : SECOND", response.message);
+    }
+
+    @Test
+    public void create_metric_registration_no_metric_type() {
+
+        Mockito.when(readPredefinedTypesService.searchForUnitType(any())).thenReturn(Optional.of("SECOND"));
+        Mockito.when(readPredefinedTypesService.searchForMetricType(any())).thenReturn(Optional.empty());
+        MetricRegistrationDtoRequest request= new MetricRegistrationDtoRequest();
+
+        request.metricName = "metric";
+        request.metricDescription = "description";
+        request.unitType = "SECOND";
+        request.metricType = "Aggregated";
+
+        InformativeResponse response = given()
+                .body(request)
+                .contentType(ContentType.JSON)
+                .post()
+                .then()
+                .assertThat()
+                .statusCode(404)
+                .extract()
+                .as(InformativeResponse.class);
+
+        assertEquals("There is no metric type : Aggregated", response.message);
     }
 
     @Test
@@ -159,34 +184,12 @@ public class MetricRegistrationEndpointTest {
         assertEquals("Metric type may not be empty.", response.message);
     }
 
-
     @Test
-    public void create_metric_registration() {
+    public void create_metric_registration_similar() {
 
-        Mockito.when(readPredefinedTypesService.searchForUnit(any())).thenReturn(Optional.of("SECOND"));
-        var request= new MetricRegistrationDtoRequest();
-
-        request.metricName = "metric";
-        request.metricDescription = "description";
-        request.unitType = "SECOND";
-        request.metricType = "Aggregated";
-
-        given()
-                .body(request)
-                .contentType(ContentType.JSON)
-                .post()
-                .then()
-                .assertThat()
-                .statusCode(201)
-                .extract()
-                .as(MetricRegistrationDtoResponse.class);
-    }
-
-    @Test
-    public void metric_registration_similar() {
-
-        Mockito.when(readPredefinedTypesService.searchForUnit(any())).thenReturn(Optional.of("SECOND"));
-        var request= new MetricRegistrationDtoRequest();
+        Mockito.when(readPredefinedTypesService.searchForUnitType(any())).thenReturn(Optional.of("SECOND"));
+        Mockito.when(readPredefinedTypesService.searchForMetricType(any())).thenReturn(Optional.of("Aggregated"));
+        MetricRegistrationDtoRequest request= new MetricRegistrationDtoRequest();
 
         request.metricName = "metric";
         request.metricDescription = "description";
@@ -204,7 +207,7 @@ public class MetricRegistrationEndpointTest {
                 .as(MetricRegistrationDtoResponse.class);
 
 
-         given()
+        given()
                 .body(request)
                 .contentType(ContentType.JSON)
                 .post()
@@ -213,6 +216,30 @@ public class MetricRegistrationEndpointTest {
                 .statusCode(409)
                 .extract()
                 .as(InformativeResponse.class);
+    }
+
+
+    @Test
+    public void create_metric_registration() {
+
+        Mockito.when(readPredefinedTypesService.searchForUnitType(any())).thenReturn(Optional.of("SECOND"));
+        Mockito.when(readPredefinedTypesService.searchForMetricType(any())).thenReturn(Optional.of("Aggregated"));
+        MetricRegistrationDtoRequest request= new MetricRegistrationDtoRequest();
+
+        request.metricName = "metric";
+        request.metricDescription = "description";
+        request.unitType = "SECOND";
+        request.metricType = "Aggregated";
+
+        given()
+                .body(request)
+                .contentType(ContentType.JSON)
+                .post()
+                .then()
+                .assertThat()
+                .statusCode(201)
+                .extract()
+                .as(MetricRegistrationDtoResponse.class);
     }
 
     @Test
@@ -249,6 +276,8 @@ public class MetricRegistrationEndpointTest {
     @Test
     public void update_metric_registration_from_dto_full() {
 
+        Mockito.when(readPredefinedTypesService.searchForUnitType(any())).thenReturn(Optional.of("SECOND"));
+        Mockito.when(readPredefinedTypesService.searchForMetricType(any())).thenReturn(Optional.of("Aggregated"));
         var request= new UpdateMetricRegistrationDtoRequest();
 
         request.metricName = "metric";
@@ -291,6 +320,8 @@ public class MetricRegistrationEndpointTest {
     @Test
     public void update_metric_registration_from_dto_partial() {
 
+        Mockito.when(readPredefinedTypesService.searchForUnitType(any())).thenReturn(Optional.of("SECOND"));
+        Mockito.when(readPredefinedTypesService.searchForMetricType(any())).thenReturn(Optional.of("Aggregated"));
         var request= new UpdateMetricRegistrationDtoRequest();
 
         request.metricName = "metric";
@@ -330,6 +361,8 @@ public class MetricRegistrationEndpointTest {
     @Test
     public void update_metric_registration_from_dto_empty() {
 
+        Mockito.when(readPredefinedTypesService.searchForUnitType(any())).thenReturn(Optional.of("SECOND"));
+        Mockito.when(readPredefinedTypesService.searchForMetricType(any())).thenReturn(Optional.of("Aggregated"));
         var request= new UpdateMetricRegistrationDtoRequest();
 
         request.metricName = "metric";
@@ -417,6 +450,8 @@ public class MetricRegistrationEndpointTest {
     @Test
     public void fetch_metric_registration() {
 
+        Mockito.when(readPredefinedTypesService.searchForUnitType(any())).thenReturn(Optional.of("SECOND"));
+        Mockito.when(readPredefinedTypesService.searchForMetricType(any())).thenReturn(Optional.of("Aggregated"));
         var request= new MetricRegistrationDtoRequest();
 
         request.metricName = "metric";
@@ -446,6 +481,8 @@ public class MetricRegistrationEndpointTest {
     @Test
     public void fetch_all_metric_registrations() {
 
+        Mockito.when(readPredefinedTypesService.searchForUnitType(any())).thenReturn(Optional.of("SECOND"));
+        Mockito.when(readPredefinedTypesService.searchForMetricType(any())).thenReturn(Optional.of("Aggregated"));
         var request= new MetricRegistrationDtoRequest();
 
         request.metricName = "metric";
