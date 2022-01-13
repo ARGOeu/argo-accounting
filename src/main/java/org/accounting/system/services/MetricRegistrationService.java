@@ -2,12 +2,15 @@ package org.accounting.system.services;
 
 import org.accounting.system.dtos.MetricRegistrationDtoRequest;
 import org.accounting.system.dtos.MetricRegistrationDtoResponse;
+import org.accounting.system.dtos.UpdateMetricRegistrationDtoRequest;
 import org.accounting.system.exceptions.ConflictException;
 import org.accounting.system.mappers.MetricRegistrationMapper;
 import org.accounting.system.repositories.MetricRegistrationRepository;
+import org.bson.types.ObjectId;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
+import javax.ws.rs.NotFoundException;
 
 @ApplicationScoped
 public class MetricRegistrationService {
@@ -27,6 +30,19 @@ public class MetricRegistrationService {
 
         return MetricRegistrationMapper.INSTANCE.metricRegistrationToResponse(metricRegistration);
 
+    }
+
+    public MetricRegistrationDtoResponse update(String id, UpdateMetricRegistrationDtoRequest request){
+
+        var optionalMetricRegistration = metricRegistrationRepository.findByIdOptional(new ObjectId(id));
+
+        var metricRegistration = optionalMetricRegistration.orElseThrow(()->new NotFoundException("The Metric Registration has not been found."));
+
+        MetricRegistrationMapper.INSTANCE.updateMetricRegistrationFromDto(request, metricRegistration);
+
+        metricRegistrationRepository.update(metricRegistration);
+
+        return MetricRegistrationMapper.INSTANCE.metricRegistrationToResponse(metricRegistration);
     }
 
     /**
