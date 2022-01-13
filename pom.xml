@@ -19,6 +19,7 @@
     <lombok.version>1.18.22</lombok.version>
     <mapstruct.version>1.4.2.Final</mapstruct.version>
     <quarkus.liquibase.mongo.version>2.6.2.Final</quarkus.liquibase.mongo.version>
+    <apache.common3.version>3.12.0</apache.common3.version>
   </properties>
   <dependencyManagement>
     <dependencies>
@@ -90,6 +91,11 @@
       <artifactId>mapstruct-processor</artifactId>
       <version>${mapstruct.version}</version>
     </dependency>
+    <dependency>
+    <groupId>org.apache.commons</groupId>
+    <artifactId>commons-lang3</artifactId>
+    <version>${apache.common3.version}</version>
+   </dependency>
     <dependency>
       <groupId>io.quarkus</groupId>
       <artifactId>quarkus-liquibase-mongodb</artifactId>

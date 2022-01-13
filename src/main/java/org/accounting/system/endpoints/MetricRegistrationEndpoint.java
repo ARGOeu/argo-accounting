@@ -3,11 +3,13 @@ package org.accounting.system.endpoints;
 import org.accounting.system.dtos.InformativeResponse;
 import org.accounting.system.dtos.MetricRegistrationDtoRequest;
 import org.accounting.system.dtos.MetricRegistrationDtoResponse;
+import org.accounting.system.dtos.UpdateMetricRegistrationDtoRequest;
 import org.accounting.system.services.MetricRegistrationService;
 import org.eclipse.microprofile.openapi.annotations.Operation;
 import org.eclipse.microprofile.openapi.annotations.enums.SchemaType;
 import org.eclipse.microprofile.openapi.annotations.media.Content;
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
+import org.eclipse.microprofile.openapi.annotations.parameters.Parameter;
 import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
 import org.eclipse.microprofile.openapi.annotations.tags.Tag;
 
@@ -15,8 +17,10 @@ import javax.inject.Inject;
 import javax.validation.Valid;
 import javax.ws.rs.BadRequestException;
 import javax.ws.rs.Consumes;
+import javax.ws.rs.PATCH;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
@@ -95,5 +99,65 @@ public class MetricRegistrationEndpoint {
         var response = metricRegistrationService.save(metricRegistrationDtoRequest);
 
         return Response.created(uriInfo.getAbsolutePathBuilder().path(response.id).build()).entity(response).build();
+    }
+
+    @Tag(name = "Edit Metric Registration.")
+    @Operation(
+            summary = "Updates an existing Metric Registration.",
+            description = "This operation lets you update only a part of a Metric Registration by updating the existing attributes.")
+    @APIResponse(
+            responseCode = "200",
+            description = "Metric Registration was updated successfully.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = MetricRegistrationDtoResponse.class)))
+    @APIResponse(
+            responseCode = "401",
+            description = "User has not been authenticated.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "404",
+            description = "Metric Registration has not been found.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "409",
+            description = "There is a Metric Registration with that unit_type and metric_name.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "415",
+            description = "Cannot consume content type.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "500",
+            description = "Internal Server Errors.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+
+    @PATCH
+    @Path("/{id}")
+    @Produces(value = MediaType.APPLICATION_JSON)
+    @Consumes(value = MediaType.APPLICATION_JSON)
+    public Response update(
+            @Parameter(
+                    description = "The Metric Registration to be updated.",
+                    required = true,
+                    example = "507f1f77bcf86cd799439011",
+                    schema = @Schema(type = SchemaType.STRING))
+            @PathParam("id") String id, UpdateMetricRegistrationDtoRequest updateMetricRegistrationRequest){
+
+
+        MetricRegistrationDtoResponse response = metricRegistrationService.update(id, updateMetricRegistrationRequest);
+
+        return Response.ok().entity(response).build();
+
     }
 }
