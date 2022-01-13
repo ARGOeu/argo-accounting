@@ -4,7 +4,8 @@ import org.json.simple.JSONObject;
 
 import java.util.List;
 
-public interface ParseJson {
+public interface AbstractParseType {
 
     List<String> availableTypes(JSONObject jsonObject);
+
 }

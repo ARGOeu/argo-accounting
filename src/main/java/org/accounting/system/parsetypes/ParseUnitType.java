@@ -9,7 +9,7 @@ import java.util.stream.Collectors;
 
 @UnitType
 @ApplicationScoped
-public class UnitTypeParseJson implements ParseJson{
+public class ParseUnitType extends ParseType {
     @Override
     public List<String> availableTypes(JSONObject jsonObject) {
         return (List<String>) jsonObject.values().stream().flatMap(a->(((JSONArray) a).stream())).map(obj->(((JSONObject) obj).get("symbol"))).collect(Collectors.toList());
