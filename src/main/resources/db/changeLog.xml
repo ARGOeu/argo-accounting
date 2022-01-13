@@ -1,0 +1,62 @@
+<?xml version="1.0"  encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+        xmlns:pro="http://www.liquibase.org/xml/ns/pro"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+	http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.0.xsd
+	http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd
+    http://www.liquibase.org/xml/ns/pro http://www.liquibase.org/xml/ns/pro/liquibase-pro-4.0.xsd">
+
+    <changeSet id="1" author="accounting-system">
+        <ext:createCollection collectionName="MetricRegistration">
+            <ext:options>
+                {
+                validator: {
+                $jsonSchema: {
+                bsonType: "object",
+                required: ["metricName", "unitType", "metricType"],
+                properties: {
+                metricName: {
+                bsonType: "string",
+                description: "The name of the Virtual Access Metric"
+                },
+                metricType: {
+                bsonType: "string",
+                description: "Metric Type of the Virtual Access Metric"
+                },
+                metricDescription: {
+                bsonType: "string",
+                description: "Description of how the metric is collected"
+                },
+                unitType: {
+                bsonType: "string",
+                description: "Unit Type of the Virtual Access Metric"
+                }
+                }
+                }
+                },
+                validationAction: "warn",
+                validationLevel: "strict"
+                }
+            </ext:options>
+        </ext:createCollection>
+    </changeSet>
+
+
+
+    <changeSet id="2" author="accounting-system">
+        <ext:createIndex collectionName="MetricRegistration">
+            <ext:keys>
+                { metricName: 1, unitType: 1}
+            </ext:keys>
+            <ext:options>
+                {unique: true, name: "unique_name_unit_type"}
+            </ext:options>
+        </ext:createIndex>
+    </changeSet>
+
+
+
+</databaseChangeLog>
