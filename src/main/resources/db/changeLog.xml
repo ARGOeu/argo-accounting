@@ -10,7 +10,7 @@
     http://www.liquibase.org/xml/ns/pro http://www.liquibase.org/xml/ns/pro/liquibase-pro-4.0.xsd">
 
     <changeSet id="1" author="accounting-system">
-        <ext:createCollection collectionName="MetricRegistration">
+        <ext:createCollection collectionName="MetricDefinition">
             <ext:options>
                 {
                 validator: {
@@ -20,11 +20,11 @@
                 properties: {
                 metricName: {
                 bsonType: "string",
-                description: "The name of the Virtual Access Metric"
+                description: "The name of the Metric"
                 },
                 metricType: {
                 bsonType: "string",
-                description: "Metric Type of the Virtual Access Metric"
+                description: "Metric Type of the Metric"
                 },
                 metricDescription: {
                 bsonType: "string",
@@ -47,7 +47,7 @@
 
 
     <changeSet id="2" author="accounting-system">
-        <ext:createIndex collectionName="MetricRegistration">
+        <ext:createIndex collectionName="MetricDefinition">
             <ext:keys>
                 { metricName: 1, unitType: 1}
             </ext:keys>

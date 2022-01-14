@@ -24,6 +24,7 @@
     <vavr.version>0.10.4</vavr.version>
     <quarkus.mockito.version>2.6.2.Final</quarkus.mockito.version>
     <mockito.core.version>4.2.0</mockito.core.version>
+    <junit.vintage.engine.vesrion>5.7.0</junit.vintage.engine.vesrion>
   </properties>
   <dependencyManagement>
     <dependencies>
@@ -83,6 +84,12 @@
       <groupId>io.quarkus</groupId>
       <artifactId>quarkus-junit5-mockito</artifactId>
       <version>${quarkus.mockito.version}</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.junit.vintage</groupId>
+      <artifactId>junit-vintage-engine</artifactId>
+      <version>${junit.vintage.engine.vesrion}</version>
       <scope>test</scope>
     </dependency>
     <dependency>

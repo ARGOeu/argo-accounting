@@ -2,8 +2,11 @@ package org.accounting.system.entities;
 
 import org.bson.types.ObjectId;
 
-
-public class MetricRegistration {
+/**
+ * The Metric Definition entity represents the MetricDefinition collection stored in the mongo database.
+ * Every instance of this entity represents a record in that collection.
+ */
+public class MetricDefinition {
 
     private ObjectId id;
     private String metricName;
