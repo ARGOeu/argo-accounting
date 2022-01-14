@@ -5,25 +5,20 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import org.eclipse.microprofile.openapi.annotations.enums.SchemaType;
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
 
-@Schema(name="MetricRegistrationResponse", description="An object represents the stored Metric Registration.")
-public class MetricRegistrationDtoResponse {
+import javax.validation.constraints.NotEmpty;
+
+@Schema(name="MetricDefinitionRequest", description="An object represents a request for creating a Metric Definition.")
+public class MetricDefinitionDtoRequest {
 
     @Schema(
             type = SchemaType.STRING,
             implementation = String.class,
-            description = "The unique id for the Metric Registration.",
-            example = "507f1f77bcf86cd799439011"
-    )
-    @JsonProperty("metric_registration_id")
-    public String id;
-
-    @Schema(
-            type = SchemaType.STRING,
-            implementation = String.class,
-            description = "The name of the Virtual Access Metric.",
-            example = "weight"
+            description = "The name of the Metric.",
+            example = "weight",
+            required = true
     )
     @JsonProperty("metric_name")
+    @NotEmpty(message = "Metric name may not be empty.")
     public String metricName;
 
     @Schema(
@@ -38,20 +33,23 @@ public class MetricRegistrationDtoResponse {
     @Schema(
             type = SchemaType.STRING,
             implementation = String.class,
-            description = "Unit Type of the Virtual Access Metric.",
-            example = "kg"
+            description = "Unit Type of the Metric.",
+            example = "kg",
+            required = true
     )
     @JsonProperty("unit_type")
+    @NotEmpty(message = "Unit type may not be empty.")
     public String unitType;
 
     @Schema(
             type = SchemaType.STRING,
             implementation = String.class,
-            description = "Metric Type of the Virtual Access Metric.",
-            example = "aggregated"
+            description = "Metric Type of the Metric.",
+            example = "aggregated",
+            required = true
     )
     @JsonProperty("metric_type")
+    @NotEmpty(message = "Metric type may not be empty.")
     public String metricType;
-
 
 }

@@ -12,7 +12,7 @@ public class MongoWriteExceptionMapper implements ExceptionMapper<MongoWriteExce
     @Override
     public Response toResponse(MongoWriteException e) {
         InformativeResponse response = new InformativeResponse();
-        response.message = "The combination of unit_type and metric_name should be unique. A Metric Registration with that combination has already been created.";
+        response.message = "The combination of unit_type and metric_name should be unique. A Metric Definition with that combination has already been created.";
         response.code = Response.Status.CONFLICT.getStatusCode();
         return Response.status(Response.Status.CONFLICT).entity(response).build();
 

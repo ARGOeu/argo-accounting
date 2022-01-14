@@ -6,7 +6,16 @@ This project uses Quarkus, the Supersonic Subatomic Java Framework.
 ## Prerequisites
 - Java 11+
 - Apache Maven 3.8.1+
-- Docker
+- Docker (for dev mode)
+
+## Dev Services
+
+Quarkus supports a feature called Dev Services that allows you to create various datasources without any config. 
+In the case of MongoDB this support extends to the default MongoDB connection. 
+What that means practically, is that if you have not configured `quarkus.mongodb.connection-string` Quarkus 
+will automatically start a MongoDB container when running tests or dev-mode, and automatically configure the connection.
+
+When running the production version of the application, the MongoDB connection need to be configured as normal, so if you want to include a production database config in your `application.properties` and continue to use Dev Services we recommend that you use the `%prod.` profile to define your MongoDB settings.
 
 ## Running the application in dev mode
 
@@ -59,5 +68,15 @@ Once the application is started, you can make a request to the `/open-api` endpo
 Swagger UI is accessible at `/swagger-ui` endpoint:
 
 `http://localhost:8080/swagger-ui`
+
+## Unit and Metric type
+
+The possible values of `unit_type` and `metric_type` are defined in two separate files. 
+The application reads those files and offers to the clients the available values by the respective GET requests.
+You can set the path to those files by filling in the following attributes in the `application.properties`:
+- `unit.types.file`
+- `metric.types.file`
+
+Finally, under the folder `/files`, you can find samples of those files. 
 
 

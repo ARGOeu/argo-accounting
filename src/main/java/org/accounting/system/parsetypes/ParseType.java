@@ -11,6 +11,10 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Optional;
 
+/**
+ * Contains the functions needed to read and parse the available types.
+ *
+ */
 public abstract class ParseType implements AbstractParseType {
 
     @CacheResult(cacheName = "types-to-json")
@@ -22,6 +26,13 @@ public abstract class ParseType implements AbstractParseType {
         return FileToJson.builder().fileToString(jo.toJSONString()).availableTypes(availableTypes).build();
     }
 
+    /**
+     * This method is responsible for returning the available types.
+     * It reads a file from the <code>path</code> and returns its structure.
+     *
+     * @param path The path to the file
+     * @return JSON structure of available types
+     */
     public String getTypes(String path){
         return Try
                 .of(()-> fileToJson(path))
