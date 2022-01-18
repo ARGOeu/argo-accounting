@@ -1,0 +1,79 @@
+version: '3.8'
+services:
+  accounting-system:
+    build:
+      context: .
+      dockerfile: src/main/docker/Dockerfile.jvm
+    ports:
+    - 8080:8080
+    depends_on:
+      - mongo1
+      - mongo2
+      - mongo3
+    networks:
+      - accounting-system
+  mongo1:
+    image: 'mongo'
+    restart: always
+    container_name: 'mongo1'
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=mongo1
+      - MONGO_INITDB_ROOT_PASSWORD=mongo1
+    volumes:
+    - mongo1:/data/db
+    ports:
+    - 27017:27017
+    networks:
+      - accounting-system
+    entrypoint: [ "/usr/bin/mongod", "--replSet", "rsmongo", "--bind_ip_all" ]
+  mongo2:
+    image: 'mongo'
+    restart: always
+    container_name: 'mongo2'
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=mongo2
+      - MONGO_INITDB_ROOT_PASSWORD=mongo2
+    volumes:
+      - mongo2:/data/db
+    ports:
+      - 27018:27017
+    networks:
+      - accounting-system
+    entrypoint: [ "/usr/bin/mongod", "--replSet", "rsmongo", "--bind_ip_all" ]
+  mongo3:
+    image: 'mongo'
+    restart: always
+    container_name: 'mongo3'
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=mongo3
+      - MONGO_INITDB_ROOT_PASSWORD=mongo3
+    volumes:
+      - mongo3:/data/db
+    ports:
+      - 27019:27017
+    networks:
+      - accounting-system
+    entrypoint: [ "/usr/bin/mongod", "--replSet", "rsmongo", "--bind_ip_all" ]
+
+  mongosetup:
+    image: "mongo-setup"
+    build: "./mongo-setup"
+    container_name: "mongosetup"
+    depends_on:
+      - mongo1
+    volumes:
+      - mongostatus:/data/
+    networks:
+      - accounting-system
+volumes:
+    mongo1:
+      name: mongo1
+    mongo2:
+      name: mongo2
+    mongo3:
+      name: mongo3
+    mongostatus:
+      name: mongostatus
+networks:
+    accounting-system:
+      name: accounting-system
