@@ -316,6 +316,8 @@ public class MetricDefinitionEndpoint {
             schema = @Schema(type = SchemaType.STRING))
             @PathParam("id") String id) {
 
+        metricDefinitionService.hasChildren(id);
+
         boolean success = metricDefinitionService.delete(id);
 
         var successResponse = new InformativeResponse();

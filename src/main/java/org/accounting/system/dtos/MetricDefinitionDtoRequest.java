@@ -18,7 +18,7 @@ public class MetricDefinitionDtoRequest {
             required = true
     )
     @JsonProperty("metric_name")
-    @NotEmpty(message = "Metric name may not be empty.")
+    @NotEmpty(message = "metric_name may not be empty.")
     public String metricName;
 
     @Schema(
@@ -38,7 +38,7 @@ public class MetricDefinitionDtoRequest {
             required = true
     )
     @JsonProperty("unit_type")
-    @NotEmpty(message = "Unit type may not be empty.")
+    @NotEmpty(message = "unit_type may not be empty.")
     public String unitType;
 
     @Schema(
@@ -49,7 +49,7 @@ public class MetricDefinitionDtoRequest {
             required = true
     )
     @JsonProperty("metric_type")
-    @NotEmpty(message = "Metric type may not be empty.")
+    @NotEmpty(message = "metric_type may not be empty.")
     public String metricType;
 
 }
