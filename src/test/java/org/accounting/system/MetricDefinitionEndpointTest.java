@@ -8,6 +8,7 @@ import io.restassured.http.ContentType;
 import org.accounting.system.dtos.InformativeResponse;
 import org.accounting.system.dtos.MetricDefinitionDtoRequest;
 import org.accounting.system.dtos.MetricDefinitionDtoResponse;
+import org.accounting.system.dtos.MetricRequestDto;
 import org.accounting.system.dtos.UpdateMetricDefinitionDtoRequest;
 import org.accounting.system.endpoints.MetricDefinitionEndpoint;
 import org.accounting.system.entities.MetricDefinition;
@@ -144,7 +145,7 @@ public class MetricDefinitionEndpointTest {
                 .extract()
                 .as(InformativeResponse.class);
 
-        assertEquals("Metric name may not be empty.", response.message);
+        assertEquals("metric_name may not be empty.", response.message);
     }
 
     @Test
@@ -166,7 +167,7 @@ public class MetricDefinitionEndpointTest {
                 .extract()
                 .as(InformativeResponse.class);
 
-        assertEquals("Unit type may not be empty.", response.message);
+        assertEquals("unit_type may not be empty.", response.message);
     }
 
     @Test
@@ -187,7 +188,7 @@ public class MetricDefinitionEndpointTest {
                 .extract()
                 .as(InformativeResponse.class);
 
-        assertEquals("Metric type may not be empty.", response.message);
+        assertEquals("metric_type may not be empty.", response.message);
     }
 
     @Test
@@ -565,6 +566,57 @@ public class MetricDefinitionEndpointTest {
                 .statusCode(200)
                 .assertThat()
                 .body("size()", is(2));
+    }
+
+    @Test
+    public void delete_metric_definition_prohibited() {
+
+        Mockito.when(readPredefinedTypesService.searchForUnitType(any())).thenReturn(Optional.of("SECOND"));
+        Mockito.when(readPredefinedTypesService.searchForMetricType(any())).thenReturn(Optional.of("Aggregated"));
+        var request= new MetricDefinitionDtoRequest();
+
+        request.metricName = "metric";
+        request.metricDescription = "description";
+        request.unitType = "SECOND";
+        request.metricType = "Aggregated";
+
+        var response = given()
+                .body(request)
+                .contentType(ContentType.JSON)
+                .post()
+                .then()
+                .assertThat()
+                .statusCode(201)
+                .extract()
+                .as(MetricDefinitionDtoResponse.class);
+
+        //then execute a request for creating a metric
+
+        var requestForMetric = new MetricRequestDto();
+        requestForMetric.resourceId = "3434349fjiirgjirj003-3r3f-f-";
+        requestForMetric.start = "2022-01-05T09:13:07Z";
+        requestForMetric.end = "2022-01-05T09:13:07Z";
+        requestForMetric.value = 10.8;
+        requestForMetric.metricDefinitionId = response.id;
+
+        given()
+                .basePath("accounting-system/metrics")
+                .body(requestForMetric)
+                .contentType(ContentType.JSON)
+                .post()
+                .then()
+                .assertThat()
+                .statusCode(201);
+
+        var errorResponse = given()
+                .delete("/{metric_definition_id}", response.id)
+                .then()
+                .assertThat()
+                .statusCode(409)
+                .extract()
+                .as(InformativeResponse.class);
+
+        assertEquals("The Metric Definition cannot be deleted. There is a Metric assigned to it.", errorResponse.message);
     }
 
     @Test

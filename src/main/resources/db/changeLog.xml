@@ -44,8 +44,6 @@
         </ext:createCollection>
     </changeSet>
 
-
-
     <changeSet id="2" author="accounting-system">
         <ext:createIndex collectionName="MetricDefinition">
             <ext:keys>
@@ -57,6 +55,42 @@
         </ext:createIndex>
     </changeSet>
 
-
-
+    <changeSet id="3" author="accounting-system">
+        <ext:createCollection collectionName="Metric">
+            <ext:options>
+                {
+                validator: {
+                $jsonSchema: {
+                bsonType: "object",
+                required: ["metricDefinitionId", "resourceId", "value", "start", "end"],
+                properties: {
+                metricDefinitionId: {
+                bsonType: "string",
+                description: "The Metric Definition to be assigned"
+                },
+                resourceId: {
+                bsonType: "string",
+                description: "Unique Identifier from the resource"
+                },
+                value: {
+                bsonType: "double",
+                description: "Value of the metric for the given period"
+                },
+                start: {
+                bsonType: "date",
+                description: "Timestamp of the starting date time (Zulu timestamp)"
+                },
+                end: {
+                bsonType: "date",
+                description: "Timestamp of the end date time (Zulu timestamp)"
+                }
+                }
+                }
+                },
+                validationAction: "warn",
+                validationLevel: "strict"
+                }
+            </ext:options>
+        </ext:createCollection>
+    </changeSet>
 </databaseChangeLog>
