@@ -11,6 +11,7 @@ import javax.ws.rs.ext.Provider;
 public class InvalidFormatExceptionMapper implements ExceptionMapper<InvalidFormatException> {
     @Override
     public Response toResponse(InvalidFormatException e) {
+
         InformativeResponse response = new InformativeResponse();
         response.message = e.getCause().getMessage();
         response.code = Response.Status.BAD_REQUEST.getStatusCode();

@@ -13,9 +13,7 @@ import org.mapstruct.factory.Mappers;
 
 import java.util.List;
 
-/**
- * This interface is responsible for turning a Metric Definition Entity into a request/response and vice versa.
- */
+
 @Mapper(imports = StringUtils.class)
 public interface MetricDefinitionMapper {
 

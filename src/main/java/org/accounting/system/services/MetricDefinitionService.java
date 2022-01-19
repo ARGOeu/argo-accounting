@@ -3,6 +3,7 @@ package org.accounting.system.services;
 import org.accounting.system.dtos.MetricDefinitionDtoRequest;
 import org.accounting.system.dtos.MetricDefinitionDtoResponse;
 import org.accounting.system.dtos.UpdateMetricDefinitionDtoRequest;
+import org.accounting.system.entities.MetricDefinition;
 import org.accounting.system.exceptions.ConflictException;
 import org.accounting.system.mappers.MetricDefinitionMapper;
 import org.accounting.system.repositories.MetricDefinitionRepository;
@@ -25,10 +26,22 @@ public class MetricDefinitionService {
     @Inject
     private MetricDefinitionRepository metricDefinitionRepository;
 
-    public MetricDefinitionService(MetricDefinitionRepository metricDefinitionRepository) {
+    @Inject
+    private MetricService metricService;
+
+
+    public MetricDefinitionService(MetricDefinitionRepository metricDefinitionRepository, MetricService metricService) {
         this.metricDefinitionRepository = metricDefinitionRepository;
+        this.metricService = metricService;
     }
 
+    /**
+     * Maps the {@link MetricDefinitionDtoRequest} to {@link MetricDefinition}.
+     * Then the {@link MetricDefinition} is stored in the mongo database.
+     *
+     * @param request The POST request body
+     * @return The stored metric definition has been turned into a response body
+     */
     public MetricDefinitionDtoResponse save(MetricDefinitionDtoRequest request) {
 
         var metricDefinition = MetricDefinitionMapper.INSTANCE.requestToMetricDefinition(request);
@@ -78,6 +91,7 @@ public class MetricDefinitionService {
      *
      * @param unitType Unit Type of the Metric
      * @param name The name of the Metric
+     * @throws ConflictException If Metric Definition already exists
      */
     public void exist(String unitType, String name){
 
@@ -85,4 +99,29 @@ public class MetricDefinitionService {
                 .ifPresent(metricDefinition -> {throw new ConflictException("There is a Metric Definition with unit type "+metricDefinition.getUnitType()+" and name "+metricDefinition.getMetricName()+". Its id is "+metricDefinition.getId().toString());});
     }
 
+    /**
+     * Fetches a Metric Definition by given id.
+     *
+     * @param id The Metric Definition id
+     * @throws NotFoundException If there is no Metric Definition with this id
+     */
+    public MetricDefinition findByIdOrThrowException(String id){
+
+        Optional<MetricDefinition> optionalMetricDefinition = metricDefinitionRepository.findByIdOptional(new ObjectId(id));
+
+        return optionalMetricDefinition.orElseThrow(()->new NotFoundException("There is no Metric Definition with the following id: "+id));
+    }
+
+    /**
+     * Checks if there is any Metric assigned to the Metric Definition.
+     *
+     * @param id The Metric Definition id
+     * @throws ConflictException If the Metric Definition has children
+     */
+    public void hasChildren(String id){
+
+        if(metricService.countMetricsByMetricDefinitionId(id) > 0){
+            throw new ConflictException("The Metric Definition cannot be deleted. There is a Metric assigned to it.");
+        }
+    }
 }
