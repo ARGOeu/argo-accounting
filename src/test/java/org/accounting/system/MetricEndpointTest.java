@@ -9,11 +9,19 @@ import org.accounting.system.dtos.InformativeResponse;
 import org.accounting.system.dtos.MetricDefinitionDtoRequest;
 import org.accounting.system.dtos.MetricDefinitionDtoResponse;
 import org.accounting.system.dtos.MetricRequestDto;
+import org.accounting.system.dtos.MetricResponseDto;
 import org.accounting.system.endpoints.MetricEndpoint;
+import org.accounting.system.entities.Metric;
+import org.accounting.system.entities.MetricDefinition;
+import org.accounting.system.repositories.MetricDefinitionRepository;
+import org.accounting.system.repositories.MetricRepository;
 import org.accounting.system.services.ReadPredefinedTypesService;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
+import javax.inject.Inject;
+import java.time.Instant;
 import java.util.Optional;
 
 import static io.restassured.RestAssured.given;
@@ -28,6 +36,17 @@ public class MetricEndpointTest {
 
     @InjectMock
     ReadPredefinedTypesService readPredefinedTypesService;
+
+    @Inject
+    MetricDefinitionRepository metricDefinitionRepository;
+
+    @Inject
+    MetricRepository metricRepository;
+
+    @BeforeEach
+    public void setup() {
+        metricDefinitionRepository.deleteAll();
+    }
 
     @Test
     public void create_metric_bad_request() {
@@ -168,6 +187,50 @@ public class MetricEndpointTest {
                 .then()
                 .assertThat()
                 .statusCode(201);
+    }
+
+    @Test
+    public void fetch_metric_not_found() {
+
+        given()
+                .get("/{metric_id}", "507f1f77bcf86cd799439011")
+                .then()
+                .assertThat()
+                .statusCode(404);
+    }
+
+    @Test
+    public void fetch_metric() {
+
+        //first create a metric registration
+
+        var metricDefinition = new MetricDefinition();
+        metricDefinition.setMetricName("metric");
+        metricDefinition.setMetricDescription("description");
+        metricDefinition.setUnitType("SECOND");
+        metricDefinition.setMetricType("Aggregated");
+
+        metricDefinitionRepository.persist(metricDefinition);
+
+        //then create a virtual metric
+        var metric = new Metric();
+        metric.setMetricDefinitionId(metricDefinition.getId().toString());
+        metric.setResourceId("3434349fjiirgjirj003-3r3f-f-");
+        metric.setStart(Instant.now());
+        metric.setEnd(Instant.now());
+        metric.setValue(10.8);
+
+        metricRepository.persist(metric);
+
+        var response = given()
+                .get("/{metric_id}", metric.getId().toString())
+                .then()
+                .assertThat()
+                .statusCode(200)
+                .extract()
+                .as(MetricResponseDto.class);
+
+        assertEquals(metric.getId().toString(), response.id);
     }
 }
 
