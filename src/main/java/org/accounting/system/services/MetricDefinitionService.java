@@ -78,6 +78,12 @@ public class MetricDefinitionService {
         return MetricDefinitionMapper.INSTANCE.metricDefinitionToResponse(metricDefinition);
     }
 
+    /**
+     * Delete a Metric Definition by given id.
+     * @param metricDefinitionId
+     * @return if the operation is successful or not
+     * @throws NotFoundException If the Metric Definition doesn't exist
+     */
     public boolean delete(String metricDefinitionId){
         var optionalMetricDefinition = metricDefinitionRepository.findByIdOptional(new ObjectId(metricDefinitionId));
 
