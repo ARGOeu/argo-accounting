@@ -1,6 +1,7 @@
 package org.accounting.system.endpoints;
 
 import org.accounting.system.dtos.InformativeResponse;
+import org.accounting.system.dtos.MetricDefinitionDtoResponse;
 import org.accounting.system.dtos.MetricRequestDto;
 import org.accounting.system.dtos.MetricResponseDto;
 import org.accounting.system.services.MetricService;
@@ -16,6 +17,7 @@ import org.eclipse.microprofile.openapi.annotations.tags.Tag;
 import javax.inject.Inject;
 import javax.validation.Valid;
 import javax.ws.rs.Consumes;
+import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
 import javax.ws.rs.NotFoundException;
 import javax.ws.rs.POST;
@@ -129,7 +131,7 @@ public class MetricEndpoint {
                     implementation = InformativeResponse.class)))
 
     @GET
-    @Path("/{metric_id}")
+    @Path("/{id}")
     @Produces(value = MediaType.APPLICATION_JSON)
     public Response get(
             @Parameter(
@@ -137,12 +139,65 @@ public class MetricEndpoint {
                     required = true,
                     example = "507f1f77bcf86cd799439011",
                     schema = @Schema(type = SchemaType.STRING))
-            @PathParam("metric_id") String metricId){
+            @PathParam("id") String id){
 
-        Optional<MetricResponseDto> response = metricService.fetchMetric(metricId);
+        Optional<MetricResponseDto> response = metricService.fetchMetric(id);
 
         return response
                 .map(dto->Response.ok().entity(response.get()).build())
                 .orElseThrow(()-> new NotFoundException("The Metric has not been found."));
+    }
+
+    @Tag(name = "Delete Metric.")
+    @Operation(
+            summary = "Deletes an existing Metric.",
+            description = "Deletes an existing Metric.")
+    @APIResponse(
+            responseCode = "200",
+            description = "Metric has been deleted successfully.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = MetricDefinitionDtoResponse.class)))
+    @APIResponse(
+            responseCode = "401",
+            description = "User has not been authenticated.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "404",
+            description = "Metric has not been found.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.ARRAY,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "500",
+            description = "Internal Server Errors.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @DELETE()
+    @Path("/{id}")
+    @Produces(value = MediaType.APPLICATION_JSON)
+    public Response delete(@Parameter(
+            description = "The Metric to be deleted.",
+            required = true,
+            example = "507f1f77bcf86cd799439011",
+            schema = @Schema(type = SchemaType.STRING))
+                           @PathParam("id") String id) {
+
+
+        boolean success = metricService.delete(id);
+
+        var successResponse = new InformativeResponse();
+
+        if(success){
+            successResponse.code = 200;
+            successResponse.message = "Metric has been deleted successfully.";
+        } else {
+            successResponse.code = 500;
+            successResponse.message = "Metric cannot be deleted due to a server issue. Please try again.";
+        }
+        return Response.ok().entity(successResponse).build();
     }
 }

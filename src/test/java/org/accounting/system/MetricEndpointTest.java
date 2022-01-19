@@ -46,6 +46,7 @@ public class MetricEndpointTest {
     @BeforeEach
     public void setup() {
         metricDefinitionRepository.deleteAll();
+        metricRepository.deleteAll();
     }
 
     @Test
@@ -231,6 +232,75 @@ public class MetricEndpointTest {
                 .as(MetricResponseDto.class);
 
         assertEquals(metric.getId().toString(), response.id);
+    }
+
+    @Test
+    public void delete_metric_not_found() {
+
+        var response = given()
+                .delete("/{metric_id}", "507f1f77bcf86cd799439011")
+                .then()
+                .assertThat()
+                .statusCode(404)
+                .extract()
+                .as(InformativeResponse.class);
+
+        assertEquals("The Metric has not been found.", response.message);
+    }
+
+    @Test
+    public void delete_metric() {
+
+        Mockito.when(readPredefinedTypesService.searchForUnitType(any())).thenReturn(Optional.of("SECOND"));
+        Mockito.when(readPredefinedTypesService.searchForMetricType(any())).thenReturn(Optional.of("Aggregated"));
+        var request= new MetricDefinitionDtoRequest();
+
+        request.metricName = "metric";
+        request.metricDescription = "description";
+        request.unitType = "SECOND";
+        request.metricType = "Aggregated";
+
+        //first create a metric definition
+
+        var response = given()
+                .basePath("accounting-system/metric-definition")
+                .body(request)
+                .contentType(ContentType.JSON)
+                .post()
+                .then()
+                .assertThat()
+                .statusCode(201)
+                .extract()
+                .as(MetricDefinitionDtoResponse.class);
+
+        //afterwards create a metric
+
+        var requestForMetric = new MetricRequestDto();
+        requestForMetric.resourceId = "3434349fjiirgjirj003-3r3f-f-";
+        requestForMetric.start = "2022-01-05T09:13:07Z";
+        requestForMetric.end = "2022-01-05T09:13:07Z";
+        requestForMetric.value = 10.8;
+        requestForMetric.metricDefinitionId = response.id;
+
+        //then delete the created metric
+
+        var metricResponse = given()
+                .body(requestForMetric)
+                .contentType(ContentType.JSON)
+                .post()
+                .then()
+                .assertThat()
+                .statusCode(201)
+                .extract()
+                .as(MetricResponseDto.class);
+
+        given()
+                .delete("/{metric_id}", metricResponse.id)
+                .then()
+                .assertThat()
+                .statusCode(200)
+                .extract()
+                .as(InformativeResponse.class);
     }
 }
 
