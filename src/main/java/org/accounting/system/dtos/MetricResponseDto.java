@@ -13,7 +13,8 @@ public class MetricResponseDto {
     @Schema(
             type = SchemaType.STRING,
             implementation = String.class,
-            description = "Unique ID of the metric."
+            description = "Unique ID of the metric.",
+            example = "507f1f77bcf86cd799439011"
     )
     @JsonProperty("metric_id")
     public String id;
@@ -21,7 +22,8 @@ public class MetricResponseDto {
     @Schema(
             type = SchemaType.STRING,
             implementation = String.class,
-            description = "Unique Identifier from the resource."
+            description = "Unique Identifier from the resource.",
+            example = "resource_id"
     )
     @JsonProperty("resource_id")
     public String resourceId;
@@ -29,7 +31,8 @@ public class MetricResponseDto {
     @Schema(
             type = SchemaType.STRING,
             implementation = String.class,
-            description = "Reference Id from the metric definition."
+            description = "Reference Id from the metric definition.",
+            example = "507f1f77bcf86cd799439011"
     )
     @JsonProperty("metric_definition_id")
     public String metricDefinitionId;
@@ -53,9 +56,10 @@ public class MetricResponseDto {
     public Instant end;
 
     @Schema(
-            type = SchemaType.STRING,
+            type = SchemaType.NUMBER,
             implementation = Double.class,
-            description = "Value of the metric for the given period."
+            description = "Value of the metric for the given period.",
+            example = "10.5"
     )
     @JsonProperty("value")
     public double value;

@@ -7,7 +7,7 @@ import org.eclipse.microprofile.openapi.annotations.media.Schema;
 public class InformativeResponse {
 
     @Schema(
-            type = SchemaType.STRING,
+            type = SchemaType.NUMBER,
             implementation = Integer.class,
             description = "A code that indicates whether a specific request has been completed.",
             example = "The http status"
@@ -21,5 +21,4 @@ public class InformativeResponse {
             example = "An informative message relative to the process"
     )
     public String message;
-
 }

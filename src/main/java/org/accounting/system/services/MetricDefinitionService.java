@@ -1,17 +1,22 @@
 package org.accounting.system.services;
 
+import io.quarkus.mongodb.panache.PanacheQuery;
 import org.accounting.system.dtos.MetricDefinitionDtoRequest;
 import org.accounting.system.dtos.MetricDefinitionDtoResponse;
+import org.accounting.system.dtos.PageResource;
 import org.accounting.system.dtos.UpdateMetricDefinitionDtoRequest;
+import org.accounting.system.entities.Metric;
 import org.accounting.system.entities.MetricDefinition;
 import org.accounting.system.exceptions.ConflictException;
 import org.accounting.system.mappers.MetricDefinitionMapper;
 import org.accounting.system.repositories.MetricDefinitionRepository;
+import org.accounting.system.repositories.MetricRepository;
 import org.bson.types.ObjectId;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 import javax.ws.rs.NotFoundException;
+import javax.ws.rs.core.UriInfo;
 import java.util.List;
 import java.util.Optional;
 
@@ -29,10 +34,14 @@ public class MetricDefinitionService {
     @Inject
     private MetricService metricService;
 
+    @Inject
+    private MetricRepository metricRepository;
 
-    public MetricDefinitionService(MetricDefinitionRepository metricDefinitionRepository, MetricService metricService) {
+
+    public MetricDefinitionService(MetricDefinitionRepository metricDefinitionRepository, MetricService metricService, MetricRepository metricRepository) {
         this.metricDefinitionRepository = metricDefinitionRepository;
         this.metricService = metricService;
+        this.metricRepository = metricRepository;
     }
 
     /**
@@ -129,5 +138,23 @@ public class MetricDefinitionService {
         if(metricService.countMetricsByMetricDefinitionId(id) > 0){
             throw new ConflictException("The Metric Definition cannot be deleted. There is a Metric assigned to it.");
         }
+    }
+
+    /**
+     * Returns the N Metrics, which have been assigned to the Metric Definition, from the given page.
+     *
+     * @param metricDefinitionId The Metric Definition id
+     * @param page Indicates the page number
+     * @param size The number of Metrics to be retrieved
+     * @param uriInfo The current uri
+     * @return An object represents the paginated results
+     */
+    public PageResource<Metric>  findMetricsByMetricDefinitionIdPageable(String metricDefinitionId, int page, int size, UriInfo uriInfo){
+
+        findByIdOrThrowException(metricDefinitionId);
+
+        PanacheQuery<Metric> panacheQuery = metricRepository.findMetricsByMetricDefinitionIdPageable(metricDefinitionId, page, size);
+
+        return new PageResource<>(panacheQuery, uriInfo);
     }
 }

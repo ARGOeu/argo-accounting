@@ -520,6 +520,101 @@ public class MetricDefinitionEndpointTest {
     }
 
     @Test
+    public void fetch_metric_definition_pagination_metric() {
+
+        Mockito.when(readPredefinedTypesService.searchForUnitType(any())).thenReturn(Optional.of("SECOND"));
+        Mockito.when(readPredefinedTypesService.searchForMetricType(any())).thenReturn(Optional.of("Aggregated"));
+        var request= new MetricDefinitionDtoRequest();
+
+        request.metricName = "metric";
+        request.metricDescription = "description";
+        request.unitType = "SECOND";
+        request.metricType = "Aggregated";
+
+        var metricDefinition = given()
+                .body(request)
+                .contentType(ContentType.JSON)
+                .post()
+                .then()
+                .assertThat()
+                .statusCode(201)
+                .extract()
+                .as(MetricDefinitionDtoResponse.class);
+
+
+        var requestForMetric = new MetricRequestDto();
+        requestForMetric.resourceId = "3434349fjiirgjirj003-3r3f-f-";
+        requestForMetric.start = "2022-01-05T09:13:07Z";
+        requestForMetric.end = "2022-01-05T09:13:07Z";
+        requestForMetric.value = 10.8;
+        requestForMetric.metricDefinitionId = metricDefinition.id;
+
+        given()
+                .basePath("/accounting-system/metrics")
+                .body(requestForMetric)
+                .contentType(ContentType.JSON)
+                .post()
+                .then()
+                .assertThat()
+                .statusCode(201);
+
+        var requestForMetric1 = new MetricRequestDto();
+        requestForMetric1.resourceId = "3434349fjiirgjirj003-3r3f-f-";
+        requestForMetric1.start = "2022-01-05T09:13:07Z";
+        requestForMetric1.end = "2022-01-05T09:13:07Z";
+        requestForMetric1.value = 15;
+        requestForMetric1.metricDefinitionId = metricDefinition.id;
+
+        given()
+                .basePath("/accounting-system/metrics")
+                .body(requestForMetric1)
+                .contentType(ContentType.JSON)
+                .post()
+                .then()
+                .assertThat()
+                .statusCode(201);
+
+
+        given()
+                .queryParam("size", 1)
+                .get("/{metric_definition_id}/metrics", metricDefinition.id)
+                .then()
+                .assertThat()
+                .statusCode(200);
+    }
+
+    @Test
+    public void fetch_metric_definition_pagination_not_acceptable_size() {
+
+        var response = given()
+                .queryParam("size", 110)
+                .get("/{metric_definition_id}/metrics", "507f1f77bcf86cd799439011")
+                .then()
+                .assertThat()
+                .statusCode(422)
+                .extract()
+                .as(InformativeResponse.class);
+
+        assertEquals("You cannot request more than 100 items.",response.message);
+    }
+
+    @Test
+    public void fetch_metric_definition_pagination_not_acceptable_page_index() {
+
+        var response = given()
+                .queryParam("page", 0)
+                .get("/{metric_definition_id}/metrics", "507f1f77bcf86cd799439011")
+                .then()
+                .assertThat()
+                .statusCode(400)
+                .extract()
+                .as(InformativeResponse.class);
+
+        assertEquals("Page index must be >= 1.",response.message);
+    }
+
+
+    @Test
     public void fetch_all_metric_definitions() {
 
         Mockito.when(readPredefinedTypesService.searchForUnitType(any())).thenReturn(Optional.of("SECOND"));
@@ -643,12 +738,11 @@ public class MetricDefinitionEndpointTest {
 
 
         given()
-                .delete("/{metric_definiton_id}", response.id)
+                .delete("/{metric_definition_id}", response.id)
                 .then()
                 .assertThat()
                 .statusCode(200)
                 .extract()
                 .as(InformativeResponse.class);
     }
-
 }
