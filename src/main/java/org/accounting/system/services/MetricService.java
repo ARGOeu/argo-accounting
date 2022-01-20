@@ -8,6 +8,7 @@ import org.accounting.system.repositories.MetricRepository;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
+import java.util.Optional;
 
 /**
  * This service exposes business logic, which uses the {@link MetricRepository}.
@@ -55,5 +56,19 @@ public class MetricService {
     public long countMetricsByMetricDefinitionId(String metricDefinitionId){
 
         return metricRepository.countMetricsByMetricDefinitionId(metricDefinitionId);
+    }
+
+    /**
+     * Fetches a Metric by given metric id. Afterwards,
+     * if the {@link Metric} exists, it turns it into {@link MetricResponseDto}.
+     *
+     * @param metricId
+     * @return Optional of metric response body
+     */
+    public Optional<MetricResponseDto> fetchMetric(String metricId){
+
+        Optional<Metric> optionalMetric = metricRepository.findMetricById(metricId);
+
+        return optionalMetric.map(MetricMapper.INSTANCE::metricToResponse).stream().findAny();
     }
 }
