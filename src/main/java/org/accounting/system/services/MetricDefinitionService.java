@@ -85,8 +85,8 @@ public class MetricDefinitionService {
      * @throws NotFoundException If the Metric Definition doesn't exist
      */
     public boolean delete(String metricDefinitionId){
-        var optionalMetricDefinition = metricDefinitionRepository.findByIdOptional(new ObjectId(metricDefinitionId));
 
+        var optionalMetricDefinition = metricDefinitionRepository.findByIdOptional(new ObjectId(metricDefinitionId));
         optionalMetricDefinition.orElseThrow(()->new NotFoundException("The Metric Definition has not been found."));
 
         return metricDefinitionRepository.deleteById(new ObjectId(metricDefinitionId));

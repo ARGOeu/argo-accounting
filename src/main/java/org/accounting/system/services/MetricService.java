@@ -5,9 +5,11 @@ import org.accounting.system.dtos.MetricResponseDto;
 import org.accounting.system.entities.Metric;
 import org.accounting.system.mappers.MetricMapper;
 import org.accounting.system.repositories.MetricRepository;
+import org.bson.types.ObjectId;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
+import javax.ws.rs.NotFoundException;
 import java.util.Optional;
 
 /**
@@ -70,5 +72,19 @@ public class MetricService {
         Optional<Metric> optionalMetric = metricRepository.findMetricById(metricId);
 
         return optionalMetric.map(MetricMapper.INSTANCE::metricToResponse).stream().findAny();
+    }
+
+    /**
+     * Delete a Metric by given id.
+     * @param metricId
+     * @return if the operation is successful or not
+     * @throws NotFoundException If the Metric doesn't exist
+     */
+    public boolean delete(String metricId){
+
+        var optionalMetric = metricRepository.findByIdOptional(new ObjectId(metricId));
+        optionalMetric.orElseThrow(()->new NotFoundException("The Metric has not been found."));
+
+        return metricRepository.deleteById(new ObjectId(metricId));
     }
 }
