@@ -8,6 +8,7 @@ import org.mapstruct.Mapping;
 import org.mapstruct.factory.Mappers;
 
 import java.time.Instant;
+import java.util.List;
 
 /**
  * This interface is responsible for turning a Metric Entity into a request/response and vice versa.
@@ -23,4 +24,7 @@ public interface MetricMapper {
 
     @Mapping( target="id", expression="java(metric.getId().toString())")
     MetricResponseDto metricToResponse(Metric metric);
+
+    @Mapping( target="id", expression="java(metric.getId().toString())")
+    List<MetricResponseDto> metricsToResponse(List<Metric> metrics);
 }

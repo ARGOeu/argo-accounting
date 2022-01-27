@@ -3,7 +3,10 @@ package org.accounting.system.endpoints;
 import org.accounting.system.dtos.InformativeResponse;
 import org.accounting.system.dtos.MetricDefinitionDtoRequest;
 import org.accounting.system.dtos.MetricDefinitionDtoResponse;
+import org.accounting.system.dtos.PageResource;
 import org.accounting.system.dtos.UpdateMetricDefinitionDtoRequest;
+import org.accounting.system.entities.Metric;
+import org.accounting.system.exceptions.UnprocessableException;
 import org.accounting.system.mappers.MetricDefinitionMapper;
 import org.accounting.system.services.MetricDefinitionService;
 import org.accounting.system.services.ReadPredefinedTypesService;
@@ -18,8 +21,10 @@ import org.eclipse.microprofile.openapi.annotations.tags.Tag;
 
 import javax.inject.Inject;
 import javax.validation.Valid;
+import javax.ws.rs.BadRequestException;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
+import javax.ws.rs.DefaultValue;
 import javax.ws.rs.GET;
 import javax.ws.rs.NotFoundException;
 import javax.ws.rs.PATCH;
@@ -27,11 +32,14 @@ import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 import java.util.Optional;
+
+import static org.eclipse.microprofile.openapi.annotations.enums.ParameterIn.QUERY;
 
 @Path("/metric-definition")
 public class MetricDefinitionEndpoint {
@@ -430,4 +438,73 @@ public class MetricDefinitionEndpoint {
         return Response.ok().entity(json).build();
     }
 
+    @Tag(name = "Get assigned Metrics.")
+    @Operation(
+            summary = "Retrieves Metrics for specific Metric Registration.",
+            description = "This operation returns the Metrics assigned to a Metric Registration. " +
+                    "By default, the first page of 10 entities will be returned. You can tune the default values by using " +
+                    "the query parameters page and size. Finally, you cannot request more than 100 items.")
+    @APIResponse(
+            responseCode = "200",
+            description = "Success operation.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = PageResource.class)))
+    @APIResponse(
+            responseCode = "400",
+            description = "Bad Request.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "401",
+            description = "User has not been authenticated.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "404",
+            description = "Metric Registration has not been found.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "422",
+            description = "You cannot request more than 100 items.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "500",
+            description = "Internal Server Errors.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+
+    @GET
+    @Path("/{metric_definition_id}/metrics")
+    @Produces(value = MediaType.APPLICATION_JSON)
+    public Response get(@Parameter(
+            description = "The Metric Definition id.",
+            required = true,
+            example = "507f1f77bcf86cd799439011",
+            schema = @Schema(type = SchemaType.STRING))
+                        @PathParam("metric_definition_id") String metricDefinitionId,
+                        @Parameter(name = "page", in = QUERY,
+                                description = "Indicates the page number.") @DefaultValue("1") @QueryParam("page") int page,
+                        @Parameter(name = "size", in = QUERY,
+                                description = "The page size.") @DefaultValue("10") @QueryParam("size") int size, @Context UriInfo uriInfo) {
+
+        if(page <1){
+            throw new BadRequestException("Page index must be >= 1.");
+        }
+
+        if(size > 100){
+            throw new UnprocessableException("You cannot request more than 100 items.");
+        }
+
+        PageResource<Metric>  metrics = metricDefinitionService.findMetricsByMetricDefinitionIdPageable(metricDefinitionId, page-1, size, uriInfo);
+
+        return Response.ok().entity(metrics).build();
+    }
 }

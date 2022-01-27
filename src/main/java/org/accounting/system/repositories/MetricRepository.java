@@ -1,6 +1,9 @@
 package org.accounting.system.repositories;
 
 import io.quarkus.mongodb.panache.PanacheMongoRepository;
+import io.quarkus.mongodb.panache.PanacheQuery;
+import io.quarkus.panache.common.Page;
+import io.quarkus.panache.common.Sort;
 import org.accounting.system.entities.Metric;
 import org.bson.types.ObjectId;
 
@@ -45,4 +48,17 @@ public class MetricRepository implements PanacheMongoRepository<Metric> {
         return findByIdOptional(new ObjectId(id));
     }
 
+    /**
+     * Executes a query in mongo database and returns the paginated results ordered by metricDefinitionId.
+     * The page parameter indicates the requested page number, and the size parameter the number of entities by page.
+     *
+     * @param metricDefinitionId The Metric Definition id
+     * @param page The page to be retrieved
+     * @param size The requested size of page
+     * @return An object represents the paginated results
+     */
+    public PanacheQuery<Metric> findMetricsByMetricDefinitionIdPageable(String metricDefinitionId, int page, int size){
+
+        return find("metricDefinitionId", Sort.by("metricDefinitionId"), metricDefinitionId).page(Page.of(page, size));
+    }
 }

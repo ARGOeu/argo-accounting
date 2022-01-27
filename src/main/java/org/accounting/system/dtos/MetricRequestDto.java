@@ -58,7 +58,7 @@ public class MetricRequestDto {
     public String end;
 
     @Schema(
-            type = SchemaType.STRING,
+            type = SchemaType.NUMBER,
             implementation = Double.class,
             description = "Value of the metric for the given period.",
             required = true,
