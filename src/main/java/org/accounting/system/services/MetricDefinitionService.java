@@ -1,10 +1,10 @@
 package org.accounting.system.services;
 
 import io.quarkus.mongodb.panache.PanacheQuery;
-import org.accounting.system.dtos.MetricDefinitionDtoRequest;
-import org.accounting.system.dtos.MetricDefinitionDtoResponse;
+import org.accounting.system.dtos.MetricDefinitionRequestDto;
+import org.accounting.system.dtos.MetricDefinitionResponseDto;
 import org.accounting.system.dtos.PageResource;
-import org.accounting.system.dtos.UpdateMetricDefinitionDtoRequest;
+import org.accounting.system.dtos.UpdateMetricDefinitionRequestDto;
 import org.accounting.system.entities.Metric;
 import org.accounting.system.entities.MetricDefinition;
 import org.accounting.system.exceptions.ConflictException;
@@ -45,13 +45,13 @@ public class MetricDefinitionService {
     }
 
     /**
-     * Maps the {@link MetricDefinitionDtoRequest} to {@link MetricDefinition}.
+     * Maps the {@link MetricDefinitionRequestDto} to {@link MetricDefinition}.
      * Then the {@link MetricDefinition} is stored in the mongo database.
      *
      * @param request The POST request body
      * @return The stored metric definition has been turned into a response body
      */
-    public MetricDefinitionDtoResponse save(MetricDefinitionDtoRequest request) {
+    public MetricDefinitionResponseDto save(MetricDefinitionRequestDto request) {
 
         var metricDefinition = MetricDefinitionMapper.INSTANCE.requestToMetricDefinition(request);
 
@@ -60,25 +60,31 @@ public class MetricDefinitionService {
         return MetricDefinitionMapper.INSTANCE.metricDefinitionToResponse(metricDefinition);
     }
 
-    public Optional<MetricDefinitionDtoResponse> fetchMetricDefinition(String id){
+    public MetricDefinitionResponseDto fetchMetricDefinition(String id){
 
-        var optionalMetricDefinition = metricDefinitionRepository.findByIdOptional(new ObjectId(id));
+        var metricDefinition = findById(id);
 
-        return optionalMetricDefinition.map(MetricDefinitionMapper.INSTANCE::metricDefinitionToResponse).stream().findAny();
+        return MetricDefinitionMapper.INSTANCE.metricDefinitionToResponse(metricDefinition.get());
     }
 
-    public List<MetricDefinitionDtoResponse> fetchAllMetricDefinitions(){
+    public List<MetricDefinitionResponseDto> fetchAllMetricDefinitions(){
 
         var list = metricDefinitionRepository.findAll().list();
 
         return MetricDefinitionMapper.INSTANCE.metricDefinitionsToResponse(list);
     }
 
-    public MetricDefinitionDtoResponse update(String id, UpdateMetricDefinitionDtoRequest request){
+    /**
+     * This method is responsible for updating a part or all attributes of existing Metric Definition.
+     *
+     * @param id The Metric Definition to be updated.
+     * @param request The Metric Definition attributes to be updated
+     * @return The updated Metric Definition
+     * @throws NotFoundException If the Metric Definition doesn't exist
+     */
+    public MetricDefinitionResponseDto update(String id, UpdateMetricDefinitionRequestDto request){
 
-        var optionalMetricDefinition = metricDefinitionRepository.findByIdOptional(new ObjectId(id));
-
-        var metricDefinition = optionalMetricDefinition.orElseThrow(()->new NotFoundException("The Metric Definition has not been found."));
+        var metricDefinition = findById(id).get();
 
         MetricDefinitionMapper.INSTANCE.updateMetricDefinitionFromDto(request, metricDefinition);
 
@@ -89,14 +95,11 @@ public class MetricDefinitionService {
 
     /**
      * Delete a Metric Definition by given id.
-     * @param metricDefinitionId
-     * @return if the operation is successful or not
+     * @param metricDefinitionId The Metric Definition to be deleted
+     * @return If the operation is successful or not
      * @throws NotFoundException If the Metric Definition doesn't exist
      */
     public boolean delete(String metricDefinitionId){
-
-        var optionalMetricDefinition = metricDefinitionRepository.findByIdOptional(new ObjectId(metricDefinitionId));
-        optionalMetricDefinition.orElseThrow(()->new NotFoundException("The Metric Definition has not been found."));
 
         return metricDefinitionRepository.deleteById(new ObjectId(metricDefinitionId));
     }
@@ -118,13 +121,11 @@ public class MetricDefinitionService {
      * Fetches a Metric Definition by given id.
      *
      * @param id The Metric Definition id
-     * @throws NotFoundException If there is no Metric Definition with this id
+     * @return Optional of Metric Definition
      */
-    public MetricDefinition findByIdOrThrowException(String id){
+    public Optional<MetricDefinition> findById(String id){
 
-        Optional<MetricDefinition> optionalMetricDefinition = metricDefinitionRepository.findByIdOptional(new ObjectId(id));
-
-        return optionalMetricDefinition.orElseThrow(()->new NotFoundException("There is no Metric Definition with the following id: "+id));
+        return metricDefinitionRepository.findByIdOptional(new ObjectId(id));
     }
 
     /**
@@ -150,8 +151,6 @@ public class MetricDefinitionService {
      * @return An object represents the paginated results
      */
     public PageResource<Metric>  findMetricsByMetricDefinitionIdPageable(String metricDefinitionId, int page, int size, UriInfo uriInfo){
-
-        findByIdOrThrowException(metricDefinitionId);
 
         PanacheQuery<Metric> panacheQuery = metricRepository.findMetricsByMetricDefinitionIdPageable(metricDefinitionId, page, size);
 

@@ -2,13 +2,15 @@ package org.accounting.system.dtos;
 
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import org.accounting.system.constraints.MetricTypeNotFound;
+import org.accounting.system.constraints.UnitTypeNotFound;
 import org.eclipse.microprofile.openapi.annotations.enums.SchemaType;
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
 
 import javax.validation.constraints.NotEmpty;
 
 @Schema(name="MetricDefinitionRequest", description="An object represents a request for creating a Metric Definition.")
-public class MetricDefinitionDtoRequest {
+public class MetricDefinitionRequestDto {
 
     @Schema(
             type = SchemaType.STRING,
@@ -33,23 +35,24 @@ public class MetricDefinitionDtoRequest {
     @Schema(
             type = SchemaType.STRING,
             implementation = String.class,
-            description = "Unit Type of the Metric.",
-            example = "kg",
-            required = true
-    )
-    @JsonProperty("unit_type")
-    @NotEmpty(message = "unit_type may not be empty.")
-    public String unitType;
-
-    @Schema(
-            type = SchemaType.STRING,
-            implementation = String.class,
             description = "Metric Type of the Metric.",
             example = "aggregated",
             required = true
     )
     @JsonProperty("metric_type")
     @NotEmpty(message = "metric_type may not be empty.")
+    @MetricTypeNotFound
     public String metricType;
 
+    @Schema(
+            type = SchemaType.STRING,
+            implementation = String.class,
+            description = "Unit Type of the Metric.",
+            example = "kg",
+            required = true
+    )
+    @JsonProperty("unit_type")
+    @NotEmpty(message = "unit_type may not be empty.")
+    @UnitTypeNotFound
+    public String unitType;
 }

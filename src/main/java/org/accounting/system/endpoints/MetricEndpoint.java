@@ -1,11 +1,12 @@
 package org.accounting.system.endpoints;
 
+import org.accounting.system.constraints.MetricNotFound;
 import org.accounting.system.dtos.InformativeResponse;
-import org.accounting.system.dtos.MetricDefinitionDtoResponse;
+import org.accounting.system.dtos.MetricDefinitionResponseDto;
 import org.accounting.system.dtos.MetricRequestDto;
 import org.accounting.system.dtos.MetricResponseDto;
+import org.accounting.system.dtos.UpdateMetricRequestDto;
 import org.accounting.system.services.MetricService;
-import org.accounting.system.util.Predicates;
 import org.eclipse.microprofile.openapi.annotations.Operation;
 import org.eclipse.microprofile.openapi.annotations.enums.SchemaType;
 import org.eclipse.microprofile.openapi.annotations.media.Content;
@@ -16,10 +17,11 @@ import org.eclipse.microprofile.openapi.annotations.tags.Tag;
 
 import javax.inject.Inject;
 import javax.validation.Valid;
+import javax.validation.constraints.NotNull;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
-import javax.ws.rs.NotFoundException;
+import javax.ws.rs.PATCH;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
@@ -28,7 +30,6 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
-import java.util.Optional;
 
 @Path("/metrics")
 public class MetricEndpoint {
@@ -36,12 +37,8 @@ public class MetricEndpoint {
     @Inject
     private MetricService metricService;
 
-    @Inject
-    private Predicates predicates;
-
-    public MetricEndpoint(MetricService metricService, Predicates predicates) {
+    public MetricEndpoint(MetricService metricService) {
         this.metricService = metricService;
-        this.predicates = predicates;
     }
 
 
@@ -90,11 +87,7 @@ public class MetricEndpoint {
     @POST
     @Produces(value = MediaType.APPLICATION_JSON)
     @Consumes(value = MediaType.APPLICATION_JSON)
-    public Response save(@Valid MetricRequestDto metricRequestDto, @Context UriInfo uriInfo) {
-
-        predicates
-                .emptyRequestBody(metricRequestDto)
-                .accept(metricRequestDto);
+    public Response save(@Valid @NotNull(message = "The request body is empty.") MetricRequestDto metricRequestDto, @Context UriInfo uriInfo) {
 
         MetricResponseDto response = metricService.save(metricRequestDto);
 
@@ -139,13 +132,11 @@ public class MetricEndpoint {
                     required = true,
                     example = "507f1f77bcf86cd799439011",
                     schema = @Schema(type = SchemaType.STRING))
-            @PathParam("id") String id){
+            @PathParam("id") @Valid @MetricNotFound String id){
 
-        Optional<MetricResponseDto> response = metricService.fetchMetric(id);
+        MetricResponseDto response = metricService.fetchMetric(id);
 
-        return response
-                .map(dto->Response.ok().entity(response.get()).build())
-                .orElseThrow(()-> new NotFoundException("The Metric has not been found."));
+        return Response.ok().entity(response).build();
     }
 
     @Tag(name = "Delete Metric.")
@@ -157,7 +148,7 @@ public class MetricEndpoint {
             description = "Metric has been deleted successfully.",
             content = @Content(schema = @Schema(
                     type = SchemaType.OBJECT,
-                    implementation = MetricDefinitionDtoResponse.class)))
+                    implementation = MetricDefinitionResponseDto.class)))
     @APIResponse(
             responseCode = "401",
             description = "User has not been authenticated.",
@@ -184,7 +175,7 @@ public class MetricEndpoint {
             required = true,
             example = "507f1f77bcf86cd799439011",
             schema = @Schema(type = SchemaType.STRING))
-                           @PathParam("id") String id) {
+                           @PathParam("id") @Valid @MetricNotFound String id) {
 
 
         boolean success = metricService.delete(id);
@@ -199,5 +190,63 @@ public class MetricEndpoint {
             successResponse.message = "Metric cannot be deleted due to a server issue. Please try again.";
         }
         return Response.ok().entity(successResponse).build();
+    }
+
+    @Tag(name = "Edit Metric.")
+    @Operation(
+            summary = "Updates an existing Metric.",
+            description = "In order to update the resource properties, the body of the request must contain an updated representation of Metric. " +
+                    "You can update a part or all attributes of the Metric except for metric_id. The empty or null values are ignored.")
+    @APIResponse(
+            responseCode = "200",
+            description = "Metric was updated successfully.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = MetricResponseDto.class)))
+    @APIResponse(
+            responseCode = "400",
+            description = "Bad Request.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "401",
+            description = "User has not been authenticated.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "404",
+            description = "Metric/Metric Definition has not been found.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "415",
+            description = "Cannot consume content type.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "500",
+            description = "Internal Server Errors.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+
+    @PATCH
+    @Path("/{id}")
+    @Produces(value = MediaType.APPLICATION_JSON)
+    @Consumes(value = MediaType.APPLICATION_JSON)
+    public Response update(
+            @Parameter(
+                    description = "The Metric to be updated.",
+                    required = true,
+                    example = "61dbe3f10086512c9ff1197a",
+                    schema = @Schema(type = SchemaType.STRING))
+            @PathParam("id") @Valid @MetricNotFound String id, @Valid @NotNull(message = "The request body is empty.") UpdateMetricRequestDto updateMetricRequestDto){
+
+        MetricResponseDto response = metricService.update(id, updateMetricRequestDto);
+        return Response.ok().entity(response).build();
     }
 }
