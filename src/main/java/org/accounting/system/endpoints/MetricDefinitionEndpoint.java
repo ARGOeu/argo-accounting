@@ -1,13 +1,12 @@
 package org.accounting.system.endpoints;
 
+import org.accounting.system.constraints.MetricDefinitionNotFound;
 import org.accounting.system.dtos.InformativeResponse;
-import org.accounting.system.dtos.MetricDefinitionDtoRequest;
-import org.accounting.system.dtos.MetricDefinitionDtoResponse;
+import org.accounting.system.dtos.MetricDefinitionRequestDto;
+import org.accounting.system.dtos.MetricDefinitionResponseDto;
 import org.accounting.system.dtos.PageResource;
-import org.accounting.system.dtos.UpdateMetricDefinitionDtoRequest;
-import org.accounting.system.entities.Metric;
+import org.accounting.system.dtos.UpdateMetricDefinitionRequestDto;
 import org.accounting.system.exceptions.UnprocessableException;
-import org.accounting.system.mappers.MetricDefinitionMapper;
 import org.accounting.system.services.MetricDefinitionService;
 import org.accounting.system.services.ReadPredefinedTypesService;
 import org.accounting.system.util.Predicates;
@@ -21,12 +20,12 @@ import org.eclipse.microprofile.openapi.annotations.tags.Tag;
 
 import javax.inject.Inject;
 import javax.validation.Valid;
+import javax.validation.constraints.NotNull;
 import javax.ws.rs.BadRequestException;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.DefaultValue;
 import javax.ws.rs.GET;
-import javax.ws.rs.NotFoundException;
 import javax.ws.rs.PATCH;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
@@ -37,7 +36,6 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
-import java.util.Optional;
 
 import static org.eclipse.microprofile.openapi.annotations.enums.ParameterIn.QUERY;
 
@@ -80,7 +78,7 @@ public class MetricDefinitionEndpoint {
             description = "Metric Definition has been created successfully.",
             content = @Content(schema = @Schema(
                     type = SchemaType.OBJECT,
-                    implementation = MetricDefinitionDtoResponse.class)))
+                    implementation = MetricDefinitionResponseDto.class)))
     @APIResponse(
             responseCode = "400",
             description = "Bad Request.",
@@ -121,16 +119,11 @@ public class MetricDefinitionEndpoint {
     @POST
     @Produces(value = MediaType.APPLICATION_JSON)
     @Consumes(value = MediaType.APPLICATION_JSON)
-    public Response save(@Valid MetricDefinitionDtoRequest metricDefinitionDtoRequest, @Context UriInfo uriInfo) {
+    public Response save(@Valid @NotNull(message = "The request body is empty.") MetricDefinitionRequestDto metricDefinitionRequestDto, @Context UriInfo uriInfo) {
 
-        predicates
-                .emptyRequestBody(metricDefinitionDtoRequest)
-                .andThen(predicates::exist)
-                .andThen(predicates::noAvailableUnitType)
-                .andThen(predicates::noAvailableMetricType)
-                .accept(metricDefinitionDtoRequest);
+        predicates.exist(metricDefinitionRequestDto);
 
-        var response = metricDefinitionService.save(metricDefinitionDtoRequest);
+        var response = metricDefinitionService.save(metricDefinitionRequestDto);
 
         return Response.created(uriInfo.getAbsolutePathBuilder().path(response.id).build()).entity(response).build();
     }
@@ -144,7 +137,7 @@ public class MetricDefinitionEndpoint {
             description = "Array of Metric Definitions.",
             content = @Content(schema = @Schema(
                     type = SchemaType.ARRAY,
-                    implementation = MetricDefinitionDtoResponse.class)))
+                    implementation = MetricDefinitionResponseDto.class)))
     @APIResponse(
             responseCode = "401",
             description = "User has not been authenticated.",
@@ -174,7 +167,7 @@ public class MetricDefinitionEndpoint {
             description = "The corresponding Metric Definition.",
             content = @Content(schema = @Schema(
                     type = SchemaType.OBJECT,
-                    implementation = MetricDefinitionDtoResponse.class)))
+                    implementation = MetricDefinitionResponseDto.class)))
     @APIResponse(
             responseCode = "401",
             description = "User has not been authenticated.",
@@ -203,26 +196,24 @@ public class MetricDefinitionEndpoint {
                     required = true,
                     example = "507f1f77bcf86cd799439011",
                     schema = @Schema(type = SchemaType.STRING))
-            @PathParam("id") String id){
+            @PathParam("id") @Valid @MetricDefinitionNotFound String id){
 
-        Optional<MetricDefinitionDtoResponse> response = metricDefinitionService.fetchMetricDefinition(id);
+        MetricDefinitionResponseDto response = metricDefinitionService.fetchMetricDefinition(id);
 
-        return response
-                .map(dto->Response.ok().entity(response.get()).build())
-                .orElseThrow(()-> new NotFoundException("The Metric Definition has not been found."));
+        return Response.ok().entity(response).build();
     }
 
     @Tag(name = "Edit Metric Definition.")
     @Operation(
             summary = "Updates an existing Metric Definition.",
-            description = "This operation lets you update only a part of a Metric Definition by updating the existing attributes. " +
-                    "The empty or null values are ignored.")
+            description = "In order to update the resource properties, the body of the request must contain an updated representation of Metric Definition. " +
+                    "You can update a part or all attributes of the Metric Definition except for metric_definition_id. The empty or null values are ignored.")
     @APIResponse(
             responseCode = "200",
             description = "Metric Definition was updated successfully.",
             content = @Content(schema = @Schema(
                     type = SchemaType.OBJECT,
-                    implementation = MetricDefinitionDtoResponse.class)))
+                    implementation = MetricDefinitionResponseDto.class)))
     @APIResponse(
             responseCode = "400",
             description = "Bad Request.",
@@ -270,17 +261,9 @@ public class MetricDefinitionEndpoint {
                     required = true,
                     example = "507f1f77bcf86cd799439011",
                     schema = @Schema(type = SchemaType.STRING))
-            @PathParam("id") String id, UpdateMetricDefinitionDtoRequest updateMetricDefinitionRequest){
+            @PathParam("id") @Valid @MetricDefinitionNotFound String id, @Valid @NotNull(message = "The request body is empty.") UpdateMetricDefinitionRequestDto updateMetricDefinitionRequest){
 
-        var transformedUpdateDto = MetricDefinitionMapper.INSTANCE.updateRequestToMetricDefinitionDtoRequest(updateMetricDefinitionRequest);
-
-        predicates
-                .emptyRequestBody(transformedUpdateDto)
-                .andThen(predicates::noAvailableUnitType)
-                .andThen(predicates::noAvailableMetricType)
-                .accept(transformedUpdateDto);
-
-        MetricDefinitionDtoResponse response = metricDefinitionService.update(id, updateMetricDefinitionRequest);
+        MetricDefinitionResponseDto response = metricDefinitionService.update(id, updateMetricDefinitionRequest);
 
         return Response.ok().entity(response).build();
     }
@@ -294,7 +277,7 @@ public class MetricDefinitionEndpoint {
             description = "Metric Definition has been deleted successfully.",
             content = @Content(schema = @Schema(
                     type = SchemaType.OBJECT,
-                    implementation = MetricDefinitionDtoResponse.class)))
+                    implementation = MetricDefinitionResponseDto.class)))
     @APIResponse(
             responseCode = "401",
             description = "User has not been authenticated.",
@@ -322,11 +305,11 @@ public class MetricDefinitionEndpoint {
             required = true,
             example = "507f1f77bcf86cd799439011",
             schema = @Schema(type = SchemaType.STRING))
-            @PathParam("id") String id) {
+            @PathParam("id") @Valid @MetricDefinitionNotFound String id) {
 
         metricDefinitionService.hasChildren(id);
 
-        boolean success = metricDefinitionService.delete(id);
+        var success = metricDefinitionService.delete(id);
 
         var successResponse = new InformativeResponse();
 
@@ -388,7 +371,7 @@ public class MetricDefinitionEndpoint {
     @Produces(value = MediaType.APPLICATION_JSON)
     public Response getUnitTypes() {
 
-        String json = readPredefinedTypesService.getUnitTypes();
+        var json = readPredefinedTypesService.getUnitTypes();
 
         return Response.ok().entity(json).build();
     }
@@ -433,7 +416,7 @@ public class MetricDefinitionEndpoint {
     @Produces(value = MediaType.APPLICATION_JSON)
     public Response getMetricTypes() {
 
-        String json = readPredefinedTypesService.getMetricTypes();
+        var json = readPredefinedTypesService.getMetricTypes();
 
         return Response.ok().entity(json).build();
     }
@@ -489,7 +472,7 @@ public class MetricDefinitionEndpoint {
             required = true,
             example = "507f1f77bcf86cd799439011",
             schema = @Schema(type = SchemaType.STRING))
-                        @PathParam("metric_definition_id") String metricDefinitionId,
+                        @PathParam("metric_definition_id") @Valid @MetricDefinitionNotFound String metricDefinitionId,
                         @Parameter(name = "page", in = QUERY,
                                 description = "Indicates the page number.") @DefaultValue("1") @QueryParam("page") int page,
                         @Parameter(name = "size", in = QUERY,
@@ -503,7 +486,7 @@ public class MetricDefinitionEndpoint {
             throw new UnprocessableException("You cannot request more than 100 items.");
         }
 
-        PageResource<Metric>  metrics = metricDefinitionService.findMetricsByMetricDefinitionIdPageable(metricDefinitionId, page-1, size, uriInfo);
+        var metrics = metricDefinitionService.findMetricsByMetricDefinitionIdPageable(metricDefinitionId, page-1, size, uriInfo);
 
         return Response.ok().entity(metrics).build();
     }

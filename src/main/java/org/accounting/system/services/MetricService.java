@@ -2,6 +2,7 @@ package org.accounting.system.services;
 
 import org.accounting.system.dtos.MetricRequestDto;
 import org.accounting.system.dtos.MetricResponseDto;
+import org.accounting.system.dtos.UpdateMetricRequestDto;
 import org.accounting.system.entities.Metric;
 import org.accounting.system.mappers.MetricMapper;
 import org.accounting.system.repositories.MetricRepository;
@@ -9,7 +10,9 @@ import org.bson.types.ObjectId;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
+import javax.ws.rs.BadRequestException;
 import javax.ws.rs.NotFoundException;
+import java.time.Instant;
 import java.util.Optional;
 
 /**
@@ -37,10 +40,9 @@ public class MetricService {
      *
      * @param request The POST request body
      * @return The stored metric has been turned into a response body
+     * @throws NotFoundException If the Metric Definition doesn't exist
      */
     public MetricResponseDto save(MetricRequestDto request) {
-
-        metricDefinitionService.findByIdOrThrowException(request.metricDefinitionId);
 
         Metric metric = MetricMapper.INSTANCE.requestToMetric(request);
 
@@ -65,26 +67,83 @@ public class MetricService {
      * if the {@link Metric} exists, it turns it into {@link MetricResponseDto}.
      *
      * @param metricId
-     * @return Optional of metric response body
+     * @return  metric response body
      */
-    public Optional<MetricResponseDto> fetchMetric(String metricId){
+    public MetricResponseDto fetchMetric(String metricId){
 
-        Optional<Metric> optionalMetric = metricRepository.findMetricById(metricId);
+        var metric = findById(metricId).get();
 
-        return optionalMetric.map(MetricMapper.INSTANCE::metricToResponse).stream().findAny();
+        return MetricMapper.INSTANCE.metricToResponse(metric);
     }
 
     /**
      * Delete a Metric by given id.
-     * @param metricId
+     * @param metricId The Metric to be deleted
      * @return if the operation is successful or not
      * @throws NotFoundException If the Metric doesn't exist
      */
     public boolean delete(String metricId){
 
-        var optionalMetric = metricRepository.findByIdOptional(new ObjectId(metricId));
-        optionalMetric.orElseThrow(()->new NotFoundException("The Metric has not been found."));
-
         return metricRepository.deleteById(new ObjectId(metricId));
+    }
+
+    /**
+     * This method is responsible for updating a part or all attributes of existing Metric.
+     *
+     * @param id The Metric to be updated.
+     * @param request The Metric attributes to be updated
+     * @return The updated Metric
+     * @throws NotFoundException If the Metric/Metric Definition doesn't exist
+     */
+    public MetricResponseDto update(String id, UpdateMetricRequestDto request){
+
+        var metric = findById(id).get();
+
+        //TODO We have to reconstruct better the conditions below
+
+        if(request.start !=null && request.end ==null && Instant.parse(request.start).isAfter(metric.getEnd())){
+            throw new BadRequestException("Timestamp of the starting date time cannot be after of Timestamp of the end date time.");
+        }
+
+        if(request.end !=null && request.start==null && Instant.parse(request.end).isBefore(metric.getStart())){
+            throw new BadRequestException("Timestamp of the end date time cannot be before of Timestamp of the starting date time.");
+        }
+
+        if(request.end !=null && request.start!=null && Instant.parse(request.start).isAfter(Instant.parse(request.end))){
+            throw new BadRequestException("Timestamp of the starting date time cannot be after of Timestamp of the end date time.");
+        }
+
+        if(request.end !=null && request.start!=null && Instant.parse(request.start).equals(Instant.parse(request.end))){
+            throw new BadRequestException("Timestamp of the starting date time cannot be equal to Timestamp of the end date time.");
+        }
+
+        if(request.end !=null && request.start!=null && Instant.parse(request.start).isAfter(Instant.parse(request.end))){
+            throw new BadRequestException("Timestamp of the starting date time cannot be after of Timestamp of the end date time.");
+        }
+
+        if(request.start !=null && request.end ==null && Instant.parse(request.start).equals(metric.getEnd())){
+            throw new BadRequestException("Timestamp of the starting date time cannot be equal to Timestamp of the end date time.");
+        }
+
+        if(request.end !=null && request.start ==null && Instant.parse(request.end).equals(metric.getStart())){
+            throw new BadRequestException("Timestamp of the starting date time cannot be equal to Timestamp of the end date time.");
+        }
+
+        MetricMapper.INSTANCE.updateMetricFromDto(request, metric);
+
+        metricRepository.update(metric);
+
+        return MetricMapper.INSTANCE.metricToResponse(metric);
+    }
+
+    /**
+     * Fetches a Metric by given id.
+     *
+     * @param id The Metric id
+     * @return Optional of Metric
+     */
+    public Optional<Metric> findById(String id){
+
+        return metricRepository.findByIdOptional(new ObjectId(id));
     }
 }
