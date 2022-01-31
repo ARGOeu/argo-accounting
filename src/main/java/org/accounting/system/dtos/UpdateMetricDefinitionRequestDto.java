@@ -2,25 +2,18 @@ package org.accounting.system.dtos;
 
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import org.accounting.system.constraints.MetricTypeNotFound;
+import org.accounting.system.constraints.UnitTypeNotFound;
 import org.eclipse.microprofile.openapi.annotations.enums.SchemaType;
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
 
-@Schema(name="MetricDefinitionResponse", description="An object represents the stored Metric Definition.")
-public class MetricDefinitionDtoResponse {
+@Schema(name="UpdateMetricDefinitionRequest", description="An object represents a request for updating a Metric Definition.")
+public class UpdateMetricDefinitionRequestDto {
 
     @Schema(
             type = SchemaType.STRING,
             implementation = String.class,
-            description = "The unique id for the Metric Definition.",
-            example = "507f1f77bcf86cd799439011"
-    )
-    @JsonProperty("metric_definition_id")
-    public String id;
-
-    @Schema(
-            type = SchemaType.STRING,
-            implementation = String.class,
-            description = "The name of the Metric.",
+            description = "The name of the Metric to be updated.",
             example = "weight"
     )
     @JsonProperty("metric_name")
@@ -29,7 +22,7 @@ public class MetricDefinitionDtoResponse {
     @Schema(
             type = SchemaType.STRING,
             implementation = String.class,
-            description = "Description of how the metric is collected.",
+            description = "The description of the Metric to be updated.",
             example = "The weight of a person"
     )
     @JsonProperty("metric_description")
@@ -38,20 +31,21 @@ public class MetricDefinitionDtoResponse {
     @Schema(
             type = SchemaType.STRING,
             implementation = String.class,
-            description = "Unit Type of the Metric.",
+            description = "Unit Type of the Metric to be updated.",
             example = "kg"
     )
     @JsonProperty("unit_type")
+    @UnitTypeNotFound
     public String unitType;
 
     @Schema(
             type = SchemaType.STRING,
             implementation = String.class,
-            description = "Metric Type of the Metric.",
+            description = "Metric Type of the Metric to be updated.",
             example = "aggregated"
     )
     @JsonProperty("metric_type")
+    @MetricTypeNotFound
     public String metricType;
-
 
 }

@@ -1,7 +1,10 @@
 package org.accounting.system.validators;
 
+import io.netty.handler.codec.http.HttpResponseStatus;
 import io.netty.util.internal.StringUtil;
 import org.accounting.system.constraints.ZuluTime;
+import org.accounting.system.exceptions.CustomValidationException;
+import org.apache.commons.lang3.StringUtils;
 
 import javax.validation.ConstraintValidator;
 import javax.validation.ConstraintValidatorContext;
@@ -11,14 +14,20 @@ import java.time.Instant;
  * Validates whether the value has the appropriate Zulu format.
  */
 public class ZuluTimeValidator implements ConstraintValidator<ZuluTime, String> {
+
+    private boolean acceptEmptyValue;
+
     @Override
     public void initialize(ZuluTime constraintAnnotation) {
-
+        this.acceptEmptyValue = constraintAnnotation.acceptEmptyValue();
     }
 
     @Override
     public boolean isValid(String value, ConstraintValidatorContext context) {
 
+        if(acceptEmptyValue && StringUtils.isEmpty(value)){
+            return true;
+        }
 
         String defaultMessage = context.getDefaultConstraintMessageTemplate();
 
@@ -31,20 +40,10 @@ public class ZuluTimeValidator implements ConstraintValidator<ZuluTime, String> 
         builder.append("found: ");
         builder.append(value);
 
-        context.disableDefaultConstraintViolation();
-        context
-                .buildConstraintViolationWithTemplate(builder.toString())
-                .addConstraintViolation();
-
-
-        if (StringUtil.isNullOrEmpty(value)) {
-            return false;
-        }
-
         try{
             Instant.parse(value);
         } catch (Exception e){
-            return false;
+            throw new CustomValidationException(builder.toString(), HttpResponseStatus.BAD_REQUEST);
         }
 
         return true;
