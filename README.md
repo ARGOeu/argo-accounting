@@ -58,6 +58,33 @@ You can then execute your native executable with: `./target/rest-json-quickstart
 
 If you want to learn more about building native executables, please consult https://quarkus.io/guides/maven-tooling.
 
+## Unit and Metric type
+
+The possible values of `unit_type` and `metric_type` are defined in two separate files, `unit_type.conf` and `metric_type.conf` respectively.
+The application reads those files and offers to the clients the available values by the respective GET requests.
+You can set the path to those files by filling in the following attributes in the `application.properties`:
+- `unit.types.file`
+- `metric.types.file`
+
+Finally, under the folder `/files`, you can find samples of those files.
+
+## Deploying the Accounting System API
+
+To deploy the API in a machine :
+
+- First, you have to set up a mongo database (We are currently using `4.0.28`, but other versions may be compatible)
+- Second, you have to put the `unit_type.conf` and `metric_type.conf` in the machine filesystem
+- Third, there must be an _über-jar_ version of the API on this machine
+
+Before running the _über-jar_, you have to export the following variables:
+
+- export `QUARKUS_MONGODB_CONNECTION_STRING=mongodb://{host}:{port}`
+- export `UNIT_TYPES_FILE={filesystem path to unit_type.conf}`
+- export `METRIC_TYPES_FILE={filesystem path to metric_type.conf}`
+
+Once the variables above have been exported, you should execute the following command:
+`java -jar *-runner.jar`
+
 ## Expose OpenAPI Specifications
 
 Once the application is started, you can make a request to the `/open-api` endpoint:
@@ -68,15 +95,4 @@ Once the application is started, you can make a request to the `/open-api` endpo
 Swagger UI is accessible at `/swagger-ui` endpoint:
 
 `http://localhost:8080/swagger-ui`
-
-## Unit and Metric type
-
-The possible values of `unit_type` and `metric_type` are defined in two separate files. 
-The application reads those files and offers to the clients the available values by the respective GET requests.
-You can set the path to those files by filling in the following attributes in the `application.properties`:
-- `unit.types.file`
-- `metric.types.file`
-
-Finally, under the folder `/files`, you can find samples of those files. 
-
 
