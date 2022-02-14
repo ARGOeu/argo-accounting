@@ -42,7 +42,7 @@ public class MetricEndpoint {
     }
 
 
-    @Tag(name = "Submit Metric.")
+    @Tag(name = "Metric")
     @Operation(
             summary = "Registers a new Metric.",
             description = "Retrieves and inserts a Metric into the database. " +
@@ -94,7 +94,7 @@ public class MetricEndpoint {
         return Response.created(uriInfo.getAbsolutePathBuilder().path(response.id).build()).entity(response).build();
     }
 
-    @Tag(name = "Search Metric.")
+    @Tag(name = "Metric")
     @Operation(
             summary = "Returns an existing Metric.",
             description = "This operation accepts the id of a Metric and fetches from the database the corresponding record.")
@@ -139,7 +139,7 @@ public class MetricEndpoint {
         return Response.ok().entity(response).build();
     }
 
-    @Tag(name = "Delete Metric.")
+    @Tag(name = "Metric")
     @Operation(
             summary = "Deletes an existing Metric.",
             description = "Deletes an existing Metric.")
@@ -192,7 +192,7 @@ public class MetricEndpoint {
         return Response.ok().entity(successResponse).build();
     }
 
-    @Tag(name = "Edit Metric.")
+    @Tag(name = "Metric")
     @Operation(
             summary = "Updates an existing Metric.",
             description = "In order to update the resource properties, the body of the request must contain an updated representation of Metric. " +

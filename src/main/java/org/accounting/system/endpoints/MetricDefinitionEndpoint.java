@@ -59,7 +59,7 @@ public class MetricDefinitionEndpoint {
     }
 
 
-    @Tag(name = "Submit Metric Definition.")
+    @Tag(name = "Metric Definition")
     @Operation(
             operationId = "submit-metric-definition",
             summary = "Records a new Metric Definition.",
@@ -68,10 +68,10 @@ public class MetricDefinitionEndpoint {
                     "It should be noted that the combination of unit_type and metric_name should be unique. " +
                     "If you execute a request with a unit_type and metric_name, which have already been generated, you receive an error response. " +
                     "The unit_type is a predefined value and you can retrieve " +
-                    "[here](#/Get%20Unit%20Types./unit-type) the " +
+                    "[here](#/Unit%20Type/unit-type) the " +
                     "possible values of unit type. " +
                     "The metric_type is also a predefined value and you can retrieve " +
-                    "[here](#/Get%20Metric%20Types./metric-type) the " +
+                    "[here](#/Metric%20Type/metric-type) the " +
                     "possible values of metric type.")
     @APIResponse(
             responseCode = "201",
@@ -128,7 +128,7 @@ public class MetricDefinitionEndpoint {
         return Response.created(uriInfo.getAbsolutePathBuilder().path(response.id).build()).entity(response).build();
     }
 
-    @Tag(name = "Retrieve all Metric Definitions.")
+    @Tag(name = "Metric Definition")
     @Operation(
             summary = "Returns the recorded Metric Definitions.",
             description = "This operation fetches all database records of Metric Definition.")
@@ -158,7 +158,7 @@ public class MetricDefinitionEndpoint {
         return Response.ok().entity(metricDefinitionService.fetchAllMetricDefinitions()).build();
     }
 
-    @Tag(name = "Search a Metric Definition.")
+    @Tag(name = "Metric Definition")
     @Operation(
             summary = "Returns an existing Metric Definition.",
             description = "This operation accepts the id of a Metric Definition and fetches from the database the corresponding record.")
@@ -203,7 +203,7 @@ public class MetricDefinitionEndpoint {
         return Response.ok().entity(response).build();
     }
 
-    @Tag(name = "Edit Metric Definition.")
+    @Tag(name = "Metric Definition")
     @Operation(
             summary = "Updates an existing Metric Definition.",
             description = "In order to update the resource properties, the body of the request must contain an updated representation of Metric Definition. " +
@@ -268,7 +268,7 @@ public class MetricDefinitionEndpoint {
         return Response.ok().entity(response).build();
     }
 
-    @Tag(name = "Delete Metric Definition.")
+    @Tag(name = "Metric Definition")
     @Operation(
             summary = "Deletes an existing Metric Definition.",
             description = "You can delete only a Metric Definition that doesn’t have any assigned Metrics to it. If the Metric Definition has no Metrics, you can safely delete it.")
@@ -323,7 +323,7 @@ public class MetricDefinitionEndpoint {
         return Response.ok().entity(successResponse).build();
     }
 
-    @Tag(name = "Get Unit Types.")
+    @Tag(name = "Unit Type")
     @Operation(
             operationId = "unit-type",
             summary = "Returns the unit types.",
@@ -376,7 +376,7 @@ public class MetricDefinitionEndpoint {
         return Response.ok().entity(json).build();
     }
 
-    @Tag(name = "Get Metric Types.")
+    @Tag(name = "Metric Type")
     @Operation(
             operationId = "metric-type",
             summary = "Returns the metric types.",
@@ -421,7 +421,7 @@ public class MetricDefinitionEndpoint {
         return Response.ok().entity(json).build();
     }
 
-    @Tag(name = "Get assigned Metrics.")
+    @Tag(name = "Metric Definition")
     @Operation(
             summary = "Retrieves Metrics for specific Metric Registration.",
             description = "This operation returns the Metrics assigned to a Metric Registration. " +
