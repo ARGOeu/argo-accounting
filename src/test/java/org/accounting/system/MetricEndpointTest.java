@@ -199,7 +199,7 @@ public class MetricEndpointTest {
     }
 
     @Test
-    public void create_metric_internal_server_error() {
+    public void create_metric_non_hex_id() {
 
         var request = new MetricRequestDto();
         request.start = "2022-01-05T09:13:07Z";
@@ -214,7 +214,7 @@ public class MetricEndpointTest {
                 .post()
                 .then()
                 .assertThat()
-                .statusCode(500);
+                .statusCode(404);
     }
 
     @Test
@@ -332,6 +332,20 @@ public class MetricEndpointTest {
     }
 
     @Test
+    public void fetch_metric_non_hex_id() {
+
+        var response = given()
+                .get("/{metric_id}", "dbhbhehbeo33m23")
+                .then()
+                .assertThat()
+                .statusCode(404)
+                .extract()
+                .as(InformativeResponse.class);
+
+        assertEquals("There is no Metric with the following id: dbhbhehbeo33m23", response.message);
+    }
+
+    @Test
     public void fetch_metric() {
 
         //first create a metric registration
@@ -377,6 +391,20 @@ public class MetricEndpointTest {
                 .as(InformativeResponse.class);
 
         assertEquals("There is no Metric with the following id: 507f1f77bcf86cd799439011", response.message);
+    }
+
+    @Test
+    public void delete_metric_non_hex_id() {
+
+        var response = given()
+                .delete("/{metric_id}", "33333")
+                .then()
+                .assertThat()
+                .statusCode(404)
+                .extract()
+                .as(InformativeResponse.class);
+
+        assertEquals("There is no Metric with the following id: 33333", response.message);
     }
 
     @Test
@@ -468,6 +496,21 @@ public class MetricEndpointTest {
     }
 
     @Test
+    public void update_metric_not_found() {
+
+        var response = given()
+                .contentType(ContentType.JSON)
+                .patch("/{id}", "jnejenjdfn")
+                .then()
+                .assertThat()
+                .statusCode(404)
+                .extract()
+                .as(InformativeResponse.class);
+
+        assertEquals("There is no Metric with the following id: jnejenjdfn", response.message);
+    }
+
+    @Test
     public void update_metric_metric_definition_not_valid_zulu_timestamp() {
 
         Mockito.when(readPredefinedTypesService.searchForUnitType(any())).thenReturn(Optional.of("SECOND"));
@@ -554,6 +597,53 @@ public class MetricEndpointTest {
                 .as(InformativeResponse.class);
 
         assertEquals("There is no Metric Definition with the following id: 507f1f77bcf86cd799439011", response.message);
+    }
+
+    @Test
+    public void update_metric_metric_definition_non_hex_id() {
+
+        Mockito.when(readPredefinedTypesService.searchForUnitType(any())).thenReturn(Optional.of("SECOND"));
+        Mockito.when(readPredefinedTypesService.searchForMetricType(any())).thenReturn(Optional.of("Aggregated"));
+        var requestForMetricDefinition = new MetricDefinitionRequestDto();
+
+        requestForMetricDefinition.metricName = "metric";
+        requestForMetricDefinition.metricDescription = "description";
+        requestForMetricDefinition.unitType = "SECOND";
+        requestForMetricDefinition.metricType = "Aggregated";
+
+        var createdMetricDefinition = createMetricDefinition(requestForMetricDefinition);
+
+        // create a metric
+        var requestForMetric = new MetricRequestDto();
+        requestForMetric.resourceId = "3434349fjiirgjirj003-3r3f-f-";
+        requestForMetric.start = "2022-01-05T09:13:07Z";
+        requestForMetric.end = "2022-01-05T09:14:07Z";
+        requestForMetric.value = 10.8;
+        requestForMetric.metricDefinitionId = createdMetricDefinition.id;
+
+        var metricResponse = createMetric(requestForMetric);
+
+        // update an existing metric
+        var updateMetricRequest = new UpdateMetricRequestDto();
+
+        updateMetricRequest.resourceId = "updated_resource_id";
+        updateMetricRequest.start = "2023-01-05T09:13:07Z";
+        updateMetricRequest.end = "2024-01-05T09:13:07Z";
+        updateMetricRequest.value = 15.8;
+        updateMetricRequest.metricDefinitionId = "30dmn93jn3j";
+
+
+        var response = given()
+                .body(updateMetricRequest)
+                .contentType(ContentType.JSON)
+                .patch("/{id}", metricResponse.id)
+                .then()
+                .assertThat()
+                .statusCode(404)
+                .extract()
+                .as(InformativeResponse.class);
+
+        assertEquals("There is no Metric Definition with the following id: 30dmn93jn3j", response.message);
     }
 
     @Test

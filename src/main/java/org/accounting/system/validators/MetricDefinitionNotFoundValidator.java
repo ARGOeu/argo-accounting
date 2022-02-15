@@ -2,8 +2,8 @@ package org.accounting.system.validators;
 
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.netty.util.internal.StringUtil;
+import io.vavr.control.Try;
 import org.accounting.system.constraints.MetricDefinitionNotFound;
-import org.accounting.system.entities.MetricDefinition;
 import org.accounting.system.exceptions.CustomValidationException;
 import org.accounting.system.services.MetricDefinitionService;
 import org.apache.commons.lang3.StringUtils;
@@ -11,7 +11,6 @@ import org.apache.commons.lang3.StringUtils;
 import javax.enterprise.inject.spi.CDI;
 import javax.validation.ConstraintValidator;
 import javax.validation.ConstraintValidatorContext;
-import java.util.Optional;
 
 /**
  * This {@link MetricDefinitionNotFoundValidator} defines the logic to validate the {@link MetricDefinitionNotFound}.
@@ -42,9 +41,9 @@ public class MetricDefinitionNotFoundValidator implements ConstraintValidator<Me
 
         MetricDefinitionService metricDefinitionService = CDI.current().select(MetricDefinitionService.class).get();
 
-        Optional<MetricDefinition> metricDefinition = metricDefinitionService.findById(value);
-
-        metricDefinition.orElseThrow(()->new CustomValidationException(builder.toString(), HttpResponseStatus.NOT_FOUND));
+        Try
+                .run(()->metricDefinitionService.findById(value).orElseThrow(()->new CustomValidationException(builder.toString(), HttpResponseStatus.NOT_FOUND)))
+                .getOrElseThrow(()->new CustomValidationException(builder.toString(), HttpResponseStatus.NOT_FOUND));
 
         return true;
     }
