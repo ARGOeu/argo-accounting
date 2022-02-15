@@ -10,6 +10,7 @@ import org.accounting.system.exceptions.UnprocessableException;
 import org.accounting.system.services.MetricDefinitionService;
 import org.accounting.system.services.ReadPredefinedTypesService;
 import org.accounting.system.util.Predicates;
+import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.eclipse.microprofile.openapi.annotations.Operation;
 import org.eclipse.microprofile.openapi.annotations.enums.SchemaType;
 import org.eclipse.microprofile.openapi.annotations.media.Content;
@@ -17,6 +18,7 @@ import org.eclipse.microprofile.openapi.annotations.media.Schema;
 import org.eclipse.microprofile.openapi.annotations.parameters.Parameter;
 import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
 import org.eclipse.microprofile.openapi.annotations.tags.Tag;
+import org.jboss.resteasy.specimpl.ResteasyUriInfo;
 
 import javax.inject.Inject;
 import javax.validation.Valid;
@@ -41,6 +43,12 @@ import static org.eclipse.microprofile.openapi.annotations.enums.ParameterIn.QUE
 
 @Path("/metric-definition")
 public class MetricDefinitionEndpoint {
+
+    @ConfigProperty(name = "quarkus.resteasy.path")
+    String basePath;
+
+    @ConfigProperty(name = "server.url")
+    String serverUrl;
 
     @Inject
     MetricDefinitionService metricDefinitionService;
@@ -121,11 +129,13 @@ public class MetricDefinitionEndpoint {
     @Consumes(value = MediaType.APPLICATION_JSON)
     public Response save(@Valid @NotNull(message = "The request body is empty.") MetricDefinitionRequestDto metricDefinitionRequestDto, @Context UriInfo uriInfo) {
 
+        UriInfo serverInfo = new ResteasyUriInfo(serverUrl.concat(basePath).concat(uriInfo.getPath()), basePath);
+
         predicates.exist(metricDefinitionRequestDto);
 
         var response = metricDefinitionService.save(metricDefinitionRequestDto);
 
-        return Response.created(uriInfo.getAbsolutePathBuilder().path(response.id).build()).entity(response).build();
+        return Response.created(serverInfo.getAbsolutePathBuilder().path(response.id).build()).entity(response).build();
     }
 
     @Tag(name = "Metric Definition")
@@ -486,7 +496,9 @@ public class MetricDefinitionEndpoint {
             throw new UnprocessableException("You cannot request more than 100 items.");
         }
 
-        var metrics = metricDefinitionService.findMetricsByMetricDefinitionIdPageable(metricDefinitionId, page-1, size, uriInfo);
+        UriInfo serverInfo = new ResteasyUriInfo(serverUrl.concat(basePath).concat(uriInfo.getPath()), basePath);
+
+        var metrics = metricDefinitionService.findMetricsByMetricDefinitionIdPageable(metricDefinitionId, page-1, size, serverInfo);
 
         return Response.ok().entity(metrics).build();
     }

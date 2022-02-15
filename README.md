@@ -81,6 +81,7 @@ Before running the _über-jar_, you have to export the following variables:
 - export `QUARKUS_MONGODB_CONNECTION_STRING=mongodb://{host}:{port}`
 - export `UNIT_TYPES_FILE={filesystem path to unit_type.conf}`
 - export `METRIC_TYPES_FILE={filesystem path to metric_type.conf}`
+- export `SERVER_URL={The proxy server URL that acts on behalf of the Accounting System}`
 
 Once the variables above have been exported, you should execute the following command:
 `java -jar *-runner.jar`
