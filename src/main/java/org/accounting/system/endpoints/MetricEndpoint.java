@@ -7,6 +7,7 @@ import org.accounting.system.dtos.MetricRequestDto;
 import org.accounting.system.dtos.MetricResponseDto;
 import org.accounting.system.dtos.UpdateMetricRequestDto;
 import org.accounting.system.services.MetricService;
+import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.eclipse.microprofile.openapi.annotations.Operation;
 import org.eclipse.microprofile.openapi.annotations.enums.SchemaType;
 import org.eclipse.microprofile.openapi.annotations.media.Content;
@@ -14,6 +15,7 @@ import org.eclipse.microprofile.openapi.annotations.media.Schema;
 import org.eclipse.microprofile.openapi.annotations.parameters.Parameter;
 import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
 import org.eclipse.microprofile.openapi.annotations.tags.Tag;
+import org.jboss.resteasy.specimpl.ResteasyUriInfo;
 
 import javax.inject.Inject;
 import javax.validation.Valid;
@@ -33,6 +35,12 @@ import javax.ws.rs.core.UriInfo;
 
 @Path("/metrics")
 public class MetricEndpoint {
+
+    @ConfigProperty(name = "quarkus.resteasy.path")
+    String basePath;
+
+    @ConfigProperty(name = "server.url")
+    String serverUrl;
 
     @Inject
     private MetricService metricService;
@@ -91,7 +99,9 @@ public class MetricEndpoint {
 
         MetricResponseDto response = metricService.save(metricRequestDto);
 
-        return Response.created(uriInfo.getAbsolutePathBuilder().path(response.id).build()).entity(response).build();
+        UriInfo serverInfo = new ResteasyUriInfo(serverUrl.concat(basePath).concat(uriInfo.getPath()), basePath);
+
+        return Response.created(serverInfo.getAbsolutePathBuilder().path(response.id).build()).entity(response).build();
     }
 
     @Tag(name = "Metric")
