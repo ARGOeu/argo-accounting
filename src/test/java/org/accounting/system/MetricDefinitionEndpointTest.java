@@ -262,6 +262,21 @@ public class MetricDefinitionEndpointTest {
     }
 
     @Test
+    public void update_metric_definition_not_found() {
+
+        var response = given()
+                .contentType(ContentType.JSON)
+                .patch("/{id}", "556787878e-rrr")
+                .then()
+                .assertThat()
+                .statusCode(404)
+                .extract()
+                .as(InformativeResponse.class);
+
+        assertEquals("There is no Metric Definition with the following id: 556787878e-rrr", response.message);
+    }
+
+    @Test
     public void update_metric_definition_full() {
 
         Mockito.when(readPredefinedTypesService.searchForUnitType(any())).thenReturn(Optional.of("SECOND"));
@@ -472,17 +487,17 @@ public class MetricDefinitionEndpointTest {
     }
 
     @Test
-    public void fetch_metric_definition_internal_server_error() {
+    public void fetch_metric_definition_not_found_non_hex_id() {
 
         var response = given()
                 .get("/{id}", "iiejijirj33i3i")
                 .then()
                 .assertThat()
-                .statusCode(500)
+                .statusCode(404)
                 .extract()
                 .as(InformativeResponse.class);
 
-        assertEquals(500, response.code);
+        assertEquals(404, response.code);
     }
 
     @Test
@@ -618,6 +633,21 @@ public class MetricDefinitionEndpointTest {
     }
 
     @Test
+    public void fetch_metric_definition_pagination_non_hex_id() {
+
+        var response = given()
+                .queryParam("page", 0)
+                .get("/{metric_definition_id}/metrics", "ijidij3d333")
+                .then()
+                .assertThat()
+                .statusCode(404)
+                .extract()
+                .as(InformativeResponse.class);
+
+        assertEquals("There is no Metric Definition with the following id: ijidij3d333", response.message);
+    }
+
+    @Test
     public void fetch_all_metric_definitions() {
 
         Mockito.when(readPredefinedTypesService.searchForUnitType(any())).thenReturn(Optional.of("SECOND"));
@@ -648,6 +678,22 @@ public class MetricDefinitionEndpointTest {
                 .assertThat()
                 .body("size()", is(2));
     }
+
+    @Test
+    public void delete_metric_definition_not_found() {
+
+
+        var response = given()
+                .delete("/{metric_definition_id}", "7dyebdheb7377e")
+                .then()
+                .assertThat()
+                .statusCode(404)
+                .extract()
+                .as(InformativeResponse.class);
+
+        assertEquals("There is no Metric Definition with the following id: 7dyebdheb7377e", response.message);
+    }
+
 
     @Test
     public void delete_metric_definition_prohibited() {
