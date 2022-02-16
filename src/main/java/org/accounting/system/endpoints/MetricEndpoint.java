@@ -1,5 +1,6 @@
 package org.accounting.system.endpoints;
 
+import io.quarkus.security.Authenticated;
 import org.accounting.system.constraints.MetricNotFound;
 import org.accounting.system.dtos.InformativeResponse;
 import org.accounting.system.dtos.MetricDefinitionResponseDto;
@@ -10,10 +11,14 @@ import org.accounting.system.services.MetricService;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.eclipse.microprofile.openapi.annotations.Operation;
 import org.eclipse.microprofile.openapi.annotations.enums.SchemaType;
+import org.eclipse.microprofile.openapi.annotations.enums.SecuritySchemeIn;
+import org.eclipse.microprofile.openapi.annotations.enums.SecuritySchemeType;
 import org.eclipse.microprofile.openapi.annotations.media.Content;
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
 import org.eclipse.microprofile.openapi.annotations.parameters.Parameter;
 import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
+import org.eclipse.microprofile.openapi.annotations.security.SecurityRequirement;
+import org.eclipse.microprofile.openapi.annotations.security.SecurityScheme;
 import org.eclipse.microprofile.openapi.annotations.tags.Tag;
 import org.jboss.resteasy.specimpl.ResteasyUriInfo;
 
@@ -34,6 +39,14 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 
 @Path("/metrics")
+@Authenticated
+@SecurityScheme(securitySchemeName = "Authentication",
+        description = "JWT token",
+        type = SecuritySchemeType.HTTP,
+        scheme = "bearer",
+        bearerFormat = "JWT",
+        in = SecuritySchemeIn.HEADER)
+
 public class MetricEndpoint {
 
     @ConfigProperty(name = "quarkus.resteasy.path")
@@ -91,6 +104,7 @@ public class MetricEndpoint {
             content = @Content(schema = @Schema(
                     type = SchemaType.OBJECT,
                     implementation = InformativeResponse.class)))
+    @SecurityRequirement(name = "Authentication")
 
     @POST
     @Produces(value = MediaType.APPLICATION_JSON)
@@ -132,6 +146,7 @@ public class MetricEndpoint {
             content = @Content(schema = @Schema(
                     type = SchemaType.OBJECT,
                     implementation = InformativeResponse.class)))
+    @SecurityRequirement(name = "Authentication")
 
     @GET
     @Path("/{id}")
@@ -177,6 +192,8 @@ public class MetricEndpoint {
             content = @Content(schema = @Schema(
                     type = SchemaType.OBJECT,
                     implementation = InformativeResponse.class)))
+    @SecurityRequirement(name = "Authentication")
+
     @DELETE()
     @Path("/{id}")
     @Produces(value = MediaType.APPLICATION_JSON)
@@ -243,6 +260,7 @@ public class MetricEndpoint {
             content = @Content(schema = @Schema(
                     type = SchemaType.OBJECT,
                     implementation = InformativeResponse.class)))
+    @SecurityRequirement(name = "Authentication")
 
     @PATCH
     @Path("/{id}")

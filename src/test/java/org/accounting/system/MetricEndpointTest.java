@@ -4,6 +4,7 @@ import io.quarkus.test.common.http.TestHTTPEndpoint;
 import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.test.junit.TestProfile;
 import io.quarkus.test.junit.mockito.InjectMock;
+import io.quarkus.test.keycloak.client.KeycloakTestClient;
 import io.restassured.RestAssured;
 import io.restassured.config.JsonConfig;
 import io.restassured.http.ContentType;
@@ -48,6 +49,8 @@ public class MetricEndpointTest {
     @Inject
     MetricRepository metricRepository;
 
+    KeycloakTestClient keycloakClient = new KeycloakTestClient();
+
     @BeforeEach
     public void setup() {
         metricDefinitionRepository.deleteAll();
@@ -55,9 +58,24 @@ public class MetricEndpointTest {
     }
 
     @Test
-    public void create_metric_request_body_is_empty() {
+    public void createMetricRequestNotAuthenticated() {
+
+        var notAuthenticatedResponse = given()
+                .auth()
+                .oauth2("invalidToken")
+                .contentType(ContentType.JSON)
+                .post()
+                .thenReturn();
+
+        assertEquals(401, notAuthenticatedResponse.statusCode());
+    }
+
+    @Test
+    public void createMetricRequestBodyIsEmpty() {
 
         var response = given()
+                .auth()
+                .oauth2(getAccessToken("alice"))
                 .contentType(ContentType.JSON)
                 .post()
                 .then()
@@ -70,7 +88,7 @@ public class MetricEndpointTest {
     }
 
     @Test
-    public void create_metric_no_metric_definition() {
+    public void createMetricNoMetricDefinition() {
 
         var request = new MetricRequestDto();
         request.start = "2022-01-05T09:13:07Z";
@@ -80,6 +98,8 @@ public class MetricEndpointTest {
         request.value = 10.3;
 
         var response = given()
+                .auth()
+                .oauth2(getAccessToken("alice"))
                 .body(request)
                 .contentType(ContentType.JSON)
                 .post()
@@ -93,11 +113,13 @@ public class MetricEndpointTest {
     }
 
     @Test
-    public void create_metric_cannot_consume_content_type() {
+    public void createMetricCannotConsumeContentType() {
 
         var request = new MetricRequestDto();
 
         var response = given()
+                .auth()
+                .oauth2(getAccessToken("alice"))
                 .body(request)
                 .post()
                 .then()
@@ -110,7 +132,7 @@ public class MetricEndpointTest {
     }
 
     @Test
-    public void create_metric_empty_metric_definition_attribute() {
+    public void createMetricEmptyMetricDefinitionAttribute() {
 
         var request = new MetricRequestDto();
         request.start = "2022-01-05T09:13:07Z";
@@ -119,6 +141,8 @@ public class MetricEndpointTest {
         request.value = 10.3;
 
         var response = given()
+                .auth()
+                .oauth2(getAccessToken("alice"))
                 .body(request)
                 .contentType(ContentType.JSON)
                 .post()
@@ -132,7 +156,7 @@ public class MetricEndpointTest {
     }
 
     @Test
-    public void create_metric_no_valid_zulu_timestamp() {
+    public void createMetricNoValidZuluTimestamp() {
 
         Mockito.when(readPredefinedTypesService.searchForUnitType(any())).thenReturn(Optional.of("SECOND"));
         Mockito.when(readPredefinedTypesService.searchForMetricType(any())).thenReturn(Optional.of("Aggregated"));
@@ -153,6 +177,8 @@ public class MetricEndpointTest {
         request.value = 10.3;
 
         var response = given()
+                .auth()
+                .oauth2(getAccessToken("alice"))
                 .body(request)
                 .contentType(ContentType.JSON)
                 .post()
@@ -166,7 +192,7 @@ public class MetricEndpointTest {
     }
 
     @Test
-    public void create_metric_no_zulu_timestamp() {
+    public void createMetricNoZuluTimestamp() {
 
         Mockito.when(readPredefinedTypesService.searchForUnitType(any())).thenReturn(Optional.of("SECOND"));
         Mockito.when(readPredefinedTypesService.searchForMetricType(any())).thenReturn(Optional.of("Aggregated"));
@@ -186,6 +212,8 @@ public class MetricEndpointTest {
         request.value = 10.3;
 
         var response = given()
+                .auth()
+                .oauth2(getAccessToken("alice"))
                 .body(request)
                 .contentType(ContentType.JSON)
                 .post()
@@ -199,7 +227,7 @@ public class MetricEndpointTest {
     }
 
     @Test
-    public void create_metric_non_hex_id() {
+    public void createMetricNonHexId() {
 
         var request = new MetricRequestDto();
         request.start = "2022-01-05T09:13:07Z";
@@ -208,17 +236,23 @@ public class MetricEndpointTest {
         request.resourceId = "resource-id";
         request.value = 10.3;
 
-        given()
+        var notFoundResponse = given()
+                .auth()
+                .oauth2(getAccessToken("alice"))
                 .body(request)
                 .contentType(ContentType.JSON)
                 .post()
                 .then()
                 .assertThat()
-                .statusCode(404);
+                .statusCode(404)
+                .extract()
+                .as(InformativeResponse.class);
+
+        assertEquals("There is no Metric Definition with the following id: iiejijirj33i3i", notFoundResponse.message);
     }
 
     @Test
-    public void create_metric_start_is_after_end() {
+    public void createMetricStartIsAfterEnd() {
 
         //first create a metric definition
 
@@ -243,6 +277,8 @@ public class MetricEndpointTest {
         requestForMetric.metricDefinitionId = metricDefinitionResponse.id;
 
         var response = given()
+                .auth()
+                .oauth2(getAccessToken("alice"))
                 .body(requestForMetric)
                 .contentType(ContentType.JSON)
                 .post()
@@ -256,7 +292,7 @@ public class MetricEndpointTest {
     }
 
     @Test
-    public void create_metric_start_is_equal_end() {
+    public void createMetricStartIsEqualEnd() {
 
         //first create a metric definition
 
@@ -281,6 +317,8 @@ public class MetricEndpointTest {
         requestForMetric.metricDefinitionId = metricDefinitionResponse.id;
 
         var response = given()
+                .auth()
+                .oauth2(getAccessToken("alice"))
                 .body(requestForMetric)
                 .contentType(ContentType.JSON)
                 .post()
@@ -294,7 +332,7 @@ public class MetricEndpointTest {
     }
 
     @Test
-    public void create_metric() {
+    public void createMetric() {
 
         //first create a metric definition
 
@@ -318,24 +356,46 @@ public class MetricEndpointTest {
         requestForMetric.value = 10.8;
         requestForMetric.metricDefinitionId = metricDefinitionResponse.id;
 
-        createMetric(requestForMetric);
+        var metric = createMetric(requestForMetric);
+
+        assertEquals(requestForMetric.resourceId, metric.resourceId);
     }
 
     @Test
-    public void fetch_metric_not_found() {
+    public void fetchMetricNotAuthenticated() {
 
-        given()
-                .get("/{metric_id}", "507f1f77bcf86cd799439011")
+        var notAuthenticatedResponse = given()
+                .auth()
+                .oauth2("invalidToken")
+                .get("/{metricId}", "507f1f77bcf86cd799439011")
+                .thenReturn();
+
+        assertEquals(401, notAuthenticatedResponse.statusCode());
+    }
+
+    @Test
+    public void fetchMetricNotFound() {
+
+        var notFoundResponse = given()
+                .auth()
+                .oauth2(getAccessToken("alice"))
+                .get("/{metricId}", "507f1f77bcf86cd799439011")
                 .then()
                 .assertThat()
-                .statusCode(404);
+                .statusCode(404)
+                .extract()
+                .as(InformativeResponse.class);
+
+        assertEquals("There is no Metric with the following id: 507f1f77bcf86cd799439011", notFoundResponse.message);
     }
 
     @Test
-    public void fetch_metric_non_hex_id() {
+    public void fetchMetricNonHexId() {
 
         var response = given()
-                .get("/{metric_id}", "dbhbhehbeo33m23")
+                .auth()
+                .oauth2(getAccessToken("alice"))
+                .get("/{metricId}", "dbhbhehbeo33m23")
                 .then()
                 .assertThat()
                 .statusCode(404)
@@ -346,7 +406,7 @@ public class MetricEndpointTest {
     }
 
     @Test
-    public void fetch_metric() {
+    public void fetchMetric() {
 
         //first create a metric registration
 
@@ -369,7 +429,9 @@ public class MetricEndpointTest {
         metricRepository.persist(metric);
 
         var response = given()
-                .get("/{metric_id}", metric.getId().toString())
+                .auth()
+                .oauth2(getAccessToken("alice"))
+                .get("/{metricId}", metric.getId().toString())
                 .then()
                 .assertThat()
                 .statusCode(200)
@@ -380,10 +442,24 @@ public class MetricEndpointTest {
     }
 
     @Test
-    public void delete_metric_not_found() {
+    public void deleteMetricNotAuthenticated() {
+
+        var notAuthenticatedResponse = given()
+                .auth()
+                .oauth2("invalidToken")
+                .delete("/{metricId}", "507f1f77bcf86cd799439011")
+                .thenReturn();
+
+        assertEquals(401, notAuthenticatedResponse.statusCode());
+    }
+
+    @Test
+    public void deleteMetricNotFound() {
 
         var response = given()
-                .delete("/{metric_id}", "507f1f77bcf86cd799439011")
+                .auth()
+                .oauth2(getAccessToken("alice"))
+                .delete("/{metricId}", "507f1f77bcf86cd799439011")
                 .then()
                 .assertThat()
                 .statusCode(404)
@@ -394,10 +470,12 @@ public class MetricEndpointTest {
     }
 
     @Test
-    public void delete_metric_non_hex_id() {
+    public void deleteMetricNonHexId() {
 
         var response = given()
-                .delete("/{metric_id}", "33333")
+                .auth()
+                .oauth2(getAccessToken("alice"))
+                .delete("/{metricId}", "33333")
                 .then()
                 .assertThat()
                 .statusCode(404)
@@ -408,7 +486,7 @@ public class MetricEndpointTest {
     }
 
     @Test
-    public void delete_metric() {
+    public void deleteMetric() {
 
         Mockito.when(readPredefinedTypesService.searchForUnitType(any())).thenReturn(Optional.of("SECOND"));
         Mockito.when(readPredefinedTypesService.searchForMetricType(any())).thenReturn(Optional.of("Aggregated"));
@@ -436,17 +514,21 @@ public class MetricEndpointTest {
 
         var metric = createMetric(requestForMetric);
 
-        given()
-                .delete("/{metric_id}", metric.id)
+        var deleteResponse = given()
+                .auth()
+                .oauth2(getAccessToken("alice"))
+                .delete("/{metricId}", metric.id)
                 .then()
                 .assertThat()
                 .statusCode(200)
                 .extract()
                 .as(InformativeResponse.class);
+
+        assertEquals("Metric has been deleted successfully.", deleteResponse.message);
     }
 
     @Test
-    public void update_metric_request_body_is_empty() {
+    public void updateMetricRequestBodyIsEmpty() {
 
         Mockito.when(readPredefinedTypesService.searchForUnitType(any())).thenReturn(Optional.of("SECOND"));
         Mockito.when(readPredefinedTypesService.searchForMetricType(any())).thenReturn(Optional.of("Aggregated"));
@@ -470,6 +552,8 @@ public class MetricEndpointTest {
         var metric = createMetric(requestForMetric);
 
         var response = given()
+                .auth()
+                .oauth2(getAccessToken("alice"))
                 .contentType(ContentType.JSON)
                 .patch("/{id}", metric.id)
                 .then()
@@ -482,9 +566,23 @@ public class MetricEndpointTest {
     }
 
     @Test
-    public void update_metric_cannot_consume_content_type() {
+    public void updateMetricNotAuthenticated() {
+
+        var notAuthenticatedResponse = given()
+                .auth()
+                .oauth2("invalidToken")
+                .patch("/{id}", "507f1f77bcf86cd799439011")
+                .thenReturn();
+
+        assertEquals(401, notAuthenticatedResponse.statusCode());
+    }
+
+    @Test
+    public void updateMetricCannotConsumeContentType() {
 
         var response = given()
+                .auth()
+                .oauth2(getAccessToken("alice"))
                 .patch("/{id}", "507f1f77bcf86cd799439011")
                 .then()
                 .assertThat()
@@ -496,9 +594,11 @@ public class MetricEndpointTest {
     }
 
     @Test
-    public void update_metric_not_found() {
+    public void updateMetricNotFound() {
 
         var response = given()
+                .auth()
+                .oauth2(getAccessToken("alice"))
                 .contentType(ContentType.JSON)
                 .patch("/{id}", "jnejenjdfn")
                 .then()
@@ -511,7 +611,7 @@ public class MetricEndpointTest {
     }
 
     @Test
-    public void update_metric_metric_definition_not_valid_zulu_timestamp() {
+    public void updateMetricMetricDefinitionNotValidZuluTimestamp() {
 
         Mockito.when(readPredefinedTypesService.searchForUnitType(any())).thenReturn(Optional.of("SECOND"));
         Mockito.when(readPredefinedTypesService.searchForMetricType(any())).thenReturn(Optional.of("Aggregated"));
@@ -540,6 +640,8 @@ public class MetricEndpointTest {
         updateMetricRequest.start = "2023-01-0509:13:07";
 
         var response = given()
+                .auth()
+                .oauth2(getAccessToken("alice"))
                 .body(updateMetricRequest)
                 .contentType(ContentType.JSON)
                 .patch("/{id}", metric.id)
@@ -553,7 +655,7 @@ public class MetricEndpointTest {
     }
 
     @Test
-    public void update_metric_metric_definition_not_found() {
+    public void updateMetricMetricDefinitionNotFound() {
 
         Mockito.when(readPredefinedTypesService.searchForUnitType(any())).thenReturn(Optional.of("SECOND"));
         Mockito.when(readPredefinedTypesService.searchForMetricType(any())).thenReturn(Optional.of("Aggregated"));
@@ -579,7 +681,7 @@ public class MetricEndpointTest {
         // update an existing metric
         var updateMetricRequest = new UpdateMetricRequestDto();
 
-        updateMetricRequest.resourceId = "updated_resource_id";
+        updateMetricRequest.resourceId = "updatedResourceId";
         updateMetricRequest.start = "2023-01-05T09:13:07Z";
         updateMetricRequest.end = "2024-01-05T09:13:07Z";
         updateMetricRequest.value = 15.8;
@@ -587,6 +689,8 @@ public class MetricEndpointTest {
 
 
         var response = given()
+                .auth()
+                .oauth2(getAccessToken("alice"))
                 .body(updateMetricRequest)
                 .contentType(ContentType.JSON)
                 .patch("/{id}", metricResponse.id)
@@ -600,7 +704,7 @@ public class MetricEndpointTest {
     }
 
     @Test
-    public void update_metric_metric_definition_non_hex_id() {
+    public void updateMetricMetricDefinitionNonHexId() {
 
         Mockito.when(readPredefinedTypesService.searchForUnitType(any())).thenReturn(Optional.of("SECOND"));
         Mockito.when(readPredefinedTypesService.searchForMetricType(any())).thenReturn(Optional.of("Aggregated"));
@@ -626,7 +730,7 @@ public class MetricEndpointTest {
         // update an existing metric
         var updateMetricRequest = new UpdateMetricRequestDto();
 
-        updateMetricRequest.resourceId = "updated_resource_id";
+        updateMetricRequest.resourceId = "updatedResourceId";
         updateMetricRequest.start = "2023-01-05T09:13:07Z";
         updateMetricRequest.end = "2024-01-05T09:13:07Z";
         updateMetricRequest.value = 15.8;
@@ -634,6 +738,8 @@ public class MetricEndpointTest {
 
 
         var response = given()
+                .auth()
+                .oauth2(getAccessToken("alice"))
                 .body(updateMetricRequest)
                 .contentType(ContentType.JSON)
                 .patch("/{id}", metricResponse.id)
@@ -647,12 +753,12 @@ public class MetricEndpointTest {
     }
 
     @Test
-    public void update_metric_metric_not_found() {
+    public void updateMetricMetricNotFound() {
 
         // update an existing metric
         var updateMetricRequest = new UpdateMetricRequestDto();
 
-        updateMetricRequest.resourceId = "updated_resource_id";
+        updateMetricRequest.resourceId = "updatedResourceId";
         updateMetricRequest.start = "2023-01-05T09:13:07Z";
         updateMetricRequest.end = "2024-01-05T09:14:07Z";
         updateMetricRequest.value = 15.8;
@@ -660,6 +766,8 @@ public class MetricEndpointTest {
 
 
         var response = given()
+                .auth()
+                .oauth2(getAccessToken("alice"))
                 .body(updateMetricRequest)
                 .contentType(ContentType.JSON)
                 .patch("/{id}", "507f1f77bcf86cd799439011")
@@ -673,7 +781,7 @@ public class MetricEndpointTest {
     }
 
     @Test
-    public void update_metric_modified_start_cannot_be_after_end() {
+    public void updateMetricModifiedStartCannotBeAfterEnd() {
 
         //first, create a metric definition
         Mockito.when(readPredefinedTypesService.searchForUnitType(any())).thenReturn(Optional.of("SECOND"));
@@ -700,11 +808,13 @@ public class MetricEndpointTest {
         // update an existing metric
         var updateMetricRequest = new UpdateMetricRequestDto();
 
-        updateMetricRequest.resourceId = "updated_resource_id";
+        updateMetricRequest.resourceId = "updatedResourceId";
         updateMetricRequest.start = "2023-01-05T09:13:07Z";
 
 
         var response = given()
+                .auth()
+                .oauth2(getAccessToken("alice"))
                 .body(updateMetricRequest)
                 .contentType(ContentType.JSON)
                 .patch("/{id}", metricResponse.id)
@@ -718,7 +828,7 @@ public class MetricEndpointTest {
     }
 
     @Test
-    public void update_metric_modified_start_cannot_be_after_modified_end() {
+    public void updateMetricModifiedStartCannotBeAfterModifiedEnd() {
 
         //first, create a metric definition
         Mockito.when(readPredefinedTypesService.searchForUnitType(any())).thenReturn(Optional.of("SECOND"));
@@ -745,12 +855,14 @@ public class MetricEndpointTest {
         // update an existing metric
         var updateMetricRequest = new UpdateMetricRequestDto();
 
-        updateMetricRequest.resourceId = "updated_resource_id";
+        updateMetricRequest.resourceId = "updatedResourceId";
         updateMetricRequest.start = "2025-01-05T09:13:07Z";
         updateMetricRequest.end = "2024-01-05T09:13:07Z";
 
 
         var response = given()
+                .auth()
+                .oauth2(getAccessToken("alice"))
                 .body(updateMetricRequest)
                 .contentType(ContentType.JSON)
                 .patch("/{id}", metricResponse.id)
@@ -764,7 +876,7 @@ public class MetricEndpointTest {
     }
 
     @Test
-    public void update_metric_modified_end_cannot_be_before_start() {
+    public void updateMetricModifiedEndCannotBeBeforeStart() {
 
         //first, create a metric definition
         Mockito.when(readPredefinedTypesService.searchForUnitType(any())).thenReturn(Optional.of("SECOND"));
@@ -791,11 +903,13 @@ public class MetricEndpointTest {
         // update an existing metric
         var updateMetricRequest = new UpdateMetricRequestDto();
 
-        updateMetricRequest.resourceId = "updated_resource_id";
+        updateMetricRequest.resourceId = "updatedResourceId";
         updateMetricRequest.end = "2020-01-05T09:13:07Z";
 
 
         var response = given()
+                .auth()
+                .oauth2(getAccessToken("alice"))
                 .body(updateMetricRequest)
                 .contentType(ContentType.JSON)
                 .patch("/{id}", metricResponse.id)
@@ -809,7 +923,7 @@ public class MetricEndpointTest {
     }
 
     @Test
-    public void update_metric_modified_start_cannot_be_equal_to_modified_end() {
+    public void updateMetricModifiedStartCannotBeEqualToModifiedEnd() {
 
         //first, create a metric definition
         Mockito.when(readPredefinedTypesService.searchForUnitType(any())).thenReturn(Optional.of("SECOND"));
@@ -836,12 +950,14 @@ public class MetricEndpointTest {
         // update an existing metric
         var updateMetricRequest = new UpdateMetricRequestDto();
 
-        updateMetricRequest.resourceId = "updated_resource_id";
+        updateMetricRequest.resourceId = "updatedResourceId";
         updateMetricRequest.start = "2024-01-05T09:13:07Z";
         updateMetricRequest.end = "2024-01-05T09:13:07Z";
 
 
         var response = given()
+                .auth()
+                .oauth2(getAccessToken("alice"))
                 .body(updateMetricRequest)
                 .contentType(ContentType.JSON)
                 .patch("/{id}", metricResponse.id)
@@ -855,7 +971,7 @@ public class MetricEndpointTest {
     }
 
     @Test
-    public void update_metric_modified_start_cannot_be_equal_to_end() {
+    public void updateMetricModifiedStartCannotBeEqualToEnd() {
 
         //first, create a metric definition
         Mockito.when(readPredefinedTypesService.searchForUnitType(any())).thenReturn(Optional.of("SECOND"));
@@ -882,10 +998,12 @@ public class MetricEndpointTest {
         // update an existing metric
         var updateMetricRequest = new UpdateMetricRequestDto();
 
-        updateMetricRequest.resourceId = "updated_resource_id";
+        updateMetricRequest.resourceId = "updatedResourceId";
         updateMetricRequest.start = "2022-01-05T09:14:07Z";
 
         var response = given()
+                .auth()
+                .oauth2(getAccessToken("alice"))
                 .body(updateMetricRequest)
                 .contentType(ContentType.JSON)
                 .patch("/{id}", metricResponse.id)
@@ -899,7 +1017,7 @@ public class MetricEndpointTest {
     }
 
     @Test
-    public void update_metric_start_cannot_be_equal_to_modified_end() {
+    public void updateMetricStartCannotBeEqualToModifiedEnd() {
 
         //first, create a metric definition
         Mockito.when(readPredefinedTypesService.searchForUnitType(any())).thenReturn(Optional.of("SECOND"));
@@ -926,10 +1044,12 @@ public class MetricEndpointTest {
         // update an existing metric
         var updateMetricRequest = new UpdateMetricRequestDto();
 
-        updateMetricRequest.resourceId = "updated_resource_id";
+        updateMetricRequest.resourceId = "updatedResourceId";
         updateMetricRequest.end = "2021-01-05T09:13:07Z";
 
         var response = given()
+                .auth()
+                .oauth2(getAccessToken("alice"))
                 .body(updateMetricRequest)
                 .contentType(ContentType.JSON)
                 .patch("/{id}", metricResponse.id)
@@ -943,7 +1063,7 @@ public class MetricEndpointTest {
     }
 
     @Test
-    public void update_metric_full() {
+    public void updateMetricFull() {
 
         //first, create a metric definition
         Mockito.when(readPredefinedTypesService.searchForUnitType(any())).thenReturn(Optional.of("SECOND"));
@@ -983,13 +1103,15 @@ public class MetricEndpointTest {
         // update an existing metric
         var updateMetricRequest = new UpdateMetricRequestDto();
 
-        updateMetricRequest.resourceId = "updated_resource_id";
+        updateMetricRequest.resourceId = "updatedResourceId";
         updateMetricRequest.start = "2023-01-05T09:13:07Z";
         updateMetricRequest.end = "2024-01-05T09:14:07Z";
         updateMetricRequest.value = 15.8;
         updateMetricRequest.metricDefinitionId = createdMetricDefinition1.id;
 
-        given()
+        var updateResponse = given()
+                .auth()
+                .oauth2(getAccessToken("alice"))
                 .config(RestAssured.config()
                         .jsonConfig(JsonConfig.jsonConfig()
                                 .numberReturnType(JsonPathConfig.NumberReturnType.DOUBLE)))
@@ -1004,11 +1126,15 @@ public class MetricEndpointTest {
                 .body("metric_definition_id", is(updateMetricRequest.metricDefinitionId))
                 .body("time_period_start", is(updateMetricRequest.start))
                 .body("time_period_end", is(updateMetricRequest.end))
-                .body("value", is(updateMetricRequest.value));
+                .body("value", is(updateMetricRequest.value))
+                .extract()
+                .as(MetricResponseDto.class);
+
+        assertEquals("updatedResourceId", updateResponse.resourceId);
     }
 
     @Test
-    public void update_metric_partial() {
+    public void updateMetricPartial() {
 
         //first, create a metric definition
         Mockito.when(readPredefinedTypesService.searchForUnitType(any())).thenReturn(Optional.of("SECOND"));
@@ -1035,9 +1161,11 @@ public class MetricEndpointTest {
         // update an existing metric
         var updateMetricRequest = new UpdateMetricRequestDto();
 
-        updateMetricRequest.resourceId = "updated_resource_id";
+        updateMetricRequest.resourceId = "updatedResourceId";
 
-        given()
+        var updateResponse = given()
+                .auth()
+                .oauth2(getAccessToken("alice"))
                 .config(RestAssured.config()
                         .jsonConfig(JsonConfig.jsonConfig()
                                 .numberReturnType(JsonPathConfig.NumberReturnType.DOUBLE)))
@@ -1052,12 +1180,18 @@ public class MetricEndpointTest {
                 .body("metric_definition_id", is(requestForMetric.metricDefinitionId))
                 .body("time_period_start", is(requestForMetric.start))
                 .body("time_period_end", is(requestForMetric.end))
-                .body("value", is(requestForMetric.value));
+                .body("value", is(requestForMetric.value))
+                .extract()
+                .as(MetricResponseDto.class);
+
+        assertEquals(requestForMetric.metricDefinitionId, updateResponse.metricDefinitionId);
     }
 
     private MetricDefinitionResponseDto createMetricDefinition(MetricDefinitionRequestDto request){
 
         return given()
+                .auth()
+                .oauth2(getAccessToken("alice"))
                 .basePath("accounting-system/metric-definition")
                 .body(request)
                 .contentType(ContentType.JSON)
@@ -1071,6 +1205,8 @@ public class MetricEndpointTest {
 
     private MetricResponseDto createMetric(MetricRequestDto requestDto){
         return given()
+                .auth()
+                .oauth2(getAccessToken("alice"))
                 .body(requestDto)
                 .contentType(ContentType.JSON)
                 .post()
@@ -1079,6 +1215,10 @@ public class MetricEndpointTest {
                 .statusCode(201)
                 .extract()
                 .as(MetricResponseDto.class);
+    }
+
+    protected String getAccessToken(String userName) {
+        return keycloakClient.getAccessToken(userName);
     }
 }
 

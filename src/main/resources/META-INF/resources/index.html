@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>rest-json-quickstart - 1.0.0-SNAPSHOT</title>
+    <title>Accounting System</title>
     <style>
         h1, h2, h3, h4, h5, h6 {
             margin-bottom: 0.5rem;
@@ -109,33 +109,21 @@
 <body>
 
 <div class="banner lead">
-    Your new Cloud-Native application is ready!
+    Accounting System API
 </div>
 
 <div class="container">
     <div class="left-column">
-        <p class="lead"> Congratulations, you have created a new Quarkus cloud application.</p>
-
-        <h2>What is this page?</h2>
-
-        <p>This page is served by Quarkus. The source is in
-            <code>src/main/resources/META-INF/resources/index.html</code>.</p>
-
-        <h2>What are your next steps?</h2>
-
-        <p>If not already done, run the application in <em>dev mode</em> using: <code>./mvnw compile quarkus:dev</code>.
-        </p>
-        <ul>
-            <li>Your static assets are located in <code>src/main/resources/META-INF/resources</code>.</li>
-            <li>Configure your application in <code>src/main/resources/application.properties</code>.</li>
-            <li>Quarkus now ships with a <a href="/q/dev/">Dev UI</a> (available in dev mode only)</li>
-            <li>Play with the provided code located in <code>src/main/java</code>:</li>
-        </ul>
-                <div class="provided-code">
-            <h3>RESTEasy JAX-RS</h3>
-            <p>Easily start your RESTful Web Services</p>
-            <p><code>@Path: <a href="/keycloak" class="path-link" target="_blank">/keycloak</a></code></p>
-            <p><a href="https://quarkus.io/guides/getting-started#the-jax-rs-resources" class="guide-link" target="_blank">Related guide section...</a></p>
+        <div class="provided-code">
+            <h3>Authentication and Authorization via Keycloak of GRNET</h3>
+            <p>To access Accounting System API resources, you have to be authenticated by GRNET's keycloak.
+                This keycloak offers various Identity Providers where the authentication process can be performed.
+                Once you log in, you obtain an access token. Use this token to access the available API operations.
+                <br>
+                <br>
+                Based on the permissions that have been assigned to you, you can access the corresponding operations.
+            </p>
+            <p><code>Please login <a href="/accounting-system/keycloak" class="path-link" target="_blank">here.</a></code></p>
         </div>
 
     </div>
@@ -144,24 +132,9 @@
             <h3>Application</h3>
             <ul>
                 <li>GroupId: <code>org.grnet</code></li>
-                <li>ArtifactId: <code>rest-json-quickstart</code></li>
+                <li>ArtifactId: <code>accounting-system</code></li>
                 <li>Version: <code>1.0.0-SNAPSHOT</code></li>
                 <li>Quarkus Version: <code>2.5.1.Final</code></li>
-            </ul>
-        </div>
-        <div class="right-section">
-            <h3>Do you like Quarkus?</h3>
-            <ul>
-                <li>Go give it a star on <a href="https://github.com/quarkusio/quarkus">GitHub</a>.</li>
-            </ul>
-        </div>
-        <div class="right-section">
-            <h3>More reading</h3>
-            <ul>
-                <li><a href="https://quarkus.io/guides/maven-tooling" target="_blank">Setup your IDE</a></li>
-                <li><a href="https://quarkus.io/guides/getting-started" target="_blank">Getting started</a></li>
-                <li><a href="https://quarkus.io/guides/" target="_blank">All guides</a></li>
-                <li><a href="https://quarkus.io" target="_blank">Quarkus Web Site</a></li>
             </ul>
         </div>
     </div>
