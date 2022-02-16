@@ -43,7 +43,7 @@ public class MetricDefinition {
     }
 
     public void setUnitType(String unitType) {
-        this.unitType = unitType.toLowerCase();
+        this.unitType = unitType;
     }
 
     public String getMetricType() {
