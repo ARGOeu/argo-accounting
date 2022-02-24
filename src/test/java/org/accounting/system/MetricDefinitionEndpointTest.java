@@ -4,6 +4,7 @@ import io.quarkus.test.common.http.TestHTTPEndpoint;
 import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.test.junit.TestProfile;
 import io.quarkus.test.junit.mockito.InjectMock;
+import io.quarkus.test.keycloak.client.KeycloakTestClient;
 import io.restassured.http.ContentType;
 import org.accounting.system.dtos.InformativeResponse;
 import org.accounting.system.dtos.MetricDefinitionRequestDto;
@@ -23,6 +24,7 @@ import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
 import javax.inject.Inject;
+import java.util.List;
 import java.util.Optional;
 
 import static io.restassured.RestAssured.given;
@@ -44,6 +46,9 @@ public class MetricDefinitionEndpointTest {
     @InjectMock
     ReadPredefinedTypesService readPredefinedTypesService;
 
+    KeycloakTestClient keycloakClient = new KeycloakTestClient();
+
+
     @BeforeEach
     public void setup() {
         metricDefinitionRepository.deleteAll();
@@ -51,9 +56,24 @@ public class MetricDefinitionEndpointTest {
 
 
     @Test
-    public void create_metric_definition_request_body_is_empty() {
+    public void createMetricDefinitionNotAuthenticated() {
+
+        var notAuthenticatedResponse = given()
+                .auth()
+                .oauth2("invalidToken")
+                .contentType(ContentType.JSON)
+                .post()
+                .thenReturn();
+
+        assertEquals(401, notAuthenticatedResponse.statusCode());
+    }
+
+        @Test
+    public void createMetricDefinitionRequestBodyIsEmpty() {
 
         var response = given()
+                .auth()
+                .oauth2(getAccessToken("alice"))
                 .contentType(ContentType.JSON)
                 .post()
                 .then()
@@ -66,9 +86,11 @@ public class MetricDefinitionEndpointTest {
     }
 
     @Test
-    public void create_metric_definition_cannot_consume_content_type() {
+    public void createMetricDefinitionCannotConsumeContentType() {
 
         var response = given()
+                .auth()
+                .oauth2(getAccessToken("alice"))
                 .post()
                 .then()
                 .assertThat()
@@ -80,7 +102,7 @@ public class MetricDefinitionEndpointTest {
     }
 
     @Test
-    public void create_metric_definition_no_unit_type() {
+    public void createMetricDefinitionNoUnitType() {
 
         Mockito.when(readPredefinedTypesService.searchForUnitType(any())).thenReturn(Optional.empty());
         Mockito.when(readPredefinedTypesService.searchForMetricType(any())).thenReturn(Optional.of("Aggregated"));
@@ -92,6 +114,8 @@ public class MetricDefinitionEndpointTest {
         request.metricType = "Aggregated";
 
         InformativeResponse response = given()
+                .auth()
+                .oauth2(getAccessToken("alice"))
                 .body(request)
                 .contentType(ContentType.JSON)
                 .post()
@@ -105,7 +129,7 @@ public class MetricDefinitionEndpointTest {
     }
 
     @Test
-    public void create_metric_definition_no_metric_type() {
+    public void createMetricDefinitionNoMetricType() {
 
         Mockito.when(readPredefinedTypesService.searchForUnitType(any())).thenReturn(Optional.of("SECOND"));
         Mockito.when(readPredefinedTypesService.searchForMetricType(any())).thenReturn(Optional.empty());
@@ -117,6 +141,8 @@ public class MetricDefinitionEndpointTest {
         request.metricType = "Aggregated";
 
         InformativeResponse response = given()
+                .auth()
+                .oauth2(getAccessToken("alice"))
                 .body(request)
                 .contentType(ContentType.JSON)
                 .post()
@@ -130,7 +156,7 @@ public class MetricDefinitionEndpointTest {
     }
 
     @Test
-    public void create_metric_definition_metric_name_is_empty() {
+    public void createMetricDefinitionMetricNameIsEmpty() {
 
         Mockito.when(readPredefinedTypesService.searchForUnitType(any())).thenReturn(Optional.of("SECOND"));
         Mockito.when(readPredefinedTypesService.searchForMetricType(any())).thenReturn(Optional.of("Aggregated"));
@@ -141,6 +167,8 @@ public class MetricDefinitionEndpointTest {
         request.metricType = "Aggregated";
 
         var response = given()
+                .auth()
+                .oauth2(getAccessToken("alice"))
                 .body(request)
                 .contentType(ContentType.JSON)
                 .post()
@@ -154,7 +182,7 @@ public class MetricDefinitionEndpointTest {
     }
 
     @Test
-    public void create_metric_definition_unit_type_is_empty() {
+    public void createMetricDefinitionUnitTypeIsEmpty() {
 
         var request= new MetricDefinitionRequestDto();
         request.unitType="";
@@ -163,6 +191,8 @@ public class MetricDefinitionEndpointTest {
         request.metricType = "Aggregated";
 
         var response = given()
+                .auth()
+                .oauth2(getAccessToken("alice"))
                 .body(request)
                 .contentType(ContentType.JSON)
                 .post()
@@ -176,7 +206,7 @@ public class MetricDefinitionEndpointTest {
     }
 
     @Test
-    public void create_metric_definition_metric_type_is_empty() {
+    public void createMetricDefinitionMetricTypeIsEmpty() {
 
         var request= new MetricDefinitionRequestDto();
         request.metricName = "metric";
@@ -184,6 +214,8 @@ public class MetricDefinitionEndpointTest {
         request.metricDescription = "description";
 
         var response = given()
+                .auth()
+                .oauth2(getAccessToken("alice"))
                 .body(request)
                 .contentType(ContentType.JSON)
                 .post()
@@ -197,47 +229,7 @@ public class MetricDefinitionEndpointTest {
     }
 
     @Test
-    public void create_metric_definition_similar() {
-
-        Mockito.when(readPredefinedTypesService.searchForUnitType(any())).thenReturn(Optional.of("SECOND"));
-        Mockito.when(readPredefinedTypesService.searchForMetricType(any())).thenReturn(Optional.of("Aggregated"));
-        MetricDefinitionRequestDto request= new MetricDefinitionRequestDto();
-
-        request.metricName = "metric";
-        request.metricDescription = "description";
-        request.unitType = "SECOND";
-        request.metricType = "Aggregated";
-
-        createMetricDefinition(request);
-
-        given()
-                .body(request)
-                .contentType(ContentType.JSON)
-                .post()
-                .then()
-                .assertThat()
-                .statusCode(409)
-                .extract()
-                .as(InformativeResponse.class);
-    }
-
-    @Test
-    public void create_metric_definition() {
-
-        Mockito.when(readPredefinedTypesService.searchForUnitType(any())).thenReturn(Optional.of("SECOND"));
-        Mockito.when(readPredefinedTypesService.searchForMetricType(any())).thenReturn(Optional.of("Aggregated"));
-        MetricDefinitionRequestDto request= new MetricDefinitionRequestDto();
-
-        request.metricName = "metric";
-        request.metricDescription = "description";
-        request.unitType = "SECOND";
-        request.metricType = "Aggregated";
-
-        createMetricDefinition(request);
-    }
-
-    @Test
-    public void update_metric_definition_cannot_consume_content_type() {
+    public void createMetricDefinitionSimilar() {
 
         Mockito.when(readPredefinedTypesService.searchForUnitType(any())).thenReturn(Optional.of("SECOND"));
         Mockito.when(readPredefinedTypesService.searchForMetricType(any())).thenReturn(Optional.of("Aggregated"));
@@ -251,6 +243,53 @@ public class MetricDefinitionEndpointTest {
         var metricDefinition = createMetricDefinition(request);
 
         var response = given()
+                .auth()
+                .oauth2(getAccessToken("alice"))
+                .body(request)
+                .contentType(ContentType.JSON)
+                .post()
+                .then()
+                .assertThat()
+                .statusCode(409)
+                .extract()
+                .as(InformativeResponse.class);
+
+        assertEquals("There is a Metric Definition with unit type SECOND and name metric. Its id is "+metricDefinition.id, response.message);
+    }
+
+    @Test
+    public void createMetricDefinition() {
+
+        Mockito.when(readPredefinedTypesService.searchForUnitType(any())).thenReturn(Optional.of("SECOND"));
+        Mockito.when(readPredefinedTypesService.searchForMetricType(any())).thenReturn(Optional.of("Aggregated"));
+        MetricDefinitionRequestDto request= new MetricDefinitionRequestDto();
+
+        request.metricName = "metric";
+        request.metricDescription = "description";
+        request.unitType = "SECOND";
+        request.metricType = "Aggregated";
+
+        var metricDefinition = createMetricDefinition(request);
+        assertEquals(request.unitType, metricDefinition.unitType);
+    }
+
+    @Test
+    public void updateMetricDefinitionCannotConsumeContentType() {
+
+        Mockito.when(readPredefinedTypesService.searchForUnitType(any())).thenReturn(Optional.of("SECOND"));
+        Mockito.when(readPredefinedTypesService.searchForMetricType(any())).thenReturn(Optional.of("Aggregated"));
+        MetricDefinitionRequestDto request= new MetricDefinitionRequestDto();
+
+        request.metricName = "metric";
+        request.metricDescription = "description";
+        request.unitType = "SECOND";
+        request.metricType = "Aggregated";
+
+        var metricDefinition = createMetricDefinition(request);
+
+        var response = given()
+                .auth()
+                .oauth2(getAccessToken("alice"))
                 .patch("/{id}", metricDefinition.id)
                 .then()
                 .assertThat()
@@ -262,9 +301,24 @@ public class MetricDefinitionEndpointTest {
     }
 
     @Test
-    public void update_metric_definition_not_found() {
+    public void updateMetricDefinitionNotAuthenticated() {
+
+        var notAuthenticatedResponse = given()
+                .auth()
+                .oauth2("invalidToken")
+                .contentType(ContentType.JSON)
+                .patch("/{id}", "556787878e-rrr")
+                .thenReturn();
+
+        assertEquals(401, notAuthenticatedResponse.statusCode());
+    }
+
+    @Test
+    public void updateMetricDefinitionNotFound() {
 
         var response = given()
+                .auth()
+                .oauth2(getAccessToken("alice"))
                 .contentType(ContentType.JSON)
                 .patch("/{id}", "556787878e-rrr")
                 .then()
@@ -277,7 +331,7 @@ public class MetricDefinitionEndpointTest {
     }
 
     @Test
-    public void update_metric_definition_full() {
+    public void updateMetricDefinitionFull() {
 
         Mockito.when(readPredefinedTypesService.searchForUnitType(any())).thenReturn(Optional.of("SECOND"));
         Mockito.when(readPredefinedTypesService.searchForMetricType(any())).thenReturn(Optional.of("Aggregated"));
@@ -292,13 +346,15 @@ public class MetricDefinitionEndpointTest {
 
         var metricDefinitiontoBeUpdated = new UpdateMetricDefinitionRequestDto();
 
-        metricDefinitiontoBeUpdated.metricName = "updated_name";
-        metricDefinitiontoBeUpdated.metricDescription = "updated_description";
-        metricDefinitiontoBeUpdated.unitType = "updated_unit_type";
-        metricDefinitiontoBeUpdated.metricType = "updated_metric_type";
+        metricDefinitiontoBeUpdated.metricName = "update";
+        metricDefinitiontoBeUpdated.metricDescription = "updatedDescription";
+        metricDefinitiontoBeUpdated.unitType = "updatedUnitType";
+        metricDefinitiontoBeUpdated.metricType = "updatedMetricType";
 
 
-        given()
+        var updateResponse = given()
+                .auth()
+                .oauth2(getAccessToken("alice"))
                 .body(metricDefinitiontoBeUpdated)
                 .contentType(ContentType.JSON)
                 .patch("/{id}", metricDefinition.id)
@@ -309,11 +365,15 @@ public class MetricDefinitionEndpointTest {
                 .body("metric_name", is(metricDefinitiontoBeUpdated.metricName))
                 .body("metric_description", is(metricDefinitiontoBeUpdated.metricDescription))
                 .body("unit_type", is(metricDefinitiontoBeUpdated.unitType))
-                .body("metric_type", is(metricDefinitiontoBeUpdated.metricType));
+                .body("metric_type", is(metricDefinitiontoBeUpdated.metricType))
+                .extract()
+                .as(MetricDefinitionResponseDto.class);
+
+        assertEquals(metricDefinitiontoBeUpdated.unitType, updateResponse.unitType);
     }
 
     @Test
-    public void update_metric_definition_partial() {
+    public void updateMetricDefinitionPartial() {
 
         Mockito.when(readPredefinedTypesService.searchForUnitType(any())).thenReturn(Optional.of("SECOND"));
         Mockito.when(readPredefinedTypesService.searchForMetricType(any())).thenReturn(Optional.of("Aggregated"));
@@ -328,13 +388,15 @@ public class MetricDefinitionEndpointTest {
 
         var metricDefinitionToBeUpdated = new MetricDefinitionRequestDto();
 
-        metricDefinitionToBeUpdated.metricName = "updated_name";
-        metricDefinitionToBeUpdated.metricDescription = "updated_description";
+        metricDefinitionToBeUpdated.metricName = "update";
+        metricDefinitionToBeUpdated.metricDescription = "updatedDescription";
 
         Mockito.when(readPredefinedTypesService.searchForUnitType(any())).thenReturn(Optional.empty());
         Mockito.when(readPredefinedTypesService.searchForMetricType(any())).thenReturn(Optional.empty());
 
-        given()
+        var updateResponse = given()
+                .auth()
+                .oauth2(getAccessToken("alice"))
                 .body(metricDefinitionToBeUpdated)
                 .contentType(ContentType.JSON)
                 .patch("/{id}", metricDefinition.id)
@@ -345,11 +407,15 @@ public class MetricDefinitionEndpointTest {
                 .body("metric_name", is(metricDefinitionToBeUpdated.metricName))
                 .body("metric_description", is(metricDefinitionToBeUpdated.metricDescription))
                 .body("unit_type", is(metricDefinition.unitType))
-                .body("metric_type", is(metricDefinition.metricType));
+                .body("metric_type", is(metricDefinition.metricType))
+                .extract()
+                .as(MetricDefinitionResponseDto.class);
+
+        assertEquals(metricDefinitionToBeUpdated.metricDescription, updateResponse.metricDescription);
     }
 
     @Test
-    public void update_metric_definition_no_unit_type() {
+    public void updateMetricDefinitionNoUnitType() {
 
         Mockito.when(readPredefinedTypesService.searchForUnitType(any())).thenReturn(Optional.of("SECOND"));
         Mockito.when(readPredefinedTypesService.searchForMetricType(any())).thenReturn(Optional.of("Aggregated"));
@@ -366,11 +432,13 @@ public class MetricDefinitionEndpointTest {
 
         Mockito.when(readPredefinedTypesService.searchForUnitType(any())).thenReturn(Optional.empty());
 
-        metricDefinitionToBeUpdated.metricName = "updated_name";
-        metricDefinitionToBeUpdated.metricDescription = "updated_description";
+        metricDefinitionToBeUpdated.metricName = "update";
+        metricDefinitionToBeUpdated.metricDescription = "updatedDescription";
         metricDefinitionToBeUpdated.unitType = "SECOND";
 
         var response = given()
+                .auth()
+                .oauth2(getAccessToken("alice"))
                 .body(metricDefinitionToBeUpdated)
                 .contentType(ContentType.JSON)
                 .patch("/{id}", metricDefinition.id)
@@ -384,7 +452,7 @@ public class MetricDefinitionEndpointTest {
     }
 
     @Test
-    public void update_metric_definition_no_metric_type() {
+    public void updateMetricDefinitionNoMetricType() {
 
         Mockito.when(readPredefinedTypesService.searchForUnitType(any())).thenReturn(Optional.of("SECOND"));
         Mockito.when(readPredefinedTypesService.searchForMetricType(any())).thenReturn(Optional.of("Aggregated"));
@@ -402,13 +470,15 @@ public class MetricDefinitionEndpointTest {
         Mockito.when(readPredefinedTypesService.searchForUnitType(any())).thenReturn(Optional.of("SECOND"));
         Mockito.when(readPredefinedTypesService.searchForMetricType(any())).thenReturn(Optional.empty());
 
-        metricDefinitionToBeUpdated.metricName = "updated_name";
-        metricDefinitionToBeUpdated.metricDescription = "updated_description";
+        metricDefinitionToBeUpdated.metricName = "update";
+        metricDefinitionToBeUpdated.metricDescription = "updatedDescription";
         metricDefinitionToBeUpdated.unitType = "SECOND";
         metricDefinitionToBeUpdated.metricType = "aggregated";
 
 
         var response = given()
+                .auth()
+                .oauth2(getAccessToken("alice"))
                 .body(metricDefinitionToBeUpdated)
                 .contentType(ContentType.JSON)
                 .patch("/{id}", metricDefinition.id)
@@ -422,7 +492,7 @@ public class MetricDefinitionEndpointTest {
     }
 
     @Test
-    public void update_metric_definition_request_body_is_empty() {
+    public void updateMetricDefinitionRequestBodyIsEmpty() {
 
         Mockito.when(readPredefinedTypesService.searchForUnitType(any())).thenReturn(Optional.of("SECOND"));
         Mockito.when(readPredefinedTypesService.searchForMetricType(any())).thenReturn(Optional.of("Aggregated"));
@@ -436,6 +506,8 @@ public class MetricDefinitionEndpointTest {
         var metricDefinition = createMetricDefinition(request);
 
         var response = given()
+                .auth()
+                .oauth2(getAccessToken("alice"))
                 .contentType(ContentType.JSON)
                 .patch("/{id}", metricDefinition.id)
                 .then()
@@ -448,7 +520,7 @@ public class MetricDefinitionEndpointTest {
     }
 
     @Test
-    public void update_metric_definition_with_mapper() {
+    public void updateMetricDefinitionWithMapper() {
 
         var metricDefinition = new MetricDefinition();
 
@@ -456,26 +528,40 @@ public class MetricDefinitionEndpointTest {
         metricDefinition.setMetricName("name");
         metricDefinition.setMetricDescription("description");
         metricDefinition.setUnitType("unit");
-        metricDefinition.setMetricType("metric_type");
+        metricDefinition.setMetricType("metricType");
 
         var dto= new UpdateMetricDefinitionRequestDto();
 
-        dto.metricName = "updated_name";
-        dto.metricDescription = "updated_description";
+        dto.metricName = "update";
+        dto.metricDescription = "updatedDescription";
 
         MetricDefinitionMapper.INSTANCE.updateMetricDefinitionFromDto(dto, metricDefinition);
 
         assertEquals(dto.metricName, metricDefinition.getMetricName());
         assertEquals(dto.metricDescription, metricDefinition.getMetricDescription());
         assertEquals("unit", metricDefinition.getUnitType());
-        assertEquals("metric_type", metricDefinition.getMetricType());
+        assertEquals("metricType", metricDefinition.getMetricType());
         assertEquals(new ObjectId("507f1f77bcf86cd799439011"), metricDefinition.getId());
     }
 
     @Test
-    public void fetch_metric_definition_not_found() {
+    public void fetchMetricDefinitionNotAuthenticated() {
+
+        var notAuthenticatedResponse = given()
+                .auth()
+                .oauth2("invalidToken")
+                .get("/{id}", "507f1f77bcf86cd799439011")
+                .thenReturn();
+
+        assertEquals(401, notAuthenticatedResponse.statusCode());
+    }
+
+    @Test
+    public void fetchMetricDefinitionNotFound() {
 
         var response = given()
+                .auth()
+                .oauth2(getAccessToken("alice"))
                 .get("/{id}", "507f1f77bcf86cd799439011")
                 .then()
                 .assertThat()
@@ -487,9 +573,11 @@ public class MetricDefinitionEndpointTest {
     }
 
     @Test
-    public void fetch_metric_definition_not_found_non_hex_id() {
+    public void fetchMetricDefinitionNotFoundNonHexId() {
 
         var response = given()
+                .auth()
+                .oauth2(getAccessToken("alice"))
                 .get("/{id}", "iiejijirj33i3i")
                 .then()
                 .assertThat()
@@ -501,7 +589,7 @@ public class MetricDefinitionEndpointTest {
     }
 
     @Test
-    public void fetch_metric_definition() {
+    public void fetchMetricDefinition() {
 
         Mockito.when(readPredefinedTypesService.searchForUnitType(any())).thenReturn(Optional.of("SECOND"));
         Mockito.when(readPredefinedTypesService.searchForMetricType(any())).thenReturn(Optional.of("Aggregated"));
@@ -515,6 +603,8 @@ public class MetricDefinitionEndpointTest {
         var metricDefinition = createMetricDefinition(request);
 
         var storedMetricDefinition = given()
+                .auth()
+                .oauth2(getAccessToken("alice"))
                 .get("/{id}", metricDefinition.id)
                 .then()
                 .assertThat()
@@ -526,7 +616,7 @@ public class MetricDefinitionEndpointTest {
     }
 
     @Test
-    public void fetch_metric_definition_pagination_metric() {
+    public void fetchMetricDefinitionPaginationMetric() {
 
         Mockito.when(readPredefinedTypesService.searchForUnitType(any())).thenReturn(Optional.of("SECOND"));
         Mockito.when(readPredefinedTypesService.searchForMetricType(any())).thenReturn(Optional.of("Aggregated"));
@@ -557,16 +647,18 @@ public class MetricDefinitionEndpointTest {
 
         createMetric(requestForMetric1);
 
-        given()
+        var paginateResponse = given()
+                .auth()
+                .oauth2(getAccessToken("alice"))
                 .queryParam("size", 1)
-                .get("/{metric_definition_id}/metrics", metricDefinition.id)
-                .then()
-                .assertThat()
-                .statusCode(200);
+                .get("/{metricDefinitionId}/metrics", metricDefinition.id)
+                .thenReturn();
+
+        assertEquals(200, paginateResponse.statusCode());
     }
 
     @Test
-    public void fetch_metric_definition_pagination_not_acceptable_size() {
+    public void fetchMetricDefinitionPaginationNotAcceptableSize() {
 
         Mockito.when(readPredefinedTypesService.searchForUnitType(any())).thenReturn(Optional.of("SECOND"));
         Mockito.when(readPredefinedTypesService.searchForMetricType(any())).thenReturn(Optional.of("Aggregated"));
@@ -580,8 +672,10 @@ public class MetricDefinitionEndpointTest {
         var metricDefinition = createMetricDefinition(request);
 
         var response = given()
+                .auth()
+                .oauth2(getAccessToken("alice"))
                 .queryParam("size", 110)
-                .get("/{metric_definition_id}/metrics", metricDefinition.id)
+                .get("/{metricDefinitionId}/metrics", metricDefinition.id)
                 .then()
                 .assertThat()
                 .statusCode(422)
@@ -592,7 +686,7 @@ public class MetricDefinitionEndpointTest {
     }
 
     @Test
-    public void fetch_metric_definition_pagination_not_acceptable_page_index() {
+    public void fetchMetricDefinitionPaginationNotAcceptablePageIndex() {
 
         Mockito.when(readPredefinedTypesService.searchForUnitType(any())).thenReturn(Optional.of("SECOND"));
         Mockito.when(readPredefinedTypesService.searchForMetricType(any())).thenReturn(Optional.of("Aggregated"));
@@ -606,8 +700,10 @@ public class MetricDefinitionEndpointTest {
         var metricDefinition = createMetricDefinition(request);
 
         var response = given()
+                .auth()
+                .oauth2(getAccessToken("alice"))
                 .queryParam("page", 0)
-                .get("/{metric_definition_id}/metrics", metricDefinition.id)
+                .get("/{metricDefinitionId}/metrics", metricDefinition.id)
                 .then()
                 .assertThat()
                 .statusCode(400)
@@ -618,11 +714,13 @@ public class MetricDefinitionEndpointTest {
     }
 
     @Test
-    public void fetch_metric_definition_pagination_no_metric_definition() {
+    public void fetchMetricDefinitionPaginationNoMetricDefinition() {
 
         var response = given()
+                .auth()
+                .oauth2(getAccessToken("alice"))
                 .queryParam("page", 0)
-                .get("/{metric_definition_id}/metrics", "507f1f77bcf86cd799439011")
+                .get("/{metricDefinitionId}/metrics", "507f1f77bcf86cd799439011")
                 .then()
                 .assertThat()
                 .statusCode(404)
@@ -633,11 +731,13 @@ public class MetricDefinitionEndpointTest {
     }
 
     @Test
-    public void fetch_metric_definition_pagination_non_hex_id() {
+    public void fetchMetricDefinitionPaginationNonHexId() {
 
         var response = given()
+                .auth()
+                .oauth2(getAccessToken("alice"))
                 .queryParam("page", 0)
-                .get("/{metric_definition_id}/metrics", "ijidij3d333")
+                .get("/{metricDefinitionId}/metrics", "ijidij3d333")
                 .then()
                 .assertThat()
                 .statusCode(404)
@@ -648,7 +748,7 @@ public class MetricDefinitionEndpointTest {
     }
 
     @Test
-    public void fetch_all_metric_definitions() {
+    public void fetchAllMetricDefinitions() {
 
         Mockito.when(readPredefinedTypesService.searchForUnitType(any())).thenReturn(Optional.of("SECOND"));
         Mockito.when(readPredefinedTypesService.searchForMetricType(any())).thenReturn(Optional.of("Aggregated"));
@@ -670,21 +770,37 @@ public class MetricDefinitionEndpointTest {
 
         createMetricDefinition(request1);
 
-        given()
+        var fetchResponse = given()
+                .auth()
+                .oauth2(getAccessToken("alice"))
                 .get()
-                .then()
-                .assertThat()
-                .statusCode(200)
-                .assertThat()
-                .body("size()", is(2));
+                .thenReturn();
+
+        assertEquals(200, fetchResponse.statusCode());
+        assertEquals(2, fetchResponse.body().as(List.class).size());
     }
 
     @Test
-    public void delete_metric_definition_not_found() {
+    public void deleteMetricDefinitionNotAuthenticated() {
+
+
+        var notAuthenticatedResponse = given()
+                .auth()
+                .oauth2("invalidToken")
+                .delete("/{metricDefinitionId}", "7dyebdheb7377e")
+                .thenReturn();
+
+        assertEquals(401, notAuthenticatedResponse.statusCode());
+    }
+
+    @Test
+    public void deleteMetricDefinitionNotFound() {
 
 
         var response = given()
-                .delete("/{metric_definition_id}", "7dyebdheb7377e")
+                .auth()
+                .oauth2(getAccessToken("alice"))
+                .delete("/{metricDefinitionId}", "7dyebdheb7377e")
                 .then()
                 .assertThat()
                 .statusCode(404)
@@ -694,9 +810,8 @@ public class MetricDefinitionEndpointTest {
         assertEquals("There is no Metric Definition with the following id: 7dyebdheb7377e", response.message);
     }
 
-
     @Test
-    public void delete_metric_definition_prohibited() {
+    public void deleteMetricDefinitionProhibited() {
 
         Mockito.when(readPredefinedTypesService.searchForUnitType(any())).thenReturn(Optional.of("SECOND"));
         Mockito.when(readPredefinedTypesService.searchForMetricType(any())).thenReturn(Optional.of("Aggregated"));
@@ -721,7 +836,9 @@ public class MetricDefinitionEndpointTest {
         createMetric(requestForMetric);
 
         var errorResponse = given()
-                .delete("/{metric_definition_id}", response.id)
+                .auth()
+                .oauth2(getAccessToken("alice"))
+                .delete("/{metricDefinitionId}", response.id)
                 .then()
                 .assertThat()
                 .statusCode(409)
@@ -732,7 +849,7 @@ public class MetricDefinitionEndpointTest {
     }
 
     @Test
-    public void delete_metric_definition() {
+    public void deleteMetricDefinition() {
 
         Mockito.when(readPredefinedTypesService.searchForUnitType(any())).thenReturn(Optional.of("SECOND"));
         Mockito.when(readPredefinedTypesService.searchForMetricType(any())).thenReturn(Optional.of("Aggregated"));
@@ -745,18 +862,24 @@ public class MetricDefinitionEndpointTest {
 
        var response = createMetricDefinition(request);
 
-        given()
-                .delete("/{metric_definition_id}", response.id)
+        var deleteResponse = given()
+                .auth()
+                .oauth2(getAccessToken("alice"))
+                .delete("/{metricDefinitionId}", response.id)
                 .then()
                 .assertThat()
                 .statusCode(200)
                 .extract()
                 .as(InformativeResponse.class);
+
+        assertEquals("Metric Definition has been deleted successfully.", deleteResponse.message);
     }
 
     private MetricDefinitionResponseDto createMetricDefinition(MetricDefinitionRequestDto request){
 
         return given()
+                .auth()
+                .oauth2(getAccessToken("alice"))
                 .body(request)
                 .contentType(ContentType.JSON)
                 .post()
@@ -770,6 +893,8 @@ public class MetricDefinitionEndpointTest {
     private MetricResponseDto createMetric(MetricRequestDto request){
 
         return given()
+                .auth()
+                .oauth2(getAccessToken("alice"))
                 .basePath("/accounting-system/metrics")
                 .body(request)
                 .contentType(ContentType.JSON)
@@ -779,5 +904,9 @@ public class MetricDefinitionEndpointTest {
                 .statusCode(201)
                 .extract()
                 .as(MetricResponseDto.class);
+    }
+
+    protected String getAccessToken(String userName) {
+        return keycloakClient.getAccessToken(userName);
     }
 }
