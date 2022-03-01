@@ -7,7 +7,9 @@ import org.accounting.system.dtos.MetricDefinitionRequestDto;
 import org.accounting.system.dtos.MetricDefinitionResponseDto;
 import org.accounting.system.dtos.PageResource;
 import org.accounting.system.dtos.UpdateMetricDefinitionRequestDto;
+import org.accounting.system.enums.Collection;
 import org.accounting.system.exceptions.UnprocessableException;
+import org.accounting.system.interceptors.annotations.Permission;
 import org.accounting.system.services.MetricDefinitionService;
 import org.accounting.system.services.ReadPredefinedTypesService;
 import org.accounting.system.util.Predicates;
@@ -112,6 +114,12 @@ public class MetricDefinitionEndpoint {
                     type = SchemaType.OBJECT,
                     implementation = InformativeResponse.class)))
     @APIResponse(
+            responseCode = "403",
+            description = "The authenticated user/service is not permitted to perform the requested operation.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
             responseCode = "404",
             description = "Unit/Metric type not found.",
             content = @Content(schema = @Schema(
@@ -140,6 +148,7 @@ public class MetricDefinitionEndpoint {
     @POST
     @Produces(value = MediaType.APPLICATION_JSON)
     @Consumes(value = MediaType.APPLICATION_JSON)
+    @Permission(collection = Collection.MetricDefinition, operation = org.accounting.system.enums.Operation.CREATE)
     public Response save(@Valid @NotNull(message = "The request body is empty.") MetricDefinitionRequestDto metricDefinitionRequestDto, @Context UriInfo uriInfo) {
 
         UriInfo serverInfo = new ResteasyUriInfo(serverUrl.concat(basePath).concat(uriInfo.getPath()), basePath);
@@ -168,6 +177,12 @@ public class MetricDefinitionEndpoint {
                     type = SchemaType.OBJECT,
                     implementation = InformativeResponse.class)))
     @APIResponse(
+            responseCode = "403",
+            description = "The authenticated user/service is not permitted to perform the requested operation.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
             responseCode = "500",
             description = "Internal Server Errors.",
             content = @Content(schema = @Schema(
@@ -177,6 +192,7 @@ public class MetricDefinitionEndpoint {
 
     @GET
     @Produces(value = MediaType.APPLICATION_JSON)
+    @Permission(collection = Collection.MetricDefinition, operation = org.accounting.system.enums.Operation.READ)
     public Response getAll(){
 
         return Response.ok().entity(metricDefinitionService.fetchAllMetricDefinitions()).build();
@@ -199,6 +215,12 @@ public class MetricDefinitionEndpoint {
                     type = SchemaType.OBJECT,
                     implementation = InformativeResponse.class)))
     @APIResponse(
+            responseCode = "403",
+            description = "The authenticated user/service is not permitted to perform the requested operation.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
             responseCode = "404",
             description = "Metric Definition has not been found.",
             content = @Content(schema = @Schema(
@@ -215,6 +237,7 @@ public class MetricDefinitionEndpoint {
     @GET
     @Path("/{id}")
     @Produces(value = MediaType.APPLICATION_JSON)
+    @Permission(collection = Collection.MetricDefinition, operation = org.accounting.system.enums.Operation.READ)
     public Response get(
             @Parameter(
                     description = "The Metric Definition to be retrieved.",
@@ -252,6 +275,12 @@ public class MetricDefinitionEndpoint {
                     type = SchemaType.OBJECT,
                     implementation = InformativeResponse.class)))
     @APIResponse(
+            responseCode = "403",
+            description = "The authenticated user/service is not permitted to perform the requested operation.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
             responseCode = "404",
             description = "Metric Definition has not been found.",
             content = @Content(schema = @Schema(
@@ -281,6 +310,7 @@ public class MetricDefinitionEndpoint {
     @Path("/{id}")
     @Produces(value = MediaType.APPLICATION_JSON)
     @Consumes(value = MediaType.APPLICATION_JSON)
+    @Permission(collection = Collection.MetricDefinition, operation = org.accounting.system.enums.Operation.UPDATE)
     public Response update(
             @Parameter(
                     description = "The Metric Definition to be updated.",
@@ -311,6 +341,12 @@ public class MetricDefinitionEndpoint {
                     type = SchemaType.OBJECT,
                     implementation = InformativeResponse.class)))
     @APIResponse(
+            responseCode = "403",
+            description = "The authenticated user/service is not permitted to perform the requested operation.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
             responseCode = "404",
             description = "Metric Definition has not been found.",
             content = @Content(schema = @Schema(
@@ -327,6 +363,7 @@ public class MetricDefinitionEndpoint {
     @DELETE()
     @Path("/{id}")
     @Produces(value = MediaType.APPLICATION_JSON)
+    @Permission(collection = Collection.MetricDefinition, operation = org.accounting.system.enums.Operation.DELETE)
     public Response delete(@Parameter(
             description = "The Metric Definition to be deleted.",
             required = true,
@@ -475,6 +512,12 @@ public class MetricDefinitionEndpoint {
                     type = SchemaType.OBJECT,
                     implementation = InformativeResponse.class)))
     @APIResponse(
+            responseCode = "403",
+            description = "The authenticated user/service is not permitted to perform the requested operation.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
             responseCode = "404",
             description = "Metric Registration has not been found.",
             content = @Content(schema = @Schema(
@@ -497,6 +540,7 @@ public class MetricDefinitionEndpoint {
     @GET
     @Path("/{metric_definition_id}/metrics")
     @Produces(value = MediaType.APPLICATION_JSON)
+    @Permission(operation = org.accounting.system.enums.Operation.READ, collection = Collection.MetricDefinition)
     public Response get(@Parameter(
             description = "The Metric Definition id.",
             required = true,

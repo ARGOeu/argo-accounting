@@ -18,7 +18,6 @@ import javax.inject.Inject;
 import javax.ws.rs.NotFoundException;
 import javax.ws.rs.core.UriInfo;
 import java.util.List;
-import java.util.Optional;
 
 /**
  * This service exposes business logic, which uses the {@link MetricDefinitionRepository}.
@@ -29,13 +28,13 @@ import java.util.Optional;
 public class MetricDefinitionService {
 
     @Inject
-    private MetricDefinitionRepository metricDefinitionRepository;
+    MetricDefinitionRepository metricDefinitionRepository;
 
     @Inject
-    private MetricService metricService;
+    MetricService metricService;
 
     @Inject
-    private MetricRepository metricRepository;
+    MetricRepository metricRepository;
 
 
     public MetricDefinitionService(MetricDefinitionRepository metricDefinitionRepository, MetricService metricService, MetricRepository metricRepository) {
@@ -64,12 +63,12 @@ public class MetricDefinitionService {
 
         var metricDefinition = findById(id);
 
-        return MetricDefinitionMapper.INSTANCE.metricDefinitionToResponse(metricDefinition.get());
+        return MetricDefinitionMapper.INSTANCE.metricDefinitionToResponse(metricDefinition);
     }
 
     public List<MetricDefinitionResponseDto> fetchAllMetricDefinitions(){
 
-        var list = metricDefinitionRepository.findAll().list();
+        var list = metricDefinitionRepository.getAllEntities();
 
         return MetricDefinitionMapper.INSTANCE.metricDefinitionsToResponse(list);
     }
@@ -84,12 +83,7 @@ public class MetricDefinitionService {
      */
     public MetricDefinitionResponseDto update(String id, UpdateMetricDefinitionRequestDto request){
 
-        var metricDefinition = findById(id).get();
-
-        MetricDefinitionMapper.INSTANCE.updateMetricDefinitionFromDto(request, metricDefinition);
-
-        metricDefinitionRepository.update(metricDefinition);
-
+        var metricDefinition = metricDefinitionRepository.updateEntityById(new ObjectId(id), request);
         return MetricDefinitionMapper.INSTANCE.metricDefinitionToResponse(metricDefinition);
     }
 
@@ -101,7 +95,7 @@ public class MetricDefinitionService {
      */
     public boolean delete(String metricDefinitionId){
 
-        return metricDefinitionRepository.deleteById(new ObjectId(metricDefinitionId));
+        return metricDefinitionRepository.deleteEntityById(new ObjectId(metricDefinitionId));
     }
 
     /**
@@ -121,11 +115,10 @@ public class MetricDefinitionService {
      * Fetches a Metric Definition by given id.
      *
      * @param id The Metric Definition id
-     * @return Optional of Metric Definition
+     * @return The corresponding Metric Definition
      */
-    public Optional<MetricDefinition> findById(String id){
-
-        return metricDefinitionRepository.findByIdOptional(new ObjectId(id));
+    public MetricDefinition findById(String id){
+        return metricDefinitionRepository.fetchEntityById(new ObjectId(id));
     }
 
     /**
@@ -151,6 +144,8 @@ public class MetricDefinitionService {
      * @return An object represents the paginated results
      */
     public PageResource<Metric>  findMetricsByMetricDefinitionIdPageable(String metricDefinitionId, int page, int size, UriInfo uriInfo){
+
+        metricDefinitionRepository.fetchEntityById(new ObjectId(metricDefinitionId));
 
         PanacheQuery<Metric> panacheQuery = metricRepository.findMetricsByMetricDefinitionIdPageable(metricDefinitionId, page, size);
 

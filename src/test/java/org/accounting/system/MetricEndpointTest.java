@@ -75,7 +75,7 @@ public class MetricEndpointTest {
 
         var response = given()
                 .auth()
-                .oauth2(getAccessToken("alice"))
+                .oauth2(getAccessToken("admin"))
                 .contentType(ContentType.JSON)
                 .post()
                 .then()
@@ -99,7 +99,7 @@ public class MetricEndpointTest {
 
         var response = given()
                 .auth()
-                .oauth2(getAccessToken("alice"))
+                .oauth2(getAccessToken("admin"))
                 .body(request)
                 .contentType(ContentType.JSON)
                 .post()
@@ -119,7 +119,7 @@ public class MetricEndpointTest {
 
         var response = given()
                 .auth()
-                .oauth2(getAccessToken("alice"))
+                .oauth2(getAccessToken("admin"))
                 .body(request)
                 .post()
                 .then()
@@ -142,7 +142,7 @@ public class MetricEndpointTest {
 
         var response = given()
                 .auth()
-                .oauth2(getAccessToken("alice"))
+                .oauth2(getAccessToken("admin"))
                 .body(request)
                 .contentType(ContentType.JSON)
                 .post()
@@ -178,7 +178,7 @@ public class MetricEndpointTest {
 
         var response = given()
                 .auth()
-                .oauth2(getAccessToken("alice"))
+                .oauth2(getAccessToken("admin"))
                 .body(request)
                 .contentType(ContentType.JSON)
                 .post()
@@ -213,7 +213,7 @@ public class MetricEndpointTest {
 
         var response = given()
                 .auth()
-                .oauth2(getAccessToken("alice"))
+                .oauth2(getAccessToken("admin"))
                 .body(request)
                 .contentType(ContentType.JSON)
                 .post()
@@ -238,7 +238,7 @@ public class MetricEndpointTest {
 
         var notFoundResponse = given()
                 .auth()
-                .oauth2(getAccessToken("alice"))
+                .oauth2(getAccessToken("admin"))
                 .body(request)
                 .contentType(ContentType.JSON)
                 .post()
@@ -278,7 +278,7 @@ public class MetricEndpointTest {
 
         var response = given()
                 .auth()
-                .oauth2(getAccessToken("alice"))
+                .oauth2(getAccessToken("admin"))
                 .body(requestForMetric)
                 .contentType(ContentType.JSON)
                 .post()
@@ -318,7 +318,7 @@ public class MetricEndpointTest {
 
         var response = given()
                 .auth()
-                .oauth2(getAccessToken("alice"))
+                .oauth2(getAccessToken("admin"))
                 .body(requestForMetric)
                 .contentType(ContentType.JSON)
                 .post()
@@ -378,7 +378,7 @@ public class MetricEndpointTest {
 
         var notFoundResponse = given()
                 .auth()
-                .oauth2(getAccessToken("alice"))
+                .oauth2(getAccessToken("admin"))
                 .get("/{metricId}", "507f1f77bcf86cd799439011")
                 .then()
                 .assertThat()
@@ -394,7 +394,7 @@ public class MetricEndpointTest {
 
         var response = given()
                 .auth()
-                .oauth2(getAccessToken("alice"))
+                .oauth2(getAccessToken("admin"))
                 .get("/{metricId}", "dbhbhehbeo33m23")
                 .then()
                 .assertThat()
@@ -430,7 +430,7 @@ public class MetricEndpointTest {
 
         var response = given()
                 .auth()
-                .oauth2(getAccessToken("alice"))
+                .oauth2(getAccessToken("admin"))
                 .get("/{metricId}", metric.getId().toString())
                 .then()
                 .assertThat()
@@ -458,7 +458,7 @@ public class MetricEndpointTest {
 
         var response = given()
                 .auth()
-                .oauth2(getAccessToken("alice"))
+                .oauth2(getAccessToken("admin"))
                 .delete("/{metricId}", "507f1f77bcf86cd799439011")
                 .then()
                 .assertThat()
@@ -474,7 +474,7 @@ public class MetricEndpointTest {
 
         var response = given()
                 .auth()
-                .oauth2(getAccessToken("alice"))
+                .oauth2(getAccessToken("admin"))
                 .delete("/{metricId}", "33333")
                 .then()
                 .assertThat()
@@ -516,7 +516,7 @@ public class MetricEndpointTest {
 
         var deleteResponse = given()
                 .auth()
-                .oauth2(getAccessToken("alice"))
+                .oauth2(getAccessToken("admin"))
                 .delete("/{metricId}", metric.id)
                 .then()
                 .assertThat()
@@ -553,7 +553,7 @@ public class MetricEndpointTest {
 
         var response = given()
                 .auth()
-                .oauth2(getAccessToken("alice"))
+                .oauth2(getAccessToken("admin"))
                 .contentType(ContentType.JSON)
                 .patch("/{id}", metric.id)
                 .then()
@@ -582,7 +582,7 @@ public class MetricEndpointTest {
 
         var response = given()
                 .auth()
-                .oauth2(getAccessToken("alice"))
+                .oauth2(getAccessToken("admin"))
                 .patch("/{id}", "507f1f77bcf86cd799439011")
                 .then()
                 .assertThat()
@@ -598,7 +598,7 @@ public class MetricEndpointTest {
 
         var response = given()
                 .auth()
-                .oauth2(getAccessToken("alice"))
+                .oauth2(getAccessToken("admin"))
                 .contentType(ContentType.JSON)
                 .patch("/{id}", "jnejenjdfn")
                 .then()
@@ -641,7 +641,7 @@ public class MetricEndpointTest {
 
         var response = given()
                 .auth()
-                .oauth2(getAccessToken("alice"))
+                .oauth2(getAccessToken("admin"))
                 .body(updateMetricRequest)
                 .contentType(ContentType.JSON)
                 .patch("/{id}", metric.id)
@@ -690,7 +690,7 @@ public class MetricEndpointTest {
 
         var response = given()
                 .auth()
-                .oauth2(getAccessToken("alice"))
+                .oauth2(getAccessToken("admin"))
                 .body(updateMetricRequest)
                 .contentType(ContentType.JSON)
                 .patch("/{id}", metricResponse.id)
@@ -739,7 +739,7 @@ public class MetricEndpointTest {
 
         var response = given()
                 .auth()
-                .oauth2(getAccessToken("alice"))
+                .oauth2(getAccessToken("admin"))
                 .body(updateMetricRequest)
                 .contentType(ContentType.JSON)
                 .patch("/{id}", metricResponse.id)
@@ -767,7 +767,7 @@ public class MetricEndpointTest {
 
         var response = given()
                 .auth()
-                .oauth2(getAccessToken("alice"))
+                .oauth2(getAccessToken("admin"))
                 .body(updateMetricRequest)
                 .contentType(ContentType.JSON)
                 .patch("/{id}", "507f1f77bcf86cd799439011")
@@ -814,7 +814,7 @@ public class MetricEndpointTest {
 
         var response = given()
                 .auth()
-                .oauth2(getAccessToken("alice"))
+                .oauth2(getAccessToken("admin"))
                 .body(updateMetricRequest)
                 .contentType(ContentType.JSON)
                 .patch("/{id}", metricResponse.id)
@@ -862,7 +862,7 @@ public class MetricEndpointTest {
 
         var response = given()
                 .auth()
-                .oauth2(getAccessToken("alice"))
+                .oauth2(getAccessToken("admin"))
                 .body(updateMetricRequest)
                 .contentType(ContentType.JSON)
                 .patch("/{id}", metricResponse.id)
@@ -909,7 +909,7 @@ public class MetricEndpointTest {
 
         var response = given()
                 .auth()
-                .oauth2(getAccessToken("alice"))
+                .oauth2(getAccessToken("admin"))
                 .body(updateMetricRequest)
                 .contentType(ContentType.JSON)
                 .patch("/{id}", metricResponse.id)
@@ -957,7 +957,7 @@ public class MetricEndpointTest {
 
         var response = given()
                 .auth()
-                .oauth2(getAccessToken("alice"))
+                .oauth2(getAccessToken("admin"))
                 .body(updateMetricRequest)
                 .contentType(ContentType.JSON)
                 .patch("/{id}", metricResponse.id)
@@ -1003,7 +1003,7 @@ public class MetricEndpointTest {
 
         var response = given()
                 .auth()
-                .oauth2(getAccessToken("alice"))
+                .oauth2(getAccessToken("admin"))
                 .body(updateMetricRequest)
                 .contentType(ContentType.JSON)
                 .patch("/{id}", metricResponse.id)
@@ -1049,7 +1049,7 @@ public class MetricEndpointTest {
 
         var response = given()
                 .auth()
-                .oauth2(getAccessToken("alice"))
+                .oauth2(getAccessToken("admin"))
                 .body(updateMetricRequest)
                 .contentType(ContentType.JSON)
                 .patch("/{id}", metricResponse.id)
@@ -1111,7 +1111,7 @@ public class MetricEndpointTest {
 
         var updateResponse = given()
                 .auth()
-                .oauth2(getAccessToken("alice"))
+                .oauth2(getAccessToken("admin"))
                 .config(RestAssured.config()
                         .jsonConfig(JsonConfig.jsonConfig()
                                 .numberReturnType(JsonPathConfig.NumberReturnType.DOUBLE)))
@@ -1165,7 +1165,7 @@ public class MetricEndpointTest {
 
         var updateResponse = given()
                 .auth()
-                .oauth2(getAccessToken("alice"))
+                .oauth2(getAccessToken("admin"))
                 .config(RestAssured.config()
                         .jsonConfig(JsonConfig.jsonConfig()
                                 .numberReturnType(JsonPathConfig.NumberReturnType.DOUBLE)))
@@ -1191,7 +1191,7 @@ public class MetricEndpointTest {
 
         return given()
                 .auth()
-                .oauth2(getAccessToken("alice"))
+                .oauth2(getAccessToken("admin"))
                 .basePath("accounting-system/metric-definition")
                 .body(request)
                 .contentType(ContentType.JSON)
@@ -1206,7 +1206,7 @@ public class MetricEndpointTest {
     private MetricResponseDto createMetric(MetricRequestDto requestDto){
         return given()
                 .auth()
-                .oauth2(getAccessToken("alice"))
+                .oauth2(getAccessToken("admin"))
                 .body(requestDto)
                 .contentType(ContentType.JSON)
                 .post()

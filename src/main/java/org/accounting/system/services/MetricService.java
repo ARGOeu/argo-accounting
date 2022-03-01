@@ -24,10 +24,10 @@ import java.util.Optional;
 public class MetricService {
 
     @Inject
-    private MetricRepository metricRepository;
+    MetricRepository metricRepository;
 
     @Inject
-    private MetricDefinitionService metricDefinitionService;
+    MetricDefinitionService metricDefinitionService;
 
     public MetricService(MetricRepository metricRepository, MetricDefinitionService metricDefinitionService) {
         this.metricRepository = metricRepository;

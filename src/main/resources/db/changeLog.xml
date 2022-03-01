@@ -93,4 +93,248 @@
             </ext:options>
         </ext:createCollection>
     </changeSet>
+
+<!--    <changeSet id="4" author="accounting-system">-->
+<!--        <ext:createCollection collectionName="Role">-->
+<!--            <ext:options>-->
+<!--                {-->
+<!--                validator: {-->
+<!--                $jsonSchema: {-->
+<!--                bsonType: "object",-->
+<!--                required: ["name"],-->
+<!--                properties: {-->
+<!--                name: {-->
+<!--                bsonType: "string",-->
+<!--                description: "The Role name"-->
+<!--                },-->
+<!--                description: {-->
+<!--                bsonType: "string",-->
+<!--                description: "The role description explains the operations a user or a service is expected to perform"-->
+<!--                },-->
+<!--                collectionPermission: {-->
+<!--                bsonType: "object",-->
+<!--                required: ["collection", "permissions"],-->
+<!--                properties: {-->
+<!--                permissions: {-->
+<!--                bsonType: "array",-->
+<!--                description: "The permissions upon a Collection that have been assigned to that role",-->
+<!--                items: {-->
+<!--                bsonType: "object",-->
+<!--                required: ["operation", "accessType"],-->
+<!--                properties: {-->
+<!--                operation: {-->
+<!--                enum: [ "CREATE", "UPDATE", "DELETE", "READ"],-->
+<!--                description: "The operation attribute can only be one of the the available API operations"-->
+<!--                },-->
+<!--                accessType: {-->
+<!--                enum: [ "ALWAYS", "NEVER", "ENTITY"],-->
+<!--                description: "The accessType attribute can only be one of the the available access types"-->
+<!--                }-->
+<!--                }-->
+<!--                }-->
+<!--                },-->
+<!--                collection: {-->
+<!--                enum: [ "MetricDefinition", "Metric"],-->
+<!--                description: "Can only be one of the the available collections"-->
+<!--                }-->
+<!--                }-->
+<!--                }-->
+<!--                }-->
+<!--                }-->
+<!--                },-->
+<!--                validationAction: "warn",-->
+<!--                validationLevel: "strict"-->
+<!--                }-->
+<!--            </ext:options>-->
+<!--        </ext:createCollection>-->
+<!--    </changeSet>-->
+
+    <changeSet id="5" author="accounting-system">
+        <ext:createIndex collectionName="Role">
+            <ext:keys>
+                { name: 1}
+            </ext:keys>
+            <ext:options>
+                {unique: true, name: "unique_role_name"}
+            </ext:options>
+        </ext:createIndex>
+    </changeSet>
+
+    <changeSet id="6" author="accounting-system">
+        <ext:insertMany collectionName="Role">
+            <ext:documents>
+                [
+                {
+                name: "metric_definition_admin",
+                description: "metric_definition_admin will always be able to perform any operation in the Metric Definition collection.",
+                collectionPermission: [
+                {
+                permissions: [
+                {
+                 operation: "CREATE",
+                 accessType: "ALWAYS"
+                },
+                {
+                operation: "UPDATE",
+                accessType: "ALWAYS"
+                },
+                {
+                operation: "DELETE",
+                accessType: "ALWAYS"
+                },
+                {
+                operation: "READ",
+                accessType: "ALWAYS"
+                }
+                ],
+                collection: "MetricDefinition"
+                }]
+                },
+                {
+                name: "metric_definition_inspector",
+                description: "metric_definition_inspector can read any entity in the Metric Definition collection, but cannot create new ones or update, delete any Metric Definitions.",
+                collectionPermission: [{
+                permissions: [
+                {
+                operation: "CREATE",
+                accessType: "NEVER"
+                },
+                {
+                operation: "UPDATE",
+                accessType: "NEVER"
+                },
+                {
+                operation: "DELETE",
+                accessType: "NEVER"
+                },
+                {
+                operation: "READ",
+                accessType: "ALWAYS"
+                }
+                ],
+                collection: "MetricDefinition"
+                }]
+                },
+                {
+                name: "metric_definition_editor",
+                description: "metric_definition_editor  can create new Metric Definitions, as well as update, and read any entity in the collection. But cannot delete any entity in the Metric Definition collection.",
+                collectionPermission: [{
+                permissions: [
+                {
+                operation: "CREATE",
+                accessType: "ALWAYS"
+                },
+                {
+                operation: "UPDATE",
+                accessType: "ALWAYS"
+                },
+                {
+                operation: "DELETE",
+                accessType: "NEVER"
+                },
+                {
+                operation: "READ",
+                accessType: "ALWAYS"
+                }
+                ],
+                collection: "MetricDefinition"
+                }]
+                },
+                {
+                name: "metric_definition_creator",
+                description: "metric_definition_creator can create new Metric Definitions, but can update, delete or read only its Metric Definitions.",
+                collectionPermission: [{
+                permissions: [
+                {
+                operation: "CREATE",
+                accessType: "ALWAYS"
+                },
+                {
+                operation: "UPDATE",
+                accessType: "ENTITY"
+                },
+                {
+                operation: "DELETE",
+                accessType: "ENTITY"
+                },
+                {
+                operation: "READ",
+                accessType: "ENTITY"
+                }
+                ],
+                collection: "MetricDefinition"
+                }]
+                },
+                {
+                name: "full_admin",
+                description: "full_admin will always be able to perform any operation in any collection.",
+                collectionPermission: [{
+                permissions: [
+                {
+                operation: "CREATE",
+                accessType: "ALWAYS"
+                },
+                {
+                operation: "UPDATE",
+                accessType: "ALWAYS"
+                },
+                {
+                operation: "DELETE",
+                accessType: "ALWAYS"
+                },
+                {
+                operation: "READ",
+                accessType: "ALWAYS"
+                }
+                ],
+                collection: "MetricDefinition"
+                },
+                {
+                permissions: [
+                {
+                operation: "CREATE",
+                accessType: "ALWAYS"
+                },
+                {
+                operation: "UPDATE",
+                accessType: "ALWAYS"
+                },
+                {
+                operation: "DELETE",
+                accessType: "ALWAYS"
+                },
+                {
+                operation: "READ",
+                accessType: "ALWAYS"
+                }
+                ],
+                collection: "Metric"
+                },
+                {
+                permissions: [
+                {
+                operation: "CREATE",
+                accessType: "ALWAYS"
+                },
+                {
+                operation: "UPDATE",
+                accessType: "ALWAYS"
+                },
+                {
+                operation: "DELETE",
+                accessType: "ALWAYS"
+                },
+                {
+                operation: "READ",
+                accessType: "NEVER"
+                }
+                ],
+                collection: "MetricDefinition"
+                }
+                ]
+                }
+                ]
+            </ext:documents>
+        </ext:insertMany>
+    </changeSet>
 </databaseChangeLog>

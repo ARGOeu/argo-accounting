@@ -56,7 +56,7 @@ public class MetricEndpoint {
     String serverUrl;
 
     @Inject
-    private MetricService metricService;
+    MetricService metricService;
 
     public MetricEndpoint(MetricService metricService) {
         this.metricService = metricService;

@@ -5,8 +5,9 @@ import io.netty.util.internal.StringUtil;
 import io.vavr.control.Try;
 import org.accounting.system.constraints.MetricDefinitionNotFound;
 import org.accounting.system.exceptions.CustomValidationException;
-import org.accounting.system.services.MetricDefinitionService;
+import org.accounting.system.repositories.MetricDefinitionRepository;
 import org.apache.commons.lang3.StringUtils;
+import org.bson.types.ObjectId;
 
 import javax.enterprise.inject.spi.CDI;
 import javax.validation.ConstraintValidator;
@@ -39,10 +40,10 @@ public class MetricDefinitionNotFoundValidator implements ConstraintValidator<Me
         builder.append(StringUtil.SPACE);
         builder.append(value);
 
-        MetricDefinitionService metricDefinitionService = CDI.current().select(MetricDefinitionService.class).get();
+        MetricDefinitionRepository metricDefinitionRepository = CDI.current().select(MetricDefinitionRepository.class).get();
 
         Try
-                .run(()->metricDefinitionService.findById(value).orElseThrow(()->new CustomValidationException(builder.toString(), HttpResponseStatus.NOT_FOUND)))
+                .run(()->metricDefinitionRepository.findByIdOptional(new ObjectId(value)).orElseThrow(()->new CustomValidationException(builder.toString(), HttpResponseStatus.NOT_FOUND)))
                 .getOrElseThrow(()->new CustomValidationException(builder.toString(), HttpResponseStatus.NOT_FOUND));
 
         return true;
