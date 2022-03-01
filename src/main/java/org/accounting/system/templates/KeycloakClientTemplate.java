@@ -15,7 +15,7 @@ import javax.ws.rs.core.MediaType;
  * Obtain the keycloak application properties and feed them to the keycloak template.
  * The keycloak.html is responsible for redirecting a user to Keycloak's login page in order to be authenticated and displaying the obtained token.
  */
-@Path("/keycloak")
+@Path("/keycloak-client-template")
 public class KeycloakClientTemplate {
 
     @Inject

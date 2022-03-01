@@ -1,26 +1,15 @@
 package org.accounting.system.entities;
 
-import org.bson.types.ObjectId;
-
 /**
- * The Metric Definition entity represents the MetricDefinition collection stored in the mongo database.
- * Every instance of this entity represents a record in that collection.
+ * The Metric Definition class represents the MetricDefinition collection stored in the mongo database.
+ * Every instance of this class represents a record in that collection.
  */
-public class MetricDefinition {
+public class MetricDefinition extends Entity {
 
-    private ObjectId id;
     private String metricName;
     private String metricDescription;
     private String unitType;
     private String metricType;
-
-    public ObjectId getId() {
-        return id;
-    }
-
-    public void setId(ObjectId id) {
-        this.id = id;
-    }
 
     public String getMetricName() {
         return metricName;

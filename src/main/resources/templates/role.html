@@ -1,9 +1,11 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Accounting System</title>
-    <style>
+	<head>
+		<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
+		<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM" crossorigin="anonymous"></script>
+		<meta charset="UTF-8">
+		<title>Roles</title>
+		<style>
         h1, h2, h3, h4, h5, h6 {
             margin-bottom: 0.5rem;
             font-weight: 400;
@@ -20,6 +22,7 @@
 
         h3 {
             font-size: 1.75rem
+
         }
 
         h4 {
@@ -96,48 +99,38 @@
         }
 
         .provided-code {
-            border-left: 0.3rem solid #71aeef;
-            padding-left: 10px;
+            border-top: 0.3rem solid #71aeef;
+            padding-top: 10px;
         }
 
         .provided-code h3 {
             font-weight: 200;
         }
     </style>
-</head>
-<body>
+	</head>
+	<body>
+		<div class="banner lead">
+			Accounting System API
+		</div>
+		<label for="role-list-id" class="mt-5"><h3>Available Roles</h3></label>
+		<div class="provided-code left-column" id="role-list-id">
+			<div class="row">
+				<div class="col-4">
+					<div class="list-group" id="list-tab" role="tablist">
+						{#for role in roles}
+						<a class="list-group-item list-group-item-action" id={role.id} data-bs-toggle="list" href="#{role.name}" role="tab" aria-controls="list-profile">{role.name}</a>
+						{/for}
+					</div>
+				</div>
+				<div class="col-8">
+					<div class="tab-content" id="nav-tabContent">
+						{#for role in roles}
+						<div class="tab-pane fade" id={role.name} role="tabpanel" aria-labelledby="list-profile-list">{role.description}</div>
+						{/for}
+					</div>
+				</div>
+			</div>
+		</div>
 
-<div class="banner lead">
-    Accounting System API
-</div>
-
-<div class="container">
-    <div class="left-column">
-        <div class="provided-code">
-            <h3>Authentication and Authorization via Keycloak of GRNET</h3>
-            <p>To access Accounting System API resources, you have to be authenticated by GRNET's keycloak.
-                This keycloak offers various Identity Providers where the authentication process can be performed.
-                Once you log in, you obtain an access token. Use this token to access the available API operations.
-                <br>
-                <br>
-                Based on the permissions that have been assigned to you, you can access the corresponding operations.
-                You can find the available roles <a href="/accounting-system/role-template" class="path-link" target="_blank">here.</a>
-            </p>
-            <p><code>Please login <a href="/accounting-system/keycloak-client-template" class="path-link" target="_blank">here.</a></code></p>
-        </div>
-
-    </div>
-    <div class="right-column">
-        <div class="right-section">
-            <h3>Application</h3>
-            <ul>
-                <li>GroupId: <code>org.grnet</code></li>
-                <li>ArtifactId: <code>accounting-system</code></li>
-                <li>Version: <code>1.0.0-SNAPSHOT</code></li>
-                <li>Quarkus Version: <code>2.5.1.Final</code></li>
-            </ul>
-        </div>
-    </div>
-</div>
-</body>
+	</body>
 </html>

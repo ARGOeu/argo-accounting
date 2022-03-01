@@ -73,7 +73,7 @@ public class MetricDefinitionEndpointTest {
 
         var response = given()
                 .auth()
-                .oauth2(getAccessToken("alice"))
+                .oauth2(getAccessToken("admin"))
                 .contentType(ContentType.JSON)
                 .post()
                 .then()
@@ -90,7 +90,7 @@ public class MetricDefinitionEndpointTest {
 
         var response = given()
                 .auth()
-                .oauth2(getAccessToken("alice"))
+                .oauth2(getAccessToken("admin"))
                 .post()
                 .then()
                 .assertThat()
@@ -115,7 +115,7 @@ public class MetricDefinitionEndpointTest {
 
         InformativeResponse response = given()
                 .auth()
-                .oauth2(getAccessToken("alice"))
+                .oauth2(getAccessToken("admin"))
                 .body(request)
                 .contentType(ContentType.JSON)
                 .post()
@@ -142,7 +142,7 @@ public class MetricDefinitionEndpointTest {
 
         InformativeResponse response = given()
                 .auth()
-                .oauth2(getAccessToken("alice"))
+                .oauth2(getAccessToken("admin"))
                 .body(request)
                 .contentType(ContentType.JSON)
                 .post()
@@ -168,7 +168,7 @@ public class MetricDefinitionEndpointTest {
 
         var response = given()
                 .auth()
-                .oauth2(getAccessToken("alice"))
+                .oauth2(getAccessToken("admin"))
                 .body(request)
                 .contentType(ContentType.JSON)
                 .post()
@@ -192,7 +192,7 @@ public class MetricDefinitionEndpointTest {
 
         var response = given()
                 .auth()
-                .oauth2(getAccessToken("alice"))
+                .oauth2(getAccessToken("admin"))
                 .body(request)
                 .contentType(ContentType.JSON)
                 .post()
@@ -215,7 +215,7 @@ public class MetricDefinitionEndpointTest {
 
         var response = given()
                 .auth()
-                .oauth2(getAccessToken("alice"))
+                .oauth2(getAccessToken("admin"))
                 .body(request)
                 .contentType(ContentType.JSON)
                 .post()
@@ -244,7 +244,7 @@ public class MetricDefinitionEndpointTest {
 
         var response = given()
                 .auth()
-                .oauth2(getAccessToken("alice"))
+                .oauth2(getAccessToken("admin"))
                 .body(request)
                 .contentType(ContentType.JSON)
                 .post()
@@ -289,7 +289,7 @@ public class MetricDefinitionEndpointTest {
 
         var response = given()
                 .auth()
-                .oauth2(getAccessToken("alice"))
+                .oauth2(getAccessToken("admin"))
                 .patch("/{id}", metricDefinition.id)
                 .then()
                 .assertThat()
@@ -318,7 +318,7 @@ public class MetricDefinitionEndpointTest {
 
         var response = given()
                 .auth()
-                .oauth2(getAccessToken("alice"))
+                .oauth2(getAccessToken("admin"))
                 .contentType(ContentType.JSON)
                 .patch("/{id}", "556787878e-rrr")
                 .then()
@@ -354,7 +354,7 @@ public class MetricDefinitionEndpointTest {
 
         var updateResponse = given()
                 .auth()
-                .oauth2(getAccessToken("alice"))
+                .oauth2(getAccessToken("admin"))
                 .body(metricDefinitiontoBeUpdated)
                 .contentType(ContentType.JSON)
                 .patch("/{id}", metricDefinition.id)
@@ -396,7 +396,7 @@ public class MetricDefinitionEndpointTest {
 
         var updateResponse = given()
                 .auth()
-                .oauth2(getAccessToken("alice"))
+                .oauth2(getAccessToken("admin"))
                 .body(metricDefinitionToBeUpdated)
                 .contentType(ContentType.JSON)
                 .patch("/{id}", metricDefinition.id)
@@ -438,7 +438,7 @@ public class MetricDefinitionEndpointTest {
 
         var response = given()
                 .auth()
-                .oauth2(getAccessToken("alice"))
+                .oauth2(getAccessToken("admin"))
                 .body(metricDefinitionToBeUpdated)
                 .contentType(ContentType.JSON)
                 .patch("/{id}", metricDefinition.id)
@@ -478,7 +478,7 @@ public class MetricDefinitionEndpointTest {
 
         var response = given()
                 .auth()
-                .oauth2(getAccessToken("alice"))
+                .oauth2(getAccessToken("admin"))
                 .body(metricDefinitionToBeUpdated)
                 .contentType(ContentType.JSON)
                 .patch("/{id}", metricDefinition.id)
@@ -507,7 +507,7 @@ public class MetricDefinitionEndpointTest {
 
         var response = given()
                 .auth()
-                .oauth2(getAccessToken("alice"))
+                .oauth2(getAccessToken("admin"))
                 .contentType(ContentType.JSON)
                 .patch("/{id}", metricDefinition.id)
                 .then()
@@ -561,7 +561,7 @@ public class MetricDefinitionEndpointTest {
 
         var response = given()
                 .auth()
-                .oauth2(getAccessToken("alice"))
+                .oauth2(getAccessToken("admin"))
                 .get("/{id}", "507f1f77bcf86cd799439011")
                 .then()
                 .assertThat()
@@ -577,7 +577,7 @@ public class MetricDefinitionEndpointTest {
 
         var response = given()
                 .auth()
-                .oauth2(getAccessToken("alice"))
+                .oauth2(getAccessToken("admin"))
                 .get("/{id}", "iiejijirj33i3i")
                 .then()
                 .assertThat()
@@ -604,7 +604,7 @@ public class MetricDefinitionEndpointTest {
 
         var storedMetricDefinition = given()
                 .auth()
-                .oauth2(getAccessToken("alice"))
+                .oauth2(getAccessToken("admin"))
                 .get("/{id}", metricDefinition.id)
                 .then()
                 .assertThat()
@@ -649,7 +649,7 @@ public class MetricDefinitionEndpointTest {
 
         var paginateResponse = given()
                 .auth()
-                .oauth2(getAccessToken("alice"))
+                .oauth2(getAccessToken("admin"))
                 .queryParam("size", 1)
                 .get("/{metricDefinitionId}/metrics", metricDefinition.id)
                 .thenReturn();
@@ -673,7 +673,7 @@ public class MetricDefinitionEndpointTest {
 
         var response = given()
                 .auth()
-                .oauth2(getAccessToken("alice"))
+                .oauth2(getAccessToken("admin"))
                 .queryParam("size", 110)
                 .get("/{metricDefinitionId}/metrics", metricDefinition.id)
                 .then()
@@ -701,7 +701,7 @@ public class MetricDefinitionEndpointTest {
 
         var response = given()
                 .auth()
-                .oauth2(getAccessToken("alice"))
+                .oauth2(getAccessToken("admin"))
                 .queryParam("page", 0)
                 .get("/{metricDefinitionId}/metrics", metricDefinition.id)
                 .then()
@@ -718,7 +718,7 @@ public class MetricDefinitionEndpointTest {
 
         var response = given()
                 .auth()
-                .oauth2(getAccessToken("alice"))
+                .oauth2(getAccessToken("admin"))
                 .queryParam("page", 0)
                 .get("/{metricDefinitionId}/metrics", "507f1f77bcf86cd799439011")
                 .then()
@@ -735,7 +735,7 @@ public class MetricDefinitionEndpointTest {
 
         var response = given()
                 .auth()
-                .oauth2(getAccessToken("alice"))
+                .oauth2(getAccessToken("admin"))
                 .queryParam("page", 0)
                 .get("/{metricDefinitionId}/metrics", "ijidij3d333")
                 .then()
@@ -772,7 +772,7 @@ public class MetricDefinitionEndpointTest {
 
         var fetchResponse = given()
                 .auth()
-                .oauth2(getAccessToken("alice"))
+                .oauth2(getAccessToken("admin"))
                 .get()
                 .thenReturn();
 
@@ -799,7 +799,7 @@ public class MetricDefinitionEndpointTest {
 
         var response = given()
                 .auth()
-                .oauth2(getAccessToken("alice"))
+                .oauth2(getAccessToken("admin"))
                 .delete("/{metricDefinitionId}", "7dyebdheb7377e")
                 .then()
                 .assertThat()
@@ -837,7 +837,7 @@ public class MetricDefinitionEndpointTest {
 
         var errorResponse = given()
                 .auth()
-                .oauth2(getAccessToken("alice"))
+                .oauth2(getAccessToken("admin"))
                 .delete("/{metricDefinitionId}", response.id)
                 .then()
                 .assertThat()
@@ -864,7 +864,7 @@ public class MetricDefinitionEndpointTest {
 
         var deleteResponse = given()
                 .auth()
-                .oauth2(getAccessToken("alice"))
+                .oauth2(getAccessToken("admin"))
                 .delete("/{metricDefinitionId}", response.id)
                 .then()
                 .assertThat()
@@ -879,7 +879,7 @@ public class MetricDefinitionEndpointTest {
 
         return given()
                 .auth()
-                .oauth2(getAccessToken("alice"))
+                .oauth2(getAccessToken("admin"))
                 .body(request)
                 .contentType(ContentType.JSON)
                 .post()
@@ -894,7 +894,7 @@ public class MetricDefinitionEndpointTest {
 
         return given()
                 .auth()
-                .oauth2(getAccessToken("alice"))
+                .oauth2(getAccessToken("admin"))
                 .basePath("/accounting-system/metrics")
                 .body(request)
                 .contentType(ContentType.JSON)
