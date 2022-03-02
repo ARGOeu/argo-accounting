@@ -6,25 +6,25 @@
   <artifactId>accounting-system</artifactId>
   <version>1.0.0-SNAPSHOT</version>
   <properties>
+    <apache.common3.version>3.12.0</apache.common3.version>
     <compiler-plugin.version>3.8.1</compiler-plugin.version>
+    <json.simple.version>1.1.1</json.simple.version>
+    <junit.vintage.engine.vesrion>5.7.0</junit.vintage.engine.vesrion>
+    <lombok.version>1.18.22</lombok.version>
+    <mapstruct.version>1.4.2.Final</mapstruct.version>
     <maven.compiler.parameters>true</maven.compiler.parameters>
     <maven.compiler.source>11</maven.compiler.source>
     <maven.compiler.target>11</maven.compiler.target>
+    <mockito.core.version>4.2.0</mockito.core.version>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+    <quarkus.liquibase.mongo.version>2.6.2.Final</quarkus.liquibase.mongo.version>
+    <quarkus.mockito.version>2.6.2.Final</quarkus.mockito.version>
     <quarkus.platform.artifact-id>quarkus-bom</quarkus.platform.artifact-id>
     <quarkus.platform.group-id>io.quarkus.platform</quarkus.platform.group-id>
     <quarkus.platform.version>2.6.1.Final</quarkus.platform.version>
     <surefire-plugin.version>3.0.0-M5</surefire-plugin.version>
-    <lombok.version>1.18.22</lombok.version>
-    <mapstruct.version>1.4.2.Final</mapstruct.version>
-    <quarkus.liquibase.mongo.version>2.6.2.Final</quarkus.liquibase.mongo.version>
-    <apache.common3.version>3.12.0</apache.common3.version>
-    <json.simple.version>1.1.1</json.simple.version>
     <vavr.version>0.10.4</vavr.version>
-    <quarkus.mockito.version>2.6.2.Final</quarkus.mockito.version>
-    <mockito.core.version>4.2.0</mockito.core.version>
-    <junit.vintage.engine.vesrion>5.7.0</junit.vintage.engine.vesrion>
   </properties>
   <dependencyManagement>
     <dependencies>
@@ -73,6 +73,10 @@
     <dependency>
       <groupId>io.quarkus</groupId>
       <artifactId>quarkus-hibernate-validator</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>io.quarkus</groupId>
+      <artifactId>quarkus-security</artifactId>
     </dependency>
     <dependency>
       <groupId>io.quarkus</groupId>
@@ -128,10 +132,10 @@
       <version>${mapstruct.version}</version>
     </dependency>
     <dependency>
-    <groupId>org.apache.commons</groupId>
-    <artifactId>commons-lang3</artifactId>
-    <version>${apache.common3.version}</version>
-   </dependency>
+      <groupId>org.apache.commons</groupId>
+      <artifactId>commons-lang3</artifactId>
+      <version>${apache.common3.version}</version>
+    </dependency>
     <dependency>
       <groupId>io.quarkus</groupId>
       <artifactId>quarkus-liquibase-mongodb</artifactId>
