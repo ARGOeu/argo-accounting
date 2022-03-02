@@ -34,6 +34,9 @@ pipeline {
         }
     }
     post {
+        always {
+            cleanWs()
+        }
         success {
             script{
                 if ( env.BRANCH_NAME == 'main' || env.BRANCH_NAME == 'devel' ) {
