@@ -1,6 +1,5 @@
 package org.accounting.system.endpoints;
 
-import io.quarkus.oidc.TokenIntrospection;
 import io.quarkus.security.Authenticated;
 import org.accounting.system.constraints.MetricDefinitionNotFound;
 import org.accounting.system.dtos.InformativeResponse;
@@ -72,9 +71,6 @@ public class MetricDefinitionEndpoint {
 
     @Inject
     Predicates predicates;
-
-    @Inject
-    TokenIntrospection tokenIntrospection;
 
     public MetricDefinitionEndpoint(MetricDefinitionService metricDefinitionService, ReadPredefinedTypesService readPredefinedTypesService, Predicates predicates) {
         this.metricDefinitionService = metricDefinitionService;
