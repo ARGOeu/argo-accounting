@@ -1,29 +1,18 @@
 package org.accounting.system.entities;
 
-import org.bson.types.ObjectId;
-
 import java.time.Instant;
 
 /**
- * The Metric entity represents the Metric collection stored in the mongo database.
- * Every instance of this entity represents a record in that collection.
+ * The Metric class represents the Metric collection stored in the mongo database.
+ * Every instance of this class represents a record in that collection.
  */
-public class Metric {
+public class Metric extends Entity {
 
-    private ObjectId id;
     private String resourceId;
     private String metricDefinitionId;
     private Instant start;
     private Instant end;
     private double value;
-
-    public ObjectId getId() {
-        return id;
-    }
-
-    public void setId(ObjectId id) {
-        this.id = id;
-    }
 
     public String getResourceId() {
         return resourceId;

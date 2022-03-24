@@ -1,4 +1,4 @@
-package org.accounting.system;
+package org.accounting.system.util;
 
 import io.quarkus.security.spi.runtime.AuthorizationController;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
