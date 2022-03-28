@@ -1,5 +1,6 @@
 package org.accounting.system.repositories.authorization;
 
+import io.quarkus.mongodb.panache.PanacheMongoRepository;
 import org.accounting.system.beans.RequestInformation;
 import org.accounting.system.entities.Entity;
 import org.accounting.system.enums.AccessType;
@@ -18,15 +19,13 @@ import java.util.List;
  * in the database.
  *
  */
-public abstract class AccessEntityRepository<E extends Entity>{
+public abstract class AccessEntityRepository<E extends Entity> implements PanacheMongoRepository<E> {
 
     private RequestInformation requestInformation;
 
     public AccessEntityRepository(){
         requestInformation = CDI.current().select(RequestInformation.class).get();
     }
-
-    protected abstract E getEntityById(ObjectId id);
 
     public E fetchEntityById(ObjectId id){
 
@@ -47,8 +46,6 @@ public abstract class AccessEntityRepository<E extends Entity>{
         }
     }
 
-    protected abstract boolean deleteEntity(ObjectId id);
-
     public boolean deleteEntityById(ObjectId id) {
 
         fetchEntityById(id);
@@ -64,10 +61,6 @@ public abstract class AccessEntityRepository<E extends Entity>{
         return updateEntity(id, updateDto, entity);
     }
 
-    protected abstract List<E> getAll();
-
-    protected abstract List<E> getAllByCreatorId(String creatorId);
-
     public List<E> getAllEntities(){
 
         AccessType accessType = requestInformation.getAccessType();
@@ -80,5 +73,21 @@ public abstract class AccessEntityRepository<E extends Entity>{
             default:
                 throw new ForbiddenException("You cannot perform this operation.");
         }
+    }
+    protected E getEntityById(ObjectId objectId) {
+
+        return findById(objectId);
+    }
+
+    protected boolean deleteEntity(ObjectId id) {
+        return deleteById(id);
+    }
+
+    protected List<E> getAll() {
+        return findAll().list();
+    }
+
+    protected List<E> getAllByCreatorId(String creatorId) {
+        return list("creatorId = ?1", creatorId);
     }
 }

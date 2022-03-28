@@ -16,10 +16,10 @@ import java.util.stream.Collectors;
  * the Roles stored in the mongo database. More specifically, it encapsulates the queries
  * that can be performed on the Role collection. Finally, is is responsible for mapping
  * the data from the storage format to the {@link Role}. To adjust the degree of accessibility to queries,
- *  * {@link AccessEntityRepository} public method must be executed, not the {@link PanacheMongoRepository} default methods.
- *  */
+ * {@link AccessEntityRepository} public method must be executed, not the {@link PanacheMongoRepository} default methods.
+ **/
 @ApplicationScoped
-public class RoleRepository extends AccessEntityRepository<Role> implements PanacheMongoRepository<Role> {
+public class RoleRepository extends AccessEntityRepository<Role> {
 
     /**
      * This method returns the permissions of a role upon a specific collection
@@ -47,37 +47,8 @@ public class RoleRepository extends AccessEntityRepository<Role> implements Pana
         return find("name = ?1", name).stream().findFirst();
     }
 
-    /**
-     * Fetches from the database the registered Accounting System roles
-     * @return A list represents the stored roles
-     */
-    public List<Role> fetchRoles(){
-
-        return findAll().list();
-    }
-
-    @Override
-    protected Role getEntityById(ObjectId id) {
-        return null;
-    }
-
-    @Override
-    protected boolean deleteEntity(ObjectId id) {
-        return deleteById(id);
-    }
-
     @Override
     protected <U> Role updateEntity(ObjectId id, U updateDto, Role entity) {
-        return null;
-    }
-
-    @Override
-    protected List<Role> getAll() {
-        return null;
-    }
-
-    @Override
-    protected List<Role> getAllByCreatorId(String creatorId) {
         return null;
     }
 }

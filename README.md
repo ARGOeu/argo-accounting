@@ -221,7 +221,7 @@ POST 'https://host/accounting-system/roles'
 
 {
   "name" : "metric_definition_admin",
-  "collection_permissions":[
+  "collection_permission_list":[
     {
     "collection": "MetricDefinition",
     "permissions" :[
@@ -253,7 +253,7 @@ POST 'https://host/accounting-system/roles'
 
 {
   "name" : "metric_inspector",
-  "collection_permissions":[
+  "collection_permission_list":[
     {
     "collection": "Metric",
     "permissions" :[
@@ -273,7 +273,7 @@ POST 'https://host/accounting-system/roles'
 
 {
   "name" : "metric_creator",
-  "collection_permissions":[
+  "collection_permission_list":[
     {
     "collection": "Metric",
     "permissions" :[
@@ -305,7 +305,7 @@ POST 'https://host/accounting-system/roles'
 
 {
   "name" : "role_editor",
-  "collection_permissions":[
+  "collection_permission_list":[
     {
     "collection": "Role",
     "permissions" :[
@@ -339,7 +339,7 @@ POST 'https://host/accounting-system/roles'
 
 {
   "name" : "editor",
-  "collection_permissions":[
+  "collection_permission_list":[
     {
     "collection": "Role",
     "permissions" :[

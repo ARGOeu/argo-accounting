@@ -27,6 +27,7 @@ public class PermissionDto {
     @Schema(
             type = SchemaType.STRING,
             implementation = AccessType.class,
+            required = true,
             defaultValue = "NEVER",
             description = "The available API access types.",
             example = "ALWAYS"

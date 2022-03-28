@@ -209,4 +209,57 @@ public class RoleEndpoint {
 
         return Response.ok().entity(roleService.fetchRoles()).build();
     }
+
+    @Tag(name = "Role")
+    @Operation(
+            summary = "Returns an existing Role.",
+            description = "This operation accepts the id of a Role and fetches from the database the corresponding record.")
+    @APIResponse(
+            responseCode = "200",
+            description = "The corresponding Role.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = RoleResponseDto.class)))
+    @APIResponse(
+            responseCode = "401",
+            description = "User/Service has not been authenticated.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "403",
+            description = "The authenticated user/service is not permitted to perform the requested operation.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "404",
+            description = "Role has not been found.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "500",
+            description = "Internal Server Errors.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @SecurityRequirement(name = "Authentication")
+
+    @GET
+    @Path("/{id}")
+    @Produces(value = MediaType.APPLICATION_JSON)
+    @Permission(collection = Collection.Role, operation = org.accounting.system.enums.Operation.READ)
+    public Response get(
+            @Parameter(
+                    description = "The Role to be retrieved.",
+                    required = true,
+                    example = "507f1f77bcf86cd799439011",
+                    schema = @Schema(type = SchemaType.STRING))
+            @PathParam("id") @Valid @NotFoundEntity(repository = RoleRepository.class, message = "There is no Role with the following id:") String id){
+
+        RoleResponseDto response = roleService.fetchRole(id);
+
+        return Response.ok().entity(response).build();
+    }
 }

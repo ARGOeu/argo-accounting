@@ -1,7 +1,6 @@
 package org.accounting.system.dtos.authorization;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import org.accounting.system.entities.authorization.CollectionPermission;
 import org.eclipse.microprofile.openapi.annotations.enums.SchemaType;
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
 
@@ -34,12 +33,12 @@ public class RoleRequestDto {
 
     @Schema(
             type = SchemaType.ARRAY,
-            implementation = CollectionPermission.class,
+            implementation = CollectionPermissionDto.class,
             required = true,
-            description = "This list encapsulates the permissions upon the API collections. It should have at least one entry of Collection Permission.",
+            description = "This list encapsulates the permissions upon the API collections. It should have at least one entry of CollectionPermission.",
             minItems = 1
     )
-    @JsonProperty("collection_permission")
-    @NotEmpty(message = "collection_permission list should have at least one entry.")
+    @JsonProperty("collection_permission_list")
+    @NotEmpty(message = "collection_permission_list should have at least one entry.")
     public List<@Valid CollectionPermissionDto> collectionPermission;
 }
