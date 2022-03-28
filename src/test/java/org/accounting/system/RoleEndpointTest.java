@@ -520,6 +520,82 @@ public class RoleEndpointTest {
         assertEquals("There is already a role with this name : "+request.name, informativeResponse.message);
     }
 
+    @Test
+    public void deleteRoleNotAuthenticated() {
+
+
+        var notAuthenticatedResponse = given()
+                .auth()
+                .oauth2("invalidToken")
+                .delete("/{roleId}", "7dyebdheb7377e")
+                .thenReturn();
+
+        assertEquals(401, notAuthenticatedResponse.statusCode());
+    }
+
+    @Test
+    public void deleteRoleNotFound() {
+
+
+        var response = given()
+                .auth()
+                .oauth2(getAccessToken("admin"))
+                .delete("/{roleId}", "7dyebdheb7377e")
+                .then()
+                .assertThat()
+                .statusCode(404)
+                .extract()
+                .as(InformativeResponse.class);
+
+        assertEquals("There is no Role with the following id: 7dyebdheb7377e", response.message);
+    }
+
+    @Test
+    public void deleteRole() {
+
+        var request= new RoleRequestDto();
+        request.name = "role_deleted";
+
+        var collectionPermission = new ArrayList<CollectionPermissionDto>();
+        CollectionPermissionDto collectionPermissionDto = new CollectionPermissionDto();
+
+        var permissions = new ArrayList<PermissionDto>();
+
+        var permissionDto = new PermissionDto();
+        permissionDto.operation = "CREATE";
+        permissionDto.accessType = "ALWAYS";
+
+        permissions.add(permissionDto);
+
+        collectionPermissionDto.permissions = permissions;
+        collectionPermissionDto.collection = "Role";
+
+        collectionPermission.add(collectionPermissionDto);
+
+        request.collectionPermission = collectionPermission;
+
+        var response = createRole(request, "admin");
+
+        var roleResponse = response
+                .then()
+                .assertThat()
+                .statusCode(201)
+                .extract()
+                .as(RoleResponseDto.class);
+
+        var deleteResponse = given()
+                .auth()
+                .oauth2(getAccessToken("admin"))
+                .delete("/{roleId}", roleResponse.id)
+                .then()
+                .assertThat()
+                .statusCode(200)
+                .extract()
+                .as(InformativeResponse.class);
+
+        assertEquals("Role has been deleted successfully.", deleteResponse.message);
+    }
+
     protected String getAccessToken(String userName) {
         return keycloakClient.getAccessToken(userName);
     }
