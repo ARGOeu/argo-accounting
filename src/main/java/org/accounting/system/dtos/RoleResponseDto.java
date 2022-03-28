@@ -1,7 +1,7 @@
 package org.accounting.system.dtos;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import org.accounting.system.entities.authorization.CollectionPermission;
+import org.accounting.system.dtos.authorization.CollectionPermissionDto;
 import org.eclipse.microprofile.openapi.annotations.enums.SchemaType;
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
 
@@ -23,6 +23,7 @@ public class RoleResponseDto {
             type = SchemaType.STRING,
             implementation = String.class,
             description = "The role name.",
+            required = true,
             example = "metric_definition_inspector"
     )
     @JsonProperty("name")
@@ -39,10 +40,11 @@ public class RoleResponseDto {
 
     @Schema(
             type = SchemaType.ARRAY,
-            implementation = CollectionPermission.class,
-            description = "This list encapsulates the permissions upon the API collections. It should have at least one list of permission.",
+            implementation = CollectionPermissionDto.class,
+            description = "This list encapsulates the permissions upon the API collections. It should have at least one entry of CollectionPermission.",
+            required = true,
             minItems = 1
     )
-    @JsonProperty("collection_permission")
-    public List<CollectionPermission> collectionPermission;
+    @JsonProperty("collection_permission_list")
+    public List<CollectionPermissionDto> collectionPermission;
 }

@@ -76,11 +76,24 @@ public class RoleService {
      */
     public List<RoleResponseDto> fetchRoles(){
 
-        var roles = roleRepository.fetchRoles();
+        var roles = roleRepository.getAllEntities();
 
         var rolesToResponse = RoleMapper.INSTANCE.rolesToResponse(roles);
 
         return rolesToResponse;
+    }
+
+    /**
+     * Fetches a Role by given id.
+     *
+     * @param id The Role id
+     * @return The corresponding Role
+     */
+    public RoleResponseDto fetchRole(String id){
+
+        var role = roleRepository.fetchEntityById(new ObjectId(id));
+
+        return RoleMapper.INSTANCE.roleToResponse(role);
     }
 
     /**

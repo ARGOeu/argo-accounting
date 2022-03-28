@@ -60,9 +60,15 @@ public class MetricDefinitionService {
         return MetricDefinitionMapper.INSTANCE.metricDefinitionToResponse(metricDefinition);
     }
 
+    /**
+     * Fetches a Metric Definition by given id.
+     *
+     * @param id The Metric Definition id
+     * @return The corresponding Metric Definition
+     */
     public MetricDefinitionResponseDto fetchMetricDefinition(String id){
 
-        var metricDefinition = findById(id);
+        var metricDefinition = metricDefinitionRepository.fetchEntityById(new ObjectId(id));
 
         return MetricDefinitionMapper.INSTANCE.metricDefinitionToResponse(metricDefinition);
     }
@@ -117,16 +123,6 @@ public class MetricDefinitionService {
 
         metricDefinitionRepository.exist(unitType, name)
                 .ifPresent(metricDefinition -> {throw new ConflictException("There is a Metric Definition with unit type "+metricDefinition.getUnitType()+" and name "+metricDefinition.getMetricName()+". Its id is "+metricDefinition.getId().toString());});
-    }
-
-    /**
-     * Fetches a Metric Definition by given id.
-     *
-     * @param id The Metric Definition id
-     * @return The corresponding Metric Definition
-     */
-    public MetricDefinition findById(String id){
-        return metricDefinitionRepository.fetchEntityById(new ObjectId(id));
     }
 
     /**
