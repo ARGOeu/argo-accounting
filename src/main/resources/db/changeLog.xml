@@ -337,4 +337,78 @@
             </ext:documents>
         </ext:insertMany>
     </changeSet>
+    <changeSet id="7" author="accounting-system">
+        <ext:insertOne collectionName="Role">
+            <ext:document>
+                {
+                name: "system_admin",
+                description: "system_admin will always be able to perform any operation in Accounting System API.",
+                collectionPermission: [
+                {
+                permissions: [
+                {
+                operation: "CREATE",
+                accessType: "ALWAYS"
+                },
+                {
+                operation: "UPDATE",
+                accessType: "ALWAYS"
+                },
+                {
+                operation: "DELETE",
+                accessType: "ALWAYS"
+                },
+                {
+                operation: "READ",
+                accessType: "ALWAYS"
+                }
+                ],
+                collection: "MetricDefinition"
+                },
+                {
+                permissions: [
+                {
+                operation: "CREATE",
+                accessType: "ALWAYS"
+                },
+                {
+                operation: "UPDATE",
+                accessType: "ALWAYS"
+                },
+                {
+                operation: "DELETE",
+                accessType: "ALWAYS"
+                },
+                {
+                operation: "READ",
+                accessType: "ALWAYS"
+                }
+                ],
+                collection: "Metric"
+                },
+                {
+                permissions: [
+                {
+                operation: "CREATE",
+                accessType: "ALWAYS"
+                },
+                {
+                operation: "UPDATE",
+                accessType: "ALWAYS"
+                },
+                {
+                operation: "DELETE",
+                accessType: "ALWAYS"
+                },
+                {
+                operation: "READ",
+                accessType: "ALWAYS"
+                }
+                ],
+                collection: "Role"
+                }]
+                }
+            </ext:document>
+        </ext:insertOne>
+    </changeSet>
 </databaseChangeLog>

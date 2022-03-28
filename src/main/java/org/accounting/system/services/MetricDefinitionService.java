@@ -1,5 +1,6 @@
 package org.accounting.system.services;
 
+import com.mongodb.MongoWriteException;
 import io.quarkus.mongodb.panache.PanacheQuery;
 import org.accounting.system.dtos.MetricDefinitionRequestDto;
 import org.accounting.system.dtos.MetricDefinitionResponseDto;
@@ -83,7 +84,14 @@ public class MetricDefinitionService {
      */
     public MetricDefinitionResponseDto update(String id, UpdateMetricDefinitionRequestDto request){
 
-        var metricDefinition = metricDefinitionRepository.updateEntityById(new ObjectId(id), request);
+        MetricDefinition metricDefinition = null;
+
+        try{
+            metricDefinition = metricDefinitionRepository.updateEntityById(new ObjectId(id), request);
+        } catch (MongoWriteException e){
+            throw new ConflictException("The combination of unit_type and metric_name should be unique. A Metric Definition with that combination has already been created.");
+        }
+
         return MetricDefinitionMapper.INSTANCE.metricDefinitionToResponse(metricDefinition);
     }
 
