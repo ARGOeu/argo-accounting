@@ -6,5 +6,6 @@ package org.accounting.system.enums;
 public enum Collection {
 
     MetricDefinition,
-    Metric;
+    Metric,
+    Role;
 }
