@@ -141,6 +141,264 @@ To use a UI Page to obtain an access token from the external keycloak, which wil
 The `keycloak.server.url`, `keycloak.server.realm` and `keycloak.server.client.id` are used in order to feed the [keycloak.html](src/main/resources/templates/keycloak.html) template.
 There also is an [endpoint](src/main/java/org/accounting/system/templates/KeycloakClientTemplate.java) which is responsible for rendering that html page.
 
+## Authorization
+
+Collection-level permissions control services’ access to the collection. Collection permissions are configured using roles, and each collection contains a set of roles that allows services to create, read, update and delete entities of that collection.
+We assign permissions to services based on their roles. A role is a collection of permissions that you can apply to services. We can assign one or more roles to each service and one or more permissions to each role.
+
+To generate a role, we have to define the available API operations and access types. By combining operations and access types, you can generate permissions and then you can assign these permissions to each role.
+
+### Operations
+
+The available API operations are:
+
+| Operation   |  Description                                     |
+| ------------|------------------------------------------------  | 
+| Create      | Can create new entities within a collection      |
+| Update      | Can update existing entities within a collection |
+| Delete      | Can delete existing entities within a collection |
+| Read        | Can fetch existing entities within a collection  |
+
+### Access Types
+
+The following table illustrates the available access types:
+
+| Access Type |  Description                                                 |
+| ------------|------------------------------------------------------------- | 
+| Always      | Services are always able to perform this operation           |
+| Never       | Services are never able to perform this operation            |
+| Entity      | Services have only access to entities that they have created |
+
+If the service has more than one role :
+
+-   If the access types are __Always__ and __Entity__, the service will have __Always access__, because this access type is the most permissive and will override the others. In other words, the __most permissive access type__ takes precedence.
+-   __Never__ always takes precedence over any other access type.
+
+### Collections
+
+The available Accounting System API collections are:
+
+| Collections      |
+| -----------------| 
+| MetricDefinition | 
+| Metric           | 
+| Role             | 
+
+### Examples
+
+Based on the above, we can generate some indicative roles:
+
+| Role                      | Create | Update | Delete  | Read   | Collections      |
+| ------------------------- |--------| -------| --------| -------| -----------------|
+| metric_definition_admin   | Always | Always | Always  | Always | MetricDefinition |
+| metric_inspector          |        |        |         | Always | Metric           |
+| metric_creator            | Always | Entity | Entity  | Entity | Metric           |
+| role_editor               | Always | Always | Never   | Always | Role             |
+| role_editor               | Always | Always | Never   | Always | Role             |
+
+__Notes:__ 
+-   The role name should be unique.
+-   The blank value is converted to "Never" value
+
+Consequently:
+-   __metric_definition_admin__ can create new Metric Definitions, as well as update, delete and read any entity in the collection. In other words, __metric_definition_admin__ will always be able to perform any operation in the Metric Definition collection.
+-   __metric_inspector__  can read any entity in the Metric collection, but cannot create new ones or update, delete any Metrics.
+-   __metric_creator__ can create new Metrics, but can update, delete or read only its Metrics.
+-   __role_editor__ can create new Roles, as well as update, and read any entity in the Role collection but cannot delete any entity in it.
+
+### Generating new Roles via Accounting System API
+
+It is possible to create and manage new roles using the API. It should be noted that only the __system_admin__ role, which is initialized in the API, can create and manage roles through the API.
+Consequently, it is the only role that can grant access to other roles.
+
+#### Create a new Role
+
+We can create the aforementioned roles by executing the following requests:
+
+-   metric_definition_admin
+```bash
+POST 'https://host/accounting-system/roles' 
+
+{
+  "name" : "metric_definition_admin",
+  "collection_permissions":[
+    {
+    "collection": "MetricDefinition",
+    "permissions" :[
+      {
+        "operation" : "CREATE",
+        "access_type" : "ALWAYS"
+      },
+      {
+        "operation" : "UPDATE",
+        "access_type" : "ALWAYS"
+      },
+      {
+        "operation" : "DELETE",
+        "access_type" : "ALWAYS"
+      },
+      {
+        "operation" : "READ",
+        "access_type" : "ALWAYS"
+      }
+    ]
+    },
+  
+]
+}
+```
+-   metric_inspector
+```bash
+POST 'https://host/accounting-system/roles' 
+
+{
+  "name" : "metric_inspector",
+  "collection_permissions":[
+    {
+    "collection": "Metric",
+    "permissions" :[
+      {
+        "operation" : "READ",
+        "access_type" : "ALWAYS"
+      }
+    ]
+    },
+  
+]
+}
+```
+-   metric_creator
+```bash
+POST 'https://host/accounting-system/roles' 
+
+{
+  "name" : "metric_creator",
+  "collection_permissions":[
+    {
+    "collection": "Metric",
+    "permissions" :[
+      {
+        "operation" : "CREATE",
+        "access_type" : "ALWAYS"
+      },
+      {
+        "operation" : "UPDATE",
+        "access_type" : "ENTITY"
+      },
+      {
+        "operation" : "DELETE",
+        "access_type" : "ENTITY"
+      },
+      {
+        "operation" : "READ",
+        "access_type" : "ENTITY"
+      }
+    ]
+    },
+  
+]
+}
+```
+-   role_editor
+```bash
+POST 'https://host/accounting-system/roles' 
+
+{
+  "name" : "role_editor",
+  "collection_permissions":[
+    {
+    "collection": "Role",
+    "permissions" :[
+      {
+        "operation" : "CREATE",
+        "access_type" : "ALWAYS"
+      },
+      {
+        "operation" : "UPDATE",
+        "access_type" : "ALWAYS"
+      },
+      {
+        "operation" : "DELETE",
+        "access_type" : "NEVER"
+      },
+      {
+        "operation" : "READ",
+        "access_type" : "ALWAYS"
+      }
+    ]
+    },
+  
+]
+}
+```
+You can also create a more generic role. For example, the __editor__ can create new Roles, Metrics, and Metric Definitions, as well as update, and read any entity in those collections. But cannot delete any entity:
+
+-   editor
+```bash
+POST 'https://host/accounting-system/roles' 
+
+{
+  "name" : "editor",
+  "collection_permissions":[
+    {
+    "collection": "Role",
+    "permissions" :[
+      {
+        "operation" : "CREATE",
+        "access_type" : "ALWAYS"
+      },
+      {
+        "operation" : "UPDATE",
+        "access_type" : "ALWAYS"
+      },
+      {
+        "operation" : "READ",
+        "access_type" : "ALWAYS"
+      }
+    ]
+    },
+   {
+    "collection": "Metric",
+    "permissions" :[
+      {
+        "operation" : "CREATE",
+        "access_type" : "ALWAYS"
+      },
+      {
+        "operation" : "UPDATE",
+        "access_type" : "ALWAYS"
+      },
+      {
+        "operation" : "READ",
+        "access_type" : "ALWAYS"
+      }
+    ]
+    },
+  {
+    "collection": "MetricDefinition",
+    "permissions" :[
+      {
+        "operation" : "CREATE",
+        "access_type" : "ALWAYS"
+      },
+      {
+        "operation" : "UPDATE",
+        "access_type" : "ALWAYS"
+      },
+      {
+        "operation" : "READ",
+        "access_type" : "ALWAYS"
+      }
+    ]
+    }
+]
+}
+```
+### Assigning roles to Services/Users
+
+The generated roles can be assigned to different users or services via Keycloak.
+
+
 ## Deploying the Accounting System API
 
 To deploy the API in a machine :

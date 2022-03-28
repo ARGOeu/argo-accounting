@@ -1,6 +1,7 @@
 package org.accounting.system.mappers;
 
 import org.accounting.system.dtos.RoleResponseDto;
+import org.accounting.system.dtos.authorization.RoleRequestDto;
 import org.accounting.system.entities.authorization.Role;
 import org.mapstruct.Mapper;
 import org.mapstruct.factory.Mappers;
@@ -16,4 +17,8 @@ public interface RoleMapper {
     RoleMapper INSTANCE = Mappers.getMapper( RoleMapper.class );
 
     List<RoleResponseDto> rolesToResponse(List<Role> roles);
+
+    Role requestToRole(RoleRequestDto request);
+
+    RoleResponseDto roleToResponse(Role response);
 }

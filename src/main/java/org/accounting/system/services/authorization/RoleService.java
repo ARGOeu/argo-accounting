@@ -1,10 +1,14 @@
 package org.accounting.system.services.authorization;
 
+import com.mongodb.MongoWriteException;
 import org.accounting.system.beans.RequestInformation;
 import org.accounting.system.dtos.RoleResponseDto;
+import org.accounting.system.dtos.authorization.RoleRequestDto;
+import org.accounting.system.entities.authorization.Role;
 import org.accounting.system.enums.AccessType;
 import org.accounting.system.enums.Collection;
 import org.accounting.system.enums.Operation;
+import org.accounting.system.exceptions.ConflictException;
 import org.accounting.system.mappers.RoleMapper;
 import org.accounting.system.repositories.authorization.RoleRepository;
 
@@ -22,6 +26,25 @@ public class RoleService {
     @Inject
     RequestInformation requestInformation;
 
+    /**
+     * Maps the {@link RoleRequestDto} to {@link Role}.
+     * Then the {@link Role} is stored in the mongo database.
+     *
+     * @param request The POST request body
+     * @return The stored role has been turned into a response body
+     */
+    public RoleResponseDto save(RoleRequestDto request) {
+
+        var role = RoleMapper.INSTANCE.requestToRole(request);
+
+        try{
+            roleRepository.persist(role);
+        } catch (MongoWriteException e) {
+            throw new ConflictException("There is already a role with this name : " + request.name);
+        }
+
+        return RoleMapper.INSTANCE.roleToResponse(role);
+    }
 
     /**
      * It examines whether the role has access to execute an operation to a collection.
