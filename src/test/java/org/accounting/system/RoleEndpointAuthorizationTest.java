@@ -108,6 +108,21 @@ public class RoleEndpointAuthorizationTest {
         assertEquals("The authenticated user/service is not permitted to perform the requested operation.", informativeResponse.message);
     }
 
+    @Test
+    public void deleteRoleForbidden(){
+
+        var metricDefinitionResponse = deleteRole("inspector", "507f1f77bcf86cd799439011");
+
+        var informativeResponse = metricDefinitionResponse
+                .then()
+                .assertThat()
+                .statusCode(403)
+                .extract()
+                .as(InformativeResponse.class);
+
+        assertEquals("The authenticated user/service is not permitted to perform the requested operation.", informativeResponse.message);
+    }
+
     protected String getAccessToken(String userName) {
         return keycloakClient.getAccessToken(userName);
     }
@@ -120,6 +135,14 @@ public class RoleEndpointAuthorizationTest {
                 .body(request)
                 .contentType(ContentType.JSON)
                 .post();
+    }
+
+    private Response deleteRole(String user, String id){
+
+        return given()
+                .auth()
+                .oauth2(getAccessToken(user))
+                .delete("/{id}", id);
     }
 
 }

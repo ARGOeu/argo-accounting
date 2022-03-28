@@ -1,8 +1,9 @@
 package org.accounting.system.dtos;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import org.accounting.system.constraints.MetricDefinitionNotFound;
+import org.accounting.system.constraints.NotFoundEntity;
 import org.accounting.system.constraints.ZuluTime;
+import org.accounting.system.repositories.MetricDefinitionRepository;
 import org.eclipse.microprofile.openapi.annotations.enums.SchemaType;
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
 
@@ -17,7 +18,7 @@ public class UpdateMetricRequestDto {
             example = "507f1f77bcf86cd799439011"
     )
     @JsonProperty("metric_definition_id")
-    @MetricDefinitionNotFound
+    @NotFoundEntity(repository = MetricDefinitionRepository.class, message = "There is no Metric Definition with the following id:")
     public String metricDefinitionId;
 
     @Schema(
