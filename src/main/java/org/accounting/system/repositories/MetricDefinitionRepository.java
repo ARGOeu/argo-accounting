@@ -8,7 +8,6 @@ import org.accounting.system.repositories.authorization.AccessEntityRepository;
 import org.bson.types.ObjectId;
 
 import javax.enterprise.context.ApplicationScoped;
-import java.util.List;
 import java.util.Optional;
 
 /**
@@ -19,17 +18,11 @@ import java.util.Optional;
  * {@link AccessEntityRepository} public method must be executed, not the {@link PanacheMongoRepository} default methods.
  */
 @ApplicationScoped
-public class MetricDefinitionRepository extends AccessEntityRepository<MetricDefinition> implements PanacheMongoRepository<MetricDefinition> {
+public class MetricDefinitionRepository extends AccessEntityRepository<MetricDefinition> {
 
     public Optional<MetricDefinition> exist(String unitType, String name){
 
         return find("unitType = ?1 and metricName = ?2", unitType, name.toLowerCase()).stream().findAny();
-    }
-
-    @Override
-    protected MetricDefinition getEntityById(ObjectId objectId) {
-
-        return findById(objectId);
     }
 
     @Override
@@ -38,20 +31,5 @@ public class MetricDefinitionRepository extends AccessEntityRepository<MetricDef
         MetricDefinitionMapper.INSTANCE.updateMetricDefinitionFromDto((UpdateMetricDefinitionRequestDto) updateDto, entity);
         update(entity);
         return entity;
-    }
-
-    @Override
-    protected boolean deleteEntity(ObjectId id) {
-        return deleteById(id);
-    }
-
-    @Override
-    protected List<MetricDefinition> getAll() {
-        return findAll().list();
-    }
-
-    @Override
-    protected List<MetricDefinition> getAllByCreatorId(String creatorId) {
-        return list("creatorId = ?1", creatorId);
     }
 }

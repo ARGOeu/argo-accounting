@@ -125,7 +125,7 @@ public class RoleEndpointTest {
                 .extract()
                 .as(InformativeResponse.class);
 
-        assertEquals("collection_permission list should have at least one entry.", response.message);
+        assertEquals("collection_permission_list should have at least one entry.", response.message);
     }
 
     @Test
@@ -147,7 +147,7 @@ public class RoleEndpointTest {
                 .extract()
                 .as(InformativeResponse.class);
 
-        assertEquals("collection_permission list should have at least one entry.", response.message);
+        assertEquals("collection_permission_list should have at least one entry.", response.message);
     }
 
     @Test
@@ -594,6 +594,97 @@ public class RoleEndpointTest {
                 .as(InformativeResponse.class);
 
         assertEquals("Role has been deleted successfully.", deleteResponse.message);
+    }
+
+    @Test
+    public void fetchRoleNotAuthenticated() {
+
+        var notAuthenticatedResponse = given()
+                .auth()
+                .oauth2("invalidToken")
+                .get("/{id}", "507f1f77bcf86cd799439011")
+                .thenReturn();
+
+        assertEquals(401, notAuthenticatedResponse.statusCode());
+    }
+
+    @Test
+    public void fetchRoleNotFound() {
+
+        var response = given()
+                .auth()
+                .oauth2(getAccessToken("admin"))
+                .get("/{id}", "507f1f77bcf86cd799439011")
+                .then()
+                .assertThat()
+                .statusCode(404)
+                .extract()
+                .as(InformativeResponse.class);
+
+        assertEquals("There is no Role with the following id: 507f1f77bcf86cd799439011", response.message);
+    }
+
+    @Test
+    public void fetchRoleNotFoundNonHexId() {
+
+        var response = given()
+                .auth()
+                .oauth2(getAccessToken("admin"))
+                .get("/{id}", "iiejijirj33i3i")
+                .then()
+                .assertThat()
+                .statusCode(404)
+                .extract()
+                .as(InformativeResponse.class);
+
+        assertEquals(404, response.code);
+    }
+
+    @Test
+    public void fetchRole() {
+
+        var request= new RoleRequestDto();
+        request.name = "role_retrieved";
+
+        var collectionPermission = new ArrayList<CollectionPermissionDto>();
+        CollectionPermissionDto collectionPermissionDto = new CollectionPermissionDto();
+
+        var permissions = new ArrayList<PermissionDto>();
+
+        var permissionDto = new PermissionDto();
+        permissionDto.operation = "CREATE";
+        permissionDto.accessType = "ALWAYS";
+
+        permissions.add(permissionDto);
+
+        collectionPermissionDto.permissions = permissions;
+        collectionPermissionDto.collection = "Role";
+
+        collectionPermission.add(collectionPermissionDto);
+
+        request.collectionPermission = collectionPermission;
+
+        var response = createRole(request, "admin");
+
+        var role = response
+                .then()
+                .assertThat()
+                .statusCode(201)
+                .extract()
+                .as(RoleResponseDto.class);
+
+
+        var storedRole = given()
+                .auth()
+                .oauth2(getAccessToken("admin"))
+                .get("/{id}", role.id)
+                .then()
+                .assertThat()
+                .statusCode(200)
+                .extract()
+                .as(RoleResponseDto.class);
+
+        assertEquals(role.id, storedRole.id);
     }
 
     protected String getAccessToken(String userName) {

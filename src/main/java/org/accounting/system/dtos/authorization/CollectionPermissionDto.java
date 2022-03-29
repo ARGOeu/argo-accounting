@@ -2,7 +2,6 @@ package org.accounting.system.dtos.authorization;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import org.accounting.system.constraints.StringEnumeration;
-import org.accounting.system.entities.authorization.Permission;
 import org.accounting.system.enums.Collection;
 import org.eclipse.microprofile.openapi.annotations.enums.SchemaType;
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
@@ -16,7 +15,7 @@ public class CollectionPermissionDto {
 
     @Schema(
             type = SchemaType.ARRAY,
-            implementation = Permission.class,
+            implementation = PermissionDto.class,
             required = true,
             description = "A list of permissions. It should have at least one entry.",
             minItems = 1
