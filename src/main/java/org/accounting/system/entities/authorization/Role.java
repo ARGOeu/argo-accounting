@@ -5,7 +5,7 @@ import org.accounting.system.entities.Entity;
 import java.util.List;
 
 /**
- * The Role class represents the Metric collection stored in the mongo database.
+ * The Role class represents the Role collection stored in the mongo database.
  * Every instance of this class represents a record in that collection.
  */
 public class Role extends Entity {

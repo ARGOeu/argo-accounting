@@ -2,8 +2,9 @@ package org.accounting.system.services.authorization;
 
 import com.mongodb.MongoWriteException;
 import org.accounting.system.beans.RequestInformation;
-import org.accounting.system.dtos.RoleResponseDto;
 import org.accounting.system.dtos.authorization.RoleRequestDto;
+import org.accounting.system.dtos.authorization.RoleResponseDto;
+import org.accounting.system.dtos.authorization.update.UpdateRoleRequestDto;
 import org.accounting.system.entities.authorization.Role;
 import org.accounting.system.enums.AccessType;
 import org.accounting.system.enums.Collection;
@@ -105,6 +106,27 @@ public class RoleService {
     public boolean delete(String roleId){
 
         return roleRepository.deleteEntityById(new ObjectId(roleId));
+    }
+
+    /**
+     * This method is responsible for updating a part or all attributes of existing Role.
+     *
+     * @param id The Role to be updated.
+     * @param request The Role attributes to be updated
+     * @return The updated Role
+     * @throws NotFoundException If the Role doesn't exist
+     */
+    public RoleResponseDto update(String id, UpdateRoleRequestDto request){
+
+        Role role = null;
+
+        try{
+            role = roleRepository.updateEntityById(new ObjectId(id), request);
+        } catch (MongoWriteException e){
+            throw new ConflictException("The role name should be unique. A Role with that name has already been created.");
+        }
+
+        return RoleMapper.INSTANCE.roleToResponse(role);
     }
 
 }

@@ -7,7 +7,7 @@ import io.quarkus.test.keycloak.client.KeycloakTestClient;
 import io.restassured.http.ContentType;
 import io.restassured.response.Response;
 import org.accounting.system.dtos.InformativeResponse;
-import org.accounting.system.dtos.RoleResponseDto;
+import org.accounting.system.dtos.authorization.RoleResponseDto;
 import org.accounting.system.dtos.authorization.CollectionPermissionDto;
 import org.accounting.system.dtos.authorization.PermissionDto;
 import org.accounting.system.dtos.authorization.RoleRequestDto;
@@ -124,6 +124,21 @@ public class RoleEndpointAuthorizationTest {
     }
 
     @Test
+    public void updateRoleForbidden(){
+
+        var metricDefinitionResponse = updateRole("inspector", "507f1f77bcf86cd799439011");
+
+        var informativeResponse = metricDefinitionResponse
+                .then()
+                .assertThat()
+                .statusCode(403)
+                .extract()
+                .as(InformativeResponse.class);
+
+        assertEquals("The authenticated user/service is not permitted to perform the requested operation.", informativeResponse.message);
+    }
+
+    @Test
     public void fetchRoleForbidden(){
 
         var metricDefinitionResponse = fetchRole("inspector", "507f1f77bcf86cd799439011");
@@ -160,6 +175,14 @@ public class RoleEndpointAuthorizationTest {
                 .delete("/{id}", id);
     }
 
+    private Response updateRole(String user, String id){
+
+        return given()
+                .auth()
+                .oauth2(getAccessToken(user))
+                .contentType(ContentType.JSON)
+                .patch("/{id}", id);
+    }
     private Response fetchRole(String user, String id){
 
         return given()

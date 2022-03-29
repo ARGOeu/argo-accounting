@@ -3,8 +3,9 @@ package org.accounting.system.endpoints;
 import io.quarkus.security.Authenticated;
 import org.accounting.system.constraints.NotFoundEntity;
 import org.accounting.system.dtos.InformativeResponse;
-import org.accounting.system.dtos.RoleResponseDto;
 import org.accounting.system.dtos.authorization.RoleRequestDto;
+import org.accounting.system.dtos.authorization.RoleResponseDto;
+import org.accounting.system.dtos.authorization.update.UpdateRoleRequestDto;
 import org.accounting.system.enums.Collection;
 import org.accounting.system.interceptors.annotations.Permission;
 import org.accounting.system.repositories.authorization.RoleRepository;
@@ -29,6 +30,7 @@ import javax.validation.constraints.NotNull;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
+import javax.ws.rs.PATCH;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
@@ -259,6 +261,79 @@ public class RoleEndpoint {
             @PathParam("id") @Valid @NotFoundEntity(repository = RoleRepository.class, message = "There is no Role with the following id:") String id){
 
         RoleResponseDto response = roleService.fetchRole(id);
+
+        return Response.ok().entity(response).build();
+    }
+
+    @Tag(name = "Role")
+    @Operation(
+            summary = "Updates an existing Role.",
+            description = "In order to update the resource properties, the body of the request must contain an updated representation of Role. " +
+                    "You can update a part or all attributes of the Role except for its id. The empty or null values are ignored.")
+    @APIResponse(
+            responseCode = "200",
+            description = "Role was updated successfully.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = RoleResponseDto.class)))
+    @APIResponse(
+            responseCode = "400",
+            description = "Bad Request.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "401",
+            description = "User/Service has not been authenticated.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "403",
+            description = "The authenticated user/service is not permitted to perform the requested operation.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "404",
+            description = "Role has not been found.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "409",
+            description = "There is a Role with that name.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "415",
+            description = "Cannot consume content type.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "500",
+            description = "Internal Server Errors.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @SecurityRequirement(name = "Authentication")
+
+    @PATCH
+    @Path("/{id}")
+    @Produces(value = MediaType.APPLICATION_JSON)
+    @Consumes(value = MediaType.APPLICATION_JSON)
+    @Permission(collection = Collection.Role, operation = org.accounting.system.enums.Operation.UPDATE)
+    public Response update(
+            @Parameter(
+                    description = "The Role to be updated.",
+                    required = true,
+                    example = "507f1f77bcf86cd799439011",
+                    schema = @Schema(type = SchemaType.STRING))
+            @PathParam("id") @Valid @NotFoundEntity(repository = RoleRepository.class, message = "There is no Role with the following id:") String id, @Valid @NotNull(message = "The request body is empty.") UpdateRoleRequestDto updateRoleRequestDto) {
+
+        RoleResponseDto response = roleService.update(id, updateRoleRequestDto);
 
         return Response.ok().entity(response).build();
     }

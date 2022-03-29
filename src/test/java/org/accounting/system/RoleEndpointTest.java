@@ -7,10 +7,13 @@ import io.quarkus.test.keycloak.client.KeycloakTestClient;
 import io.restassured.http.ContentType;
 import io.restassured.response.Response;
 import org.accounting.system.dtos.InformativeResponse;
-import org.accounting.system.dtos.RoleResponseDto;
 import org.accounting.system.dtos.authorization.CollectionPermissionDto;
 import org.accounting.system.dtos.authorization.PermissionDto;
 import org.accounting.system.dtos.authorization.RoleRequestDto;
+import org.accounting.system.dtos.authorization.RoleResponseDto;
+import org.accounting.system.dtos.authorization.update.UpdateCollectionPermissionDto;
+import org.accounting.system.dtos.authorization.update.UpdatePermissionDto;
+import org.accounting.system.dtos.authorization.update.UpdateRoleRequestDto;
 import org.accounting.system.endpoints.RoleEndpoint;
 import org.accounting.system.repositories.authorization.RoleRepository;
 import org.accounting.system.services.authorization.RoleService;
@@ -20,6 +23,7 @@ import javax.inject.Inject;
 import java.util.ArrayList;
 
 import static io.restassured.RestAssured.given;
+import static org.hamcrest.Matchers.is;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @QuarkusTest
@@ -685,6 +689,278 @@ public class RoleEndpointTest {
                 .as(RoleResponseDto.class);
 
         assertEquals(role.id, storedRole.id);
+    }
+
+    @Test
+    public void updateRoleCannotConsumeContentType() {
+
+        var request= new RoleRequestDto();
+        request.name = "role_update_cannot_consume_content_type";
+
+        var collectionPermission = new ArrayList<CollectionPermissionDto>();
+        CollectionPermissionDto collectionPermissionDto = new CollectionPermissionDto();
+
+        var permissions = new ArrayList<PermissionDto>();
+
+        var permissionDto = new PermissionDto();
+        permissionDto.operation = "CREATE";
+        permissionDto.accessType = "ALWAYS";
+
+        permissions.add(permissionDto);
+
+        collectionPermissionDto.permissions = permissions;
+        collectionPermissionDto.collection = "Role";
+
+        collectionPermission.add(collectionPermissionDto);
+
+        request.collectionPermission = collectionPermission;
+
+        var response = createRole(request, "admin");
+
+        var role = response
+                .then()
+                .assertThat()
+                .statusCode(201)
+                .extract()
+                .as(RoleResponseDto.class);
+
+
+        var error = given()
+                .auth()
+                .oauth2(getAccessToken("admin"))
+                .patch("/{id}", role.id)
+                .then()
+                .assertThat()
+                .statusCode(415)
+                .extract()
+                .as(InformativeResponse.class);
+
+        assertEquals("Cannot consume content type.", error.message);
+    }
+
+    @Test
+    public void updateRoleNotAuthenticated() {
+
+        var notAuthenticatedResponse = given()
+                .auth()
+                .oauth2("invalidToken")
+                .contentType(ContentType.JSON)
+                .patch("/{id}", "556787878e-rrr")
+                .thenReturn();
+
+        assertEquals(401, notAuthenticatedResponse.statusCode());
+    }
+
+    @Test
+    public void updateRoleNotFound() {
+
+        var response = given()
+                .auth()
+                .oauth2(getAccessToken("admin"))
+                .contentType(ContentType.JSON)
+                .patch("/{id}", "556787878e-rrr")
+                .then()
+                .assertThat()
+                .statusCode(404)
+                .extract()
+                .as(InformativeResponse.class);
+
+        assertEquals("There is no Role with the following id: 556787878e-rrr", response.message);
+    }
+
+    @Test
+    public void updateRoleNameAndDescription() {
+
+        var request= new RoleRequestDto();
+        request.name = "role_update_name";
+        request.description = "description";
+
+        var collectionPermission = new ArrayList<CollectionPermissionDto>();
+        CollectionPermissionDto collectionPermissionDto = new CollectionPermissionDto();
+
+        var permissions = new ArrayList<PermissionDto>();
+
+        var permissionDto = new PermissionDto();
+        permissionDto.operation = "CREATE";
+        permissionDto.accessType = "ALWAYS";
+
+        permissions.add(permissionDto);
+
+        collectionPermissionDto.permissions = permissions;
+        collectionPermissionDto.collection = "Role";
+
+        collectionPermission.add(collectionPermissionDto);
+
+        request.collectionPermission = collectionPermission;
+
+        var response = createRole(request, "admin");
+
+        var role = response
+                .then()
+                .assertThat()
+                .statusCode(201)
+                .extract()
+                .as(RoleResponseDto.class);
+
+        var updateRoleRequestDto = new UpdateRoleRequestDto();
+
+        updateRoleRequestDto.name = "role_update_name_changed";
+        updateRoleRequestDto.description = "role_update_name_changed";
+
+        var updateResponse = given()
+                .auth()
+                .oauth2(getAccessToken("admin"))
+                .body(updateRoleRequestDto)
+                .contentType(ContentType.JSON)
+                .patch("/{id}", role.id)
+                .then()
+                .assertThat()
+                .statusCode(200)
+                .body("id", is(role.id))
+                .body("name", is(updateRoleRequestDto.name))
+                .body("description", is(updateRoleRequestDto.description))
+                .extract()
+                .as(RoleResponseDto.class);
+
+        assertEquals(updateRoleRequestDto.name, updateResponse.name);
+    }
+
+    @Test
+    public void updateRolePermissions() {
+
+        var request= new RoleRequestDto();
+        request.name = "role_update_collection";
+        request.description = "description";
+
+        var collectionPermission = new ArrayList<CollectionPermissionDto>();
+        CollectionPermissionDto collectionPermissionDto = new CollectionPermissionDto();
+
+        var permissions = new ArrayList<PermissionDto>();
+
+        var permissionDto = new PermissionDto();
+        permissionDto.operation = "CREATE";
+        permissionDto.accessType = "ALWAYS";
+
+        permissions.add(permissionDto);
+
+        collectionPermissionDto.permissions = permissions;
+        collectionPermissionDto.collection = "Role";
+
+        collectionPermission.add(collectionPermissionDto);
+
+        request.collectionPermission = collectionPermission;
+
+        var response = createRole(request, "admin");
+
+        var role = response
+                .then()
+                .assertThat()
+                .statusCode(201)
+                .extract()
+                .as(RoleResponseDto.class);
+
+        var updateRoleRequestDto = new UpdateRoleRequestDto();
+
+        var updateCollectionPermission = new ArrayList<UpdateCollectionPermissionDto>();
+        UpdateCollectionPermissionDto updateCollectionPermissionDto = new UpdateCollectionPermissionDto();
+
+        var updatePermissions = new ArrayList<UpdatePermissionDto>();
+
+        var updatePermissionDto = new UpdatePermissionDto();
+        updatePermissionDto.operation = "UPDATE";
+        updatePermissionDto.accessType = "ALWAYS";
+
+        updatePermissions.add(updatePermissionDto);
+
+        updateCollectionPermissionDto.permissions = updatePermissions;
+        updateCollectionPermissionDto.collection = "Metric";
+
+        updateCollectionPermission.add(updateCollectionPermissionDto);
+
+        updateRoleRequestDto.collectionPermission = updateCollectionPermission;
+
+        var updateResponse = given()
+                .auth()
+                .oauth2(getAccessToken("admin"))
+                .body(updateRoleRequestDto)
+                .contentType(ContentType.JSON)
+                .patch("/{id}", role.id)
+                .then()
+                .assertThat()
+                .statusCode(200)
+                .extract()
+                .as(RoleResponseDto.class);
+
+        assertEquals("Metric", updateResponse.collectionPermission.get(0).collection);
+    }
+
+    @Test
+    public void updateRoleNotValidCollection() {
+
+        var request= new RoleRequestDto();
+        request.name = "role_update_not_valid_collection";
+        request.description = "description";
+
+        var collectionPermission = new ArrayList<CollectionPermissionDto>();
+        CollectionPermissionDto collectionPermissionDto = new CollectionPermissionDto();
+
+        var permissions = new ArrayList<PermissionDto>();
+
+        var permissionDto = new PermissionDto();
+        permissionDto.operation = "CREATE";
+        permissionDto.accessType = "ALWAYS";
+
+        permissions.add(permissionDto);
+
+        collectionPermissionDto.permissions = permissions;
+        collectionPermissionDto.collection = "Role";
+
+        collectionPermission.add(collectionPermissionDto);
+
+        request.collectionPermission = collectionPermission;
+
+        var response = createRole(request, "admin");
+
+        var role = response
+                .then()
+                .assertThat()
+                .statusCode(201)
+                .extract()
+                .as(RoleResponseDto.class);
+
+        var updateRoleRequestDto = new UpdateRoleRequestDto();
+
+        var updateCollectionPermission = new ArrayList<UpdateCollectionPermissionDto>();
+        UpdateCollectionPermissionDto updateCollectionPermissionDto = new UpdateCollectionPermissionDto();
+
+        var updatePermissions = new ArrayList<UpdatePermissionDto>();
+
+        var updatePermissionDto = new UpdatePermissionDto();
+        updatePermissionDto.operation = "UPDATE";
+        updatePermissionDto.accessType = "ALWAYS";
+
+        updatePermissions.add(updatePermissionDto);
+
+        updateCollectionPermissionDto.permissions = updatePermissions;
+        updateCollectionPermissionDto.collection = "Test";
+
+        updateCollectionPermission.add(updateCollectionPermissionDto);
+
+        updateRoleRequestDto.collectionPermission = updateCollectionPermission;
+
+        var informativeResponse = given()
+                .auth()
+                .oauth2(getAccessToken("admin"))
+                .body(updateRoleRequestDto)
+                .contentType(ContentType.JSON)
+                .patch("/{id}", role.id)
+                .then()
+                .assertThat()
+                .statusCode(400)
+                .extract()
+                .as(InformativeResponse.class);
+
+        assertEquals("The value Test is not a valid collection. Valid collection values are: [Role, MetricDefinition, Metric]", informativeResponse.message);
     }
 
     protected String getAccessToken(String userName) {

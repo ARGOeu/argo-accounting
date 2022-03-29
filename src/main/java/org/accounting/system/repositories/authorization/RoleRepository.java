@@ -1,9 +1,11 @@
 package org.accounting.system.repositories.authorization;
 
 import io.quarkus.mongodb.panache.PanacheMongoRepository;
+import org.accounting.system.dtos.authorization.update.UpdateRoleRequestDto;
 import org.accounting.system.entities.authorization.Permission;
 import org.accounting.system.entities.authorization.Role;
 import org.accounting.system.enums.Collection;
+import org.accounting.system.mappers.RoleMapper;
 import org.bson.types.ObjectId;
 
 import javax.enterprise.context.ApplicationScoped;
@@ -49,6 +51,9 @@ public class RoleRepository extends AccessEntityRepository<Role> {
 
     @Override
     protected <U> Role updateEntity(ObjectId id, U updateDto, Role entity) {
-        return null;
+
+        RoleMapper.INSTANCE.updateRoleFromDto((UpdateRoleRequestDto) updateDto, entity);
+        update(entity);
+        return entity;
     }
 }
