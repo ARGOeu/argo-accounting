@@ -11,9 +11,11 @@ import org.accounting.system.enums.Operation;
 import org.accounting.system.exceptions.ConflictException;
 import org.accounting.system.mappers.RoleMapper;
 import org.accounting.system.repositories.authorization.RoleRepository;
+import org.bson.types.ObjectId;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
+import javax.ws.rs.NotFoundException;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -80,4 +82,16 @@ public class RoleService {
 
         return rolesToResponse;
     }
+
+    /**
+     * Delete a Role by given id.
+     * @param roleId The Role to be deleted
+     * @return If the operation is successful or not
+     * @throws NotFoundException If the Role doesn't exist
+     */
+    public boolean delete(String roleId){
+
+        return roleRepository.deleteEntityById(new ObjectId(roleId));
+    }
+
 }

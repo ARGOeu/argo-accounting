@@ -1,12 +1,12 @@
 package org.accounting.system.endpoints;
 
 import io.quarkus.security.Authenticated;
-import org.accounting.system.constraints.MetricNotFound;
+import org.accounting.system.constraints.NotFoundEntity;
 import org.accounting.system.dtos.InformativeResponse;
-import org.accounting.system.dtos.MetricDefinitionResponseDto;
 import org.accounting.system.dtos.MetricRequestDto;
 import org.accounting.system.dtos.MetricResponseDto;
 import org.accounting.system.dtos.UpdateMetricRequestDto;
+import org.accounting.system.repositories.MetricRepository;
 import org.accounting.system.services.MetricService;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.eclipse.microprofile.openapi.annotations.Operation;
@@ -82,7 +82,7 @@ public class MetricEndpoint {
                     implementation = InformativeResponse.class)))
     @APIResponse(
             responseCode = "401",
-            description = "User has not been authenticated.",
+            description = "User/Service has not been authenticated.",
             content = @Content(schema = @Schema(
                     type = SchemaType.OBJECT,
                     implementation = InformativeResponse.class)))
@@ -130,7 +130,7 @@ public class MetricEndpoint {
                     implementation = MetricResponseDto.class)))
     @APIResponse(
             responseCode = "401",
-            description = "User has not been authenticated.",
+            description = "User/Service has not been authenticated.",
             content = @Content(schema = @Schema(
                     type = SchemaType.OBJECT,
                     implementation = InformativeResponse.class)))
@@ -157,7 +157,7 @@ public class MetricEndpoint {
                     required = true,
                     example = "507f1f77bcf86cd799439011",
                     schema = @Schema(type = SchemaType.STRING))
-            @PathParam("id") @Valid @MetricNotFound String id){
+            @PathParam("id") @Valid @NotFoundEntity(repository = MetricRepository.class, message = "There is no Metric with the following id:") String id){
 
         MetricResponseDto response = metricService.fetchMetric(id);
 
@@ -173,10 +173,10 @@ public class MetricEndpoint {
             description = "Metric has been deleted successfully.",
             content = @Content(schema = @Schema(
                     type = SchemaType.OBJECT,
-                    implementation = MetricDefinitionResponseDto.class)))
+                    implementation = InformativeResponse.class)))
     @APIResponse(
             responseCode = "401",
-            description = "User has not been authenticated.",
+            description = "User/Service has not been authenticated.",
             content = @Content(schema = @Schema(
                     type = SchemaType.OBJECT,
                     implementation = InformativeResponse.class)))
@@ -202,7 +202,7 @@ public class MetricEndpoint {
             required = true,
             example = "507f1f77bcf86cd799439011",
             schema = @Schema(type = SchemaType.STRING))
-                           @PathParam("id") @Valid @MetricNotFound String id) {
+                           @PathParam("id") @Valid @NotFoundEntity(repository = MetricRepository.class, message = "There is no Metric with the following id:") String id) {
 
 
         boolean success = metricService.delete(id);
@@ -238,7 +238,7 @@ public class MetricEndpoint {
                     implementation = InformativeResponse.class)))
     @APIResponse(
             responseCode = "401",
-            description = "User has not been authenticated.",
+            description = "User/Service has not been authenticated.",
             content = @Content(schema = @Schema(
                     type = SchemaType.OBJECT,
                     implementation = InformativeResponse.class)))
@@ -272,7 +272,7 @@ public class MetricEndpoint {
                     required = true,
                     example = "61dbe3f10086512c9ff1197a",
                     schema = @Schema(type = SchemaType.STRING))
-            @PathParam("id") @Valid @MetricNotFound String id, @Valid @NotNull(message = "The request body is empty.") UpdateMetricRequestDto updateMetricRequestDto){
+            @PathParam("id") @Valid @NotFoundEntity(repository = MetricRepository.class, message = "There is no Metric with the following id:") String id, @Valid @NotNull(message = "The request body is empty.") UpdateMetricRequestDto updateMetricRequestDto){
 
         MetricResponseDto response = metricService.update(id, updateMetricRequestDto);
         return Response.ok().entity(response).build();

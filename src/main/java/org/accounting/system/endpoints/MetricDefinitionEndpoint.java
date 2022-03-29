@@ -1,7 +1,7 @@
 package org.accounting.system.endpoints;
 
 import io.quarkus.security.Authenticated;
-import org.accounting.system.constraints.MetricDefinitionNotFound;
+import org.accounting.system.constraints.NotFoundEntity;
 import org.accounting.system.dtos.InformativeResponse;
 import org.accounting.system.dtos.MetricDefinitionRequestDto;
 import org.accounting.system.dtos.MetricDefinitionResponseDto;
@@ -10,6 +10,7 @@ import org.accounting.system.dtos.UpdateMetricDefinitionRequestDto;
 import org.accounting.system.enums.Collection;
 import org.accounting.system.exceptions.UnprocessableException;
 import org.accounting.system.interceptors.annotations.Permission;
+import org.accounting.system.repositories.MetricDefinitionRepository;
 import org.accounting.system.services.MetricDefinitionService;
 import org.accounting.system.services.ReadPredefinedTypesService;
 import org.accounting.system.util.Predicates;
@@ -109,7 +110,7 @@ public class MetricDefinitionEndpoint {
                     implementation = InformativeResponse.class)))
     @APIResponse(
             responseCode = "401",
-            description = "User has not been authenticated.",
+            description = "User/Service has not been authenticated.",
             content = @Content(schema = @Schema(
                     type = SchemaType.OBJECT,
                     implementation = InformativeResponse.class)))
@@ -172,7 +173,7 @@ public class MetricDefinitionEndpoint {
                     implementation = MetricDefinitionResponseDto.class)))
     @APIResponse(
             responseCode = "401",
-            description = "User has not been authenticated.",
+            description = "User/Service has not been authenticated.",
             content = @Content(schema = @Schema(
                     type = SchemaType.OBJECT,
                     implementation = InformativeResponse.class)))
@@ -210,7 +211,7 @@ public class MetricDefinitionEndpoint {
                     implementation = MetricDefinitionResponseDto.class)))
     @APIResponse(
             responseCode = "401",
-            description = "User has not been authenticated.",
+            description = "User/Service has not been authenticated.",
             content = @Content(schema = @Schema(
                     type = SchemaType.OBJECT,
                     implementation = InformativeResponse.class)))
@@ -244,7 +245,7 @@ public class MetricDefinitionEndpoint {
                     required = true,
                     example = "507f1f77bcf86cd799439011",
                     schema = @Schema(type = SchemaType.STRING))
-            @PathParam("id") @Valid @MetricDefinitionNotFound String id){
+            @PathParam("id") @Valid @NotFoundEntity(repository = MetricDefinitionRepository.class, message = "There is no Metric Definition with the following id:") String id){
 
         MetricDefinitionResponseDto response = metricDefinitionService.fetchMetricDefinition(id);
 
@@ -270,7 +271,7 @@ public class MetricDefinitionEndpoint {
                     implementation = InformativeResponse.class)))
     @APIResponse(
             responseCode = "401",
-            description = "User has not been authenticated.",
+            description = "User/Service has not been authenticated.",
             content = @Content(schema = @Schema(
                     type = SchemaType.OBJECT,
                     implementation = InformativeResponse.class)))
@@ -317,7 +318,7 @@ public class MetricDefinitionEndpoint {
                     required = true,
                     example = "507f1f77bcf86cd799439011",
                     schema = @Schema(type = SchemaType.STRING))
-            @PathParam("id") @Valid @MetricDefinitionNotFound String id, @Valid @NotNull(message = "The request body is empty.") UpdateMetricDefinitionRequestDto updateMetricDefinitionRequest){
+            @PathParam("id") @Valid @NotFoundEntity(repository = MetricDefinitionRepository.class, message = "There is no Metric Definition with the following id:") String id, @Valid @NotNull(message = "The request body is empty.") UpdateMetricDefinitionRequestDto updateMetricDefinitionRequest){
 
         MetricDefinitionResponseDto response = metricDefinitionService.update(id, updateMetricDefinitionRequest);
 
@@ -333,10 +334,10 @@ public class MetricDefinitionEndpoint {
             description = "Metric Definition has been deleted successfully.",
             content = @Content(schema = @Schema(
                     type = SchemaType.OBJECT,
-                    implementation = MetricDefinitionResponseDto.class)))
+                    implementation = InformativeResponse.class)))
     @APIResponse(
             responseCode = "401",
-            description = "User has not been authenticated.",
+            description = "User/Service has not been authenticated..",
             content = @Content(schema = @Schema(
                     type = SchemaType.OBJECT,
                     implementation = InformativeResponse.class)))
@@ -369,7 +370,7 @@ public class MetricDefinitionEndpoint {
             required = true,
             example = "507f1f77bcf86cd799439011",
             schema = @Schema(type = SchemaType.STRING))
-            @PathParam("id") @Valid @MetricDefinitionNotFound String id) {
+            @PathParam("id") @Valid @NotFoundEntity(repository = MetricDefinitionRepository.class, message = "There is no Metric Definition with the following id:") String id) {
 
         metricDefinitionService.hasChildren(id);
 
@@ -419,7 +420,7 @@ public class MetricDefinitionEndpoint {
                     "}")))
     @APIResponse(
             responseCode = "401",
-            description = "User has not been authenticated.",
+            description = "User/Service has not been authenticated.",
             content = @Content(schema = @Schema(
                     type = SchemaType.OBJECT,
                     implementation = InformativeResponse.class)))
@@ -465,7 +466,7 @@ public class MetricDefinitionEndpoint {
                             "}")))
     @APIResponse(
             responseCode = "401",
-            description = "User has not been authenticated.",
+            description = "User/Service has not been authenticated.",
             content = @Content(schema = @Schema(
                     type = SchemaType.OBJECT,
                     implementation = InformativeResponse.class)))
@@ -507,7 +508,7 @@ public class MetricDefinitionEndpoint {
                     implementation = InformativeResponse.class)))
     @APIResponse(
             responseCode = "401",
-            description = "User has not been authenticated.",
+            description = "User/Service has not been authenticated.",
             content = @Content(schema = @Schema(
                     type = SchemaType.OBJECT,
                     implementation = InformativeResponse.class)))
@@ -546,7 +547,7 @@ public class MetricDefinitionEndpoint {
             required = true,
             example = "507f1f77bcf86cd799439011",
             schema = @Schema(type = SchemaType.STRING))
-                        @PathParam("metric_definition_id") @Valid @MetricDefinitionNotFound String metricDefinitionId,
+                        @PathParam("metric_definition_id") @Valid @NotFoundEntity(repository = MetricDefinitionRepository.class, message = "There is no Metric Definition with the following id:") String metricDefinitionId,
                         @Parameter(name = "page", in = QUERY,
                                 description = "Indicates the page number.") @DefaultValue("1") @QueryParam("page") int page,
                         @Parameter(name = "size", in = QUERY,

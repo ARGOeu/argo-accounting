@@ -1,6 +1,7 @@
 package org.accounting.system.constraints;
 
-import org.accounting.system.validators.MetricDefinitionNotFoundValidator;
+import io.quarkus.mongodb.panache.PanacheMongoRepository;
+import org.accounting.system.validators.NotFoundEntityValidator;
 
 import javax.validation.Constraint;
 import javax.validation.Payload;
@@ -12,11 +13,12 @@ import java.lang.annotation.Target;
 
 @Target({ElementType.FIELD, ElementType.PARAMETER})
 @Retention(RetentionPolicy.RUNTIME)
-@Constraint(validatedBy = MetricDefinitionNotFoundValidator.class)
+@Constraint(validatedBy = NotFoundEntityValidator.class)
 @Documented
-public @interface MetricDefinitionNotFound {
+public @interface NotFoundEntity {
 
-    String message() default "There is no Metric Definition with the following id:";
+    String message() default "Not founded:";
     Class<?>[] groups() default {};
     Class<? extends Payload>[] payload() default {};
+    Class<? extends PanacheMongoRepository<?>> repository();
 }
