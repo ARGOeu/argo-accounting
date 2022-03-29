@@ -21,8 +21,6 @@ public interface MetricDefinitionMapper {
 
     MetricDefinition requestToMetricDefinition(MetricDefinitionRequestDto request);
 
-    MetricDefinitionRequestDto updateRequestToMetricDefinitionDtoRequest(UpdateMetricDefinitionRequestDto update);
-
     @Mapping( target="id", expression="java(metricDefinition.getId().toString())")
     MetricDefinitionResponseDto metricDefinitionToResponse(MetricDefinition metricDefinition);
 

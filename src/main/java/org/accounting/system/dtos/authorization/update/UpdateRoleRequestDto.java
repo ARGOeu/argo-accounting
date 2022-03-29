@@ -1,29 +1,19 @@
-package org.accounting.system.dtos;
+package org.accounting.system.dtos.authorization.update;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import org.accounting.system.dtos.authorization.CollectionPermissionDto;
 import org.eclipse.microprofile.openapi.annotations.enums.SchemaType;
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
 
+import javax.validation.Valid;
 import java.util.List;
 
-@Schema(name="RoleResponse", description="An object represents the stored Roles.")
-public class RoleResponseDto {
-
-    @Schema(
-            type = SchemaType.STRING,
-            implementation = String.class,
-            description = "Unique ID of the role.",
-            example = "507f1f77bcf86cd799439011"
-    )
-    @JsonProperty("id")
-    public String id;
+@Schema(name="UpdateRoleRequest", description="An object represents a request for updating a Role.")
+public class UpdateRoleRequestDto {
 
     @Schema(
             type = SchemaType.STRING,
             implementation = String.class,
             description = "The role name.",
-            required = true,
             example = "metric_definition_inspector"
     )
     @JsonProperty("name")
@@ -40,11 +30,9 @@ public class RoleResponseDto {
 
     @Schema(
             type = SchemaType.ARRAY,
-            implementation = CollectionPermissionDto.class,
-            description = "This list encapsulates the permissions upon the API collections. It should have at least one entry of CollectionPermission.",
-            required = true,
-            minItems = 1
+            implementation = UpdateCollectionPermissionDto.class,
+            description = "This list encapsulates the permissions upon the API collections."
     )
     @JsonProperty("collection_permission_list")
-    public List<CollectionPermissionDto> collectionPermission;
+    public List<@Valid UpdateCollectionPermissionDto> collectionPermission;
 }
