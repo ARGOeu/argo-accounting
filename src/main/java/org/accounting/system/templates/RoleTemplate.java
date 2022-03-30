@@ -1,7 +1,7 @@
 package org.accounting.system.templates;
 
 import io.quarkus.qute.Template;
-import org.accounting.system.services.authorization.RoleService;
+import org.accounting.system.repositories.authorization.RoleRepository;
 
 import javax.inject.Inject;
 import javax.ws.rs.GET;
@@ -20,13 +20,13 @@ public class RoleTemplate {
     Template role;
 
     @Inject
-    RoleService roleService;
+    RoleRepository roleRepository;
 
     @GET
     @Produces(MediaType.TEXT_HTML)
     public String keycloakClient() {
         return role
-                .data("roles", roleService.fetchRoles())
+                .data("roles", roleRepository.findAll().list())
                 .render();
     }
 }
