@@ -92,7 +92,14 @@
             var _textRoles = document.createElement("input");
             _textRoles.id = "roles_from_token";
             _textRoles.readOnly = true;
+            var rolesFromToken = decodedToken.roles;
+
+            if(rolesFromToken){
             _textRoles.value = decodedToken.roles;
+            } else {
+            _textRoles.value = "";
+            }
+
             _textRoles.className="form-control";
             _textRoles.for = "roles_from_token";
 

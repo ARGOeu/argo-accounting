@@ -14,6 +14,7 @@ import javax.inject.Inject;
 import javax.interceptor.AroundInvoke;
 import javax.interceptor.Interceptor;
 import javax.interceptor.InvocationContext;
+import javax.json.JsonArray;
 import javax.json.JsonString;
 import javax.ws.rs.ForbiddenException;
 import java.lang.annotation.Annotation;
@@ -71,8 +72,13 @@ public class PermissionInterceptor {
                 .findFirst()
                 .get();
 
-        List<String> providedRoles = tokenIntrospection
-                .getArray(key)
+        JsonArray jsonArray = tokenIntrospection.getArray(key);
+
+        if(Objects.isNull(jsonArray)){
+            throw new ForbiddenException("The authenticated user/service is not permitted to perform the requested operation.");
+        }
+
+        List<String> providedRoles = jsonArray
                 .stream()
                 .map(jsonValue -> ((JsonString) jsonValue).getString())
                 .collect(Collectors.toList());
