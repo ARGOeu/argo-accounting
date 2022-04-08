@@ -7,13 +7,14 @@ import org.accounting.system.dtos.MetricDefinitionRequestDto;
 import org.accounting.system.dtos.MetricDefinitionResponseDto;
 import org.accounting.system.dtos.PageResource;
 import org.accounting.system.dtos.UpdateMetricDefinitionRequestDto;
+import org.accounting.system.dtos.acl.AccessControlRequestDto;
 import org.accounting.system.enums.Collection;
 import org.accounting.system.exceptions.UnprocessableException;
 import org.accounting.system.interceptors.annotations.Permission;
-import org.accounting.system.repositories.MetricDefinitionRepository;
+import org.accounting.system.repositories.metricdefinition.MetricDefinitionRepository;
 import org.accounting.system.services.MetricDefinitionService;
 import org.accounting.system.services.ReadPredefinedTypesService;
-import org.accounting.system.util.Predicates;
+import org.accounting.system.util.Utility;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.eclipse.microprofile.openapi.annotations.Operation;
 import org.eclipse.microprofile.openapi.annotations.enums.SchemaType;
@@ -73,12 +74,12 @@ public class MetricDefinitionEndpoint {
     ReadPredefinedTypesService readPredefinedTypesService;
 
     @Inject
-    Predicates predicates;
+    Utility utility;
 
-    public MetricDefinitionEndpoint(MetricDefinitionService metricDefinitionService, ReadPredefinedTypesService readPredefinedTypesService, Predicates predicates) {
+    public MetricDefinitionEndpoint(MetricDefinitionService metricDefinitionService, ReadPredefinedTypesService readPredefinedTypesService, Utility utility) {
         this.metricDefinitionService = metricDefinitionService;
         this.readPredefinedTypesService = readPredefinedTypesService;
-        this.predicates = predicates;
+        this.utility = utility;
     }
 
 
@@ -154,7 +155,7 @@ public class MetricDefinitionEndpoint {
 
         UriInfo serverInfo = new ResteasyUriInfo(serverUrl.concat(basePath).concat(uriInfo.getPath()), basePath);
 
-        predicates.exist(metricDefinitionRequestDto);
+        utility.exist(metricDefinitionRequestDto);
 
         var response = metricDefinitionService.save(metricDefinitionRequestDto);
 
@@ -566,5 +567,87 @@ public class MetricDefinitionEndpoint {
         var metrics = metricDefinitionService.findMetricsByMetricDefinitionIdPageable(metricDefinitionId, page-1, size, serverInfo);
 
         return Response.ok().entity(metrics).build();
+    }
+
+    @Tag(name = "Metric Definition")
+    @Operation(
+            summary = "Generates a new Access Control Entry.",
+            description = "This endpoint is responsible for generating a new Access Control Entry. " +
+                    "Access Control Entry rules specify which services/users are granted or denied access to particular Metric Definition entities. " +
+                    "It should be noted that the combination {who, collection, entity} is unique. Therefore, only one Access Control entry can be created for each service/user and each entity.")
+    @APIResponse(
+            responseCode = "200",
+            description = "Access Control entry has been created successfully.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "400",
+            description = "Bad Request.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "401",
+            description = "User/Service has not been authenticated.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "403",
+            description = "The authenticated user/service is not permitted to perform the requested operation.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "404",
+            description = "There is no entity {entity} into the collection Metric Definition.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "409",
+            description = "There is an Access Control Entry with this {who, collection, entity}.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "415",
+            description = "Cannot consume content type.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "500",
+            description = "Internal Server Errors.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @SecurityRequirement(name = "Authentication")
+
+    @POST
+    @Path("/{metric_definition_id}/acl")
+    @Produces(value = MediaType.APPLICATION_JSON)
+    @Consumes(value = MediaType.APPLICATION_JSON)
+    @Permission(collection = Collection.MetricDefinition, operation = org.accounting.system.enums.Operation.ACL)
+    public Response createAccessControl(@Valid @NotNull(message = "The request body is empty.") AccessControlRequestDto accessControlRequestDto,
+                                        @Parameter(
+                                                description = "metric_definition_id is the id of the entity to which the permissions apply.",
+                                                required = true,
+                                                example = "507f1f77bcf86cd799439011",
+                                                schema = @Schema(type = SchemaType.STRING))
+                                        @PathParam("metric_definition_id")
+                                        @Valid
+                                        @NotFoundEntity(repository = MetricDefinitionRepository.class, message = "There is no Metric Definition with the following id:") String metricDefinitionId,
+                                        @Context UriInfo uriInfo) {
+
+
+        metricDefinitionService.grantPermission(metricDefinitionId, accessControlRequestDto);
+
+        var informativeResponse = new InformativeResponse();
+        informativeResponse.message = "Access Control entry has been created successfully";
+        informativeResponse.code = 200;
+
+        return Response.ok().entity(informativeResponse).build();
     }
 }

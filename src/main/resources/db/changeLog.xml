@@ -185,6 +185,10 @@
                 {
                 operation: "READ",
                 accessType: "ALWAYS"
+                },
+                {
+                operation: "ACL",
+                accessType: "ALWAYS"
                 }
                 ],
                 collection: "MetricDefinition"
@@ -235,6 +239,10 @@
                 {
                 operation: "READ",
                 accessType: "ALWAYS"
+                },
+                {
+                operation: "ACL",
+                accessType: "ALWAYS"
                 }
                 ],
                 collection: "MetricDefinition"
@@ -260,12 +268,14 @@
                 {
                 operation: "READ",
                 accessType: "ENTITY"
+                },
+                {
+                operation: "ACL",
+                accessType: "ENTITY"
                 }
                 ],
                 collection: "MetricDefinition"
                 }]
-                }
-                ]
                 }
                 ]
             </ext:documents>
@@ -296,6 +306,10 @@
                 {
                 operation: "READ",
                 accessType: "ALWAYS"
+                },
+                {
+                operation: "ACL",
+                accessType: "ALWAYS"
                 }
                 ],
                 collection: "MetricDefinition"
@@ -316,6 +330,10 @@
                 },
                 {
                 operation: "READ",
+                accessType: "ALWAYS"
+                },
+                {
+                operation: "ACL",
                 accessType: "ALWAYS"
                 }
                 ],
@@ -338,6 +356,10 @@
                 {
                 operation: "READ",
                 accessType: "ALWAYS"
+                },
+                {
+                operation: "ACL",
+                accessType: "ALWAYS"
                 }
                 ],
                 collection: "Role"
@@ -345,5 +367,16 @@
                 }
             </ext:document>
         </ext:insertOne>
+    </changeSet>
+
+    <changeSet id="8" author="accounting-system">
+        <ext:createIndex collectionName="AccessControl">
+            <ext:keys>
+                { who: 1, collection: 1, entity: 1}
+            </ext:keys>
+            <ext:options>
+                {unique: true, name: "unique_access_control_entry"}
+            </ext:options>
+        </ext:createIndex>
     </changeSet>
 </databaseChangeLog>

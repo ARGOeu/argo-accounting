@@ -7,5 +7,5 @@ public enum Collection {
 
     MetricDefinition,
     Metric,
-    Role;
+    Role
 }
