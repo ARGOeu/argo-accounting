@@ -1,11 +1,10 @@
 package org.accounting.system.validators;
 
 import org.accounting.system.constraints.StringEnumeration;
+import org.accounting.system.util.Utility;
 
 import javax.validation.ConstraintValidator;
 import javax.validation.ConstraintValidatorContext;
-import java.util.Arrays;
-import java.util.HashSet;
 import java.util.Set;
 
 public class StringEnumerationValidator implements ConstraintValidator<StringEnumeration, String> {
@@ -13,19 +12,9 @@ public class StringEnumerationValidator implements ConstraintValidator<StringEnu
     private Set<String> AVAILABLE_ENUM_NAMES;
     private String message;
 
-    public static Set<String> getNamesSet(Class<? extends Enum<?>> e) {
-        Enum<?>[] enums = e.getEnumConstants();
-        String[] names = new String[enums.length];
-        for (int i = 0; i < enums.length; i++) {
-            names[i] = enums[i].name();
-        }
-        Set<String> mySet = new HashSet<String>(Arrays.asList(names));
-        return mySet;
-    }
-
     @Override
     public void initialize(StringEnumeration stringEnumeration) {
-        AVAILABLE_ENUM_NAMES = getNamesSet(stringEnumeration.enumClass());
+        AVAILABLE_ENUM_NAMES = Utility.getNamesSet(stringEnumeration.enumClass());
         message = stringEnumeration.message();
     }
 

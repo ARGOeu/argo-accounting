@@ -7,6 +7,7 @@ package org.accounting.system.enums;
  *   <li>UPDATE -> Can update existing entities within a collection</li>
  *   <li>DELETE -> Can delete existing entities within a collection</li>
  *   <li>READ   -> Can fetch existing entities within a collection</li>
+ *   <li>ACL    -> Can grant acl permission to existing entities within a collection</>
  * </ul>
  */
 public enum Operation {
@@ -14,5 +15,6 @@ public enum Operation {
     CREATE,
     UPDATE,
     DELETE,
-    READ;
+    READ,
+    ACL;
 }

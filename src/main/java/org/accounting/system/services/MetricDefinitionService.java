@@ -6,12 +6,15 @@ import org.accounting.system.dtos.MetricDefinitionRequestDto;
 import org.accounting.system.dtos.MetricDefinitionResponseDto;
 import org.accounting.system.dtos.PageResource;
 import org.accounting.system.dtos.UpdateMetricDefinitionRequestDto;
+import org.accounting.system.dtos.acl.AccessControlRequestDto;
 import org.accounting.system.entities.Metric;
 import org.accounting.system.entities.MetricDefinition;
+import org.accounting.system.enums.Collection;
 import org.accounting.system.exceptions.ConflictException;
+import org.accounting.system.mappers.AccessControlMapper;
 import org.accounting.system.mappers.MetricDefinitionMapper;
-import org.accounting.system.repositories.MetricDefinitionRepository;
 import org.accounting.system.repositories.MetricRepository;
+import org.accounting.system.repositories.metricdefinition.MetricDefinitionRepository;
 import org.bson.types.ObjectId;
 
 import javax.enterprise.context.ApplicationScoped;
@@ -93,7 +96,7 @@ public class MetricDefinitionService {
         MetricDefinition metricDefinition = null;
 
         try{
-            metricDefinition = metricDefinitionRepository.updateEntityById(new ObjectId(id), request);
+            metricDefinition = metricDefinitionRepository.updateEntity(new ObjectId(id), request);
         } catch (MongoWriteException e){
             throw new ConflictException("The combination of unit_type and metric_name should be unique. A Metric Definition with that combination has already been created.");
         }
@@ -154,5 +157,16 @@ public class MetricDefinitionService {
         PanacheQuery<Metric> panacheQuery = metricRepository.findMetricsByMetricDefinitionIdPageable(metricDefinitionId, page, size);
 
         return new PageResource<>(panacheQuery, uriInfo);
+    }
+
+    public void grantPermission(String id, AccessControlRequestDto request){
+
+        var accessControl = AccessControlMapper.INSTANCE.requestToAccessControl(request);
+
+        accessControl.setEntity(id);
+
+        accessControl.setCollection(Collection.MetricDefinition);
+
+        metricDefinitionRepository.grantPermission(accessControl);
     }
 }

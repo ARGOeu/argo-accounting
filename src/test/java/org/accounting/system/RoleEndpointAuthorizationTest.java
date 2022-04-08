@@ -29,7 +29,7 @@ public class RoleEndpointAuthorizationTest {
     @Test
     public void createRoleInspectorForbidden(){
 
-        RoleRequestDto request= new RoleRequestDto();
+        var request= new RoleRequestDto();
 
         var roleResponse = createRole(request, "inspector");
 
@@ -46,7 +46,7 @@ public class RoleEndpointAuthorizationTest {
     @Test
     public void createRoleNoRelevantRoleForbidden(){
 
-        RoleRequestDto request= new RoleRequestDto();
+        var request= new RoleRequestDto();
 
         var roleResponse = createRole(request, "alice");
 

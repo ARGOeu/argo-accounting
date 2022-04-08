@@ -25,6 +25,7 @@
     <quarkus.platform.version>2.6.1.Final</quarkus.platform.version>
     <surefire-plugin.version>3.0.0-M5</surefire-plugin.version>
     <vavr.version>0.10.4</vavr.version>
+    <type.tools.version>0.6.3</type.tools.version>
   </properties>
   <dependencyManagement>
     <dependencies>
@@ -150,6 +151,11 @@
       <groupId>io.vavr</groupId>
       <artifactId>vavr</artifactId>
       <version>${vavr.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>net.jodah</groupId>
+      <artifactId>typetools</artifactId>
+      <version>${type.tools.version}</version>
     </dependency>
   </dependencies>
   <build>
