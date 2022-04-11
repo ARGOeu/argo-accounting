@@ -7,6 +7,7 @@ import org.accounting.system.dtos.MetricDefinitionResponseDto;
 import org.accounting.system.dtos.PageResource;
 import org.accounting.system.dtos.UpdateMetricDefinitionRequestDto;
 import org.accounting.system.dtos.acl.AccessControlRequestDto;
+import org.accounting.system.dtos.acl.AccessControlUpdateDto;
 import org.accounting.system.entities.Metric;
 import org.accounting.system.entities.MetricDefinition;
 import org.accounting.system.enums.Collection;
@@ -14,6 +15,7 @@ import org.accounting.system.exceptions.ConflictException;
 import org.accounting.system.mappers.AccessControlMapper;
 import org.accounting.system.mappers.MetricDefinitionMapper;
 import org.accounting.system.repositories.MetricRepository;
+import org.accounting.system.repositories.acl.AccessControlRepository;
 import org.accounting.system.repositories.metricdefinition.MetricDefinitionRepository;
 import org.bson.types.ObjectId;
 
@@ -40,11 +42,15 @@ public class MetricDefinitionService {
     @Inject
     MetricRepository metricRepository;
 
+    @Inject
+    AccessControlRepository accessControlRepository;
 
-    public MetricDefinitionService(MetricDefinitionRepository metricDefinitionRepository, MetricService metricService, MetricRepository metricRepository) {
+
+    public MetricDefinitionService(MetricDefinitionRepository metricDefinitionRepository, MetricService metricService, MetricRepository metricRepository, AccessControlRepository accessControlRepository) {
         this.metricDefinitionRepository = metricDefinitionRepository;
         this.metricService = metricService;
         this.metricRepository = metricRepository;
+        this.accessControlRepository = accessControlRepository;
     }
 
     /**
@@ -168,5 +174,22 @@ public class MetricDefinitionService {
         accessControl.setCollection(Collection.MetricDefinition);
 
         metricDefinitionRepository.grantPermission(accessControl);
+    }
+
+    public void modifyPermission(String metricDefinitionId, String who, AccessControlUpdateDto updateDto){
+
+        var optional = accessControlRepository.findByWhoAndCollectionAndEntity(who, Collection.MetricDefinition, metricDefinitionId);
+
+        optional.ifPresentOrElse(
+                (value)->{
+
+                    AccessControlMapper.INSTANCE.updateAccessControlFromDto(updateDto, value);
+                    metricDefinitionRepository.modifyPermission(value);
+                },
+                () ->{
+
+                    throw new NotFoundException("There are no assigned permissions.");
+                }
+        );
     }
 }

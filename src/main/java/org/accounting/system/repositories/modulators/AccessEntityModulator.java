@@ -72,6 +72,16 @@ public abstract class AccessEntityModulator<E extends Entity> extends AccessCont
         }
     }
 
+    @Override
+    public void modifyPermission(AccessControl accessControl) {
+
+        if (isIdentifiable(accessControl.getCreatorId())) {
+            getAccessControlRepository().update(accessControl);
+        } else {
+            super.modifyPermission(accessControl);
+        }
+    }
+
     /**
      * Checks if the given id can be identified by the subject of an access token.
      *

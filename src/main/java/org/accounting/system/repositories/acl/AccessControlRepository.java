@@ -22,11 +22,11 @@ public class AccessControlRepository implements PanacheMongoRepository<AccessCon
     /**
      * Returns a specific Collection entity to which a service/user may has {permission} access.
      *
-     * @param who Owner id
+     * @param who the one to whom the permission may be granted
      * @param collection The name of the Collection
-     * @param entity Entity id
+     * @param entity entity id
      * @param permission access control permission
-     * @return The Access Control that grant access to a service/user in a particular entity
+     * @return the Access Control that may grant access to a service/user in a particular entity
      */
     public Optional<AccessControl> findByWhoAndCollectionAndEntityAndPermission(String who, Collection collection, String entity, AccessControlPermission permission){
 
@@ -35,13 +35,26 @@ public class AccessControlRepository implements PanacheMongoRepository<AccessCon
 
     /**
      * Returns all Collection entities to which a service/user has {permission} access
-     * @param who Owner id
-     * @param collection The name of the Collection
+     * @param who the one to whom the permissions have been granted
+     * @param collection the name of the Collection
      * @param permission access control permission
-     * @return The available access controls that grant access to a service/user in a Collection
+     * @return the available access controls that grant access to a service/user in a Collection
      */
     public List<AccessControl> findByWhoAndCollection(String who, Collection collection, AccessControlPermission permission){
 
         return list("who = ?1 and collection = ?2 and permissions in ?3", who, collection, permission);
+    }
+
+    /**
+     * Returns a specific Collection entity to which a service/user may has access.
+     *
+     * @param who the one to whom the permission may be granted
+     * @param collection The name of the Collection
+     * @param entity entity id
+     * @return the Access Control that may grant access to a service/user in a particular entity
+     */
+    public Optional<AccessControl> findByWhoAndCollectionAndEntity(String who, Collection collection, String entity){
+
+        return find("who = ?1 and collection = ?2 and entity = ?3", who, collection, entity).stream().findAny();
     }
 }

@@ -37,7 +37,17 @@ public abstract class AccessModulator<E extends Entity> implements PanacheMongoR
 
     public abstract List<E> getAllEntities();
 
+    /**
+     * This method is responsible fοr granting permissions to specific entity within a generic collection
+     * @param accessControl It essentially expresses the permissions that will be granted
+     */
     public abstract void grantPermission(AccessControl accessControl);
+
+    /**
+     * This method is responsible fοr updating an existing permissions which have already been granted to specific entity
+     * @param accessControl It essentially expresses the permissions that will be modified
+     */
+    public abstract void modifyPermission(AccessControl accessControl);
 
     public List<E> combineTwoLists(List<E> a, List<E> b){
 
