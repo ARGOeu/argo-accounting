@@ -16,28 +16,38 @@ import java.util.List;
  */
 public abstract class AbstractModulator<E extends Entity> extends AccessModulator<E>{
 
+    @Override
     public  E fetchEntityById(ObjectId id){
         return get().fetchEntityById(id);
     }
 
+    @Override
     public  boolean deleteEntityById(ObjectId id){
         return get().deleteEntityById(id);
     }
 
+    @Override
     public E updateEntity(E entity){
         return get().updateEntity(entity);
     }
 
+    @Override
     public  List<E> getAllEntities(){
         return get().getAllEntities();
     }
 
+    @Override
     public void grantPermission(AccessControl accessControl){
         try{
             get().grantPermission(accessControl);
         } catch (MongoWriteException e){
             throw new ConflictException("There is already an Access Control Entry with this {who, collection, entity} : {" + accessControl.getWho()+", "+accessControl.getCollection()+", "+accessControl.getEntity()+"}");
         }
+    }
+
+    @Override
+    public void modifyPermission(AccessControl accessControl) {
+        get().modifyPermission(accessControl);
     }
 
     public abstract AccessAlwaysModulator always();
