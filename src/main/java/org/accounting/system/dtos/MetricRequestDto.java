@@ -3,7 +3,7 @@ package org.accounting.system.dtos;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import org.accounting.system.constraints.NotFoundEntity;
 import org.accounting.system.constraints.ValidateStartEndTimestamp;
-import org.accounting.system.repositories.MetricDefinitionRepository;
+import org.accounting.system.repositories.metricdefinition.MetricDefinitionRepository;
 import org.eclipse.microprofile.openapi.annotations.enums.SchemaType;
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
 

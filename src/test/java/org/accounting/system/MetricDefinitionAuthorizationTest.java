@@ -13,10 +13,9 @@ import org.accounting.system.dtos.UpdateMetricDefinitionRequestDto;
 import org.accounting.system.enums.AccessType;
 import org.accounting.system.enums.Collection;
 import org.accounting.system.enums.Operation;
-import org.accounting.system.repositories.MetricDefinitionRepository;
 import org.accounting.system.repositories.authorization.RoleRepository;
+import org.accounting.system.repositories.metricdefinition.MetricDefinitionRepository;
 import org.accounting.system.services.ReadPredefinedTypesService;
-import org.accounting.system.services.authorization.RoleService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
@@ -37,9 +36,6 @@ public class MetricDefinitionAuthorizationTest {
 
     @InjectMock
     ReadPredefinedTypesService readPredefinedTypesService;
-
-    @Inject
-    RoleService roleService;
 
     @Inject
     RoleRepository roleRepository;

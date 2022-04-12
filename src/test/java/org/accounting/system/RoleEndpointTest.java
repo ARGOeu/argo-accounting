@@ -15,8 +15,12 @@ import org.accounting.system.dtos.authorization.update.UpdateCollectionPermissio
 import org.accounting.system.dtos.authorization.update.UpdatePermissionDto;
 import org.accounting.system.dtos.authorization.update.UpdateRoleRequestDto;
 import org.accounting.system.endpoints.RoleEndpoint;
+import org.accounting.system.enums.AccessType;
+import org.accounting.system.enums.Collection;
+import org.accounting.system.enums.Operation;
 import org.accounting.system.repositories.authorization.RoleRepository;
 import org.accounting.system.services.authorization.RoleService;
+import org.accounting.system.util.Utility;
 import org.junit.jupiter.api.Test;
 
 import javax.inject.Inject;
@@ -285,7 +289,7 @@ public class RoleEndpointTest {
                 .extract()
                 .as(InformativeResponse.class);
 
-        assertEquals("The value Test is not a valid collection. Valid collection values are: [Role, MetricDefinition, Metric]", response.message);
+        assertEquals("The value Test is not a valid collection. Valid collection values are: "+ Utility.getNamesSet(Collection.class), response.message);
     }
 
     @Test
@@ -362,7 +366,7 @@ public class RoleEndpointTest {
                 .extract()
                 .as(InformativeResponse.class);
 
-        assertEquals("The value NOT_VALID is not a valid operation. Valid operation values are: [READ, DELETE, CREATE, UPDATE]", response.message);
+        assertEquals("The value NOT_VALID is not a valid operation. Valid operation values are: "+Utility.getNamesSet(Operation.class), response.message);
     }
 
     @Test
@@ -439,7 +443,7 @@ public class RoleEndpointTest {
                 .extract()
                 .as(InformativeResponse.class);
 
-        assertEquals("The value NOT_VALID is not a valid access_type. Valid access_type values are: [ENTITY, NEVER, ALWAYS]", response.message);
+        assertEquals("The value NOT_VALID is not a valid access_type. Valid access_type values are: "+Utility.getNamesSet(AccessType.class), response.message);
     }
 
     @Test
@@ -960,7 +964,7 @@ public class RoleEndpointTest {
                 .extract()
                 .as(InformativeResponse.class);
 
-        assertEquals("The value Test is not a valid collection. Valid collection values are: [Role, MetricDefinition, Metric]", informativeResponse.message);
+        assertEquals("The value Test is not a valid collection. Valid collection values are: "+Utility.getNamesSet(Collection.class), informativeResponse.message);
     }
 
     protected String getAccessToken(String userName) {

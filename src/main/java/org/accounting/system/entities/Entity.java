@@ -1,13 +1,17 @@
 package org.accounting.system.entities;
 
+import lombok.EqualsAndHashCode;
 import org.accounting.system.beans.RequestInformation;
 import org.bson.types.ObjectId;
 
 import javax.enterprise.inject.spi.CDI;
 
+@EqualsAndHashCode(onlyExplicitlyIncluded = true)
 public abstract class Entity {
 
+    @EqualsAndHashCode.Include
     private ObjectId id;
+
     private String creatorId;
 
     public Entity(){

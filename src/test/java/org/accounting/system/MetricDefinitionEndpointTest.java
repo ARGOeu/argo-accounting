@@ -15,9 +15,9 @@ import org.accounting.system.dtos.UpdateMetricDefinitionRequestDto;
 import org.accounting.system.endpoints.MetricDefinitionEndpoint;
 import org.accounting.system.entities.MetricDefinition;
 import org.accounting.system.mappers.MetricDefinitionMapper;
-import org.accounting.system.repositories.MetricDefinitionRepository;
+import org.accounting.system.repositories.metricdefinition.MetricDefinitionRepository;
 import org.accounting.system.services.ReadPredefinedTypesService;
-import org.accounting.system.util.Predicates;
+import org.accounting.system.util.Utility;
 import org.bson.types.ObjectId;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -41,7 +41,7 @@ public class MetricDefinitionEndpointTest {
     MetricDefinitionRepository metricDefinitionRepository;
 
     @Inject
-    Predicates predicates;
+    Utility utility;
 
     @InjectMock
     ReadPredefinedTypesService readPredefinedTypesService;

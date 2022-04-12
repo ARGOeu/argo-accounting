@@ -18,7 +18,7 @@ import org.accounting.system.dtos.UpdateMetricRequestDto;
 import org.accounting.system.endpoints.MetricEndpoint;
 import org.accounting.system.entities.Metric;
 import org.accounting.system.entities.MetricDefinition;
-import org.accounting.system.repositories.MetricDefinitionRepository;
+import org.accounting.system.repositories.metricdefinition.MetricDefinitionRepository;
 import org.accounting.system.repositories.MetricRepository;
 import org.accounting.system.services.ReadPredefinedTypesService;
 import org.junit.jupiter.api.BeforeEach;

@@ -121,7 +121,7 @@ public class RoleService {
         Role role = null;
 
         try{
-            role = roleRepository.updateEntityById(new ObjectId(id), request);
+            role = roleRepository.updateEntity(new ObjectId(id), request);
         } catch (MongoWriteException e){
             throw new ConflictException("The role name should be unique. A Role with that name has already been created.");
         }
