@@ -82,7 +82,13 @@ public abstract class AccessControlModulator<E extends Entity> extends AccessMod
     @Override
     public void grantPermission(AccessControl accessControl) {
 
-        throw new ForbiddenException("You have no access to grant acl permissions to this entity : " + accessControl.getEntity());
+        throw new ForbiddenException("You have no access to this entity : " + accessControl.getEntity());
+    }
+
+    @Override
+    public void modifyPermission(AccessControl accessControl) {
+
+        throw new ForbiddenException("You have no access to modify these permissions.");
     }
 
     private Optional<AccessControl> getAccessControl(ObjectId id, AccessControlPermission permission){

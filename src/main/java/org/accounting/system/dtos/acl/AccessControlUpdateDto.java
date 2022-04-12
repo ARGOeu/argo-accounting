@@ -10,25 +10,14 @@ import javax.validation.Valid;
 import javax.validation.constraints.NotEmpty;
 import java.util.Set;
 
-@Schema(name="AccessControlRequest", description="An object represents a request for creating an Access Control Entry.")
-public class AccessControlRequestDto {
-
-    @Schema(
-            type = SchemaType.STRING,
-            implementation = String.class,
-            description = "who is the id of a Service/User that the Access Control grants access.",
-            example = "fbdb4e4a-6e93-4b08-a1e7-0b7bd08520a6",
-            required = true
-    )
-    @JsonProperty("who")
-    @NotEmpty(message = "who may not be empty.")
-    public String who;
+@Schema(name="AccessControlUpdate", description="An object represents a request for updating an Access Control Entry.")
+public class AccessControlUpdateDto {
 
     @Schema(
             type = SchemaType.ARRAY,
             implementation = AccessControlPermission.class,
             required = true,
-            description = "This component is a set of permissions.",
+            description = "The set of permissions to be updated.",
             minItems = 1
     )
     @JsonProperty("permissions")

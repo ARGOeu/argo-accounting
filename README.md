@@ -152,12 +152,13 @@ To generate a role, we have to define the available API operations and access ty
 
 The available API operations are:
 
-| Operation   |  Description                                     |
-| ------------|------------------------------------------------  | 
-| Create      | Can create new entities within a collection      |
-| Update      | Can update existing entities within a collection |
-| Delete      | Can delete existing entities within a collection |
-| Read        | Can fetch existing entities within a collection  |
+| Operation   |  Description                                                                             |
+| ------------|----------------------------------------------------------------------------------------  | 
+| Create      | Can create new entities within a collection                                              |
+| Update      | Can update existing entities within a collection                                         |
+| Delete      | Can delete existing entities within a collection                                         |
+| Read        | Can fetch existing entities within a collection                                          |
+| Acl         | Can specify which services are granted access to particular entities within a collection |
 
 ### Access Types
 
@@ -188,22 +189,21 @@ The available Accounting System API collections are:
 
 Based on the above, we can generate some indicative roles:
 
-| Role                      | Create | Update | Delete  | Read   | Collections      |
-| ------------------------- |--------| -------| --------| -------| -----------------|
-| metric_definition_admin   | Always | Always | Always  | Always | MetricDefinition |
-| metric_inspector          |        |        |         | Always | Metric           |
-| metric_creator            | Always | Entity | Entity  | Entity | Metric           |
-| role_editor               | Always | Always | Never   | Always | Role             |
-| role_editor               | Always | Always | Never   | Always | Role             |
+| Role                      | Create | Update | Delete  | Read   | Acl    | Collection       |
+| ------------------------- |--------| -------| --------| -------| -------|------------------|
+| metric_definition_admin   | Always | Always | Always  | Always | Always | MetricDefinition |
+| metric_inspector          |        |        |         | Always |        | Metric           |
+| metric_creator            | Always | Entity | Entity  | Entity | Entity | Metric           |
+| role_editor               | Always | Always | Never   | Always |        | Role             |
 
 __Notes:__ 
 -   The role name should be unique.
 -   The blank value is converted to "Never" value
 
 Consequently:
--   __metric_definition_admin__ can create new Metric Definitions, as well as update, delete and read any entity in the collection. In other words, __metric_definition_admin__ will always be able to perform any operation in the Metric Definition collection.
+-   __metric_definition_admin__ can create new Metric Definitions, as well as update, delete and read any entity in the collection. Can also specify which services will be granted access to any entity within a Metric Collection. In other words, __metric_definition_admin__ will always be able to perform any operation in the Metric Definition collection.
 -   __metric_inspector__  can read any entity in the Metric collection, but cannot create new ones or update, delete any Metrics.
--   __metric_creator__ can create new Metrics, but can update, delete or read only its Metrics.
+-   __metric_creator__ can create new Metrics, but can update, delete or read only its Metrics. It can also specify which services will have access to the entities it has created. Finally, it can also manage Metrics that have been explicitly declared through the ACL process.
 -   __role_editor__ can create new Roles, as well as update, and read any entity in the Role collection but cannot delete any entity in it.
 
 ### Generating new Roles via Accounting System API
@@ -240,7 +240,11 @@ POST 'https://host/accounting-system/roles'
       {
         "operation" : "READ",
         "access_type" : "ALWAYS"
-      }
+      },
+      {
+        "operation" : "ACL",
+        "access_type" : "ALWAYS"
+      },
     ]
     },
   
@@ -291,6 +295,10 @@ POST 'https://host/accounting-system/roles'
       },
       {
         "operation" : "READ",
+        "access_type" : "ENTITY"
+      },
+      {
+        "operation" : "ACL",
         "access_type" : "ENTITY"
       }
     ]
