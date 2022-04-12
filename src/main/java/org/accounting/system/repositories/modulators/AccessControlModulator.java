@@ -88,7 +88,13 @@ public abstract class AccessControlModulator<E extends Entity> extends AccessMod
     @Override
     public void modifyPermission(AccessControl accessControl) {
 
-        throw new ForbiddenException("You have no access to modify these permissions.");
+        throw new ForbiddenException("You have no access to modify this permission.");
+    }
+
+    @Override
+    public void deletePermission(AccessControl accessControl) {
+
+        throw new ForbiddenException("You have no access to delete this permission.");
     }
 
     private Optional<AccessControl> getAccessControl(ObjectId id, AccessControlPermission permission){

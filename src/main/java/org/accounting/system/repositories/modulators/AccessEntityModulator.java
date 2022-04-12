@@ -82,6 +82,16 @@ public abstract class AccessEntityModulator<E extends Entity> extends AccessCont
         }
     }
 
+    @Override
+    public void deletePermission(AccessControl accessControl) {
+
+        if (isIdentifiable(accessControl.getCreatorId())) {
+             getAccessControlRepository().delete(accessControl);
+        } else {
+             super.deletePermission(accessControl);
+        }
+    }
+
     /**
      * Checks if the given id can be identified by the subject of an access token.
      *
