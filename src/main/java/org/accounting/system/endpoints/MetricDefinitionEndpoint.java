@@ -339,7 +339,7 @@ public class MetricDefinitionEndpoint {
                     implementation = InformativeResponse.class)))
     @APIResponse(
             responseCode = "401",
-            description = "User/Service has not been authenticated..",
+            description = "User/Service has not been authenticated.",
             content = @Content(schema = @Schema(
                     type = SchemaType.OBJECT,
                     implementation = InformativeResponse.class)))
@@ -736,5 +736,71 @@ public class MetricDefinitionEndpoint {
         informativeResponse.code = 200;
 
         return Response.ok().entity(informativeResponse).build();
+    }
+
+    @Tag(name = "Metric Definition")
+    @Operation(
+            summary = "Deletes an existing Access Control entry.",
+            description = "You can delete the permissions that a service/user can access to manage a specific Metric Definition.")
+    @APIResponse(
+            responseCode = "200",
+            description = "Access Control entry has been deleted successfully.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "401",
+            description = "User/Service has not been authenticated.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "403",
+            description = "The authenticated user/service is not permitted to perform the requested operation.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "404",
+            description = "Metric Definition has not been found.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.ARRAY,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "500",
+            description = "Internal Server Errors.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @SecurityRequirement(name = "Authentication")
+
+    @DELETE()
+    @Path("/{metric_definition_id}/acl/{who}")
+    @Produces(value = MediaType.APPLICATION_JSON)
+    @Permission(collection = Collection.MetricDefinition, operation = org.accounting.system.enums.Operation.ACL)
+    public Response deleteAccessControl(@Parameter(
+            description = "metric_definition_id in which permissions have been granted.",
+            required = true,
+            example = "507f1f77bcf86cd799439011",
+            schema = @Schema(type = SchemaType.STRING))
+                                            @PathParam("metric_definition_id")
+                                            @Valid
+                                            @NotFoundEntity(repository = MetricDefinitionRepository.class, message = "There is no Metric Definition with the following id:") String metricDefinitionId,
+                                        @Parameter(
+                                                description = "who is the service/user to whom the permissions have been granted.",
+                                                required = true,
+                                                example = "fbdb4e4a-6e93-4b08-a1e7-0b7bd08520a6",
+                                                schema = @Schema(type = SchemaType.STRING))
+                                            @PathParam("who") String who) {
+
+
+        metricDefinitionService.deletePermission(metricDefinitionId, who);
+
+        var successResponse = new InformativeResponse();
+
+        successResponse.code = 200;
+        successResponse.message = "Access Control entry has been deleted successfully.";
+
+        return Response.ok().entity(successResponse).build();
     }
 }

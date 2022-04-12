@@ -49,6 +49,12 @@ public abstract class AccessModulator<E extends Entity> implements PanacheMongoR
      */
     public abstract void modifyPermission(AccessControl accessControl);
 
+    /**
+     * This method is responsible fοr deleting an existing permissions which have already been granted to specific entity
+     * @param accessControl It essentially expresses the permissions that will be deleted
+     */
+    public abstract void deletePermission(AccessControl accessControl);
+
     public List<E> combineTwoLists(List<E> a, List<E> b){
 
         // We wanna avoid duplicates

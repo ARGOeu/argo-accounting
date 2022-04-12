@@ -375,7 +375,49 @@ public class AccessControlTest {
                 .extract()
                 .as(InformativeResponse.class);
 
-        assertEquals("There are no assigned permissions.", informativeResponse.message);
+        assertEquals("There is no assigned permission for the fbdb4e4a-6e93-4b08-a1e7-0b7bd08520a6 to control access to the "+metricDefinition.id, informativeResponse.message);
+    }
+
+    @Test
+    public void updateAccessControlForMetricDefinitionCreatorForbidden() {
+
+        Mockito.when(readPredefinedTypesService.searchForUnitType(any())).thenReturn(Optional.of("SECOND"));
+        Mockito.when(readPredefinedTypesService.searchForMetricType(any())).thenReturn(Optional.of("Aggregated"));
+        MetricDefinitionRequestDto requestMetricDefinition = new MetricDefinitionRequestDto();
+
+        requestMetricDefinition.metricName = "metric";
+        requestMetricDefinition.metricDescription = "description";
+        requestMetricDefinition.unitType = "SECOND";
+        requestMetricDefinition.metricType = "Aggregated";
+
+        var metricDefinition = createMetricDefinition(requestMetricDefinition);
+
+        var request= new AccessControlRequestDto();
+
+        request.who = "fbdb4e4a-6e93-4b08-a1e7-0b7bd08520a6";
+
+        var permissions = new HashSet<String>();
+        permissions.add("READ");
+        request.permissions = permissions;
+
+        createAccessControlForMetricDefinition(request, "admin", metricDefinition.id);
+
+        var requestForUpdateAccessControl= new AccessControlUpdateDto();
+        var updatePermissions = new HashSet<String>();
+        updatePermissions.add("UPDATE");
+        requestForUpdateAccessControl.permissions = updatePermissions;
+
+        // creator (role metric_definition_creator) can update only to its entities since it has been assigned to it the tuple (ACL, ENTITY)
+        var response = updateAccessControlForMetricDefinition(requestForUpdateAccessControl, "creator", metricDefinition.id, "fbdb4e4a-6e93-4b08-a1e7-0b7bd08520a6");
+
+        var informativeResponse = response
+                .then()
+                .assertThat()
+                .statusCode(403)
+                .extract()
+                .as(InformativeResponse.class);
+
+        assertEquals("You have no access to modify this permission.", informativeResponse.message);
     }
 
     @Test
@@ -420,6 +462,145 @@ public class AccessControlTest {
         assertEquals("Access Control entry has been updated successfully.", informativeResponse.message);
     }
 
+    @Test
+    public void deleteAccessControlNotAuthenticated() {
+
+        var notAuthenticatedResponse = given()
+                .auth()
+                .oauth2("invalidToken")
+                .delete("accounting-system/metric-definition/{metricDefinitionId}/acl/{who}", "507f1f77bcf86cd799439011", "fbdb4e4a-6e93-4b08-a1e7-0b7bd08520a6")
+                .thenReturn();
+
+        assertEquals(401, notAuthenticatedResponse.statusCode());
+    }
+
+    @Test
+    public void deleteControlInspectorForbidden() {
+
+        var notAuthenticatedResponse = given()
+                .auth()
+                .oauth2(getAccessToken("inspector"))
+                .delete("/accounting-system/metric-definition/{metricDefinitionId}/acl/{fbdb4e4a-6e93-4b08-a1e7-0b7bd08520a6}", "507f1f77bcf86cd799439011", "fbdb4e4a-6e93-4b08-a1e7-0b7bd08520a6")
+                .thenReturn();
+
+        assertEquals(403, notAuthenticatedResponse.statusCode());
+    }
+
+    @Test
+    public void deleteAccessControlEntityNotValid() {
+
+
+        var response = deleteAccessControlForMetricDefinition("admin", "507f1f77bcf86cd799439011", "fbdb4e4a-6e93-4b08-a1e7-0b7bd08520a6");
+
+        var errorResponse = response
+                .then()
+                .assertThat()
+                .statusCode(404)
+                .extract()
+                .as(InformativeResponse.class);
+
+        assertEquals("There is no Metric Definition with the following id: 507f1f77bcf86cd799439011", errorResponse.message);
+    }
+
+    @Test
+    public void deleteAccessControlNoPermissions() {
+
+        Mockito.when(readPredefinedTypesService.searchForUnitType(any())).thenReturn(Optional.of("SECOND"));
+        Mockito.when(readPredefinedTypesService.searchForMetricType(any())).thenReturn(Optional.of("Aggregated"));
+        MetricDefinitionRequestDto requestMetricDefinition = new MetricDefinitionRequestDto();
+
+        requestMetricDefinition.metricName = "metric";
+        requestMetricDefinition.metricDescription = "description";
+        requestMetricDefinition.unitType = "SECOND";
+        requestMetricDefinition.metricType = "Aggregated";
+
+        var metricDefinition = createMetricDefinition(requestMetricDefinition);
+
+        var response = deleteAccessControlForMetricDefinition("admin", metricDefinition.id, "fbdb4e4a-6e93-4b08-a1e7-0b7bd08520a6");
+
+        var informativeResponse = response
+                .then()
+                .assertThat()
+                .statusCode(404)
+                .extract()
+                .as(InformativeResponse.class);
+
+        assertEquals("There is no assigned permission for the fbdb4e4a-6e93-4b08-a1e7-0b7bd08520a6 to control access to the "+metricDefinition.id, informativeResponse.message);
+    }
+
+    @Test
+    public void deleteAccessControlForMetricDefinitionCreatorForbidden() {
+
+        Mockito.when(readPredefinedTypesService.searchForUnitType(any())).thenReturn(Optional.of("SECOND"));
+        Mockito.when(readPredefinedTypesService.searchForMetricType(any())).thenReturn(Optional.of("Aggregated"));
+        MetricDefinitionRequestDto requestMetricDefinition = new MetricDefinitionRequestDto();
+
+        requestMetricDefinition.metricName = "metric";
+        requestMetricDefinition.metricDescription = "description";
+        requestMetricDefinition.unitType = "SECOND";
+        requestMetricDefinition.metricType = "Aggregated";
+
+        var metricDefinition = createMetricDefinition(requestMetricDefinition);
+
+        var request= new AccessControlRequestDto();
+
+        request.who = "fbdb4e4a-6e93-4b08-a1e7-0b7bd08520a6";
+
+        var permissions = new HashSet<String>();
+        permissions.add("READ");
+        request.permissions = permissions;
+
+        createAccessControlForMetricDefinition(request, "admin", metricDefinition.id);
+
+        // creator (role metric_definition_creator) can delete only to its entities since it has been assigned to it the tuple (ACL, ENTITY)
+        var response = deleteAccessControlForMetricDefinition("creator", metricDefinition.id, "fbdb4e4a-6e93-4b08-a1e7-0b7bd08520a6");
+
+        var informativeResponse = response
+                .then()
+                .assertThat()
+                .statusCode(403)
+                .extract()
+                .as(InformativeResponse.class);
+
+        assertEquals("You have no access to delete this permission.", informativeResponse.message);
+    }
+
+    @Test
+    public void deleteAccessControl() {
+
+        Mockito.when(readPredefinedTypesService.searchForUnitType(any())).thenReturn(Optional.of("SECOND"));
+        Mockito.when(readPredefinedTypesService.searchForMetricType(any())).thenReturn(Optional.of("Aggregated"));
+        MetricDefinitionRequestDto requestMetricDefinition = new MetricDefinitionRequestDto();
+
+        requestMetricDefinition.metricName = "metric";
+        requestMetricDefinition.metricDescription = "description";
+        requestMetricDefinition.unitType = "SECOND";
+        requestMetricDefinition.metricType = "Aggregated";
+
+        var metricDefinition = createMetricDefinition(requestMetricDefinition);
+
+        var requestAccessControl= new AccessControlRequestDto();
+
+        requestAccessControl.who = "fbdb4e4a-6e93-4b08-a1e7-0b7bd08520a6";
+
+        var permissions = new HashSet<String>();
+        permissions.add("READ");
+        requestAccessControl.permissions = permissions;
+
+        createAccessControlForMetricDefinition(requestAccessControl, "admin", metricDefinition.id);
+
+        var response = deleteAccessControlForMetricDefinition("admin", metricDefinition.id, "fbdb4e4a-6e93-4b08-a1e7-0b7bd08520a6");
+
+        var informativeResponse = response
+                .then()
+                .assertThat()
+                .statusCode(200)
+                .extract()
+                .as(InformativeResponse.class);
+
+        assertEquals("Access Control entry has been deleted successfully.", informativeResponse.message);
+    }
+
     private Response createAccessControlForMetricDefinition(AccessControlRequestDto request, String user, String metricDefinitionId){
 
         return given()
@@ -438,6 +619,14 @@ public class AccessControlTest {
                 .body(request)
                 .contentType(ContentType.JSON)
                 .patch("/accounting-system/metric-definition/{metricDefinitionId}/acl/{who}", metricDefinitionId, who);
+    }
+
+    private Response deleteAccessControlForMetricDefinition(String user, String metricDefinitionId, String who){
+
+        return given()
+                .auth()
+                .oauth2(getAccessToken(user))
+                .delete("/accounting-system/metric-definition/{metricDefinitionId}/acl/{who}", metricDefinitionId, who);
     }
 
     private MetricDefinitionResponseDto createMetricDefinition(MetricDefinitionRequestDto request){
