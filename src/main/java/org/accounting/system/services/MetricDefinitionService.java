@@ -57,8 +57,8 @@ public class MetricDefinitionService {
      * Maps the {@link MetricDefinitionRequestDto} to {@link MetricDefinition}.
      * Then the {@link MetricDefinition} is stored in the mongo database.
      *
-     * @param request The POST request body
-     * @return The stored metric definition has been turned into a response body
+     * @param request The POST request body.
+     * @return The stored metric definition has been turned into a response body.
      */
     public MetricDefinitionResponseDto save(MetricDefinitionRequestDto request) {
 
@@ -72,8 +72,8 @@ public class MetricDefinitionService {
     /**
      * Fetches a Metric Definition by given id.
      *
-     * @param id The Metric Definition id
-     * @return The corresponding Metric Definition
+     * @param id The Metric Definition id.
+     * @return The corresponding Metric Definition.
      */
     public MetricDefinitionResponseDto fetchMetricDefinition(String id){
 
@@ -93,9 +93,9 @@ public class MetricDefinitionService {
      * This method is responsible for updating a part or all attributes of existing Metric Definition.
      *
      * @param id The Metric Definition to be updated.
-     * @param request The Metric Definition attributes to be updated
-     * @return The updated Metric Definition
-     * @throws NotFoundException If the Metric Definition doesn't exist
+     * @param request The Metric Definition attributes to be updated.
+     * @return The updated Metric Definition.
+     * @throws NotFoundException If the Metric Definition doesn't exist.
      */
     public MetricDefinitionResponseDto update(String id, UpdateMetricDefinitionRequestDto request){
 
@@ -112,9 +112,9 @@ public class MetricDefinitionService {
 
     /**
      * Delete a Metric Definition by given id.
-     * @param metricDefinitionId The Metric Definition to be deleted
-     * @return If the operation is successful or not
-     * @throws NotFoundException If the Metric Definition doesn't exist
+     * @param metricDefinitionId The Metric Definition to be deleted.
+     * @return If the operation is successful or not.
+     * @throws NotFoundException If the Metric Definition doesn't exist.
      */
     public boolean delete(String metricDefinitionId){
 
@@ -124,9 +124,9 @@ public class MetricDefinitionService {
     /**
      *Τwo Metric Definitions are considered similar when having the same unit type and name.
      *
-     * @param unitType Unit Type of the Metric
-     * @param name The name of the Metric
-     * @throws ConflictException If Metric Definition already exists
+     * @param unitType Unit Type of the Metric.
+     * @param name The name of the Metric.
+     * @throws ConflictException If Metric Definition already exists.
      */
     public void exist(String unitType, String name){
 
@@ -137,8 +137,8 @@ public class MetricDefinitionService {
     /**
      * Checks if there is any Metric assigned to the Metric Definition.
      *
-     * @param id The Metric Definition id
-     * @throws ConflictException If the Metric Definition has children
+     * @param id The Metric Definition id.
+     * @throws ConflictException If the Metric Definition has children.
      */
     public void hasChildren(String id){
 
@@ -150,11 +150,11 @@ public class MetricDefinitionService {
     /**
      * Returns the N Metrics, which have been assigned to the Metric Definition, from the given page.
      *
-     * @param metricDefinitionId The Metric Definition id
-     * @param page Indicates the page number
-     * @param size The number of Metrics to be retrieved
-     * @param uriInfo The current uri
-     * @return An object represents the paginated results
+     * @param metricDefinitionId The Metric Definition id.
+     * @param page Indicates the page number.
+     * @param size The number of Metrics to be retrieved.
+     * @param uriInfo The current uri.
+     * @return An object represents the paginated results.
      */
     public PageResource<Metric>  findMetricsByMetricDefinitionIdPageable(String metricDefinitionId, int page, int size, UriInfo uriInfo){
 
@@ -165,30 +165,59 @@ public class MetricDefinitionService {
         return new PageResource<>(panacheQuery, uriInfo);
     }
 
-    public void grantPermission(String id, AccessControlRequestDto request){
+    /**
+     * Converts the request for {@link AccessControlRequestDto permissions} to {@link org.accounting.system.entities.acl.AccessControl} and stores it in the database.
+     *
+     * @param metricDefinitionId The metric definition to which permissions will be assigned.
+     * @param request Contains, to whom the permissions will be granted.
+     */
+    public void grantPermission(String metricDefinitionId, AccessControlRequestDto request){
 
         var accessControl = AccessControlMapper.INSTANCE.requestToAccessControl(request);
 
-        accessControl.setEntity(id);
+        accessControl.setEntity(metricDefinitionId);
 
         accessControl.setCollection(Collection.MetricDefinition);
 
         metricDefinitionRepository.grantPermission(accessControl);
     }
 
+    /**
+     * Modifies permissions and stores them in the database.
+     *
+     * @param metricDefinitionId For which Metric Definition will the permissions be modified.
+     * @param who To whom belongs the permissions which will be modified.
+     * @param updateDto The permissions which will be modified.
+     */
     public void modifyPermission(String metricDefinitionId, String who, AccessControlUpdateDto updateDto){
 
         var optional = accessControlRepository.findByWhoAndCollectionAndEntity(who, Collection.MetricDefinition, metricDefinitionId);
 
         optional.ifPresentOrElse(
                 (value)->{
-
                     AccessControlMapper.INSTANCE.updateAccessControlFromDto(updateDto, value);
                     metricDefinitionRepository.modifyPermission(value);
                 },
                 () ->{
+                    throw new NotFoundException("There is no assigned permission for the "+who+" to control access to the "+metricDefinitionId);
+                }
+        );
+    }
 
-                    throw new NotFoundException("There are no assigned permissions.");
+    /**
+     * Deletes specific privileges from the database.
+     *
+     * @param metricDefinitionId The Metric Definition for which permissions will be deleted.
+     * @param who The service/user id for which the permissions will be deleted.
+     */
+    public void deletePermission(String metricDefinitionId, String who){
+
+        var optional = accessControlRepository.findByWhoAndCollectionAndEntity(who, Collection.MetricDefinition, metricDefinitionId);
+
+        optional.ifPresentOrElse(
+                (value)-> metricDefinitionRepository.deletePermission(value),
+                () ->{
+                    throw new NotFoundException("There is no assigned permission for the "+who+" to control access to the "+metricDefinitionId);
                 }
         );
     }

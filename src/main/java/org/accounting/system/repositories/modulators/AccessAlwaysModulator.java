@@ -50,4 +50,9 @@ public abstract class AccessAlwaysModulator<E extends Entity> extends AccessModu
     public void modifyPermission(AccessControl accessControl) {
         getAccessControlRepository().update(accessControl);
     }
+
+    @Override
+    public void deletePermission(AccessControl accessControl) {
+         getAccessControlRepository().delete(accessControl);
+    }
 }
