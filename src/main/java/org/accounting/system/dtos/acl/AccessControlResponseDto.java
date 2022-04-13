@@ -53,5 +53,5 @@ public class AccessControlResponseDto {
             description = "This component is a set of permissions."
     )
     @JsonProperty("permissions")
-    public Set<AccessControlPermission> permissions;
+    public Set<String> permissions;
 }

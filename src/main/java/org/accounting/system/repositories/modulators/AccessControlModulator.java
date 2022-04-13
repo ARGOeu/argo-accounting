@@ -1,14 +1,10 @@
 package org.accounting.system.repositories.modulators;
 
-import net.jodah.typetools.TypeResolver;
 import org.accounting.system.entities.Entity;
 import org.accounting.system.entities.acl.AccessControl;
-import org.accounting.system.enums.Collection;
 import org.accounting.system.enums.acl.AccessControlPermission;
-import org.accounting.system.repositories.acl.AccessControlRepository;
 import org.bson.types.ObjectId;
 
-import javax.ws.rs.ForbiddenException;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -17,19 +13,9 @@ import java.util.stream.Collectors;
  * This {@link AccessControlModulator} provides access only to entities
  * explicitly declared in the {@link AccessControl} collection.
  *
- * Child class must provide an implementation of {@link AccessControlRepository} as well as the
- * Collection that the child class entities belong to.
- *
  * @param <E> Generic class that represents a mongo collection.
  */
 public abstract class AccessControlModulator<E extends Entity> extends AccessModulator<E> {
-
-    protected Class<E> clazz;
-
-    public AccessControlModulator(){
-        Class<?> type = TypeResolver.resolveRawArgument(AccessControlModulator.class, getClass());
-        clazz = (Class<E>) type;
-    }
 
     @Override
     public E fetchEntityById(ObjectId id) {
@@ -39,7 +25,7 @@ public abstract class AccessControlModulator<E extends Entity> extends AccessMod
         if(optional.isPresent()){
             return findById(id);
         } else {
-            throw new ForbiddenException("You have no access to this entity : " + id.toString());
+            return super.fetchEntityById(id);
         }
     }
 
@@ -50,7 +36,7 @@ public abstract class AccessControlModulator<E extends Entity> extends AccessMod
         if(optional.isPresent()){
             return deleteById(id);
         } else {
-            throw new ForbiddenException("You have no access to this entity : " + id.toString());
+            return super.deleteEntityById(id);
         }
     }
 
@@ -60,7 +46,7 @@ public abstract class AccessControlModulator<E extends Entity> extends AccessMod
         if(optional.isPresent()){
              update(entity);
         } else {
-            throw new ForbiddenException("You have no access to this entity : " + entity.getId().toString());
+            return super.updateEntity(entity);
         }
         return entity;
     }
@@ -68,7 +54,7 @@ public abstract class AccessControlModulator<E extends Entity> extends AccessMod
     @Override
     public List<E> getAllEntities() {
 
-        List<AccessControl> accessControlList = getAccessControlRepository().findByWhoAndCollection(getRequestInformation().getSubjectOfToken(), collection(), AccessControlPermission.READ);
+        List<AccessControl> accessControlList = getAccessControlRepository().findAllByWhoAndCollection(getRequestInformation().getSubjectOfToken(), collection(), AccessControlPermission.READ);
 
         List<ObjectId> entities = accessControlList
                 .stream()
@@ -81,28 +67,26 @@ public abstract class AccessControlModulator<E extends Entity> extends AccessMod
 
     @Override
     public void grantPermission(AccessControl accessControl) {
-
-        throw new ForbiddenException("You have no access to this entity : " + accessControl.getEntity());
+        super.grantPermission(accessControl);
     }
 
     @Override
     public void modifyPermission(AccessControl accessControl) {
-
-        throw new ForbiddenException("You have no access to modify this permission.");
+        super.modifyPermission(accessControl);
     }
 
     @Override
     public void deletePermission(AccessControl accessControl) {
+        super.deletePermission(accessControl);
+    }
 
-        throw new ForbiddenException("You have no access to delete this permission.");
+    @Override
+    public AccessControl getPermission(String entity, String who) {
+        return super.getPermission(entity, who);
     }
 
     private Optional<AccessControl> getAccessControl(ObjectId id, AccessControlPermission permission){
 
         return getAccessControlRepository().findByWhoAndCollectionAndEntityAndPermission(getRequestInformation().getSubjectOfToken(), collection(), id.toString(), permission);
-    }
-
-    public Collection collection(){
-        return Collection.valueOf(clazz.getSimpleName());
     }
 }

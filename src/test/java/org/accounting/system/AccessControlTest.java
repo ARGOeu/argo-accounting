@@ -10,8 +10,10 @@ import org.accounting.system.dtos.InformativeResponse;
 import org.accounting.system.dtos.MetricDefinitionRequestDto;
 import org.accounting.system.dtos.MetricDefinitionResponseDto;
 import org.accounting.system.dtos.acl.AccessControlRequestDto;
+import org.accounting.system.dtos.acl.AccessControlResponseDto;
 import org.accounting.system.dtos.acl.AccessControlUpdateDto;
 import org.accounting.system.enums.acl.AccessControlPermission;
+import org.accounting.system.repositories.acl.AccessControlRepository;
 import org.accounting.system.repositories.metricdefinition.MetricDefinitionRepository;
 import org.accounting.system.services.ReadPredefinedTypesService;
 import org.accounting.system.util.Utility;
@@ -21,6 +23,7 @@ import org.mockito.Mockito;
 
 import javax.inject.Inject;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Optional;
 
 import static io.restassured.RestAssured.given;
@@ -37,16 +40,16 @@ public class AccessControlTest {
     @Inject
     MetricDefinitionRepository metricDefinitionRepository;
 
+    @Inject
+    AccessControlRepository accessControlRepository;
+
 
     KeycloakTestClient keycloakClient = new KeycloakTestClient();
-
-    protected String getAccessToken(String userName) {
-        return keycloakClient.getAccessToken(userName);
-    }
 
     @BeforeEach
     public void setup() {
         metricDefinitionRepository.deleteAll();
+        accessControlRepository.deleteAll();
     }
 
     @Test
@@ -248,20 +251,20 @@ public class AccessControlTest {
     }
 
     @Test
-    public void updateControlInspectorForbidden() {
+    public void updateAccessControlInspectorForbidden() {
 
         var notAuthenticatedResponse = given()
                 .auth()
                 .oauth2(getAccessToken("inspector"))
                 .contentType(ContentType.JSON)
-                .patch("/accounting-system/metric-definition/{metricDefinitionId}/acl/{fbdb4e4a-6e93-4b08-a1e7-0b7bd08520a6}", "507f1f77bcf86cd799439011", "fbdb4e4a-6e93-4b08-a1e7-0b7bd08520a6")
+                .patch("/accounting-system/metric-definition/{metricDefinitionId}/acl/{who}", "507f1f77bcf86cd799439011", "fbdb4e4a-6e93-4b08-a1e7-0b7bd08520a6")
                 .thenReturn();
 
         assertEquals(403, notAuthenticatedResponse.statusCode());
     }
 
     @Test
-    public void updateControlRequestBodyIsEmpty() {
+    public void updateAccessControlRequestBodyIsEmpty() {
 
         var errorResponse = given()
                 .auth()
@@ -452,14 +455,14 @@ public class AccessControlTest {
 
         var response = updateAccessControlForMetricDefinition(requestForUpdateAccessControl, "admin", metricDefinition.id, "fbdb4e4a-6e93-4b08-a1e7-0b7bd08520a6");
 
-        var informativeResponse = response
+        var accessControlResponseDto = response
                 .then()
                 .assertThat()
                 .statusCode(200)
                 .extract()
-                .as(InformativeResponse.class);
+                .as(AccessControlResponseDto.class);
 
-        assertEquals("Access Control entry has been updated successfully.", informativeResponse.message);
+        assertEquals("UPDATE", accessControlResponseDto.permissions.stream().findAny().get());
     }
 
     @Test
@@ -475,12 +478,12 @@ public class AccessControlTest {
     }
 
     @Test
-    public void deleteControlInspectorForbidden() {
+    public void deleteAccessControlInspectorForbidden() {
 
         var notAuthenticatedResponse = given()
                 .auth()
                 .oauth2(getAccessToken("inspector"))
-                .delete("/accounting-system/metric-definition/{metricDefinitionId}/acl/{fbdb4e4a-6e93-4b08-a1e7-0b7bd08520a6}", "507f1f77bcf86cd799439011", "fbdb4e4a-6e93-4b08-a1e7-0b7bd08520a6")
+                .delete("/accounting-system/metric-definition/{metricDefinitionId}/acl/{who}", "507f1f77bcf86cd799439011", "fbdb4e4a-6e93-4b08-a1e7-0b7bd08520a6")
                 .thenReturn();
 
         assertEquals(403, notAuthenticatedResponse.statusCode());
@@ -601,6 +604,261 @@ public class AccessControlTest {
         assertEquals("Access Control entry has been deleted successfully.", informativeResponse.message);
     }
 
+    @Test
+    public void getAccessControlNotAuthenticated() {
+
+        var notAuthenticatedResponse = given()
+                .auth()
+                .oauth2("invalidToken")
+                .get("accounting-system/metric-definition/{metricDefinitionId}/acl/{who}", "507f1f77bcf86cd799439011", "fbdb4e4a-6e93-4b08-a1e7-0b7bd08520a6")
+                .thenReturn();
+
+        assertEquals(401, notAuthenticatedResponse.statusCode());
+    }
+
+    @Test
+    public void getAccessControlInspectorForbidden() {
+
+        var notAuthenticatedResponse = given()
+                .auth()
+                .oauth2(getAccessToken("inspector"))
+                .get("/accounting-system/metric-definition/{metricDefinitionId}/acl/{who}", "507f1f77bcf86cd799439011", "fbdb4e4a-6e93-4b08-a1e7-0b7bd08520a6")
+                .thenReturn();
+
+        assertEquals(403, notAuthenticatedResponse.statusCode());
+    }
+
+    @Test
+    public void getAccessControlEntityNotValid() {
+
+
+        var response = getAccessControlForMetricDefinition("admin", "507f1f77bcf86cd799439011", "fbdb4e4a-6e93-4b08-a1e7-0b7bd08520a6");
+
+        var errorResponse = response
+                .then()
+                .assertThat()
+                .statusCode(404)
+                .extract()
+                .as(InformativeResponse.class);
+
+        assertEquals("There is no Metric Definition with the following id: 507f1f77bcf86cd799439011", errorResponse.message);
+    }
+
+    @Test
+    public void getAccessControlNoPermissions() {
+
+        Mockito.when(readPredefinedTypesService.searchForUnitType(any())).thenReturn(Optional.of("SECOND"));
+        Mockito.when(readPredefinedTypesService.searchForMetricType(any())).thenReturn(Optional.of("Aggregated"));
+        MetricDefinitionRequestDto requestMetricDefinition = new MetricDefinitionRequestDto();
+
+        requestMetricDefinition.metricName = "metric";
+        requestMetricDefinition.metricDescription = "description";
+        requestMetricDefinition.unitType = "SECOND";
+        requestMetricDefinition.metricType = "Aggregated";
+
+        var metricDefinition = createMetricDefinition(requestMetricDefinition);
+
+        var response = getAccessControlForMetricDefinition("admin", metricDefinition.id, "fbdb4e4a-6e93-4b08-a1e7-0b7bd08520a6");
+
+        var informativeResponse = response
+                .then()
+                .assertThat()
+                .statusCode(404)
+                .extract()
+                .as(InformativeResponse.class);
+
+        assertEquals("There is no assigned permission for the fbdb4e4a-6e93-4b08-a1e7-0b7bd08520a6 to control access to the "+metricDefinition.id, informativeResponse.message);
+    }
+
+    @Test
+    public void getAccessControlForMetricDefinitionCreatorForbidden() {
+
+        Mockito.when(readPredefinedTypesService.searchForUnitType(any())).thenReturn(Optional.of("SECOND"));
+        Mockito.when(readPredefinedTypesService.searchForMetricType(any())).thenReturn(Optional.of("Aggregated"));
+        MetricDefinitionRequestDto requestMetricDefinition = new MetricDefinitionRequestDto();
+
+        requestMetricDefinition.metricName = "metric";
+        requestMetricDefinition.metricDescription = "description";
+        requestMetricDefinition.unitType = "SECOND";
+        requestMetricDefinition.metricType = "Aggregated";
+
+        var metricDefinition = createMetricDefinition(requestMetricDefinition);
+
+        var request= new AccessControlRequestDto();
+
+        request.who = "fbdb4e4a-6e93-4b08-a1e7-0b7bd08520a6";
+
+        var permissions = new HashSet<String>();
+        permissions.add("READ");
+        request.permissions = permissions;
+
+        createAccessControlForMetricDefinition(request, "admin", metricDefinition.id);
+
+        // creator (role metric_definition_creator) can delete only to its entities since it has been assigned to it the tuple (ACL, ENTITY)
+        var response = getAccessControlForMetricDefinition("creator", metricDefinition.id, "fbdb4e4a-6e93-4b08-a1e7-0b7bd08520a6");
+
+        var informativeResponse = response
+                .then()
+                .assertThat()
+                .statusCode(403)
+                .extract()
+                .as(InformativeResponse.class);
+
+        assertEquals("You have no access to read this permission.", informativeResponse.message);
+    }
+
+    @Test
+    public void getAccessControl() {
+
+        Mockito.when(readPredefinedTypesService.searchForUnitType(any())).thenReturn(Optional.of("SECOND"));
+        Mockito.when(readPredefinedTypesService.searchForMetricType(any())).thenReturn(Optional.of("Aggregated"));
+        MetricDefinitionRequestDto requestMetricDefinition = new MetricDefinitionRequestDto();
+
+        requestMetricDefinition.metricName = "metric";
+        requestMetricDefinition.metricDescription = "description";
+        requestMetricDefinition.unitType = "SECOND";
+        requestMetricDefinition.metricType = "Aggregated";
+
+        var metricDefinition = createMetricDefinition(requestMetricDefinition);
+
+        var request= new AccessControlRequestDto();
+
+        request.who = "fbdb4e4a-6e93-4b08-a1e7-0b7bd08520a6";
+
+        var permissions = new HashSet<String>();
+        permissions.add("READ");
+        request.permissions = permissions;
+
+        createAccessControlForMetricDefinition(request, "admin", metricDefinition.id);
+
+        // creator (role metric_definition_creator) can delete only to its entities since it has been assigned to it the tuple (ACL, ENTITY)
+        var response = getAccessControlForMetricDefinition("admin", metricDefinition.id, "fbdb4e4a-6e93-4b08-a1e7-0b7bd08520a6");
+
+        var accessControlResponseDto = response
+                .then()
+                .assertThat()
+                .statusCode(200)
+                .extract()
+                .as(AccessControlResponseDto.class);
+
+        assertEquals("fbdb4e4a-6e93-4b08-a1e7-0b7bd08520a6", accessControlResponseDto.who);
+    }
+
+    @Test
+    public void getAllAccessControlsNotAuthenticated() {
+
+        var notAuthenticatedResponse = given()
+                .auth()
+                .oauth2("invalidToken")
+                .get("accounting-system/metric-definition/acl")
+                .thenReturn();
+
+        assertEquals(401, notAuthenticatedResponse.statusCode());
+    }
+
+    @Test
+    public void getAllAccessControlsInspectorForbidden() {
+
+        var notAuthenticatedResponse = given()
+                .auth()
+                .oauth2(getAccessToken("inspector"))
+                .get("/accounting-system/metric-definition/acl")
+                .thenReturn();
+
+        assertEquals(403, notAuthenticatedResponse.statusCode());
+    }
+
+    @Test
+    public void getAllAccessControls() {
+
+        //first pair of Access Control - Metric Definition by madmin (metric_definition_admin)
+
+        Mockito.when(readPredefinedTypesService.searchForUnitType(any())).thenReturn(Optional.of("SECOND"));
+        Mockito.when(readPredefinedTypesService.searchForMetricType(any())).thenReturn(Optional.of("Aggregated"));
+        MetricDefinitionRequestDto requestMetricDefinition = new MetricDefinitionRequestDto();
+
+        requestMetricDefinition.metricName = "metric";
+        requestMetricDefinition.metricDescription = "description";
+        requestMetricDefinition.unitType = "SECOND";
+        requestMetricDefinition.metricType = "Aggregated";
+
+        var metricDefinition = createMetricDefinition(requestMetricDefinition);
+
+        var request= new AccessControlRequestDto();
+
+        request.who = "fbdb4e4a-6e93-4b08-a1e7-0b7bd08520a6";
+
+        var permissions = new HashSet<String>();
+        permissions.add("READ");
+        request.permissions = permissions;
+
+        createAccessControlForMetricDefinition(request, "madmin", metricDefinition.id);
+
+        //second pair of Access Control - Metric Definition by admin (metric_definition_admin)
+
+        Mockito.when(readPredefinedTypesService.searchForUnitType(any())).thenReturn(Optional.of("SECOND"));
+        Mockito.when(readPredefinedTypesService.searchForMetricType(any())).thenReturn(Optional.of("Aggregated"));
+        MetricDefinitionRequestDto requestMetricDefinition1 = new MetricDefinitionRequestDto();
+
+        requestMetricDefinition1.metricName = "metric1";
+        requestMetricDefinition1.metricDescription = "description";
+        requestMetricDefinition1.unitType = "SECOND";
+        requestMetricDefinition1.metricType = "Aggregated";
+
+        var metricDefinition1 = createMetricDefinition(requestMetricDefinition1);
+
+        var request1= new AccessControlRequestDto();
+
+        request1.who = "fbdb4e4a-6e93-4b08-a1e7-0b7bd08520a6";
+
+        var permissions1 = new HashSet<String>();
+        permissions1.add("READ");
+        request1.permissions = permissions1;
+
+        createAccessControlForMetricDefinition(request, "madmin", metricDefinition1.id);
+
+        //third pair of Access Control - Metric Definition by creator (metric_definition_creator)
+
+        Mockito.when(readPredefinedTypesService.searchForUnitType(any())).thenReturn(Optional.of("SECOND"));
+        Mockito.when(readPredefinedTypesService.searchForMetricType(any())).thenReturn(Optional.of("Aggregated"));
+        MetricDefinitionRequestDto requestMetricDefinition2 = new MetricDefinitionRequestDto();
+
+        requestMetricDefinition2.metricName = "metric2";
+        requestMetricDefinition2.metricDescription = "description";
+        requestMetricDefinition2.unitType = "SECOND";
+        requestMetricDefinition2.metricType = "Aggregated";
+
+        var metricDefinition2 = createMetricDefinitionByUser(requestMetricDefinition2, "creator");
+
+        var request2= new AccessControlRequestDto();
+
+        request2.who = "fbdb4e4a-6e93-4b08-a1e7-0b7bd08520a6";
+
+        var permissions2 = new HashSet<String>();
+        permissions2.add("READ");
+        request2.permissions = permissions2;
+
+        createAccessControlForMetricDefinition(request, "creator", metricDefinition2.id);
+
+
+        // madmin can read the three created Access Controls
+
+        var allResponse = getAllAccessControlsForMetricDefinition("madmin");
+        var allAccessControls = allResponse.thenReturn();
+
+        assertEquals(200, allAccessControls.statusCode());
+        assertEquals(3, allAccessControls.body().as(List.class).size());
+
+
+        // creator can read only the Access Control that it has created
+
+        var oneResponse = getAllAccessControlsForMetricDefinition("creator");
+        var oneAccessControl = oneResponse.thenReturn();
+
+        assertEquals(200, oneAccessControl.statusCode());
+        assertEquals(1, oneAccessControl.body().as(List.class).size());
+    }
+
     private Response createAccessControlForMetricDefinition(AccessControlRequestDto request, String user, String metricDefinitionId){
 
         return given()
@@ -629,6 +887,22 @@ public class AccessControlTest {
                 .delete("/accounting-system/metric-definition/{metricDefinitionId}/acl/{who}", metricDefinitionId, who);
     }
 
+    private Response getAccessControlForMetricDefinition(String user, String metricDefinitionId, String who){
+
+        return given()
+                .auth()
+                .oauth2(getAccessToken(user))
+                .get("/accounting-system/metric-definition/{metricDefinitionId}/acl/{who}", metricDefinitionId, who);
+    }
+
+    private Response getAllAccessControlsForMetricDefinition(String user){
+
+        return given()
+                .auth()
+                .oauth2(getAccessToken(user))
+                .get("/accounting-system/metric-definition/acl");
+    }
+
     private MetricDefinitionResponseDto createMetricDefinition(MetricDefinitionRequestDto request){
 
         return given()
@@ -643,5 +917,25 @@ public class AccessControlTest {
                 .statusCode(201)
                 .extract()
                 .as(MetricDefinitionResponseDto.class);
+    }
+
+    private MetricDefinitionResponseDto createMetricDefinitionByUser(MetricDefinitionRequestDto request, String user){
+
+        return given()
+                .auth()
+                .oauth2(getAccessToken(user))
+                .basePath("accounting-system/metric-definition")
+                .body(request)
+                .contentType(ContentType.JSON)
+                .post()
+                .then()
+                .assertThat()
+                .statusCode(201)
+                .extract()
+                .as(MetricDefinitionResponseDto.class);
+    }
+
+    protected String getAccessToken(String userName) {
+        return keycloakClient.getAccessToken(userName);
     }
 }
