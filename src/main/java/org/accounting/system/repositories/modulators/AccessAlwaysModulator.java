@@ -17,13 +17,11 @@ public abstract class AccessAlwaysModulator<E extends Entity> extends AccessModu
 
     @Override
     public E fetchEntityById(ObjectId id) {
-
         return findById(id);
     }
 
     @Override
     public boolean deleteEntityById(ObjectId id) {
-
         return deleteById(id);
     }
 
@@ -36,13 +34,11 @@ public abstract class AccessAlwaysModulator<E extends Entity> extends AccessModu
 
     @Override
     public List<E> getAllEntities() {
-
         return findAll().list();
     }
 
     @Override
     public void grantPermission(AccessControl accessControl) {
-
          getAccessControlRepository().persist(accessControl);
     }
 
@@ -54,5 +50,15 @@ public abstract class AccessAlwaysModulator<E extends Entity> extends AccessModu
     @Override
     public void deletePermission(AccessControl accessControl) {
          getAccessControlRepository().delete(accessControl);
+    }
+
+    @Override
+    public AccessControl getPermission(String entity, String who) {
+        return getAccessControlRepository().findByWhoAndCollectionAndEntity(who, collection(), entity);
+    }
+
+    @Override
+    public List<AccessControl> getAllPermissions() {
+        return getAccessControlRepository().findAllByCollection(collection());
     }
 }
