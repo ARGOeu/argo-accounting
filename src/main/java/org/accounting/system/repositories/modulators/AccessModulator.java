@@ -1,14 +1,18 @@
 package org.accounting.system.repositories.modulators;
 
 import io.quarkus.mongodb.panache.PanacheMongoRepository;
+import net.jodah.typetools.TypeResolver;
 import org.accounting.system.beans.RequestInformation;
 import org.accounting.system.entities.Entity;
 import org.accounting.system.entities.acl.AccessControl;
+import org.accounting.system.enums.Collection;
 import org.accounting.system.repositories.acl.AccessControlRepository;
 import org.bson.types.ObjectId;
 
 import javax.inject.Inject;
+import javax.ws.rs.ForbiddenException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -29,31 +33,68 @@ public abstract class AccessModulator<E extends Entity> implements PanacheMongoR
     @Inject
     AccessControlRepository accessControlRepository;
 
-    public abstract E fetchEntityById(ObjectId id);
+    protected Class<E> clazz;
 
-    public abstract boolean deleteEntityById(ObjectId id);
+    public AccessModulator(){
+        Class<?> type = TypeResolver.resolveRawArgument(AccessModulator.class, getClass());
+        clazz = (Class<E>) type;
+    }
 
-    public abstract E updateEntity(E entity);
+    public  E fetchEntityById(ObjectId id){
+        throw new ForbiddenException("You have no access to this entity : " + id.toString());
+    }
 
-    public abstract List<E> getAllEntities();
+    public boolean deleteEntityById(ObjectId id){
+        throw new ForbiddenException("You have no access to this entity : " + id.toString());
+    }
+
+    public E updateEntity(E entity){
+        throw new ForbiddenException("You have no access to this entity : " + entity.getId().toString());
+    }
+
+    public List<E> getAllEntities(){
+        return Collections.emptyList();
+    }
 
     /**
-     * This method is responsible fοr granting permissions to specific entity within a generic collection
-     * @param accessControl It essentially expresses the permissions that will be granted
+     * This method is responsible fοr granting permissions to specific entity within a generic collection.
+     * @param accessControl It essentially expresses the permissions that will be granted.
      */
-    public abstract void grantPermission(AccessControl accessControl);
+    public void grantPermission(AccessControl accessControl){
+        throw new ForbiddenException("You have no access to this entity : " + accessControl.getEntity());
+    }
 
     /**
-     * This method is responsible fοr updating an existing permissions which have already been granted to specific entity
-     * @param accessControl It essentially expresses the permissions that will be modified
+     * This method is responsible fοr updating existing permissions which have already been granted to a specific entity.
+     * @param accessControl It essentially expresses the permissions that will be modified.
      */
-    public abstract void modifyPermission(AccessControl accessControl);
+    public void modifyPermission(AccessControl accessControl){
+        throw new ForbiddenException("You have no access to modify this permission.");
+    }
 
     /**
-     * This method is responsible fοr deleting an existing permissions which have already been granted to specific entity
-     * @param accessControl It essentially expresses the permissions that will be deleted
+     * This method is responsible fοr deleting existing permissions which have already been granted to a specific entity.
+     * @param accessControl It essentially expresses the permissions that will be deleted.
      */
-    public abstract void deletePermission(AccessControl accessControl);
+    public void deletePermission(AccessControl accessControl){
+        throw new ForbiddenException("You have no access to delete this permission.");
+    }
+
+    /**
+     * This method is responsible fοr fetching existing permissions which have already been granted to a specific entity.
+     * @param entity The entity id to which permissions have been assigned.
+     * @param who To whom the permissions have been assigned.
+     */
+    public AccessControl getPermission(String entity, String who){
+        throw new ForbiddenException("You have no access to read this permission.");
+    }
+
+    /**
+     * This method is responsible for returning all permissions granted in a Collection.
+     */
+    public List<AccessControl> getAllPermissions(){
+        return Collections.emptyList();
+    }
 
     public List<E> combineTwoLists(List<E> a, List<E> b){
 
@@ -72,5 +113,9 @@ public abstract class AccessModulator<E extends Entity> implements PanacheMongoR
 
     public AccessControlRepository getAccessControlRepository() {
         return accessControlRepository;
+    }
+
+    public Collection collection(){
+        return Collection.valueOf(clazz.getSimpleName());
     }
 }

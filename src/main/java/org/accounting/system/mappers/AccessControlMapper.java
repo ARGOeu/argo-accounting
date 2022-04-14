@@ -9,6 +9,8 @@ import org.mapstruct.Mapping;
 import org.mapstruct.MappingTarget;
 import org.mapstruct.factory.Mappers;
 
+import java.util.List;
+
 /**
  * This interface is responsible for turning an Access Control Entity into a request/response and vice versa.
  */
@@ -21,6 +23,8 @@ public interface AccessControlMapper {
     AccessControl requestToAccessControl(AccessControlRequestDto request);
 
     AccessControlResponseDto accessControlToResponse(AccessControl response);
+
+    List<AccessControlResponseDto> accessControlsToResponse(List<AccessControl> accessControls);
 
     @Mapping(target = "who", ignore = true)
     @Mapping(target = "collection", ignore = true)

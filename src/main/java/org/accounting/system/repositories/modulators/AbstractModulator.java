@@ -55,6 +55,16 @@ public abstract class AbstractModulator<E extends Entity> extends AccessModulato
          get().deletePermission(accessControl);
     }
 
+    @Override
+    public AccessControl getPermission(String entity, String who) {
+        return get().getPermission(entity, who);
+    }
+
+    @Override
+    public List<AccessControl> getAllPermissions() {
+        return get().getAllPermissions();
+    }
+
     public abstract AccessAlwaysModulator always();
 
     public abstract AccessEntityModulator entity();

@@ -7,6 +7,7 @@ import org.accounting.system.dtos.MetricDefinitionResponseDto;
 import org.accounting.system.dtos.PageResource;
 import org.accounting.system.dtos.UpdateMetricDefinitionRequestDto;
 import org.accounting.system.dtos.acl.AccessControlRequestDto;
+import org.accounting.system.dtos.acl.AccessControlResponseDto;
 import org.accounting.system.dtos.acl.AccessControlUpdateDto;
 import org.accounting.system.entities.Metric;
 import org.accounting.system.entities.MetricDefinition;
@@ -189,19 +190,15 @@ public class MetricDefinitionService {
      * @param who To whom belongs the permissions which will be modified.
      * @param updateDto The permissions which will be modified.
      */
-    public void modifyPermission(String metricDefinitionId, String who, AccessControlUpdateDto updateDto){
+    public AccessControlResponseDto modifyPermission(String metricDefinitionId, String who, AccessControlUpdateDto updateDto){
 
-        var optional = accessControlRepository.findByWhoAndCollectionAndEntity(who, Collection.MetricDefinition, metricDefinitionId);
+        var accessControl = accessControlRepository.findByWhoAndCollectionAndEntity(who, Collection.MetricDefinition, metricDefinitionId);
 
-        optional.ifPresentOrElse(
-                (value)->{
-                    AccessControlMapper.INSTANCE.updateAccessControlFromDto(updateDto, value);
-                    metricDefinitionRepository.modifyPermission(value);
-                },
-                () ->{
-                    throw new NotFoundException("There is no assigned permission for the "+who+" to control access to the "+metricDefinitionId);
-                }
-        );
+        AccessControlMapper.INSTANCE.updateAccessControlFromDto(updateDto, accessControl);
+
+        metricDefinitionRepository.modifyPermission(accessControl);
+
+        return AccessControlMapper.INSTANCE.accessControlToResponse(accessControl);
     }
 
     /**
@@ -212,13 +209,31 @@ public class MetricDefinitionService {
      */
     public void deletePermission(String metricDefinitionId, String who){
 
-        var optional = accessControlRepository.findByWhoAndCollectionAndEntity(who, Collection.MetricDefinition, metricDefinitionId);
+        var accessControl = accessControlRepository.findByWhoAndCollectionAndEntity(who, Collection.MetricDefinition, metricDefinitionId);
 
-        optional.ifPresentOrElse(
-                (value)-> metricDefinitionRepository.deletePermission(value),
-                () ->{
-                    throw new NotFoundException("There is no assigned permission for the "+who+" to control access to the "+metricDefinitionId);
-                }
-        );
+        metricDefinitionRepository.deletePermission(accessControl);
+    }
+
+    /**
+     * Fetches the Access Control that has been created for given metricDefinitionId and who
+     *
+     * @param metricDefinitionId The Metric Definition for which permissions will be deleted.
+     * @param who The service/user id for which the permissions will be deleted.
+     */
+    public AccessControlResponseDto fetchPermission(String metricDefinitionId, String who){
+
+        var accessControl = metricDefinitionRepository.getPermission(metricDefinitionId, who);
+
+        return AccessControlMapper.INSTANCE.accessControlToResponse(accessControl);
+    }
+
+    /**
+     * Fetches all Access Control that have been created for Metric Definition collection
+     **/
+    public List<AccessControlResponseDto> fetchAllPermissions(){
+
+        var accessControl = metricDefinitionRepository.getAllPermissions();
+
+        return AccessControlMapper.INSTANCE.accessControlsToResponse(accessControl);
     }
 }
