@@ -35,7 +35,6 @@ public abstract class AbstractModulator<E extends Entity, I> extends AccessModul
         return get().getAllEntities();
     }
 
-    @Override
     public void grantPermission(AccessControl accessControl){
         try{
             get().grantPermission(accessControl);
@@ -51,7 +50,7 @@ public abstract class AbstractModulator<E extends Entity, I> extends AccessModul
 
     @Override
     public void deletePermission(AccessControl accessControl) {
-         get().deletePermission(accessControl);
+        get().deletePermission(accessControl);
     }
 
     @Override

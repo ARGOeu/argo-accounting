@@ -6,13 +6,17 @@ import org.accounting.system.dtos.metric.UpdateMetricRequestDto;
 import org.accounting.system.entities.Metric;
 import org.accounting.system.mappers.MetricMapper;
 import org.accounting.system.repositories.MetricRepository;
+import org.accounting.system.util.QueryParser;
+import org.bson.conversions.Bson;
 import org.bson.types.ObjectId;
+import org.json.simple.parser.ParseException;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 import javax.ws.rs.BadRequestException;
 import javax.ws.rs.NotFoundException;
 import java.time.Instant;
+import java.util.List;
 import java.util.Optional;
 
 /**
@@ -29,6 +33,8 @@ public class MetricService {
     @Inject
     MetricDefinitionService metricDefinitionService;
 
+    @Inject
+    QueryParser queryParser;
     public MetricService(MetricRepository metricRepository, MetricDefinitionService metricDefinitionService) {
         this.metricRepository = metricRepository;
         this.metricDefinitionService = metricDefinitionService;
@@ -146,4 +152,13 @@ public class MetricService {
 
         return metricRepository.findByIdOptional(new ObjectId(id));
     }
+
+    public List<MetricResponseDto> searchMetric(String json) throws ParseException, NoSuchFieldException {
+
+        Bson query=queryParser.parseFile(json);
+
+        var list = metricRepository.search(query);
+        return  MetricMapper.INSTANCE.metricsToResponse( list);
+    }
+
 }

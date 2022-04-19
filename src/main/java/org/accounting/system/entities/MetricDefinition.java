@@ -1,7 +1,7 @@
 package org.accounting.system.entities;
-
 import lombok.EqualsAndHashCode;
 import org.bson.types.ObjectId;
+import org.bson.codecs.pojo.annotations.BsonProperty;
 
 /**
  * The Metric Definition class represents the MetricDefinition collection stored in the mongo database.
@@ -13,10 +13,15 @@ public class MetricDefinition extends Entity {
 
     private ObjectId id;
     @EqualsAndHashCode.Include
+    @BsonProperty("metric_name")
+
     private String metricName;
+    @BsonProperty("metric_description")
     private String metricDescription;
     @EqualsAndHashCode.Include
+    @BsonProperty("unit_type")
     private String unitType;
+    @BsonProperty("metric_type")
     private String metricType;
 
     public String getMetricName() {
@@ -24,7 +29,7 @@ public class MetricDefinition extends Entity {
     }
 
     public void setMetricName(String metricName) {
-        this.metricName = metricName.toLowerCase();
+        this.metricName = metricName;
     }
 
     public String getMetricDescription() {
