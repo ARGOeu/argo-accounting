@@ -21,13 +21,15 @@ import org.accounting.system.repositories.MetricRepository;
 import org.accounting.system.repositories.acl.AccessControlRepository;
 import org.accounting.system.repositories.metricdefinition.MetricDefinitionRepository;
 import org.accounting.system.util.QueryParser;
+import org.bson.conversions.Bson;
 import org.bson.types.ObjectId;
 import org.json.simple.parser.ParseException;
-
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 import javax.ws.rs.core.UriInfo;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * This service exposes business logic, which uses the {@link MetricDefinitionRepository}.
@@ -245,11 +247,14 @@ public class MetricDefinitionService {
 
         return AccessControlMapper.INSTANCE.accessControlsToResponse(accessControl);
     }
+    public List<MetricDefinitionResponseDto> searchMetricDefinition( String json, boolean isAlwaysPermission) throws ParseException, NoSuchFieldException {
 
-    public List<MetricDefinitionResponseDto> searchMetricDefinition( String json) throws ParseException, NoSuchFieldException {
-
-        var list = metricDefinitionRepository.search(queryParser.parseFile(json));
-        return  MetricDefinitionMapper.INSTANCE.metricDefinitionsToResponse( list);
+        List<ObjectId> entityIds=new ArrayList<>();
+        if(!isAlwaysPermission){
+            entityIds= fetchAllMetricDefinitions().stream().map(MetricDefinitionResponseDto::getObjectId).collect(Collectors.toList());
+        }
+        Bson query=queryParser.parseFile(json, isAlwaysPermission, entityIds);
+        return  MetricDefinitionMapper.INSTANCE.metricDefinitionsToResponse( metricDefinitionRepository.search(query));
     }
 
 }

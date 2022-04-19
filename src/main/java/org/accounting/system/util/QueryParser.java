@@ -1,8 +1,10 @@
 package org.accounting.system.util;
 
+import com.mongodb.client.model.Filters;
 import org.accounting.system.enums.Operand;
 import org.accounting.system.enums.Operator;
 import org.bson.conversions.Bson;
+import org.bson.types.ObjectId;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
@@ -15,9 +17,34 @@ import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.Iterator;
+import java.util.List;
 
 @ApplicationScoped
 public class QueryParser {
+
+    public Bson parseFile(String json, boolean isAlwaysPermission, List<ObjectId> objectIds) throws ParseException, NoSuchFieldException {
+        if (json != null) {
+            JSONParser parser = new JSONParser();
+            JSONObject jsonObject = (JSONObject) parser.parse(json);
+
+            String type = (String) jsonObject.get("type");
+            Bson filter = null;
+            if (type.equals("filter")) {
+                filter = parseFilter(jsonObject);
+
+            } else if (type.equals("query")) {
+                filter = parseQuery(jsonObject);
+
+            }
+            if (!isAlwaysPermission) {
+                Bson accessFilter = accessFilter(filter, objectIds);
+                return accessFilter;
+            } else {
+                return filter;
+            }
+        }
+        return null;
+    }
 
     public Bson parseFile(String json) throws ParseException, NoSuchFieldException {
         if (json != null) {
@@ -39,7 +66,7 @@ public class QueryParser {
         return null;
     }
 
-    private Bson parseFilter(JSONObject filter)  {
+    private Bson parseFilter(JSONObject filter) throws NoSuchFieldException {
         String operator = (String) filter.get("operator");
         JSONArray criteria = (JSONArray) filter.get("criteria");
         Iterator criteriaIter = criteria.iterator();
@@ -89,33 +116,34 @@ public class QueryParser {
 
 
     private Bson convertOp(String operand, String field, Object value) {
-        Operand op=Operand.getEnumNameForValue(operand);
+        Operand op = Operand.getEnumNameForValue(operand);
         switch (op) {
 
-            case  EQ:
+            case EQ:
 
-                return Operand.EQ.execute(field,value);
+                return Operand.EQ.execute(field, value);
             case LT:
-                return Operand.LT.execute(field,value);
+                return Operand.LT.execute(field, value);
             case LTE:
-                return Operand.LTE.execute(field,value);
+                return Operand.LTE.execute(field, value);
             case GT:
-                return Operand.GT.execute(field,value);
+                return Operand.GT.execute(field, value);
             case GTE:
-                return Operand.GTE.execute(field,value);
+                return Operand.GTE.execute(field, value);
             case NEQ:
-                return Operand.NEQ.execute(field,value);
+                return Operand.NEQ.execute(field, value);
 
             default:
                 return null;
         }
 
     }
-    private Bson joinCriteria(String operator,ArrayList<Bson> bsons) {
-        Operator  op= Operator.getEnumNameForValue(operator);
+
+    private Bson joinCriteria(String operator, ArrayList<Bson> bsons) {
+        Operator op = Operator.getEnumNameForValue(operator);
         switch (op) {
 
-            case  AND:
+            case AND:
 
                 return Operator.AND.execute(bsons);
             case OR:
@@ -139,8 +167,13 @@ public class QueryParser {
 
     }
 
+    public Bson accessFilter(Bson filter, List<ObjectId> ids) {
 
+        Bson accessFilter = Filters.in("_id", ids);
+
+        Bson query = Filters.and(accessFilter, filter);
+        return query;
+    }
 }
-
 
 

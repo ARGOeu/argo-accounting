@@ -1,6 +1,7 @@
 package org.accounting.system.endpoints;
 
 import io.quarkus.security.Authenticated;
+import org.accounting.system.beans.RequestInformation;
 import org.accounting.system.constraints.NotFoundEntity;
 import org.accounting.system.dtos.InformativeResponse;
 import org.accounting.system.dtos.pagination.PageResource;
@@ -10,6 +11,7 @@ import org.accounting.system.dtos.acl.AccessControlUpdateDto;
 import org.accounting.system.dtos.metricdefinition.MetricDefinitionRequestDto;
 import org.accounting.system.dtos.metricdefinition.MetricDefinitionResponseDto;
 import org.accounting.system.dtos.metricdefinition.UpdateMetricDefinitionRequestDto;
+import org.accounting.system.enums.AccessType;
 import org.accounting.system.enums.Collection;
 import org.accounting.system.exceptions.UnprocessableException;
 import org.accounting.system.interceptors.annotations.Permission;
@@ -72,6 +74,10 @@ public class MetricDefinitionEndpoint {
     Utility utility;
     @Inject
     QueryParser queryParser;
+
+    @Inject
+    RequestInformation requestInformation;
+
 
     public MetricDefinitionEndpoint(MetricDefinitionService metricDefinitionService, ReadPredefinedTypesService readPredefinedTypesService, Utility utility) {
         this.metricDefinitionService = metricDefinitionService;
@@ -923,13 +929,7 @@ public class MetricDefinitionEndpoint {
                     type = SchemaType.ARRAY,
                     implementation = MetricDefinitionResponseDto.class)))
     @APIResponse(
-            responseCode = "400",
-            description = "Bad Request.",
-            content = @Content(schema = @Schema(
-                    type = SchemaType.OBJECT,
-                    implementation = InformativeResponse.class)))
-    @APIResponse(
-            responseCode = "401",
+        responseCode = "401",
             description = "User/Service has not been authenticated.",
             content = @Content(schema = @Schema(
                     type = SchemaType.OBJECT,
@@ -952,13 +952,12 @@ public class MetricDefinitionEndpoint {
     @Path("/search")
     @Produces(value = MediaType.APPLICATION_JSON)
     @Consumes(value = MediaType.APPLICATION_JSON)
-
+    @Permission(operation = org.accounting.system.enums.Operation.READ, collection = Collection.MetricDefinition)
 
     public Response search(@Valid @NotNull(message = "The request body is empty.") @RequestBody String json) throws  NoSuchFieldException, ParseException {
 
-        var list=metricDefinitionService.searchMetricDefinition(json);
+        var list=metricDefinitionService.searchMetricDefinition(json,  requestInformation.getAccessType().equals(AccessType.ALWAYS));
         return Response.ok().entity(list).build();
 
     }
-
 }
