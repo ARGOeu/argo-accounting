@@ -58,7 +58,6 @@ public abstract class AccessEntityModulator<E extends Entity, I> extends AccessM
 
         return combineTwoLists(fromCollection, fromAccessControl);
     }
-
     @Override
     public void grantPermission(AccessControl accessControl) {
 
@@ -85,7 +84,7 @@ public abstract class AccessEntityModulator<E extends Entity, I> extends AccessM
     public void deletePermission(AccessControl accessControl) {
 
         if (isIdentifiable(accessControl.getCreatorId())) {
-             getAccessControlRepository().delete(accessControl);
+            getAccessControlRepository().delete(accessControl);
         } else {
             accessControlModulator().deletePermission(accessControl);
         }
@@ -117,6 +116,6 @@ public abstract class AccessEntityModulator<E extends Entity, I> extends AccessM
      * @return
      */
     public boolean isIdentifiable(String idToBeIdentified){
-       return idToBeIdentified.equals(getRequestInformation().getSubjectOfToken());
+        return idToBeIdentified.equals(getRequestInformation().getSubjectOfToken());
     }
 }

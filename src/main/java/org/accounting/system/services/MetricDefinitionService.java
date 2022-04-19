@@ -20,7 +20,9 @@ import org.accounting.system.mappers.MetricMapper;
 import org.accounting.system.repositories.MetricRepository;
 import org.accounting.system.repositories.acl.AccessControlRepository;
 import org.accounting.system.repositories.metricdefinition.MetricDefinitionRepository;
+import org.accounting.system.util.QueryParser;
 import org.bson.types.ObjectId;
+import org.json.simple.parser.ParseException;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
@@ -45,8 +47,10 @@ public class MetricDefinitionService {
     MetricRepository metricRepository;
 
     @Inject
-    AccessControlRepository accessControlRepository;
 
+    AccessControlRepository accessControlRepository;
+    @Inject
+    QueryParser queryParser;
 
     public MetricDefinitionService(MetricDefinitionRepository metricDefinitionRepository, MetricService metricService, MetricRepository metricRepository, AccessControlRepository accessControlRepository) {
         this.metricDefinitionRepository = metricDefinitionRepository;
@@ -90,6 +94,8 @@ public class MetricDefinitionService {
 
         return MetricDefinitionMapper.INSTANCE.metricDefinitionsToResponse(list);
     }
+
+
 
     /**
      * This method calls the {@link MetricDefinitionRepository metricDefinitionRepository} to update a Metric Definition.
@@ -239,4 +245,11 @@ public class MetricDefinitionService {
 
         return AccessControlMapper.INSTANCE.accessControlsToResponse(accessControl);
     }
+
+    public List<MetricDefinitionResponseDto> searchMetricDefinition( String json) throws ParseException, NoSuchFieldException {
+
+        var list = metricDefinitionRepository.search(queryParser.parseFile(json));
+        return  MetricDefinitionMapper.INSTANCE.metricDefinitionsToResponse( list);
+    }
+
 }

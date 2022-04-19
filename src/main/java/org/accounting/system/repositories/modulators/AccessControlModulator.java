@@ -44,7 +44,7 @@ public abstract class AccessControlModulator<E extends Entity, I> extends Access
     public E updateEntity(E entity, I id) {
         var optional = getAccessControl(id, AccessControlPermission.UPDATE);
         if(optional.isPresent()){
-             update(entity);
+            update(entity);
         } else {
             return super.updateEntity(entity, id);
         }
@@ -54,9 +54,7 @@ public abstract class AccessControlModulator<E extends Entity, I> extends Access
     @Override
     public List<E> getAllEntities() {
 
-        List<AccessControl> accessControlList = getAccessControlRepository().findAllByWhoAndCollection(getRequestInformation().getSubjectOfToken(), collection(), AccessControlPermission.READ);
-
-        List<ObjectId> entities = accessControlList
+        List<ObjectId> entities = getAccessControlRepository().findAllByWhoAndCollection(getRequestInformation().getSubjectOfToken(), collection(), AccessControlPermission.READ)
                 .stream()
                 .map(AccessControl::getEntity)
                 .map(ObjectId::new)
@@ -64,6 +62,7 @@ public abstract class AccessControlModulator<E extends Entity, I> extends Access
 
         return list("_id in ?1", List.of(entities));
     }
+
 
     @Override
     public void grantPermission(AccessControl accessControl) {
