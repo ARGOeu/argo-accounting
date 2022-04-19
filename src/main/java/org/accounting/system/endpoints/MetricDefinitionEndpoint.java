@@ -1,6 +1,7 @@
 package org.accounting.system.endpoints;
 
 import io.quarkus.security.Authenticated;
+import org.accounting.system.beans.RequestInformation;
 import org.accounting.system.constraints.NotFoundEntity;
 import org.accounting.system.dtos.InformativeResponse;
 import org.accounting.system.dtos.MetricDefinitionRequestDto;
@@ -10,12 +11,14 @@ import org.accounting.system.dtos.UpdateMetricDefinitionRequestDto;
 import org.accounting.system.dtos.acl.AccessControlRequestDto;
 import org.accounting.system.dtos.acl.AccessControlResponseDto;
 import org.accounting.system.dtos.acl.AccessControlUpdateDto;
+import org.accounting.system.enums.AccessType;
 import org.accounting.system.enums.Collection;
 import org.accounting.system.exceptions.UnprocessableException;
 import org.accounting.system.interceptors.annotations.Permission;
 import org.accounting.system.repositories.metricdefinition.MetricDefinitionRepository;
 import org.accounting.system.services.MetricDefinitionService;
 import org.accounting.system.services.ReadPredefinedTypesService;
+import org.accounting.system.util.QueryParser;
 import org.accounting.system.util.Utility;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.eclipse.microprofile.openapi.annotations.Operation;
@@ -25,11 +28,13 @@ import org.eclipse.microprofile.openapi.annotations.enums.SecuritySchemeType;
 import org.eclipse.microprofile.openapi.annotations.media.Content;
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
 import org.eclipse.microprofile.openapi.annotations.parameters.Parameter;
+import org.eclipse.microprofile.openapi.annotations.parameters.RequestBody;
 import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
 import org.eclipse.microprofile.openapi.annotations.security.SecurityRequirement;
 import org.eclipse.microprofile.openapi.annotations.security.SecurityScheme;
 import org.eclipse.microprofile.openapi.annotations.tags.Tag;
 import org.jboss.resteasy.specimpl.ResteasyUriInfo;
+import org.json.simple.parser.ParseException;
 
 import javax.inject.Inject;
 import javax.validation.Valid;
@@ -77,7 +82,11 @@ public class MetricDefinitionEndpoint {
 
     @Inject
     Utility utility;
+    @Inject
+    QueryParser queryParser;
 
+    @Inject
+    RequestInformation requestInformation;
     public MetricDefinitionEndpoint(MetricDefinitionService metricDefinitionService, ReadPredefinedTypesService readPredefinedTypesService, Utility utility) {
         this.metricDefinitionService = metricDefinitionService;
         this.readPredefinedTypesService = readPredefinedTypesService;
@@ -908,4 +917,50 @@ public class MetricDefinitionEndpoint {
 
         return Response.ok().entity(response).build();
     }
+
+
+    @Tag(name = "Search Metric Definition")
+    @Operation(
+            operationId = "search-metric-definition",
+            summary = "Searches a new Metric Definition.",
+            description = "Searches a metric definition ")
+    @APIResponse(
+            responseCode = "200",
+            description = "Array of Metric Definitions.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.ARRAY,
+                    implementation = MetricDefinitionResponseDto.class)))
+    @APIResponse(
+            responseCode = "401",
+            description = "User/Service has not been authenticated.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "403",
+            description = "The authenticated user/service is not permitted to perform the requested operation.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "500",
+            description = "Internal Server Errors.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @SecurityRequirement(name = "Authentication")
+
+    @POST
+    @Path("/search")
+    @Produces(value = MediaType.APPLICATION_JSON)
+    @Consumes(value = MediaType.APPLICATION_JSON)
+    @Permission(operation = org.accounting.system.enums.Operation.READ, collection = Collection.MetricDefinition)
+
+    public Response search(@Valid @NotNull(message = "The request body is empty.") @RequestBody String json, @Context UriInfo uriInfo) throws  NoSuchFieldException, ParseException {
+
+        var list=metricDefinitionService.searchMetricDefinition(json,  requestInformation.getAccessType().equals(AccessType.ALWAYS));
+        return Response.ok().entity(list).build();
+
+    }
+
 }

@@ -8,5 +8,4 @@ import javax.enterprise.context.ApplicationScoped;
 
 @ApplicationScoped
 public class RoleAccessAlwaysRepository extends AccessAlwaysModulator<Role, ObjectId> {
-
 }

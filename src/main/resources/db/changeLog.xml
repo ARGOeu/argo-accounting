@@ -16,21 +16,21 @@
                 validator: {
                 $jsonSchema: {
                 bsonType: "object",
-                required: ["metricName", "unitType", "metricType"],
+                required: ["metric_name", "unit_type", "metric_type"],
                 properties: {
-                metricName: {
+                metric_name: {
                 bsonType: "string",
                 description: "The name of the Metric"
                 },
-                metricType: {
+                metric_type: {
                 bsonType: "string",
                 description: "Metric Type of the Metric"
                 },
-                metricDescription: {
+                metric_description: {
                 bsonType: "string",
                 description: "Description of how the metric is collected"
                 },
-                unitType: {
+                unit_type: {
                 bsonType: "string",
                 description: "Unit Type of the Virtual Access Metric"
                 }
@@ -47,7 +47,7 @@
     <changeSet id="2" author="accounting-system">
         <ext:createIndex collectionName="MetricDefinition">
             <ext:keys>
-                { metricName: 1, unitType: 1}
+                { metric_name: 1, unit_type: 1}
             </ext:keys>
             <ext:options>
                 {unique: true, name: "unique_name_unit_type"}
@@ -62,13 +62,13 @@
                 validator: {
                 $jsonSchema: {
                 bsonType: "object",
-                required: ["metricDefinitionId", "resourceId", "value", "start", "end"],
+                required: ["metric_definition_id ", "resource_id", "value", "time_period_start", "time_period_end"],
                 properties: {
-                metricDefinitionId: {
+                metric_definition_id: {
                 bsonType: "string",
                 description: "The Metric Definition to be assigned"
                 },
-                resourceId: {
+                resource_id: {
                 bsonType: "string",
                 description: "Unique Identifier from the resource"
                 },
@@ -76,11 +76,11 @@
                 bsonType: "double",
                 description: "Value of the metric for the given period"
                 },
-                start: {
+                time_period_start: {
                 bsonType: "date",
                 description: "Timestamp of the starting date time (Zulu timestamp)"
                 },
-                end: {
+                time_period_end: {
                 bsonType: "date",
                 description: "Timestamp of the end date time (Zulu timestamp)"
                 }

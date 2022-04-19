@@ -5,6 +5,8 @@ import io.quarkus.mongodb.panache.PanacheQuery;
 import io.quarkus.panache.common.Page;
 import io.quarkus.panache.common.Sort;
 import org.accounting.system.entities.Metric;
+import org.bson.Document;
+import org.bson.conversions.Bson;
 import org.bson.types.ObjectId;
 
 import javax.enterprise.context.ApplicationScoped;
@@ -23,7 +25,7 @@ public class MetricRepository implements PanacheMongoRepository<Metric> {
 
     public List<Metric> findMetricsByMetricDefinitionId(String metricDefinitionId){
 
-        return find("metricDefinitionId = ?1", metricDefinitionId).stream().collect(Collectors.toList());
+        return find("metric_definition_id  = ?1", metricDefinitionId).stream().collect(Collectors.toList());
     }
 
     /**
@@ -34,7 +36,7 @@ public class MetricRepository implements PanacheMongoRepository<Metric> {
      */
     public long countMetricsByMetricDefinitionId(String metricDefinitionId){
 
-        return count("metricDefinitionId = ?1", metricDefinitionId);
+        return count("metric_definition_id = ?1", metricDefinitionId);
     }
 
     /**
@@ -59,6 +61,10 @@ public class MetricRepository implements PanacheMongoRepository<Metric> {
      */
     public PanacheQuery<Metric> findMetricsByMetricDefinitionIdPageable(String metricDefinitionId, int page, int size){
 
-        return find("metricDefinitionId", Sort.by("metricDefinitionId"), metricDefinitionId).page(Page.of(page, size));
+        return find("metric_definition_id ", Sort.by("metric_definition_id "), metricDefinitionId).page(Page.of(page, size));
+    }
+
+    public List<Metric> search(Bson query){
+         return  find( Document.parse(query.toBsonDocument().toJson())).stream().collect(Collectors.toList());
     }
 }

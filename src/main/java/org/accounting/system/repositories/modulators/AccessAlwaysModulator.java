@@ -36,6 +36,7 @@ public abstract class AccessAlwaysModulator<E extends Entity, I> extends AccessM
         return findAll().list();
     }
 
+
     @Override
     public void grantPermission(AccessControl accessControl) {
          getAccessControlRepository().persist(accessControl);

@@ -8,14 +8,14 @@ import org.accounting.system.entities.Entity;
 import org.accounting.system.entities.acl.AccessControl;
 import org.accounting.system.enums.Collection;
 import org.accounting.system.repositories.acl.AccessControlRepository;
+import org.bson.Document;
+import org.bson.conversions.Bson;
+import org.bson.types.ObjectId;
 
 import javax.inject.Inject;
 import javax.ws.rs.ForbiddenException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * This {@link AccessModulator} defines the operations that determine the degree of accessibility to Collection Entities. Each
@@ -106,7 +106,16 @@ public abstract class AccessModulator<E extends Entity, I> implements PanacheMon
 
         return new ArrayList<>(setA);
     }
+    public List<ObjectId> combineTwoListsOfIds(List<ObjectId> a, List<ObjectId> b){
 
+        // We wanna avoid duplicates
+        Set<ObjectId> setA = new HashSet<>(a);
+        Set<ObjectId> setB = new HashSet<>(b);
+
+        setA.addAll(setB);
+
+        return new ArrayList<>(setA);
+    }
     public RequestInformation getRequestInformation() {
         return requestInformation;
     }
@@ -114,8 +123,10 @@ public abstract class AccessModulator<E extends Entity, I> implements PanacheMon
     public AccessControlRepository getAccessControlRepository() {
         return accessControlRepository;
     }
-
-    public Collection collection(){
+    public Collection collection() {
         return Collection.valueOf(clazz.getSimpleName());
+    }
+    public List<E> search(Bson query){
+        return  find(Document.parse(query.toBsonDocument().toJson())).stream().collect(Collectors.toList());
     }
 }

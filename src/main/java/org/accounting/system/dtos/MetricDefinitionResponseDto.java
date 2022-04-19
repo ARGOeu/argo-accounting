@@ -1,11 +1,14 @@
 package org.accounting.system.dtos;
 
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import org.bson.types.ObjectId;
 import org.eclipse.microprofile.openapi.annotations.enums.SchemaType;
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
 
 @Schema(name="MetricDefinitionResponse", description="An object represents the stored Metric Definition.")
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class MetricDefinitionResponseDto {
 
     @Schema(
@@ -53,5 +56,15 @@ public class MetricDefinitionResponseDto {
     @JsonProperty("metric_type")
     public String metricType;
 
+    public String getId() {
+        return id;
+    }
 
+    public void setId(String id) {
+        this.id = id;
+    }
+    public ObjectId getObjectId(){
+        return new ObjectId(this.id);
+
+    }
 }

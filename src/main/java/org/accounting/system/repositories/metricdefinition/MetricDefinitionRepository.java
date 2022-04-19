@@ -22,6 +22,7 @@ public class MetricDefinitionRepository extends MetricDefinitionModulator {
 
     public Optional<MetricDefinition> exist(String unitType, String name){
 
-        return find("unitType = ?1 and metricName = ?2", unitType, name.toLowerCase()).stream().findAny();
+        return find("unit_type = ?1 and metric_name = ?2", unitType, name.toLowerCase()).stream().findAny();
     }
+
 }

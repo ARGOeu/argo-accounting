@@ -58,7 +58,6 @@ public abstract class AccessEntityModulator<E extends Entity, I> extends AccessM
 
         return combineTwoLists(fromCollection, fromAccessControl);
     }
-
     @Override
     public void grantPermission(AccessControl accessControl) {
 
