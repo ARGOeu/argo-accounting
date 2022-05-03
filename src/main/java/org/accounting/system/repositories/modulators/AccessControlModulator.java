@@ -15,10 +15,10 @@ import java.util.stream.Collectors;
  *
  * @param <E> Generic class that represents a mongo collection.
  */
-public abstract class AccessControlModulator<E extends Entity> extends AccessModulator<E> {
+public abstract class AccessControlModulator<E extends Entity, I> extends AccessModulator<E, I> {
 
     @Override
-    public E fetchEntityById(ObjectId id) {
+    public E fetchEntityById(I id) {
 
         var optional = getAccessControl(id, AccessControlPermission.READ);
 
@@ -30,7 +30,7 @@ public abstract class AccessControlModulator<E extends Entity> extends AccessMod
     }
 
     @Override
-    public boolean deleteEntityById(ObjectId id) {
+    public boolean deleteEntityById(I id) {
         var optional = getAccessControl(id, AccessControlPermission.DELETE);
 
         if(optional.isPresent()){
@@ -41,12 +41,12 @@ public abstract class AccessControlModulator<E extends Entity> extends AccessMod
     }
 
     @Override
-    public E updateEntity(E entity) {
-        var optional = getAccessControl(entity.getId(), AccessControlPermission.UPDATE);
+    public E updateEntity(E entity, I id) {
+        var optional = getAccessControl(id, AccessControlPermission.UPDATE);
         if(optional.isPresent()){
              update(entity);
         } else {
-            return super.updateEntity(entity);
+            return super.updateEntity(entity, id);
         }
         return entity;
     }
@@ -85,7 +85,7 @@ public abstract class AccessControlModulator<E extends Entity> extends AccessMod
         return super.getPermission(entity, who);
     }
 
-    private Optional<AccessControl> getAccessControl(ObjectId id, AccessControlPermission permission){
+    private <ID> Optional<AccessControl> getAccessControl(ID id, AccessControlPermission permission){
 
         return getAccessControlRepository().findByWhoAndCollectionAndEntityAndPermission(getRequestInformation().getSubjectOfToken(), collection(), id.toString(), permission);
     }

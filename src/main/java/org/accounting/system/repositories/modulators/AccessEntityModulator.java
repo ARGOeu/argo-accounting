@@ -13,10 +13,10 @@ import java.util.List;
  *
  * @param <E> Generic class that represents a mongo collection.
  */
-public abstract class AccessEntityModulator<E extends Entity> extends AccessModulator<E> {
+public abstract class AccessEntityModulator<E extends Entity, I> extends AccessModulator<E, I> {
 
     @Override
-    public E fetchEntityById(ObjectId id) {
+    public E fetchEntityById(I id) {
 
         E entity = findById(id);
 
@@ -28,7 +28,7 @@ public abstract class AccessEntityModulator<E extends Entity> extends AccessModu
     }
 
     @Override
-    public boolean deleteEntityById(ObjectId id){
+    public boolean deleteEntityById(I id){
 
         E entity = findById(id);
 
@@ -40,12 +40,12 @@ public abstract class AccessEntityModulator<E extends Entity> extends AccessModu
     }
 
     @Override
-    public E updateEntity(E entity) {
+    public E updateEntity(E entity, I id) {
 
         if (isIdentifiable(entity.getCreatorId())) {
             update(entity);
         } else {
-            return accessControlModulator().updateEntity(entity);
+            return accessControlModulator().updateEntity(entity, id);
         }
         return entity;
     }
@@ -62,7 +62,7 @@ public abstract class AccessEntityModulator<E extends Entity> extends AccessModu
     @Override
     public void grantPermission(AccessControl accessControl) {
 
-        E entity = findById(new ObjectId(accessControl.getEntity()));
+        E entity = findById((I) new ObjectId(accessControl.getEntity()));
 
         if (isIdentifiable(entity.getCreatorId())) {
             getAccessControlRepository().persist(accessControl);
@@ -108,7 +108,7 @@ public abstract class AccessEntityModulator<E extends Entity> extends AccessModu
         return getAccessControlRepository().findAllByCollectionAndCreatorId(collection(), getRequestInformation().getSubjectOfToken());
     }
 
-    public abstract AccessControlModulator<E> accessControlModulator();
+    public abstract AccessControlModulator<E, I> accessControlModulator();
 
     /**
      * Checks if the given id can be identified by the subject of an access token.
