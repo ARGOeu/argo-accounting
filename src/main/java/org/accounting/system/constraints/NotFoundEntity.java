@@ -1,6 +1,6 @@
 package org.accounting.system.constraints;
 
-import io.quarkus.mongodb.panache.PanacheMongoRepository;
+import io.quarkus.mongodb.panache.PanacheMongoRepositoryBase;
 import org.accounting.system.validators.NotFoundEntityValidator;
 
 import javax.validation.Constraint;
@@ -20,5 +20,5 @@ public @interface NotFoundEntity {
     String message() default "Not founded:";
     Class<?>[] groups() default {};
     Class<? extends Payload>[] payload() default {};
-    Class<? extends PanacheMongoRepository<?>> repository();
+    Class<? extends PanacheMongoRepositoryBase<?,?>> repository();
 }

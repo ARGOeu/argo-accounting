@@ -1,8 +1,10 @@
 package org.accounting.system.entities.acl;
 
+import lombok.EqualsAndHashCode;
 import org.accounting.system.entities.Entity;
 import org.accounting.system.enums.Collection;
 import org.accounting.system.enums.acl.AccessControlPermission;
+import org.bson.types.ObjectId;
 
 import java.util.Set;
 
@@ -10,21 +12,28 @@ import java.util.Set;
  * An access control (AC) is a list of rules that specifies which services/users are granted access to particular entities.
  * The combination of {@link #getWho() who}, {@link #getCollection() collection}, {@link #getEntity() entity should be unique.
  */
+
+@EqualsAndHashCode(onlyExplicitlyIncluded = true, callSuper = true)
 public class AccessControl extends Entity {
+
+    private ObjectId id;
 
     /**
      *{@link #getWho() who} is the id of a Service/User that the AccessControl grants access.
      */
+    @EqualsAndHashCode.Include
     private String who;
 
     /**
      * {@link #getCollection() collection} is a collection name that the {@link #getEntity() entity} belongs to.
      */
+    @EqualsAndHashCode.Include
     private Collection collection;
 
     /**
      * {@link #getEntity() entity} is the id of the entity to which the permissions apply.
      */
+    @EqualsAndHashCode.Include
     private String entity;
 
     /**
@@ -62,5 +71,13 @@ public class AccessControl extends Entity {
 
     public void setPermissions(Set<AccessControlPermission> permissions) {
         this.permissions = permissions;
+    }
+
+    public ObjectId getId() {
+        return id;
+    }
+
+    public void setId(ObjectId id) {
+        this.id = id;
     }
 }

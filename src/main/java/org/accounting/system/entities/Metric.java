@@ -1,17 +1,27 @@
 package org.accounting.system.entities;
 
+import lombok.EqualsAndHashCode;
+import org.bson.types.ObjectId;
+
 import java.time.Instant;
 
 /**
  * The Metric class represents the Metric collection stored in the mongo database.
  * Every instance of this class represents a record in that collection.
  */
+
+@EqualsAndHashCode(onlyExplicitlyIncluded = true, callSuper = true)
 public class Metric extends Entity {
 
+    private ObjectId id;
     private String resourceId;
+    @EqualsAndHashCode.Include
     private String metricDefinitionId;
+    @EqualsAndHashCode.Include
     private Instant start;
+    @EqualsAndHashCode.Include
     private Instant end;
+    @EqualsAndHashCode.Include
     private double value;
 
     public String getResourceId() {
@@ -52,5 +62,13 @@ public class Metric extends Entity {
 
     public void setMetricDefinitionId(String metricDefinitionId) {
         this.metricDefinitionId = metricDefinitionId;
+    }
+
+    public ObjectId getId() {
+        return id;
+    }
+
+    public void setId(ObjectId id) {
+        this.id = id;
     }
 }

@@ -2,7 +2,7 @@ package org.accounting.system.validators;
 
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.netty.util.internal.StringUtil;
-import io.quarkus.mongodb.panache.PanacheMongoRepository;
+import io.quarkus.mongodb.panache.PanacheMongoRepositoryBase;
 import io.vavr.control.Try;
 import org.accounting.system.constraints.NotFoundEntity;
 import org.accounting.system.exceptions.CustomValidationException;
@@ -21,7 +21,7 @@ import javax.validation.ConstraintValidatorContext;
 public class NotFoundEntityValidator implements ConstraintValidator<NotFoundEntity, String> {
 
     private String message;
-    private Class<? extends PanacheMongoRepository> repository;
+    private Class<? extends PanacheMongoRepositoryBase<?,?>> repository;
 
     @Override
     public void initialize(NotFoundEntity constraintAnnotation) {
@@ -42,7 +42,7 @@ public class NotFoundEntityValidator implements ConstraintValidator<NotFoundEnti
         builder.append(StringUtil.SPACE);
         builder.append(value);
 
-        PanacheMongoRepository repository = CDI.current().select(this.repository).get();
+        PanacheMongoRepositoryBase repository = CDI.current().select(this.repository).get();
 
         Try
                 .run(()->repository.findByIdOptional(new ObjectId(value)).orElseThrow(()->new CustomValidationException(builder.toString(), HttpResponseStatus.NOT_FOUND)))

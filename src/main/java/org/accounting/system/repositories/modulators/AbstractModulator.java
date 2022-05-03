@@ -4,7 +4,6 @@ import com.mongodb.MongoWriteException;
 import org.accounting.system.entities.Entity;
 import org.accounting.system.entities.acl.AccessControl;
 import org.accounting.system.exceptions.ConflictException;
-import org.bson.types.ObjectId;
 
 import java.util.List;
 
@@ -14,21 +13,21 @@ import java.util.List;
  *
  * @param <E> Generic class that represents a mongo collection.
  */
-public abstract class AbstractModulator<E extends Entity> extends AccessModulator<E>{
+public abstract class AbstractModulator<E extends Entity, I> extends AccessModulator<E, I>{
 
     @Override
-    public  E fetchEntityById(ObjectId id){
+    public  E fetchEntityById(I id){
         return get().fetchEntityById(id);
     }
 
     @Override
-    public  boolean deleteEntityById(ObjectId id){
+    public  boolean deleteEntityById(I id){
         return get().deleteEntityById(id);
     }
 
     @Override
-    public E updateEntity(E entity){
-        return get().updateEntity(entity);
+    public E updateEntity(E entity, I id){
+        return get().updateEntity(entity, id);
     }
 
     @Override
@@ -65,11 +64,11 @@ public abstract class AbstractModulator<E extends Entity> extends AccessModulato
         return get().getAllPermissions();
     }
 
-    public abstract AccessAlwaysModulator always();
+    public abstract AccessAlwaysModulator<E, I> always();
 
-    public abstract AccessEntityModulator entity();
+    public abstract AccessEntityModulator<E, I> entity();
 
-    public AccessModulator<E> get(){
+    public AccessModulator<E, I> get(){
 
         switch (getRequestInformation().getAccessType()){
             case ALWAYS:
