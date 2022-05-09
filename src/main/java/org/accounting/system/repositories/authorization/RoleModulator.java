@@ -8,7 +8,7 @@ import org.bson.types.ObjectId;
 
 import javax.inject.Inject;
 
-public class RoleModulator extends AbstractModulator<Role> {
+public class RoleModulator extends AbstractModulator<Role, ObjectId> {
 
     @Inject
     RoleAccessAlwaysRepository roleAccessAlwaysRepository;
@@ -22,7 +22,7 @@ public class RoleModulator extends AbstractModulator<Role> {
 
         RoleMapper.INSTANCE.updateRoleFromDto(updateRoleRequestDto, entity);
 
-        return super.updateEntity(entity);
+        return super.updateEntity(entity, id);
     }
 
     @Override

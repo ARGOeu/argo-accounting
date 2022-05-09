@@ -1,13 +1,21 @@
 package org.accounting.system.entities;
 
+import lombok.EqualsAndHashCode;
+import org.bson.types.ObjectId;
+
 /**
  * The Metric Definition class represents the MetricDefinition collection stored in the mongo database.
  * Every instance of this class represents a record in that collection.
  */
+
+@EqualsAndHashCode(onlyExplicitlyIncluded = true, callSuper = true)
 public class MetricDefinition extends Entity {
 
+    private ObjectId id;
+    @EqualsAndHashCode.Include
     private String metricName;
     private String metricDescription;
+    @EqualsAndHashCode.Include
     private String unitType;
     private String metricType;
 
@@ -41,5 +49,13 @@ public class MetricDefinition extends Entity {
 
     public void setMetricType(String metricType) {
         this.metricType = metricType;
+    }
+
+    public ObjectId getId() {
+        return id;
+    }
+
+    public void setId(ObjectId id) {
+        this.id = id;
     }
 }

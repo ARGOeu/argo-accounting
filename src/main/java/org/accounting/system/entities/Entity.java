@@ -2,7 +2,6 @@ package org.accounting.system.entities;
 
 import lombok.EqualsAndHashCode;
 import org.accounting.system.beans.RequestInformation;
-import org.bson.types.ObjectId;
 
 import javax.enterprise.inject.spi.CDI;
 
@@ -10,8 +9,6 @@ import javax.enterprise.inject.spi.CDI;
 public abstract class Entity {
 
     @EqualsAndHashCode.Include
-    private ObjectId id;
-
     private String creatorId;
 
     public Entity(){
@@ -21,14 +18,6 @@ public abstract class Entity {
 
     public String getCreatorId() {
         return creatorId;
-    }
-
-    public ObjectId getId() {
-        return id;
-    }
-
-    public void setId(ObjectId id) {
-        this.id = id;
     }
 
     public void setCreatorId(String creatorId) {

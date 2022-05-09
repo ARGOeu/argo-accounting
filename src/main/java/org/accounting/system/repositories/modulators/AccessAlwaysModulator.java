@@ -2,7 +2,6 @@ package org.accounting.system.repositories.modulators;
 
 import org.accounting.system.entities.Entity;
 import org.accounting.system.entities.acl.AccessControl;
-import org.bson.types.ObjectId;
 
 import java.util.List;
 
@@ -12,21 +11,21 @@ import java.util.List;
  *
  * @param <E> Generic class that represents a mongo collection.
  */
-public abstract class AccessAlwaysModulator<E extends Entity> extends AccessModulator<E> {
+public abstract class AccessAlwaysModulator<E extends Entity, I> extends AccessModulator<E, I> {
 
 
     @Override
-    public E fetchEntityById(ObjectId id) {
+    public E fetchEntityById(I id) {
         return findById(id);
     }
 
     @Override
-    public boolean deleteEntityById(ObjectId id) {
+    public boolean deleteEntityById(I id) {
         return deleteById(id);
     }
 
     @Override
-    public E updateEntity(E entity) {
+    public E updateEntity(E entity, I id) {
 
         update(entity);
         return entity;

@@ -1,13 +1,13 @@
 package org.accounting.system.repositories.modulators;
 
 import io.quarkus.mongodb.panache.PanacheMongoRepository;
+import io.quarkus.mongodb.panache.PanacheMongoRepositoryBase;
 import net.jodah.typetools.TypeResolver;
 import org.accounting.system.beans.RequestInformation;
 import org.accounting.system.entities.Entity;
 import org.accounting.system.entities.acl.AccessControl;
 import org.accounting.system.enums.Collection;
 import org.accounting.system.repositories.acl.AccessControlRepository;
-import org.bson.types.ObjectId;
 
 import javax.inject.Inject;
 import javax.ws.rs.ForbiddenException;
@@ -25,7 +25,7 @@ import java.util.Set;
  *
  * @param <E> Generic class that represents a mongo collection.
  */
-public abstract class AccessModulator<E extends Entity> implements PanacheMongoRepository<E> {
+public abstract class AccessModulator<E extends Entity, I> implements PanacheMongoRepositoryBase<E, I> {
 
     @Inject
     RequestInformation requestInformation;
@@ -36,20 +36,20 @@ public abstract class AccessModulator<E extends Entity> implements PanacheMongoR
     protected Class<E> clazz;
 
     public AccessModulator(){
-        Class<?> type = TypeResolver.resolveRawArgument(AccessModulator.class, getClass());
-        clazz = (Class<E>) type;
+        Class<?>[] typeArguments = TypeResolver.resolveRawArguments(AccessModulator.class, getClass());
+        this.clazz = (Class<E>) typeArguments[0];
     }
 
-    public  E fetchEntityById(ObjectId id){
+    public  E fetchEntityById(I id){
         throw new ForbiddenException("You have no access to this entity : " + id.toString());
     }
 
-    public boolean deleteEntityById(ObjectId id){
+    public boolean deleteEntityById(I id){
         throw new ForbiddenException("You have no access to this entity : " + id.toString());
     }
 
-    public E updateEntity(E entity){
-        throw new ForbiddenException("You have no access to this entity : " + entity.getId().toString());
+    public E updateEntity(E entity, I id){
+        throw new ForbiddenException("You have no access to this entity : " + id.toString());
     }
 
     public List<E> getAllEntities(){

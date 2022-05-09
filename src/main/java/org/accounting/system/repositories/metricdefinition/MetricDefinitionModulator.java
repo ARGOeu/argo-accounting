@@ -9,7 +9,7 @@ import org.bson.types.ObjectId;
 import javax.inject.Inject;
 
 
-public class MetricDefinitionModulator extends AbstractModulator<MetricDefinition> {
+public class MetricDefinitionModulator extends AbstractModulator<MetricDefinition, ObjectId> {
 
 
     @Inject
@@ -24,7 +24,7 @@ public class MetricDefinitionModulator extends AbstractModulator<MetricDefinitio
 
         MetricDefinitionMapper.INSTANCE.updateMetricDefinitionFromDto(updateMetricDefinitionRequestDto, entity);
 
-        return super.updateEntity(entity);
+        return super.updateEntity(entity, id);
     }
 
     @Override
