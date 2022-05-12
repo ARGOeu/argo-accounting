@@ -202,7 +202,7 @@ public class MetricDefinitionEndpoint {
             throw new BadRequestException("Page number must be >= 1.");
         }
 
-        return Response.ok().entity(metricDefinitionService.findAllMetricDefinitionsPageable(page, size, uriInfo)).build();
+        return Response.ok().entity(metricDefinitionService.findAllMetricDefinitionsPageable(page-1, size, uriInfo)).build();
     }
 
     @Tag(name = "Metric Definition")

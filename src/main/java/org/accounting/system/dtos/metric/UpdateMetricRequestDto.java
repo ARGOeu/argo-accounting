@@ -23,15 +23,6 @@ public class UpdateMetricRequestDto {
 
     @Schema(
             type = SchemaType.STRING,
-            implementation = String.class,
-            description = "Unique Identifier from the resource to be updated.",
-            example = "resource-id"
-    )
-    @JsonProperty("resource_id")
-    public String resourceId;
-
-    @Schema(
-            type = SchemaType.STRING,
             implementation = Instant.class,
             description = "Timestamp of the starting date time (Zulu timestamp) to be updated.",
             example = "2022-01-05T09:13:07Z"

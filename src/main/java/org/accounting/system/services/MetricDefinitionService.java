@@ -18,7 +18,7 @@ import org.accounting.system.exceptions.ConflictException;
 import org.accounting.system.mappers.AccessControlMapper;
 import org.accounting.system.mappers.MetricDefinitionMapper;
 import org.accounting.system.mappers.MetricMapper;
-import org.accounting.system.repositories.MetricRepository;
+import org.accounting.system.repositories.metric.MetricRepository;
 import org.accounting.system.repositories.acl.AccessControlRepository;
 import org.accounting.system.repositories.metricdefinition.MetricDefinitionRepository;
 import org.accounting.system.util.QueryParser;

@@ -1,14 +1,14 @@
 package org.accounting.system.endpoints;
 
 import io.quarkus.security.Authenticated;
-import org.accounting.system.beans.RequestInformation;
 import org.accounting.system.constraints.NotFoundEntity;
 import org.accounting.system.dtos.InformativeResponse;
-import org.accounting.system.dtos.metric.MetricRequestDto;
 import org.accounting.system.dtos.metric.MetricResponseDto;
 import org.accounting.system.dtos.metric.UpdateMetricRequestDto;
 import org.accounting.system.dtos.metricdefinition.MetricDefinitionResponseDto;
-import org.accounting.system.repositories.MetricRepository;
+import org.accounting.system.enums.Collection;
+import org.accounting.system.interceptors.annotations.Permission;
+import org.accounting.system.repositories.metric.MetricRepository;
 import org.accounting.system.services.MetricService;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.eclipse.microprofile.openapi.annotations.Operation;
@@ -23,17 +23,21 @@ import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
 import org.eclipse.microprofile.openapi.annotations.security.SecurityRequirement;
 import org.eclipse.microprofile.openapi.annotations.security.SecurityScheme;
 import org.eclipse.microprofile.openapi.annotations.tags.Tag;
-import org.jboss.resteasy.specimpl.ResteasyUriInfo;
 import org.json.simple.parser.ParseException;
 
 import javax.inject.Inject;
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
-import javax.ws.rs.*;
-import javax.ws.rs.core.Context;
+import javax.ws.rs.Consumes;
+import javax.ws.rs.DELETE;
+import javax.ws.rs.GET;
+import javax.ws.rs.PATCH;
+import javax.ws.rs.POST;
+import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
+import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import javax.ws.rs.core.UriInfo;
 
 @Path("/metrics")
 @Authenticated
@@ -55,68 +59,10 @@ public class MetricEndpoint {
     @Inject
     MetricService metricService;
 
-    @Inject
-    RequestInformation requestInformation;
-
     public MetricEndpoint(MetricService metricService) {
         this.metricService = metricService;
     }
 
-
-    @Tag(name = "Metric")
-    @Operation(
-            summary = "Registers a new Metric.",
-            description = "Retrieves and inserts a Metric into the database. " +
-                    "The Metric is assigned to the Metric Definition with id {metric_definition_id}.")
-    @APIResponse(
-            responseCode = "201",
-            description = "Metric has been created successfully.",
-            content = @Content(schema = @Schema(
-                    type = SchemaType.OBJECT,
-                    implementation = MetricResponseDto.class)))
-    @APIResponse(
-            responseCode = "400",
-            description = "Bad Request.",
-            content = @Content(schema = @Schema(
-                    type = SchemaType.OBJECT,
-                    implementation = InformativeResponse.class)))
-    @APIResponse(
-            responseCode = "401",
-            description = "User/Service has not been authenticated.",
-            content = @Content(schema = @Schema(
-                    type = SchemaType.OBJECT,
-                    implementation = InformativeResponse.class)))
-    @APIResponse(
-            responseCode = "404",
-            description = "Metric Definition has not been found.",
-            content = @Content(schema = @Schema(
-                    type = SchemaType.OBJECT,
-                    implementation = InformativeResponse.class)))
-    @APIResponse(
-            responseCode = "415",
-            description = "Cannot consume content type.",
-            content = @Content(schema = @Schema(
-                    type = SchemaType.OBJECT,
-                    implementation = InformativeResponse.class)))
-    @APIResponse(
-            responseCode = "500",
-            description = "Internal Server Errors.",
-            content = @Content(schema = @Schema(
-                    type = SchemaType.OBJECT,
-                    implementation = InformativeResponse.class)))
-    @SecurityRequirement(name = "Authentication")
-
-    @POST
-    @Produces(value = MediaType.APPLICATION_JSON)
-    @Consumes(value = MediaType.APPLICATION_JSON)
-    public Response save(@Valid @NotNull(message = "The request body is empty.") MetricRequestDto metricRequestDto, @Context UriInfo uriInfo) {
-
-        MetricResponseDto response = metricService.save(metricRequestDto);
-
-        UriInfo serverInfo = new ResteasyUriInfo(serverUrl.concat(basePath).concat(uriInfo.getPath()), basePath);
-
-        return Response.created(serverInfo.getAbsolutePathBuilder().path(response.id).build()).entity(response).build();
-    }
 
     @Tag(name = "Metric")
     @Operation(
@@ -151,6 +97,7 @@ public class MetricEndpoint {
     @GET
     @Path("/{id}")
     @Produces(value = MediaType.APPLICATION_JSON)
+    @Permission(collection = Collection.Metric, operation = org.accounting.system.enums.Operation.READ)
     public Response get(
             @Parameter(
                     description = "The Metric to be retrieved.",
@@ -197,6 +144,7 @@ public class MetricEndpoint {
     @DELETE()
     @Path("/{id}")
     @Produces(value = MediaType.APPLICATION_JSON)
+    @Permission(collection = Collection.Metric, operation = org.accounting.system.enums.Operation.DELETE)
     public Response delete(@Parameter(
             description = "The Metric to be deleted.",
             required = true,
@@ -266,6 +214,7 @@ public class MetricEndpoint {
     @Path("/{id}")
     @Produces(value = MediaType.APPLICATION_JSON)
     @Consumes(value = MediaType.APPLICATION_JSON)
+    @Permission(collection = Collection.Metric, operation = org.accounting.system.enums.Operation.UPDATE)
     public Response update(
             @Parameter(
                  description = "The Metric to be updated.",

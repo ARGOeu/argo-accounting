@@ -7,8 +7,6 @@ import io.quarkus.test.junit.mockito.InjectMock;
 import io.quarkus.test.keycloak.client.KeycloakTestClient;
 import io.restassured.http.ContentType;
 import org.accounting.system.dtos.InformativeResponse;
-import org.accounting.system.dtos.metric.MetricRequestDto;
-import org.accounting.system.dtos.metric.MetricResponseDto;
 import org.accounting.system.dtos.metricdefinition.MetricDefinitionRequestDto;
 import org.accounting.system.dtos.metricdefinition.MetricDefinitionResponseDto;
 import org.accounting.system.dtos.metricdefinition.UpdateMetricDefinitionRequestDto;
@@ -648,48 +646,6 @@ public class MetricDefinitionEndpointTest {
     }
 
     @Test
-    public void fetchMetricDefinitionPaginationMetric() {
-
-        Mockito.when(readPredefinedTypesService.searchForUnitType(any())).thenReturn(Optional.of("SECOND"));
-        Mockito.when(readPredefinedTypesService.searchForMetricType(any())).thenReturn(Optional.of("Aggregated"));
-        var request= new MetricDefinitionRequestDto();
-
-        request.metricName = "metric";
-        request.metricDescription = "description";
-        request.unitType = "SECOND";
-        request.metricType = "Aggregated";
-
-        var metricDefinition = createMetricDefinition(request);
-
-        var requestForMetric = new MetricRequestDto();
-        requestForMetric.resourceId = "3434349fjiirgjirj003-3r3f-f-";
-        requestForMetric.start = "2022-01-05T09:13:07Z";
-        requestForMetric.end = "2023-01-05T09:13:07Z";
-        requestForMetric.value = 10.8;
-        requestForMetric.metricDefinitionId = metricDefinition.id;
-
-        createMetric(requestForMetric);
-
-        var requestForMetric1 = new MetricRequestDto();
-        requestForMetric1.resourceId = "3434349fjiirgjirj003-3r3f-f-";
-        requestForMetric1.start = "2022-01-05T09:13:07Z";
-        requestForMetric1.end = "2023-01-05T09:13:07Z";
-        requestForMetric1.value = 15;
-        requestForMetric1.metricDefinitionId = metricDefinition.id;
-
-        createMetric(requestForMetric1);
-
-        var paginateResponse = given()
-                .auth()
-                .oauth2(getAccessToken("admin"))
-                .queryParam("size", 1)
-                .get("/{metricDefinitionId}/metrics", metricDefinition.id)
-                .thenReturn();
-
-        assertEquals(200, paginateResponse.statusCode());
-    }
-
-    @Test
     public void fetchMetricDefinitionPaginationNotAcceptableSize() {
 
         Mockito.when(readPredefinedTypesService.searchForUnitType(any())).thenReturn(Optional.of("SECOND"));
@@ -843,44 +799,6 @@ public class MetricDefinitionEndpointTest {
     }
 
     @Test
-    public void deleteMetricDefinitionProhibited() {
-
-        Mockito.when(readPredefinedTypesService.searchForUnitType(any())).thenReturn(Optional.of("SECOND"));
-        Mockito.when(readPredefinedTypesService.searchForMetricType(any())).thenReturn(Optional.of("Aggregated"));
-        var request= new MetricDefinitionRequestDto();
-
-        request.metricName = "metric";
-        request.metricDescription = "description";
-        request.unitType = "SECOND";
-        request.metricType = "Aggregated";
-
-        var response = createMetricDefinition(request);
-
-        //then execute a request for creating a metric
-
-        var requestForMetric = new MetricRequestDto();
-        requestForMetric.resourceId = "3434349fjiirgjirj003-3r3f-f-";
-        requestForMetric.start = "2022-01-05T09:13:07Z";
-        requestForMetric.end = "2022-01-05T09:15:07Z";
-        requestForMetric.value = 10.8;
-        requestForMetric.metricDefinitionId = response.id;
-
-        createMetric(requestForMetric);
-
-        var errorResponse = given()
-                .auth()
-                .oauth2(getAccessToken("admin"))
-                .delete("/{metricDefinitionId}", response.id)
-                .then()
-                .assertThat()
-                .statusCode(409)
-                .extract()
-                .as(InformativeResponse.class);
-
-        assertEquals("The Metric Definition cannot be deleted. There is a Metric assigned to it.", errorResponse.message);
-    }
-
-    @Test
     public void deleteMetricDefinition() {
 
         Mockito.when(readPredefinedTypesService.searchForUnitType(any())).thenReturn(Optional.of("SECOND"));
@@ -920,22 +838,6 @@ public class MetricDefinitionEndpointTest {
                 .statusCode(201)
                 .extract()
                 .as(MetricDefinitionResponseDto.class);
-    }
-
-    private MetricResponseDto createMetric(MetricRequestDto request){
-
-        return given()
-                .auth()
-                .oauth2(getAccessToken("admin"))
-                .basePath("/accounting-system/metrics")
-                .body(request)
-                .contentType(ContentType.JSON)
-                .post()
-                .then()
-                .assertThat()
-                .statusCode(201)
-                .extract()
-                .as(MetricResponseDto.class);
     }
 
     protected String getAccessToken(String userName) {

@@ -16,6 +16,7 @@ import org.bson.types.ObjectId;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
+import javax.ws.rs.BadRequestException;
 import javax.ws.rs.core.UriInfo;
 
 /**
@@ -100,5 +101,21 @@ public class InstallationService {
         var projectionQuery = installationRepository.lookup("MetricDefinition", "unit_of_access", "_id", "unit_of_access", page, size, InstallationProjection.class);
 
         return new PageResource<>(projectionQuery, InstallationMapper.INSTANCE.installationProjectionsToResponse(projectionQuery.list), uriInfo);
+    }
+
+    /**
+     * Checks if the given installation belongs to given provider.
+     *
+     * @param installationId The installation
+     * @param providerId The provider
+     * @throws BadRequestException if the installation doesn't belong to the given provider
+     */
+    public void checkIfInstallationBelongsToProvider(String installationId, String providerId){
+
+        var installation = installationRepository.findById(new ObjectId(installationId));
+
+        if(!installation.getOrganisation().equals(providerId)){
+            throw new BadRequestException(String.format("The installation doesn't belong to the following Provider : %s", providerId));
+        }
     }
 }

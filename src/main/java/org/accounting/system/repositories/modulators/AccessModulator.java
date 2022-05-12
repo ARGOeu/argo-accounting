@@ -151,9 +151,11 @@ public abstract class AccessModulator<E extends Entity, I> implements PanacheMon
     public AccessControlRepository getAccessControlRepository() {
         return accessControlRepository;
     }
+
     public Collection collection() {
         return Collection.valueOf(clazz.getSimpleName());
     }
+
     public List<E> search(Bson query){
         return  find(Document.parse(query.toBsonDocument().toJson())).stream().collect(Collectors.toList());
     }
