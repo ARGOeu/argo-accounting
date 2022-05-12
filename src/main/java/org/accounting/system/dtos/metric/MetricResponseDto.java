@@ -22,15 +22,6 @@ public class MetricResponseDto {
     @Schema(
             type = SchemaType.STRING,
             implementation = String.class,
-            description = "Unique Identifier from the resource.",
-            example = "resource_id"
-    )
-    @JsonProperty("resource_id")
-    public String resourceId;
-
-    @Schema(
-            type = SchemaType.STRING,
-            implementation = String.class,
             description = "Reference Id from the metric definition.",
             example = "507f1f77bcf86cd799439011"
     )

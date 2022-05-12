@@ -89,18 +89,17 @@ public abstract class AccessEntityModulator<E extends Entity, I> extends AccessM
                         ), projection)
                 .into(new ArrayList<>());
 
-        List<Document> totalDocuments = getMongoCollection()
+        Document totalDocuments = getMongoCollection()
                 .aggregate(List
-                        .of(Aggregates.match(Filters.or(Filters.eq("creatorId", getRequestInformation().getSubjectOfToken()), Filters.in("_id",  Utility.transformIdsToSpecificClassType(getIdentity(), entities))))
-                        ))
-                .into(new ArrayList<>());
+                        .of(Aggregates.match(Filters.or(Filters.eq("creatorId", getRequestInformation().getSubjectOfToken()), Filters.in("_id",  Utility.transformIdsToSpecificClassType(getIdentity(), entities)))), Aggregates.count()))
+                .first();
 
         var projectionQuery = new ProjectionQuery<T>();
 
         projectionQuery.list = projections;
         projectionQuery.index = page;
         projectionQuery.size = size;
-        projectionQuery.count = totalDocuments.size();
+        projectionQuery.count = Long.parseLong(totalDocuments.get("count").toString());
 
         return projectionQuery;
     }

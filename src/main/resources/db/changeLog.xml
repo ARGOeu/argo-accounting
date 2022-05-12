@@ -55,44 +55,44 @@
         </ext:createIndex>
     </changeSet>
 
-    <changeSet id="3" author="accounting-system">
-        <ext:createCollection collectionName="Metric">
-            <ext:options>
-                {
-                validator: {
-                $jsonSchema: {
-                bsonType: "object",
-                required: ["metric_definition_id ", "resource_id", "value", "time_period_start", "time_period_end"],
-                properties: {
-                metric_definition_id: {
-                bsonType: "string",
-                description: "The Metric Definition to be assigned"
-                },
-                resource_id: {
-                bsonType: "string",
-                description: "Unique Identifier from the resource"
-                },
-                value: {
-                bsonType: "double",
-                description: "Value of the metric for the given period"
-                },
-                time_period_start: {
-                bsonType: "date",
-                description: "Timestamp of the starting date time (Zulu timestamp)"
-                },
-                time_period_end: {
-                bsonType: "date",
-                description: "Timestamp of the end date time (Zulu timestamp)"
-                }
-                }
-                }
-                },
-                validationAction: "warn",
-                validationLevel: "strict"
-                }
-            </ext:options>
-        </ext:createCollection>
-    </changeSet>
+<!--    <changeSet id="3" author="accounting-system">-->
+<!--        <ext:createCollection collectionName="Metric">-->
+<!--            <ext:options>-->
+<!--                {-->
+<!--                validator: {-->
+<!--                $jsonSchema: {-->
+<!--                bsonType: "object",-->
+<!--                required: ["metric_definition_id ", "resource_id", "value", "time_period_start", "time_period_end"],-->
+<!--                properties: {-->
+<!--                metric_definition_id: {-->
+<!--                bsonType: "string",-->
+<!--                description: "The Metric Definition to be assigned"-->
+<!--                },-->
+<!--                resource_id: {-->
+<!--                bsonType: "string",-->
+<!--                description: "Unique Identifier from the resource"-->
+<!--                },-->
+<!--                value: {-->
+<!--                bsonType: "double",-->
+<!--                description: "Value of the metric for the given period"-->
+<!--                },-->
+<!--                time_period_start: {-->
+<!--                bsonType: "date",-->
+<!--                description: "Timestamp of the starting date time (Zulu timestamp)"-->
+<!--                },-->
+<!--                time_period_end: {-->
+<!--                bsonType: "date",-->
+<!--                description: "Timestamp of the end date time (Zulu timestamp)"-->
+<!--                }-->
+<!--                }-->
+<!--                }-->
+<!--                },-->
+<!--                validationAction: "warn",-->
+<!--                validationLevel: "strict"-->
+<!--                }-->
+<!--            </ext:options>-->
+<!--        </ext:createCollection>-->
+<!--    </changeSet>-->
 
     <!--    <changeSet id="4" author="accounting-system">-->
     <!--        <ext:createCollection collectionName="Role">-->
@@ -471,6 +471,17 @@
         <ext:createIndex collectionName="Installation">
             <ext:keys>
                 { organisation: 1, infrastructure: 1, installation: 1}
+            </ext:keys>
+            <ext:options>
+                {unique: true, name: "unique_installation_entry"}
+            </ext:options>
+        </ext:createIndex>
+    </changeSet>
+
+    <changeSet id="11" author="accounting-system">
+        <ext:createIndex collectionName="Metric">
+            <ext:keys>
+                { resource_id: 1, metric_definition_id: 1, time_period_start: 1, time_period_end: 1, value: 1}
             </ext:keys>
             <ext:options>
                 {unique: true, name: "unique_installation_entry"}

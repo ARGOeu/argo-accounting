@@ -1,12 +1,13 @@
 package org.accounting.system.services;
 
-import org.accounting.system.dtos.metric.MetricRequestDto;
+import com.mongodb.MongoWriteException;
 import org.accounting.system.dtos.metric.MetricResponseDto;
 import org.accounting.system.dtos.metric.UpdateMetricRequestDto;
 import org.accounting.system.endpoints.MetricEndpoint;
 import org.accounting.system.entities.Metric;
+import org.accounting.system.exceptions.ConflictException;
 import org.accounting.system.mappers.MetricMapper;
-import org.accounting.system.repositories.MetricRepository;
+import org.accounting.system.repositories.metric.MetricRepository;
 import org.accounting.system.util.QueryParser;
 import org.bson.conversions.Bson;
 import org.bson.types.ObjectId;
@@ -42,23 +43,6 @@ public class MetricService {
     }
 
     /**
-     * Maps the {@link MetricRequestDto} to {@link Metric}.
-     * Then the {@link Metric} is stored in the mongo database.
-     *
-     * @param request The POST request body
-     * @return The stored metric has been turned into a response body
-     * @throws NotFoundException If the Metric Definition doesn't exist
-     */
-    public MetricResponseDto save(MetricRequestDto request) {
-
-        Metric metric = MetricMapper.INSTANCE.requestToMetric(request);
-
-        metricRepository.persist(metric);
-
-        return MetricMapper.INSTANCE.metricToResponse(metric);
-    }
-
-    /**
      * Passing the Metric Definition id, you can retrieve the total number of metrics assigned to it.
      *
      * @param metricDefinitionId
@@ -78,7 +62,7 @@ public class MetricService {
      */
     public MetricResponseDto fetchMetric(String metricId){
 
-        var metric = findById(metricId).get();
+        var metric = metricRepository.fetchEntityById(new ObjectId(metricId));
 
         return MetricMapper.INSTANCE.metricToResponse(metric);
     }
@@ -91,7 +75,7 @@ public class MetricService {
      */
     public boolean delete(String metricId){
 
-        return metricRepository.deleteById(new ObjectId(metricId));
+        return metricRepository.deleteEntityById(new ObjectId(metricId));
     }
 
     /**
@@ -136,11 +120,15 @@ public class MetricService {
             throw new BadRequestException("Timestamp of the starting date time cannot be equal to Timestamp of the end date time.");
         }
 
-        MetricMapper.INSTANCE.updateMetricFromDto(request, metric);
+        Metric updatedMetric = null;
 
-        metricRepository.update(metric);
+        try{
+            updatedMetric = metricRepository.updateEntity(new ObjectId(id), request);
+        } catch (MongoWriteException e){
+            throw new ConflictException("Metric already exists.");
+        }
 
-        return MetricMapper.INSTANCE.metricToResponse(metric);
+        return MetricMapper.INSTANCE.metricToResponse(updatedMetric);
     }
 
     /**

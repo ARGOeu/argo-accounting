@@ -1,5 +1,6 @@
 package org.accounting.system;
 
+import io.quarkus.test.common.QuarkusTestResource;
 import io.quarkus.test.common.http.TestHTTPEndpoint;
 import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.test.junit.TestProfile;
@@ -9,28 +10,40 @@ import io.restassured.RestAssured;
 import io.restassured.config.JsonConfig;
 import io.restassured.http.ContentType;
 import io.restassured.path.json.config.JsonPathConfig;
+import org.accounting.system.clients.ProviderClient;
+import org.accounting.system.clients.responses.eoscportal.Response;
+import org.accounting.system.clients.responses.eoscportal.Total;
 import org.accounting.system.dtos.InformativeResponse;
-import org.accounting.system.dtos.metricdefinition.MetricDefinitionRequestDto;
-import org.accounting.system.dtos.metricdefinition.MetricDefinitionResponseDto;
+import org.accounting.system.dtos.installation.InstallationRequestDto;
+import org.accounting.system.dtos.installation.InstallationResponseDto;
 import org.accounting.system.dtos.metric.MetricRequestDto;
 import org.accounting.system.dtos.metric.MetricResponseDto;
 import org.accounting.system.dtos.metric.UpdateMetricRequestDto;
+import org.accounting.system.dtos.metricdefinition.MetricDefinitionRequestDto;
+import org.accounting.system.dtos.metricdefinition.MetricDefinitionResponseDto;
+import org.accounting.system.dtos.project.ProjectResponseDto;
 import org.accounting.system.endpoints.MetricEndpoint;
-import org.accounting.system.entities.Metric;
-import org.accounting.system.entities.MetricDefinition;
+import org.accounting.system.mappers.ProviderMapper;
+import org.accounting.system.repositories.installation.InstallationRepository;
+import org.accounting.system.repositories.metric.MetricRepository;
 import org.accounting.system.repositories.metricdefinition.MetricDefinitionRepository;
-import org.accounting.system.repositories.MetricRepository;
+import org.accounting.system.repositories.provider.ProviderRepository;
 import org.accounting.system.services.ReadPredefinedTypesService;
+import org.accounting.system.wiremock.ProjectWireMockServer;
+import org.accounting.system.wiremock.ProviderWireMockServer;
+import org.eclipse.microprofile.rest.client.inject.RestClient;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInstance;
 import org.mockito.Mockito;
 
 import javax.inject.Inject;
-import java.time.Instant;
 import java.util.Optional;
+import java.util.concurrent.ExecutionException;
 
 import static io.restassured.RestAssured.given;
-import static org.hamcrest.Matchers.is;
+import static org.hamcrest.core.Is.is;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 
@@ -38,6 +51,9 @@ import static org.mockito.ArgumentMatchers.any;
 @QuarkusTest
 @TestProfile(AccountingSystemTestProfile.class)
 @TestHTTPEndpoint(MetricEndpoint.class)
+@TestInstance(TestInstance.Lifecycle.PER_CLASS)
+@QuarkusTestResource(ProjectWireMockServer.class)
+@QuarkusTestResource(ProviderWireMockServer.class)
 public class MetricEndpointTest {
 
     @InjectMock
@@ -47,12 +63,33 @@ public class MetricEndpointTest {
     MetricDefinitionRepository metricDefinitionRepository;
 
     @Inject
+    InstallationRepository installationRepository;
+
+    @Inject
+    @RestClient
+    ProviderClient providerClient;
+
+    @Inject
+    ProviderRepository providerRepository;
+
+    @Inject
     MetricRepository metricRepository;
 
     KeycloakTestClient keycloakClient = new KeycloakTestClient();
 
+    @BeforeAll
+    public void setup() throws ExecutionException, InterruptedException {
+
+        Total total = providerClient.getTotalNumberOfProviders().toCompletableFuture().get();
+
+        Response response = providerClient.getAll(total.total).toCompletableFuture().get();
+
+        providerRepository.persistOrUpdate(ProviderMapper.INSTANCE.eoscProvidersToProviders(response.results));
+    }
+
     @BeforeEach
-    public void setup() {
+    public void before() {
+        installationRepository.deleteAll();
         metricDefinitionRepository.deleteAll();
         metricRepository.deleteAll();
     }
@@ -60,32 +97,15 @@ public class MetricEndpointTest {
     @Test
     public void createMetricRequestNotAuthenticated() {
 
-        var notAuthenticatedResponse = given()
+        var notAuthenticatedResponse =  given()
                 .auth()
                 .oauth2("invalidToken")
                 .contentType(ContentType.JSON)
-                .post()
-                .thenReturn();
+                .post("/{projectId}/providers/{providerId}/installations/{installationId}/metrics", "projectId", "grnet", "installationId");
 
         assertEquals(401, notAuthenticatedResponse.statusCode());
     }
 
-    @Test
-    public void createMetricRequestBodyIsEmpty() {
-
-        var response = given()
-                .auth()
-                .oauth2(getAccessToken("admin"))
-                .contentType(ContentType.JSON)
-                .post()
-                .then()
-                .assertThat()
-                .statusCode(400)
-                .extract()
-                .as(InformativeResponse.class);
-
-        assertEquals("The request body is empty.", response.message);
-    }
 
     @Test
     public void createMetricNoMetricDefinition() {
@@ -94,41 +114,18 @@ public class MetricEndpointTest {
         request.start = "2022-01-05T09:13:07Z";
         request.end = "2022-01-05T09:14:07Z";
         request.metricDefinitionId = "507f1f77bcf86cd799439011";
-        request.resourceId = "resource-id";
         request.value = 10.3;
 
-        var response = given()
-                .auth()
-                .oauth2(getAccessToken("admin"))
-                .body(request)
-                .contentType(ContentType.JSON)
-                .post()
+        var response = assignMetric("admin", request);
+
+        var informativeResponse = response
                 .then()
                 .assertThat()
                 .statusCode(404)
                 .extract()
                 .as(InformativeResponse.class);
 
-        assertEquals("There is no Metric Definition with the following id: 507f1f77bcf86cd799439011", response.message);
-    }
-
-    @Test
-    public void createMetricCannotConsumeContentType() {
-
-        var request = new MetricRequestDto();
-
-        var response = given()
-                .auth()
-                .oauth2(getAccessToken("admin"))
-                .body(request)
-                .post()
-                .then()
-                .assertThat()
-                .statusCode(415)
-                .extract()
-                .as(InformativeResponse.class);
-
-        assertEquals("Cannot consume content type.", response.message);
+        assertEquals("There is no Metric Definition with the following id: 507f1f77bcf86cd799439011", informativeResponse.message);
     }
 
     @Test
@@ -137,22 +134,18 @@ public class MetricEndpointTest {
         var request = new MetricRequestDto();
         request.start = "2022-01-05T09:13:07Z";
         request.end = "2022-01-05T09:14:07Z";
-        request.resourceId = "resource-id";
         request.value = 10.3;
 
-        var response = given()
-                .auth()
-                .oauth2(getAccessToken("admin"))
-                .body(request)
-                .contentType(ContentType.JSON)
-                .post()
+        var response = assignMetric("admin", request);
+
+        var informativeResponse = response
                 .then()
                 .assertThat()
                 .statusCode(400)
                 .extract()
                 .as(InformativeResponse.class);
 
-        assertEquals("metric_definition_id may not be empty.", response.message);
+        assertEquals("metric_definition_id may not be empty.", informativeResponse.message);
     }
 
     @Test
@@ -160,35 +153,31 @@ public class MetricEndpointTest {
 
         Mockito.when(readPredefinedTypesService.searchForUnitType(any())).thenReturn(Optional.of("SECOND"));
         Mockito.when(readPredefinedTypesService.searchForMetricType(any())).thenReturn(Optional.of("Aggregated"));
-        MetricDefinitionRequestDto requestMetricDefinition = new MetricDefinitionRequestDto();
+        var requestForMetricDefinition = new MetricDefinitionRequestDto();
 
-        requestMetricDefinition.metricName = "metric";
-        requestMetricDefinition.metricDescription = "description";
-        requestMetricDefinition.unitType = "SECOND";
-        requestMetricDefinition.metricType = "Aggregated";
+        requestForMetricDefinition.metricName = "metric";
+        requestForMetricDefinition.metricDescription = "description";
+        requestForMetricDefinition.unitType = "SECOND";
+        requestForMetricDefinition.metricType = "Aggregated";
 
-        MetricDefinitionResponseDto metricDefinition = createMetricDefinition(requestMetricDefinition);
+        var metricDefinition = createMetricDefinition(requestForMetricDefinition, "admin");
 
         var request = new MetricRequestDto();
         request.metricDefinitionId = metricDefinition.id;
         request.start = "2022-01-0509:13:07";
         request.end = "2022-01-05T09:14:07Z";
-        request.resourceId = "resource-id";
         request.value = 10.3;
 
-        var response = given()
-                .auth()
-                .oauth2(getAccessToken("admin"))
-                .body(request)
-                .contentType(ContentType.JSON)
-                .post()
+        var response = assignMetric("admin", request);
+
+        var informativeResponse = response
                 .then()
                 .assertThat()
                 .statusCode(400)
                 .extract()
                 .as(InformativeResponse.class);
 
-        assertEquals("time_period_start must be a valid zulu timestamp. found: 2022-01-0509:13:07", response.message);
+        assertEquals("time_period_start must be a valid zulu timestamp. found: 2022-01-0509:13:07", informativeResponse.message);
     }
 
     @Test
@@ -203,53 +192,25 @@ public class MetricEndpointTest {
         requestMetricDefinition.unitType = "SECOND";
         requestMetricDefinition.metricType = "Aggregated";
 
-        MetricDefinitionResponseDto metricDefinition = createMetricDefinition(requestMetricDefinition);
+        MetricDefinitionResponseDto metricDefinition = createMetricDefinition(requestMetricDefinition, "admin");
 
         var request = new MetricRequestDto();
         request.metricDefinitionId = metricDefinition.id;
         request.end = "2022-01-05T09:13:07Z";
-        request.resourceId = "resource-id";
         request.value = 10.3;
 
-        var response = given()
-                .auth()
-                .oauth2(getAccessToken("admin"))
-                .body(request)
-                .contentType(ContentType.JSON)
-                .post()
+        var response = assignMetric("admin", request);
+
+        var informativeResponse = response
                 .then()
                 .assertThat()
                 .statusCode(400)
                 .extract()
                 .as(InformativeResponse.class);
 
-        assertEquals("time_period_start may not be empty.", response.message);
+        assertEquals("time_period_start may not be empty.", informativeResponse.message);
     }
 
-    @Test
-    public void createMetricNonHexId() {
-
-        var request = new MetricRequestDto();
-        request.start = "2022-01-05T09:13:07Z";
-        request.end = "2022-01-05T09:14:07Z";
-        request.metricDefinitionId = "iiejijirj33i3i";
-        request.resourceId = "resource-id";
-        request.value = 10.3;
-
-        var notFoundResponse = given()
-                .auth()
-                .oauth2(getAccessToken("admin"))
-                .body(request)
-                .contentType(ContentType.JSON)
-                .post()
-                .then()
-                .assertThat()
-                .statusCode(404)
-                .extract()
-                .as(InformativeResponse.class);
-
-        assertEquals("There is no Metric Definition with the following id: iiejijirj33i3i", notFoundResponse.message);
-    }
 
     @Test
     public void createMetricStartIsAfterEnd() {
@@ -265,30 +226,26 @@ public class MetricEndpointTest {
         requestForMetricDefinition.unitType = "SECOND";
         requestForMetricDefinition.metricType = "Aggregated";
 
-        var metricDefinitionResponse = createMetricDefinition(requestForMetricDefinition);
+        var metricDefinitionResponse = createMetricDefinition(requestForMetricDefinition, "admin");
 
         //then execute a request for creating a metric
 
         var requestForMetric = new MetricRequestDto();
-        requestForMetric.resourceId = "3434349fjiirgjirj003-3r3f-f-";
         requestForMetric.start = "2024-01-05T09:15:07Z";
         requestForMetric.end = "2022-01-05T09:13:07Z";
         requestForMetric.value = 10.8;
         requestForMetric.metricDefinitionId = metricDefinitionResponse.id;
 
-        var response = given()
-                .auth()
-                .oauth2(getAccessToken("admin"))
-                .body(requestForMetric)
-                .contentType(ContentType.JSON)
-                .post()
+        var response = assignMetric("admin", requestForMetric);
+
+        var informativeResponse = response
                 .then()
                 .assertThat()
                 .statusCode(400)
                 .extract()
                 .as(InformativeResponse.class);
 
-        assertEquals("Timestamp of the starting date time cannot be after of Timestamp of the end date time.", response.message);
+        assertEquals("Timestamp of the starting date time cannot be after of Timestamp of the end date time.", informativeResponse.message);
     }
 
     @Test
@@ -305,60 +262,26 @@ public class MetricEndpointTest {
         requestForMetricDefinition.unitType = "SECOND";
         requestForMetricDefinition.metricType = "Aggregated";
 
-        var metricDefinitionResponse = createMetricDefinition(requestForMetricDefinition);
+        var metricDefinitionResponse = createMetricDefinition(requestForMetricDefinition, "admin");
 
         //then execute a request for creating a metric
 
         var requestForMetric = new MetricRequestDto();
-        requestForMetric.resourceId = "3434349fjiirgjirj003-3r3f-f-";
         requestForMetric.start = "2024-01-05T09:15:07Z";
         requestForMetric.end = "2024-01-05T09:15:07Z";
         requestForMetric.value = 10.8;
         requestForMetric.metricDefinitionId = metricDefinitionResponse.id;
 
-        var response = given()
-                .auth()
-                .oauth2(getAccessToken("admin"))
-                .body(requestForMetric)
-                .contentType(ContentType.JSON)
-                .post()
+        var response = assignMetric("admin", requestForMetric);
+
+        var informativeResponse = response
                 .then()
                 .assertThat()
                 .statusCode(400)
                 .extract()
                 .as(InformativeResponse.class);
 
-        assertEquals("Timestamp of the starting date time cannot be equal to Timestamp of the end date time.", response.message);
-    }
-
-    @Test
-    public void createMetric() {
-
-        //first create a metric definition
-
-        Mockito.when(readPredefinedTypesService.searchForUnitType(any())).thenReturn(Optional.of("SECOND"));
-        Mockito.when(readPredefinedTypesService.searchForMetricType(any())).thenReturn(Optional.of("Aggregated"));
-        var requestForMetricDefinition = new MetricDefinitionRequestDto();
-
-        requestForMetricDefinition.metricName = "metric";
-        requestForMetricDefinition.metricDescription = "description";
-        requestForMetricDefinition.unitType = "SECOND";
-        requestForMetricDefinition.metricType = "Aggregated";
-
-        var metricDefinitionResponse = createMetricDefinition(requestForMetricDefinition);
-
-        //then execute a request for creating a metric
-
-        var requestForMetric = new MetricRequestDto();
-        requestForMetric.resourceId = "3434349fjiirgjirj003-3r3f-f-";
-        requestForMetric.start = "2022-01-05T09:13:07Z";
-        requestForMetric.end = "2022-01-05T09:14:07Z";
-        requestForMetric.value = 10.8;
-        requestForMetric.metricDefinitionId = metricDefinitionResponse.id;
-
-        var metric = createMetric(requestForMetric);
-
-        assertEquals(requestForMetric.resourceId, metric.resourceId);
+        assertEquals("Timestamp of the starting date time cannot be equal to Timestamp of the end date time.", informativeResponse.message);
     }
 
     @Test
@@ -390,55 +313,45 @@ public class MetricEndpointTest {
     }
 
     @Test
-    public void fetchMetricNonHexId() {
-
-        var response = given()
-                .auth()
-                .oauth2(getAccessToken("admin"))
-                .get("/{metricId}", "dbhbhehbeo33m23")
-                .then()
-                .assertThat()
-                .statusCode(404)
-                .extract()
-                .as(InformativeResponse.class);
-
-        assertEquals("There is no Metric with the following id: dbhbhehbeo33m23", response.message);
-    }
-
-    @Test
     public void fetchMetric() {
 
-        //first create a metric registration
+        Mockito.when(readPredefinedTypesService.searchForUnitType(any())).thenReturn(Optional.of("SECOND"));
+        Mockito.when(readPredefinedTypesService.searchForMetricType(any())).thenReturn(Optional.of("Aggregated"));
+        var requestForMetricDefinition = new MetricDefinitionRequestDto();
 
-        var metricDefinition = new MetricDefinition();
-        metricDefinition.setMetricName("metric");
-        metricDefinition.setMetricDescription("description");
-        metricDefinition.setUnitType("SECOND");
-        metricDefinition.setMetricType("Aggregated");
+        requestForMetricDefinition.metricName = "metric";
+        requestForMetricDefinition.metricDescription = "description";
+        requestForMetricDefinition.unitType = "SECOND";
+        requestForMetricDefinition.metricType = "Aggregated";
 
-        metricDefinitionRepository.persist(metricDefinition);
+        var metricDefinitionResponse = createMetricDefinition(requestForMetricDefinition, "admin");
 
-        //then create a virtual metric
-        var metric = new Metric();
-        metric.setMetricDefinitionId(metricDefinition.getId().toString());
-        metric.setResourceId("3434349fjiirgjirj003-3r3f-f-");
-        metric.setStart(Instant.now());
-        metric.setEnd(Instant.now());
-        metric.setValue(10.8);
+        var requestForMetric = new MetricRequestDto();
+        requestForMetric.start = "2024-01-05T09:15:07Z";
+        requestForMetric.end = "2024-01-05T09:18:07Z";
+        requestForMetric.value = 10.8;
+        requestForMetric.metricDefinitionId = metricDefinitionResponse.id;
 
-        metricRepository.persist(metric);
+        var response = assignMetric("admin", requestForMetric);
 
-        var response = given()
+        var metric = response
+                .then()
+                .assertThat()
+                .statusCode(201)
+                .extract()
+                .as(MetricResponseDto.class);
+
+        var getMetric = given()
                 .auth()
                 .oauth2(getAccessToken("admin"))
-                .get("/{metricId}", metric.getId().toString())
+                .get("/{metricId}", metric.id)
                 .then()
                 .assertThat()
                 .statusCode(200)
                 .extract()
                 .as(MetricResponseDto.class);
 
-        assertEquals(metric.getId().toString(), response.id);
+        assertEquals(metric.id, getMetric.id);
     }
 
     @Test
@@ -470,22 +383,6 @@ public class MetricEndpointTest {
     }
 
     @Test
-    public void deleteMetricNonHexId() {
-
-        var response = given()
-                .auth()
-                .oauth2(getAccessToken("admin"))
-                .delete("/{metricId}", "33333")
-                .then()
-                .assertThat()
-                .statusCode(404)
-                .extract()
-                .as(InformativeResponse.class);
-
-        assertEquals("There is no Metric with the following id: 33333", response.message);
-    }
-
-    @Test
     public void deleteMetric() {
 
         Mockito.when(readPredefinedTypesService.searchForUnitType(any())).thenReturn(Optional.of("SECOND"));
@@ -497,22 +394,22 @@ public class MetricEndpointTest {
         requestForMetricDefinition.unitType = "SECOND";
         requestForMetricDefinition.metricType = "Aggregated";
 
-        //first create a metric definition
-
-        var metricDefinition = createMetricDefinition(requestForMetricDefinition);
-
-        //afterwards create a metric
+        var metricDefinitionResponse = createMetricDefinition(requestForMetricDefinition, "admin");
 
         var requestForMetric = new MetricRequestDto();
-        requestForMetric.resourceId = "3434349fjiirgjirj003-3r3f-f-";
-        requestForMetric.start = "2022-01-05T09:13:07Z";
-        requestForMetric.end = "2022-01-05T09:14:07Z";
+        requestForMetric.start = "2024-01-05T09:15:07Z";
+        requestForMetric.end = "2024-01-05T09:18:07Z";
         requestForMetric.value = 10.8;
-        requestForMetric.metricDefinitionId = metricDefinition.id;
+        requestForMetric.metricDefinitionId = metricDefinitionResponse.id;
 
-        //then delete the created metric
+        var response = assignMetric("admin", requestForMetric);
 
-        var metric = createMetric(requestForMetric);
+        var metric = response
+                .then()
+                .assertThat()
+                .statusCode(201)
+                .extract()
+                .as(MetricResponseDto.class);
 
         var deleteResponse = given()
                 .auth()
@@ -539,19 +436,25 @@ public class MetricEndpointTest {
         requestForMetricDefinition.unitType = "SECOND";
         requestForMetricDefinition.metricType = "Aggregated";
 
-        var createdMetricDefinition = createMetricDefinition(requestForMetricDefinition);
+        var createdMetricDefinition = createMetricDefinition(requestForMetricDefinition, "admin");
 
         // create a metric
         var requestForMetric = new MetricRequestDto();
-        requestForMetric.resourceId = "3434349fjiirgjirj003-3r3f-f-";
         requestForMetric.start = "2022-01-05T09:13:07Z";
         requestForMetric.end = "2022-01-05T09:14:07Z";
         requestForMetric.value = 10.8;
         requestForMetric.metricDefinitionId = createdMetricDefinition.id;
 
-        var metric = createMetric(requestForMetric);
+        var response = assignMetric("admin", requestForMetric);
 
-        var response = given()
+        var metric = response
+                .then()
+                .assertThat()
+                .statusCode(201)
+                .extract()
+                .as(MetricResponseDto.class);
+
+        var informativeResponse = given()
                 .auth()
                 .oauth2(getAccessToken("admin"))
                 .contentType(ContentType.JSON)
@@ -562,7 +465,7 @@ public class MetricEndpointTest {
                 .extract()
                 .as(InformativeResponse.class);
 
-        assertEquals("The request body is empty.", response.message);
+        assertEquals("The request body is empty.", informativeResponse.message);
     }
 
     @Test
@@ -622,24 +525,30 @@ public class MetricEndpointTest {
         requestForMetricDefinition.unitType = "SECOND";
         requestForMetricDefinition.metricType = "Aggregated";
 
-        var createdMetricDefinition = createMetricDefinition(requestForMetricDefinition);
+        var createdMetricDefinition = createMetricDefinition(requestForMetricDefinition, "admin");
 
         // create a metric
         var requestForMetric = new MetricRequestDto();
-        requestForMetric.resourceId = "3434349fjiirgjirj003-3r3f-f-";
         requestForMetric.start = "2022-01-05T09:13:07Z";
         requestForMetric.end = "2022-01-05T09:14:07Z";
         requestForMetric.value = 10.8;
         requestForMetric.metricDefinitionId = createdMetricDefinition.id;
 
-        var metric = createMetric(requestForMetric);
+        var response = assignMetric("admin", requestForMetric);
+
+        var metric = response
+                .then()
+                .assertThat()
+                .statusCode(201)
+                .extract()
+                .as(MetricResponseDto.class);
 
         // update an existing metric
         var updateMetricRequest = new UpdateMetricRequestDto();
 
         updateMetricRequest.start = "2023-01-0509:13:07";
 
-        var response = given()
+        var informativeResponse = given()
                 .auth()
                 .oauth2(getAccessToken("admin"))
                 .body(updateMetricRequest)
@@ -651,7 +560,7 @@ public class MetricEndpointTest {
                 .extract()
                 .as(InformativeResponse.class);
 
-        assertEquals("time_period_start must be a valid zulu timestamp. found: 2023-01-0509:13:07", response.message);
+        assertEquals("time_period_start must be a valid zulu timestamp. found: 2023-01-0509:13:07", informativeResponse.message);
     }
 
     @Test
@@ -666,104 +575,56 @@ public class MetricEndpointTest {
         requestForMetricDefinition.unitType = "SECOND";
         requestForMetricDefinition.metricType = "Aggregated";
 
-        var createdMetricDefinition = createMetricDefinition(requestForMetricDefinition);
+        var createdMetricDefinition = createMetricDefinition(requestForMetricDefinition, "admin");
 
         // create a metric
         var requestForMetric = new MetricRequestDto();
-        requestForMetric.resourceId = "3434349fjiirgjirj003-3r3f-f-";
         requestForMetric.start = "2022-01-05T09:13:07Z";
         requestForMetric.end = "2022-01-05T09:14:07Z";
         requestForMetric.value = 10.8;
         requestForMetric.metricDefinitionId = createdMetricDefinition.id;
 
-        var metricResponse = createMetric(requestForMetric);
+        var response = assignMetric("admin", requestForMetric);
+
+        var metric = response
+                .then()
+                .assertThat()
+                .statusCode(201)
+                .extract()
+                .as(MetricResponseDto.class);
 
         // update an existing metric
         var updateMetricRequest = new UpdateMetricRequestDto();
 
-        updateMetricRequest.resourceId = "updatedResourceId";
         updateMetricRequest.start = "2023-01-05T09:13:07Z";
         updateMetricRequest.end = "2024-01-05T09:13:07Z";
         updateMetricRequest.value = 15.8;
         updateMetricRequest.metricDefinitionId = "507f1f77bcf86cd799439011";
 
-
-        var response = given()
+        var informativeResponse = given()
                 .auth()
                 .oauth2(getAccessToken("admin"))
                 .body(updateMetricRequest)
                 .contentType(ContentType.JSON)
-                .patch("/{id}", metricResponse.id)
+                .patch("/{id}", metric.id)
                 .then()
                 .assertThat()
                 .statusCode(404)
                 .extract()
                 .as(InformativeResponse.class);
 
-        assertEquals("There is no Metric Definition with the following id: 507f1f77bcf86cd799439011", response.message);
-    }
-
-    @Test
-    public void updateMetricMetricDefinitionNonHexId() {
-
-        Mockito.when(readPredefinedTypesService.searchForUnitType(any())).thenReturn(Optional.of("SECOND"));
-        Mockito.when(readPredefinedTypesService.searchForMetricType(any())).thenReturn(Optional.of("Aggregated"));
-        var requestForMetricDefinition = new MetricDefinitionRequestDto();
-
-        requestForMetricDefinition.metricName = "metric";
-        requestForMetricDefinition.metricDescription = "description";
-        requestForMetricDefinition.unitType = "SECOND";
-        requestForMetricDefinition.metricType = "Aggregated";
-
-        var createdMetricDefinition = createMetricDefinition(requestForMetricDefinition);
-
-        // create a metric
-        var requestForMetric = new MetricRequestDto();
-        requestForMetric.resourceId = "3434349fjiirgjirj003-3r3f-f-";
-        requestForMetric.start = "2022-01-05T09:13:07Z";
-        requestForMetric.end = "2022-01-05T09:14:07Z";
-        requestForMetric.value = 10.8;
-        requestForMetric.metricDefinitionId = createdMetricDefinition.id;
-
-        var metricResponse = createMetric(requestForMetric);
-
-        // update an existing metric
-        var updateMetricRequest = new UpdateMetricRequestDto();
-
-        updateMetricRequest.resourceId = "updatedResourceId";
-        updateMetricRequest.start = "2023-01-05T09:13:07Z";
-        updateMetricRequest.end = "2024-01-05T09:13:07Z";
-        updateMetricRequest.value = 15.8;
-        updateMetricRequest.metricDefinitionId = "30dmn93jn3j";
-
-
-        var response = given()
-                .auth()
-                .oauth2(getAccessToken("admin"))
-                .body(updateMetricRequest)
-                .contentType(ContentType.JSON)
-                .patch("/{id}", metricResponse.id)
-                .then()
-                .assertThat()
-                .statusCode(404)
-                .extract()
-                .as(InformativeResponse.class);
-
-        assertEquals("There is no Metric Definition with the following id: 30dmn93jn3j", response.message);
+        assertEquals("There is no Metric Definition with the following id: 507f1f77bcf86cd799439011", informativeResponse.message);
     }
 
     @Test
     public void updateMetricMetricNotFound() {
 
-        // update an existing metric
         var updateMetricRequest = new UpdateMetricRequestDto();
 
-        updateMetricRequest.resourceId = "updatedResourceId";
         updateMetricRequest.start = "2023-01-05T09:13:07Z";
         updateMetricRequest.end = "2024-01-05T09:14:07Z";
         updateMetricRequest.value = 15.8;
         updateMetricRequest.metricDefinitionId = "507f1f77bcf86cd799439011";
-
 
         var response = given()
                 .auth()
@@ -793,38 +654,43 @@ public class MetricEndpointTest {
         requestForMetricDefinition.unitType = "SECOND";
         requestForMetricDefinition.metricType = "Aggregated";
 
-        var createdMetricDefinition = createMetricDefinition(requestForMetricDefinition);
+        var createdMetricDefinition = createMetricDefinition(requestForMetricDefinition, "admin");
 
         // create a metric
         var requestForMetric = new MetricRequestDto();
-        requestForMetric.resourceId = "3434349fjiirgjirj003-3r3f-f-";
         requestForMetric.start = "2021-01-05T09:13:07Z";
         requestForMetric.end = "2022-01-05T09:14:07Z";
         requestForMetric.value = 10.8;
         requestForMetric.metricDefinitionId = createdMetricDefinition.id;
 
-        var metricResponse = createMetric(requestForMetric);
+        var response = assignMetric("admin", requestForMetric);
+
+        var metric = response
+                .then()
+                .assertThat()
+                .statusCode(201)
+                .extract()
+                .as(MetricResponseDto.class);
 
         // update an existing metric
         var updateMetricRequest = new UpdateMetricRequestDto();
 
-        updateMetricRequest.resourceId = "updatedResourceId";
         updateMetricRequest.start = "2023-01-05T09:13:07Z";
 
 
-        var response = given()
+        var informativeResponse = given()
                 .auth()
                 .oauth2(getAccessToken("admin"))
                 .body(updateMetricRequest)
                 .contentType(ContentType.JSON)
-                .patch("/{id}", metricResponse.id)
+                .patch("/{id}", metric.id)
                 .then()
                 .assertThat()
                 .statusCode(400)
                 .extract()
                 .as(InformativeResponse.class);
 
-        assertEquals("Timestamp of the starting date time cannot be after of Timestamp of the end date time.", response.message);
+        assertEquals("Timestamp of the starting date time cannot be after of Timestamp of the end date time.", informativeResponse.message);
     }
 
     @Test
@@ -840,39 +706,43 @@ public class MetricEndpointTest {
         requestForMetricDefinition.unitType = "SECOND";
         requestForMetricDefinition.metricType = "Aggregated";
 
-        var createdMetricDefinition = createMetricDefinition(requestForMetricDefinition);
+        var createdMetricDefinition = createMetricDefinition(requestForMetricDefinition, "admin");
 
         // create a metric
         var requestForMetric = new MetricRequestDto();
-        requestForMetric.resourceId = "3434349fjiirgjirj003-3r3f-f-";
         requestForMetric.start = "2021-01-05T09:13:07Z";
         requestForMetric.end = "2022-01-05T09:14:07Z";
         requestForMetric.value = 10.8;
         requestForMetric.metricDefinitionId = createdMetricDefinition.id;
 
-        var metricResponse = createMetric(requestForMetric);
+        var response = assignMetric("admin", requestForMetric);
+
+        var metric = response
+                .then()
+                .assertThat()
+                .statusCode(201)
+                .extract()
+                .as(MetricResponseDto.class);
 
         // update an existing metric
         var updateMetricRequest = new UpdateMetricRequestDto();
 
-        updateMetricRequest.resourceId = "updatedResourceId";
         updateMetricRequest.start = "2025-01-05T09:13:07Z";
         updateMetricRequest.end = "2024-01-05T09:13:07Z";
 
-
-        var response = given()
+        var informativeResponse = given()
                 .auth()
                 .oauth2(getAccessToken("admin"))
                 .body(updateMetricRequest)
                 .contentType(ContentType.JSON)
-                .patch("/{id}", metricResponse.id)
+                .patch("/{id}", metric.id)
                 .then()
                 .assertThat()
                 .statusCode(400)
                 .extract()
                 .as(InformativeResponse.class);
 
-        assertEquals("Timestamp of the starting date time cannot be after of Timestamp of the end date time.", response.message);
+        assertEquals("Timestamp of the starting date time cannot be after of Timestamp of the end date time.", informativeResponse.message);
     }
 
     @Test
@@ -888,38 +758,42 @@ public class MetricEndpointTest {
         requestForMetricDefinition.unitType = "SECOND";
         requestForMetricDefinition.metricType = "Aggregated";
 
-        var createdMetricDefinition = createMetricDefinition(requestForMetricDefinition);
+        var createdMetricDefinition = createMetricDefinition(requestForMetricDefinition, "admin");
 
         // create a metric
         var requestForMetric = new MetricRequestDto();
-        requestForMetric.resourceId = "3434349fjiirgjirj003-3r3f-f-";
         requestForMetric.start = "2021-01-05T09:13:07Z";
         requestForMetric.end = "2022-01-05T09:14:07Z";
         requestForMetric.value = 10.8;
         requestForMetric.metricDefinitionId = createdMetricDefinition.id;
 
-        var metricResponse = createMetric(requestForMetric);
+        var response = assignMetric("admin", requestForMetric);
+
+        var metric = response
+                .then()
+                .assertThat()
+                .statusCode(201)
+                .extract()
+                .as(MetricResponseDto.class);
 
         // update an existing metric
         var updateMetricRequest = new UpdateMetricRequestDto();
 
-        updateMetricRequest.resourceId = "updatedResourceId";
         updateMetricRequest.end = "2020-01-05T09:13:07Z";
 
-
-        var response = given()
+        var informativeResponse = given()
                 .auth()
                 .oauth2(getAccessToken("admin"))
                 .body(updateMetricRequest)
                 .contentType(ContentType.JSON)
-                .patch("/{id}", metricResponse.id)
+                .patch("/{id}", metric.id)
                 .then()
                 .assertThat()
                 .statusCode(400)
                 .extract()
                 .as(InformativeResponse.class);
 
-        assertEquals("Timestamp of the end date time cannot be before of Timestamp of the starting date time.", response.message);
+        assertEquals("Timestamp of the end date time cannot be before of Timestamp of the starting date time.", informativeResponse.message);
     }
 
     @Test
@@ -935,39 +809,44 @@ public class MetricEndpointTest {
         requestForMetricDefinition.unitType = "SECOND";
         requestForMetricDefinition.metricType = "Aggregated";
 
-        var createdMetricDefinition = createMetricDefinition(requestForMetricDefinition);
+        var createdMetricDefinition = createMetricDefinition(requestForMetricDefinition, "admin");
 
         // create a metric
         var requestForMetric = new MetricRequestDto();
-        requestForMetric.resourceId = "3434349fjiirgjirj003-3r3f-f-";
         requestForMetric.start = "2021-01-05T09:13:07Z";
         requestForMetric.end = "2022-01-05T09:14:07Z";
         requestForMetric.value = 10.8;
         requestForMetric.metricDefinitionId = createdMetricDefinition.id;
 
-        var metricResponse = createMetric(requestForMetric);
+        var response = assignMetric("admin", requestForMetric);
+
+        var metric = response
+                .then()
+                .assertThat()
+                .statusCode(201)
+                .extract()
+                .as(MetricResponseDto.class);
 
         // update an existing metric
         var updateMetricRequest = new UpdateMetricRequestDto();
 
-        updateMetricRequest.resourceId = "updatedResourceId";
         updateMetricRequest.start = "2024-01-05T09:13:07Z";
         updateMetricRequest.end = "2024-01-05T09:13:07Z";
 
 
-        var response = given()
+        var informativeResponse = given()
                 .auth()
                 .oauth2(getAccessToken("admin"))
                 .body(updateMetricRequest)
                 .contentType(ContentType.JSON)
-                .patch("/{id}", metricResponse.id)
+                .patch("/{id}", metric.id)
                 .then()
                 .assertThat()
                 .statusCode(400)
                 .extract()
                 .as(InformativeResponse.class);
 
-        assertEquals("Timestamp of the starting date time cannot be equal to Timestamp of the end date time.", response.message);
+        assertEquals("Timestamp of the starting date time cannot be equal to Timestamp of the end date time.", informativeResponse.message);
     }
 
     @Test
@@ -983,37 +862,42 @@ public class MetricEndpointTest {
         requestForMetricDefinition.unitType = "SECOND";
         requestForMetricDefinition.metricType = "Aggregated";
 
-        var createdMetricDefinition = createMetricDefinition(requestForMetricDefinition);
+        var createdMetricDefinition = createMetricDefinition(requestForMetricDefinition, "admin");
 
         // create a metric
         var requestForMetric = new MetricRequestDto();
-        requestForMetric.resourceId = "3434349fjiirgjirj003-3r3f-f-";
         requestForMetric.start = "2021-01-05T09:13:07Z";
         requestForMetric.end = "2022-01-05T09:14:07Z";
         requestForMetric.value = 10.8;
         requestForMetric.metricDefinitionId = createdMetricDefinition.id;
 
-        var metricResponse = createMetric(requestForMetric);
+        var response = assignMetric("admin", requestForMetric);
+
+        var metric = response
+                .then()
+                .assertThat()
+                .statusCode(201)
+                .extract()
+                .as(MetricResponseDto.class);
 
         // update an existing metric
         var updateMetricRequest = new UpdateMetricRequestDto();
 
-        updateMetricRequest.resourceId = "updatedResourceId";
         updateMetricRequest.start = "2022-01-05T09:14:07Z";
 
-        var response = given()
+        var informativeResponse = given()
                 .auth()
                 .oauth2(getAccessToken("admin"))
                 .body(updateMetricRequest)
                 .contentType(ContentType.JSON)
-                .patch("/{id}", metricResponse.id)
+                .patch("/{id}", metric.id)
                 .then()
                 .assertThat()
                 .statusCode(400)
                 .extract()
                 .as(InformativeResponse.class);
 
-        assertEquals("Timestamp of the starting date time cannot be equal to Timestamp of the end date time.", response.message);
+        assertEquals("Timestamp of the starting date time cannot be equal to Timestamp of the end date time.", informativeResponse.message);
     }
 
     @Test
@@ -1029,37 +913,42 @@ public class MetricEndpointTest {
         requestForMetricDefinition.unitType = "SECOND";
         requestForMetricDefinition.metricType = "Aggregated";
 
-        var createdMetricDefinition = createMetricDefinition(requestForMetricDefinition);
+        var createdMetricDefinition = createMetricDefinition(requestForMetricDefinition, "admin");
 
         // create a metric
         var requestForMetric = new MetricRequestDto();
-        requestForMetric.resourceId = "3434349fjiirgjirj003-3r3f-f-";
         requestForMetric.start = "2021-01-05T09:13:07Z";
         requestForMetric.end = "2022-01-05T09:14:07Z";
         requestForMetric.value = 10.8;
         requestForMetric.metricDefinitionId = createdMetricDefinition.id;
 
-        var metricResponse = createMetric(requestForMetric);
+        var response = assignMetric("admin", requestForMetric);
+
+        var metric = response
+                .then()
+                .assertThat()
+                .statusCode(201)
+                .extract()
+                .as(MetricResponseDto.class);
 
         // update an existing metric
         var updateMetricRequest = new UpdateMetricRequestDto();
 
-        updateMetricRequest.resourceId = "updatedResourceId";
         updateMetricRequest.end = "2021-01-05T09:13:07Z";
 
-        var response = given()
+        var informativeResponse = given()
                 .auth()
                 .oauth2(getAccessToken("admin"))
                 .body(updateMetricRequest)
                 .contentType(ContentType.JSON)
-                .patch("/{id}", metricResponse.id)
+                .patch("/{id}", metric.id)
                 .then()
                 .assertThat()
                 .statusCode(400)
                 .extract()
                 .as(InformativeResponse.class);
 
-        assertEquals("Timestamp of the starting date time cannot be equal to Timestamp of the end date time.", response.message);
+        assertEquals("Timestamp of the starting date time cannot be equal to Timestamp of the end date time.", informativeResponse.message);
     }
 
     @Test
@@ -1075,7 +964,7 @@ public class MetricEndpointTest {
         requestForMetricDefinition.unitType = "SECOND";
         requestForMetricDefinition.metricType = "Aggregated";
 
-        var createdMetricDefinition = createMetricDefinition(requestForMetricDefinition);
+        var createdMetricDefinition = createMetricDefinition(requestForMetricDefinition, "admin");
 
         //create another metric definition
         Mockito.when(readPredefinedTypesService.searchForUnitType(any())).thenReturn(Optional.of("#"));
@@ -1087,23 +976,28 @@ public class MetricEndpointTest {
         requestForMetricDefinition1.unitType = "#";
         requestForMetricDefinition1.metricType = "count";
 
-        var createdMetricDefinition1 = createMetricDefinition(requestForMetricDefinition1);
+        var createdMetricDefinition1 = createMetricDefinition(requestForMetricDefinition1, "admin");
 
 
         // create a metric
         var requestForMetric = new MetricRequestDto();
-        requestForMetric.resourceId = "3434349fjiirgjirj003-3r3f-f-";
         requestForMetric.start = "2022-01-05T09:13:07Z";
         requestForMetric.end = "2022-01-05T09:14:07Z";
         requestForMetric.value = 10.8;
         requestForMetric.metricDefinitionId = createdMetricDefinition.id;
 
-        var metricResponse = createMetric(requestForMetric);
+        var response = assignMetric("admin", requestForMetric);
+
+        var metric = response
+                .then()
+                .assertThat()
+                .statusCode(201)
+                .extract()
+                .as(MetricResponseDto.class);
 
         // update an existing metric
         var updateMetricRequest = new UpdateMetricRequestDto();
 
-        updateMetricRequest.resourceId = "updatedResourceId";
         updateMetricRequest.start = "2023-01-05T09:13:07Z";
         updateMetricRequest.end = "2024-01-05T09:14:07Z";
         updateMetricRequest.value = 15.8;
@@ -1117,12 +1011,11 @@ public class MetricEndpointTest {
                                 .numberReturnType(JsonPathConfig.NumberReturnType.DOUBLE)))
                 .body(updateMetricRequest)
                 .contentType(ContentType.JSON)
-                .patch("/{id}", metricResponse.id)
+                .patch("/{id}", metric.id)
                 .then()
                 .assertThat()
                 .statusCode(200)
-                .body("metric_id", is(metricResponse.id))
-                .body("resource_id", is(updateMetricRequest.resourceId))
+                .body("metric_id", is(metric.id))
                 .body("metric_definition_id", is(updateMetricRequest.metricDefinitionId))
                 .body("time_period_start", is(updateMetricRequest.start))
                 .body("time_period_end", is(updateMetricRequest.end))
@@ -1130,7 +1023,7 @@ public class MetricEndpointTest {
                 .extract()
                 .as(MetricResponseDto.class);
 
-        assertEquals("updatedResourceId", updateResponse.resourceId);
+        assertEquals(createdMetricDefinition1.id, updateResponse.metricDefinitionId);
     }
 
     @Test
@@ -1146,22 +1039,28 @@ public class MetricEndpointTest {
         requestForMetricDefinition.unitType = "SECOND";
         requestForMetricDefinition.metricType = "Aggregated";
 
-        var createdMetricDefinition = createMetricDefinition(requestForMetricDefinition);
+        var createdMetricDefinition = createMetricDefinition(requestForMetricDefinition, "admin");
 
         // create a metric
         var requestForMetric = new MetricRequestDto();
-        requestForMetric.resourceId = "3434349fjiirgjirj003-3r3f-f-";
         requestForMetric.start = "2022-01-05T09:13:07Z";
         requestForMetric.end = "2022-01-05T09:14:07Z";
         requestForMetric.value = 10.8;
         requestForMetric.metricDefinitionId = createdMetricDefinition.id;
 
-        var metricResponse = createMetric(requestForMetric);
+        var response = assignMetric("admin", requestForMetric);
+
+        var metric = response
+                .then()
+                .assertThat()
+                .statusCode(201)
+                .extract()
+                .as(MetricResponseDto.class);
 
         // update an existing metric
         var updateMetricRequest = new UpdateMetricRequestDto();
 
-        updateMetricRequest.resourceId = "updatedResourceId";
+        updateMetricRequest.value = 12.0;
 
         var updateResponse = given()
                 .auth()
@@ -1171,27 +1070,86 @@ public class MetricEndpointTest {
                                 .numberReturnType(JsonPathConfig.NumberReturnType.DOUBLE)))
                 .body(updateMetricRequest)
                 .contentType(ContentType.JSON)
-                .patch("/{id}", metricResponse.id)
+                .patch("/{id}", metric.id)
                 .then()
                 .assertThat()
                 .statusCode(200)
-                .body("metric_id", is(metricResponse.id))
-                .body("resource_id", is(updateMetricRequest.resourceId))
+                .body("metric_id", is(metric.id))
                 .body("metric_definition_id", is(requestForMetric.metricDefinitionId))
                 .body("time_period_start", is(requestForMetric.start))
                 .body("time_period_end", is(requestForMetric.end))
-                .body("value", is(requestForMetric.value))
+                .body("value", is(updateMetricRequest.value))
                 .extract()
                 .as(MetricResponseDto.class);
 
         assertEquals(requestForMetric.metricDefinitionId, updateResponse.metricDefinitionId);
     }
 
-    private MetricDefinitionResponseDto createMetricDefinition(MetricDefinitionRequestDto request){
+    private io.restassured.response.Response assignMetric(String user, MetricRequestDto body){
+
+        //Registering a project
+        var project = given()
+                .auth()
+                .oauth2(getAccessToken("admin"))
+                .basePath("accounting-system/projects")
+                .get("/{id}", "777536")
+                .then()
+                .assertThat()
+                .statusCode(200)
+                .extract()
+                .as(ProjectResponseDto.class);
+
+        //Registering an installation
+        Mockito.when(readPredefinedTypesService.searchForUnitType(any())).thenReturn(Optional.of("KG"));
+        Mockito.when(readPredefinedTypesService.searchForMetricType(any())).thenReturn(Optional.of("Aggregated"));
+        var requestForMetricDefinition = new MetricDefinitionRequestDto();
+
+        requestForMetricDefinition.metricName = "metric";
+        requestForMetricDefinition.metricDescription = "description";
+        requestForMetricDefinition.unitType = "KG";
+        requestForMetricDefinition.metricType = "Aggregated";
+
+        var metricDefinitionResponse = createMetricDefinition(requestForMetricDefinition, "admin");
+
+        var request= new InstallationRequestDto();
+
+        request.organisation = "grnet";
+        request.infrastructure = "okeanos-knossos";
+        request.installation = "SECOND";
+        request.unitOfAccess = metricDefinitionResponse.id;
+
+        var installation = createInstallation(request, "admin");
 
         return given()
                 .auth()
-                .oauth2(getAccessToken("admin"))
+                .oauth2(getAccessToken(user))
+                .basePath("accounting-system/projects")
+                .body(body)
+                .contentType(ContentType.JSON)
+                .post("/{projectId}/providers/{providerId}/installations/{installationId}/metrics", project.id, "grnet", installation.id);
+    }
+
+    private InstallationResponseDto createInstallation(InstallationRequestDto request, String user){
+
+        return given()
+                .auth()
+                .oauth2(getAccessToken(user))
+                .basePath("accounting-system/installations")
+                .body(request)
+                .contentType(ContentType.JSON)
+                .post()
+                .then()
+                .assertThat()
+                .statusCode(201)
+                .extract()
+                .as(InstallationResponseDto.class);
+    }
+
+    private MetricDefinitionResponseDto createMetricDefinition(MetricDefinitionRequestDto request, String user){
+
+        return given()
+                .auth()
+                .oauth2(getAccessToken(user))
                 .basePath("accounting-system/metric-definition")
                 .body(request)
                 .contentType(ContentType.JSON)
@@ -1201,20 +1159,6 @@ public class MetricEndpointTest {
                 .statusCode(201)
                 .extract()
                 .as(MetricDefinitionResponseDto.class);
-    }
-
-    private MetricResponseDto createMetric(MetricRequestDto requestDto){
-        return given()
-                .auth()
-                .oauth2(getAccessToken("admin"))
-                .body(requestDto)
-                .contentType(ContentType.JSON)
-                .post()
-                .then()
-                .assertThat()
-                .statusCode(201)
-                .extract()
-                .as(MetricResponseDto.class);
     }
 
     protected String getAccessToken(String userName) {

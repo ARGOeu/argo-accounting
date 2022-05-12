@@ -18,7 +18,7 @@ import org.accounting.system.exceptions.ConflictException;
 import org.accounting.system.mappers.AccessControlMapper;
 import org.accounting.system.mappers.MetricDefinitionMapper;
 import org.accounting.system.mappers.MetricMapper;
-import org.accounting.system.repositories.MetricRepository;
+import org.accounting.system.repositories.metric.MetricRepository;
 import org.accounting.system.repositories.acl.AccessControlRepository;
 import org.accounting.system.repositories.metricdefinition.MetricDefinitionRepository;
 import org.accounting.system.util.QueryParser;
@@ -265,9 +265,9 @@ public class MetricDefinitionService {
     }
     public List<MetricDefinitionResponseDto> searchMetricDefinition( String json, boolean isAlwaysPermission) throws ParseException, NoSuchFieldException {
 
-        List<ObjectId> entityIds=new ArrayList<>();
+        List<String> entityIds=new ArrayList<>();
         if(!isAlwaysPermission){
-            entityIds= fetchAllMetricDefinitions().stream().map(MetricDefinitionResponseDto::getObjectId).collect(Collectors.toList());
+            entityIds= fetchAllMetricDefinitions().stream().map(MetricDefinitionResponseDto::getId).collect(Collectors.toList());
         }
         Bson query=queryParser.parseFile(json, isAlwaysPermission, entityIds);
         return  MetricDefinitionMapper.INSTANCE.metricDefinitionsToResponse( metricDefinitionRepository.search(query));
