@@ -34,7 +34,7 @@ public class ProjectEndpointTest {
     @Test
     public void retrieveOpenAireResponse() {
 
-        //We are going to retrieve the EOSC-hub project from OpenAire APIx
+        //We are going to retrieve the EOSC-hub project from OpenAire API
         OpenAireProject project = projectClient.getById("777536","json");
 
         assertEquals(project.response.results.result.get(0).metadata.entity.project.code.value, "777536");

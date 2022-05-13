@@ -1,4 +1,4 @@
-package org.accounting.system.dtos;
+package org.accounting.system.dtos.metricdefinition;
 
 
 import com.fasterxml.jackson.annotation.JsonProperty;

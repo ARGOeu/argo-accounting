@@ -3,13 +3,13 @@ package org.accounting.system.endpoints;
 import io.quarkus.security.Authenticated;
 import org.accounting.system.constraints.NotFoundEntity;
 import org.accounting.system.dtos.InformativeResponse;
-import org.accounting.system.dtos.MetricDefinitionRequestDto;
-import org.accounting.system.dtos.MetricDefinitionResponseDto;
 import org.accounting.system.dtos.PageResource;
-import org.accounting.system.dtos.UpdateMetricDefinitionRequestDto;
 import org.accounting.system.dtos.acl.AccessControlRequestDto;
 import org.accounting.system.dtos.acl.AccessControlResponseDto;
 import org.accounting.system.dtos.acl.AccessControlUpdateDto;
+import org.accounting.system.dtos.metricdefinition.MetricDefinitionRequestDto;
+import org.accounting.system.dtos.metricdefinition.MetricDefinitionResponseDto;
+import org.accounting.system.dtos.metricdefinition.UpdateMetricDefinitionRequestDto;
 import org.accounting.system.enums.Collection;
 import org.accounting.system.exceptions.UnprocessableException;
 import org.accounting.system.interceptors.annotations.Permission;
@@ -552,12 +552,12 @@ public class MetricDefinitionEndpoint {
             schema = @Schema(type = SchemaType.STRING))
                         @PathParam("metric_definition_id") @Valid @NotFoundEntity(repository = MetricDefinitionRepository.class, message = "There is no Metric Definition with the following id:") String metricDefinitionId,
                         @Parameter(name = "page", in = QUERY,
-                                description = "Indicates the page number.") @DefaultValue("1") @QueryParam("page") int page,
+                                description = "Indicates the page number. Page number must be >= 1.") @DefaultValue("1") @QueryParam("page") int page,
                         @Parameter(name = "size", in = QUERY,
                                 description = "The page size.") @DefaultValue("10") @QueryParam("size") int size, @Context UriInfo uriInfo) {
 
         if(page <1){
-            throw new BadRequestException("Page index must be >= 1.");
+            throw new BadRequestException("Page number must be >= 1.");
         }
 
         if(size > 100){
@@ -628,7 +628,7 @@ public class MetricDefinitionEndpoint {
     @SecurityRequirement(name = "Authentication")
 
     @POST
-    @Path("/{metric_definition_id}/acl")
+    @Path("/{metric_definition_id}/acl/{who}")
     @Produces(value = MediaType.APPLICATION_JSON)
     @Consumes(value = MediaType.APPLICATION_JSON)
     @Permission(collection = Collection.MetricDefinition, operation = org.accounting.system.enums.Operation.ACL)
@@ -640,10 +640,16 @@ public class MetricDefinitionEndpoint {
                                                 schema = @Schema(type = SchemaType.STRING))
                                         @PathParam("metric_definition_id")
                                         @Valid
-                                        @NotFoundEntity(repository = MetricDefinitionRepository.class, message = "There is no Metric Definition with the following id:") String metricDefinitionId) {
+                                        @NotFoundEntity(repository = MetricDefinitionRepository.class, message = "There is no Metric Definition with the following id:") String metricDefinitionId,
+                                        @Parameter(
+                                                description = "who is the id of a Service/User that the Access Control grants access.",
+                                                required = true,
+                                                example = "fbdb4e4a-6e93-4b08-a1e7-0b7bd08520a6",
+                                                schema = @Schema(type = SchemaType.STRING))
+                                        @PathParam("who") String who) {
 
 
-        metricDefinitionService.grantPermission(metricDefinitionId, accessControlRequestDto);
+        metricDefinitionService.grantPermission(metricDefinitionId, who, accessControlRequestDto);
 
         var informativeResponse = new InformativeResponse();
         informativeResponse.message = "Access Control entry has been created successfully";

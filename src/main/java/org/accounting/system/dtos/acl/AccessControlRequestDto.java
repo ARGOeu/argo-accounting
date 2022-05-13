@@ -14,17 +14,6 @@ import java.util.Set;
 public class AccessControlRequestDto {
 
     @Schema(
-            type = SchemaType.STRING,
-            implementation = String.class,
-            description = "who is the id of a Service/User that the Access Control grants access.",
-            example = "fbdb4e4a-6e93-4b08-a1e7-0b7bd08520a6",
-            required = true
-    )
-    @JsonProperty("who")
-    @NotEmpty(message = "who may not be empty.")
-    public String who;
-
-    @Schema(
             type = SchemaType.ARRAY,
             implementation = AccessControlPermission.class,
             required = true,

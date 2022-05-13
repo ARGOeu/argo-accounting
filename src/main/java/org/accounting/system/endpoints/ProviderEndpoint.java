@@ -2,8 +2,9 @@ package org.accounting.system.endpoints;
 
 import io.quarkus.security.Authenticated;
 import org.accounting.system.dtos.InformativeResponse;
-import org.accounting.system.dtos.project.ProjectResponseDto;
-import org.accounting.system.services.ProjectService;
+import org.accounting.system.dtos.PageResource;
+import org.accounting.system.services.ProviderService;
+import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.eclipse.microprofile.openapi.annotations.Operation;
 import org.eclipse.microprofile.openapi.annotations.enums.SchemaType;
 import org.eclipse.microprofile.openapi.annotations.enums.SecuritySchemeIn;
@@ -15,16 +16,23 @@ import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
 import org.eclipse.microprofile.openapi.annotations.security.SecurityRequirement;
 import org.eclipse.microprofile.openapi.annotations.security.SecurityScheme;
 import org.eclipse.microprofile.openapi.annotations.tags.Tag;
+import org.jboss.resteasy.specimpl.ResteasyUriInfo;
 
 import javax.inject.Inject;
+import javax.ws.rs.BadRequestException;
+import javax.ws.rs.DefaultValue;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
+import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import javax.ws.rs.core.UriInfo;
 
-@Path("/projects")
+import static org.eclipse.microprofile.openapi.annotations.enums.ParameterIn.QUERY;
+
+@Path("/providers")
 @Authenticated
 @SecurityScheme(securitySchemeName = "Authentication",
         description = "JWT token",
@@ -33,24 +41,36 @@ import javax.ws.rs.core.Response;
         bearerFormat = "JWT",
         in = SecuritySchemeIn.HEADER)
 
-public class ProjectEndpoint {
+public class ProviderEndpoint {
+
+    @ConfigProperty(name = "quarkus.resteasy.path")
+    String basePath;
+
+    @ConfigProperty(name = "server.url")
+    String serverUrl;
 
     @Inject
-    ProjectService projectService;
+    ProviderService providerService;
 
 
-    @Tag(name = "Project")
+    @Tag(name = "Provider")
     @Operation(
-            summary = "Registration of a Project in the Accounting System API.",
-            description = "The Accounting System communicates with Open Aire to retrieve the necessary information of a Project. " +
-                    "Subsequently, it keeps specific information from the Open Aire response and stores that information in the database. This operation returns " +
-                    "a Project as it is stored in the Accounting System API.")
+            summary = "Get a list of all Providers in the Accounting System.",
+            description = "Essentially, this operation returns all Providers available on the EOSC-Portal as well as all Providers registered through the Accounting System API. " +
+                    "By default, the first page of 10 Providers will be returned. You can tune the default values by using " +
+                    "the query parameters page and size.")
     @APIResponse(
             responseCode = "200",
-            description = "The corresponding Project.",
+            description = "Success operation.",
             content = @Content(schema = @Schema(
                     type = SchemaType.OBJECT,
-                    implementation = ProjectResponseDto.class)))
+                    implementation = PageResource.class)))
+    @APIResponse(
+            responseCode = "400",
+            description = "Bad Request.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
     @APIResponse(
             responseCode = "401",
             description = "User/Service has not been authenticated.",
@@ -65,7 +85,7 @@ public class ProjectEndpoint {
                     implementation = InformativeResponse.class)))
     @APIResponse(
             responseCode = "404",
-            description = "Project has not been found.",
+            description = "Not Found.",
             content = @Content(schema = @Schema(
                     type = SchemaType.OBJECT,
                     implementation = InformativeResponse.class)))
@@ -75,22 +95,28 @@ public class ProjectEndpoint {
             content = @Content(schema = @Schema(
                     type = SchemaType.OBJECT,
                     implementation = InformativeResponse.class)))
+    @SecurityRequirement(name = "Authentication")
 
     @GET
-    @Path("/{id}")
     @Produces(value = MediaType.APPLICATION_JSON)
     @SecurityRequirement(name = "Authentication")
 
-    public Response get(
-            @Parameter(
-                    description = "The Project to be registered.",
-                    required = true,
-                    example = "447535",
-                    schema = @Schema(type = SchemaType.STRING))
-            @PathParam("id") String id){
+    public Response get(@Parameter(name = "page", in = QUERY,
+                                description = "Indicates the page number. Page number must be >= 1.") @DefaultValue("1") @QueryParam("page") int page,
+                        @Parameter(name = "size", in = QUERY,
+                                description = "The page size.") @DefaultValue("10") @QueryParam("size") int size,
+                        @Parameter(name = "id", in = QUERY,
+                                description = "The Provider ID.") @DefaultValue("") @QueryParam("id") String id,
+                        @Context UriInfo uriInfo) {
 
-        var response = projectService.getById(id);
+        if(page <1){
+            throw new BadRequestException("Page number must be >= 1.");
+        }
 
-        return Response.ok().entity(response).build();
+        var serverInfo = new ResteasyUriInfo(serverUrl.concat(basePath).concat(uriInfo.getPath()), basePath);
+
+        var providers = providerService.findAllProvidersPageable(page-1, size, id, serverInfo);
+
+        return Response.ok().entity(providers).build();
     }
 }
