@@ -1,8 +1,8 @@
 package org.accounting.system.services;
 
-import org.accounting.system.dtos.MetricRequestDto;
-import org.accounting.system.dtos.MetricResponseDto;
-import org.accounting.system.dtos.UpdateMetricRequestDto;
+import org.accounting.system.dtos.metric.MetricRequestDto;
+import org.accounting.system.dtos.metric.MetricResponseDto;
+import org.accounting.system.dtos.metric.UpdateMetricRequestDto;
 import org.accounting.system.entities.Metric;
 import org.accounting.system.mappers.MetricMapper;
 import org.accounting.system.repositories.MetricRepository;

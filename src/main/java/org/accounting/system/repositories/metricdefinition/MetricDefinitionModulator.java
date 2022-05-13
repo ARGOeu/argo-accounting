@@ -1,6 +1,6 @@
 package org.accounting.system.repositories.metricdefinition;
 
-import org.accounting.system.dtos.UpdateMetricDefinitionRequestDto;
+import org.accounting.system.dtos.metricdefinition.UpdateMetricDefinitionRequestDto;
 import org.accounting.system.entities.MetricDefinition;
 import org.accounting.system.mappers.MetricDefinitionMapper;
 import org.accounting.system.repositories.modulators.AbstractModulator;

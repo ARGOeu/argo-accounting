@@ -4,7 +4,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import org.eclipse.microprofile.openapi.annotations.enums.SchemaType;
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
 
-@Schema(name="ProjectResponse", description="An object represents the permissions upon a collection.")
+@Schema(name="ProjectResponse", description="An object represents a Project.")
 public class ProjectResponseDto {
 
     @Schema(

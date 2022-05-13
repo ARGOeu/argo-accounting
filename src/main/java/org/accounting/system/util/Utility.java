@@ -1,7 +1,7 @@
 package org.accounting.system.util;
 
 
-import org.accounting.system.dtos.MetricDefinitionRequestDto;
+import org.accounting.system.dtos.metricdefinition.MetricDefinitionRequestDto;
 import org.accounting.system.services.MetricDefinitionService;
 
 import javax.enterprise.context.ApplicationScoped;

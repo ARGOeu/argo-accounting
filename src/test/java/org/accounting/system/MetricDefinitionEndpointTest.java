@@ -7,11 +7,11 @@ import io.quarkus.test.junit.mockito.InjectMock;
 import io.quarkus.test.keycloak.client.KeycloakTestClient;
 import io.restassured.http.ContentType;
 import org.accounting.system.dtos.InformativeResponse;
-import org.accounting.system.dtos.MetricDefinitionRequestDto;
-import org.accounting.system.dtos.MetricDefinitionResponseDto;
-import org.accounting.system.dtos.MetricRequestDto;
-import org.accounting.system.dtos.MetricResponseDto;
-import org.accounting.system.dtos.UpdateMetricDefinitionRequestDto;
+import org.accounting.system.dtos.metricdefinition.MetricDefinitionRequestDto;
+import org.accounting.system.dtos.metricdefinition.MetricDefinitionResponseDto;
+import org.accounting.system.dtos.metric.MetricRequestDto;
+import org.accounting.system.dtos.metric.MetricResponseDto;
+import org.accounting.system.dtos.metricdefinition.UpdateMetricDefinitionRequestDto;
 import org.accounting.system.endpoints.MetricDefinitionEndpoint;
 import org.accounting.system.entities.MetricDefinition;
 import org.accounting.system.mappers.MetricDefinitionMapper;
@@ -48,12 +48,10 @@ public class MetricDefinitionEndpointTest {
 
     KeycloakTestClient keycloakClient = new KeycloakTestClient();
 
-
     @BeforeEach
     public void setup() {
         metricDefinitionRepository.deleteAll();
     }
-
 
     @Test
     public void createMetricDefinitionNotAuthenticated() {
@@ -184,6 +182,8 @@ public class MetricDefinitionEndpointTest {
     @Test
     public void createMetricDefinitionUnitTypeIsEmpty() {
 
+        Mockito.when(readPredefinedTypesService.searchForMetricType(any())).thenReturn(Optional.of("Aggregated"));
+
         var request= new MetricDefinitionRequestDto();
         request.unitType="";
         request.metricName = "metric";
@@ -207,6 +207,8 @@ public class MetricDefinitionEndpointTest {
 
     @Test
     public void createMetricDefinitionMetricTypeIsEmpty() {
+
+        Mockito.when(readPredefinedTypesService.searchForUnitType(any())).thenReturn(Optional.of("SECOND"));
 
         var request= new MetricDefinitionRequestDto();
         request.metricName = "metric";
@@ -710,7 +712,7 @@ public class MetricDefinitionEndpointTest {
                 .extract()
                 .as(InformativeResponse.class);
 
-        assertEquals("Page index must be >= 1.",response.message);
+        assertEquals("Page number must be >= 1.",response.message);
     }
 
     @Test
