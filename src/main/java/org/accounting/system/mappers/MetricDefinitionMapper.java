@@ -1,9 +1,9 @@
 package org.accounting.system.mappers;
 
 
-import org.accounting.system.dtos.MetricDefinitionRequestDto;
-import org.accounting.system.dtos.MetricDefinitionResponseDto;
-import org.accounting.system.dtos.UpdateMetricDefinitionRequestDto;
+import org.accounting.system.dtos.metricdefinition.MetricDefinitionRequestDto;
+import org.accounting.system.dtos.metricdefinition.MetricDefinitionResponseDto;
+import org.accounting.system.dtos.metricdefinition.UpdateMetricDefinitionRequestDto;
 import org.accounting.system.entities.MetricDefinition;
 import org.apache.commons.lang3.StringUtils;
 import org.mapstruct.Mapper;

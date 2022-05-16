@@ -10,7 +10,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Schema(name="PageResource", description="An object represents the paginated entities.")
-public class PageResource<T> {
+public class PageResource<T, R> {
 
     @Schema(
             type = SchemaType.NUMBER,
@@ -51,109 +51,25 @@ public class PageResource<T> {
     @Schema(
             type = SchemaType.ARRAY,
             implementation = Object.class,
-            description = "Paginated entities.",
-            example = "[\n" +
-                    "        {\n" +
-                    "            \"id\": \"61eeab81b3b68f5c3f8c4c25\",\n" +
-                    "            \"resourceId\": \"argo\",\n" +
-                    "            \"metricDefinitionId\": \"61eeab7bb3b68f5c3f8c4c24\",\n" +
-                    "            \"start\": \"2022-01-05T09:13:07Z\",\n" +
-                    "            \"end\": \"2022-01-05T09:13:07Z\",\n" +
-                    "            \"value\": 200.0\n" +
-                    "        },\n" +
-                    "        {\n" +
-                    "            \"id\": \"61eeac69b3b68f5c3f8c4c29\",\n" +
-                    "            \"resourceId\": \"argo\",\n" +
-                    "            \"metricDefinitionId\": \"61eeab7bb3b68f5c3f8c4c24\",\n" +
-                    "            \"start\": \"2022-01-05T09:13:07Z\",\n" +
-                    "            \"end\": \"2022-01-05T09:13:07Z\",\n" +
-                    "            \"value\": 200.0\n" +
-                    "        },\n" +
-                    "        {\n" +
-                    "            \"id\": \"61eeac69b3b68f5c3f8c4c2a\",\n" +
-                    "            \"resourceId\": \"argo\",\n" +
-                    "            \"metricDefinitionId\": \"61eeab7bb3b68f5c3f8c4c24\",\n" +
-                    "            \"start\": \"2022-01-05T09:13:07Z\",\n" +
-                    "            \"end\": \"2022-01-05T09:13:07Z\",\n" +
-                    "            \"value\": 200.0\n" +
-                    "        },\n" +
-                    "        {\n" +
-                    "            \"id\": \"61eeac6bb3b68f5c3f8c4c2b\",\n" +
-                    "            \"resourceId\": \"argo\",\n" +
-                    "            \"metricDefinitionId\": \"61eeab7bb3b68f5c3f8c4c24\",\n" +
-                    "            \"start\": \"2022-01-05T09:13:07Z\",\n" +
-                    "            \"end\": \"2022-01-05T09:13:07Z\",\n" +
-                    "            \"value\": 200.0\n" +
-                    "        },\n" +
-                    "        {\n" +
-                    "            \"id\": \"61eeac6db3b68f5c3f8c4c2c\",\n" +
-                    "            \"resourceId\": \"argo\",\n" +
-                    "            \"metricDefinitionId\": \"61eeab7bb3b68f5c3f8c4c24\",\n" +
-                    "            \"start\": \"2022-01-05T09:13:07Z\",\n" +
-                    "            \"end\": \"2022-01-05T09:13:07Z\",\n" +
-                    "            \"value\": 200.0\n" +
-                    "        },\n" +
-                    "        {\n" +
-                    "            \"id\": \"61eeac6eb3b68f5c3f8c4c2d\",\n" +
-                    "            \"resourceId\": \"argo\",\n" +
-                    "            \"metricDefinitionId\": \"61eeab7bb3b68f5c3f8c4c24\",\n" +
-                    "            \"start\": \"2022-01-05T09:13:07Z\",\n" +
-                    "            \"end\": \"2022-01-05T09:13:07Z\",\n" +
-                    "            \"value\": 200.0\n" +
-                    "        },\n" +
-                    "        {\n" +
-                    "            \"id\": \"61eeac6eb3b68f5c3f8c4c2e\",\n" +
-                    "            \"resourceId\": \"argo\",\n" +
-                    "            \"metricDefinitionId\": \"61eeab7bb3b68f5c3f8c4c24\",\n" +
-                    "            \"start\": \"2022-01-05T09:13:07Z\",\n" +
-                    "            \"end\": \"2022-01-05T09:13:07Z\",\n" +
-                    "            \"value\": 200.0\n" +
-                    "        },\n" +
-                    "        {\n" +
-                    "            \"id\": \"61eeac6fb3b68f5c3f8c4c2f\",\n" +
-                    "            \"resourceId\": \"argo\",\n" +
-                    "            \"metricDefinitionId\": \"61eeab7bb3b68f5c3f8c4c24\",\n" +
-                    "            \"start\": \"2022-01-05T09:13:07Z\",\n" +
-                    "            \"end\": \"2022-01-05T09:13:07Z\",\n" +
-                    "            \"value\": 200.0\n" +
-                    "        }" +
-                    "]"
+            description = "Paginated entities."
     )
     @JsonProperty("content")
-    public final List<T> content;
+    public final List<R> content;
 
     @Schema(
             type = SchemaType.ARRAY,
             implementation = PageLink.class,
-            description = "Link to paginated entities.",
-            example = "[\n" +
-                    "        {\n" +
-                    "            \"href\": \"http://localhost:8080/accounting-system/metric-definition/61eeab7bb3b68f5c3f8c4c24/metrics?page=1&size=10\",\n" +
-                    "            \"rel\": \"first\"\n" +
-                    "        },\n" +
-                    "        {\n" +
-                    "            \"href\": \"http://localhost:8080/accounting-system/metric-definition/61eeab7bb3b68f5c3f8c4c24/metrics?page=2&size=10\",\n" +
-                    "            \"rel\": \"last\"\n" +
-                    "        },\n" +
-                    "        {\n" +
-                    "            \"href\": \"http://localhost:8080/accounting-system/metric-definition/61eeab7bb3b68f5c3f8c4c24/metrics?page=1&size=10\",\n" +
-                    "            \"rel\": \"self\"\n" +
-                    "        },\n" +
-                    "        {\n" +
-                    "            \"href\": \"http://localhost:8080/accounting-system/metric-definition/61eeab7bb3b68f5c3f8c4c24/metrics?page=2&size=10\",\n" +
-                    "            \"rel\": \"next\"\n" +
-                    "        }\n" +
-                    "    ]"
+            description = "Link to paginated entities."
     )
     @JsonProperty("links")
     public  List<PageLink> links;
 
 
 
-    public PageResource(PanacheQuery<T> panacheQuery, UriInfo uriInfo){
+    public PageResource(PanacheQuery<T> panacheQuery, List<R> content, UriInfo uriInfo){
 
         links = new ArrayList<>();
-        this.content = panacheQuery.list();
+        this.content = content;
         this.sizeOfPage = panacheQuery.list().size();
         this.numberOfPage = panacheQuery.page().index+1;
         this.totalElements = panacheQuery.count();

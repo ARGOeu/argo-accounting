@@ -2,10 +2,11 @@ package org.accounting.system.services;
 
 import com.mongodb.MongoWriteException;
 import io.quarkus.mongodb.panache.PanacheQuery;
-import org.accounting.system.dtos.MetricDefinitionRequestDto;
-import org.accounting.system.dtos.MetricDefinitionResponseDto;
+import org.accounting.system.dtos.metricdefinition.MetricDefinitionRequestDto;
+import org.accounting.system.dtos.metricdefinition.MetricDefinitionResponseDto;
+import org.accounting.system.dtos.metric.MetricResponseDto;
 import org.accounting.system.dtos.PageResource;
-import org.accounting.system.dtos.UpdateMetricDefinitionRequestDto;
+import org.accounting.system.dtos.metricdefinition.UpdateMetricDefinitionRequestDto;
 import org.accounting.system.dtos.acl.AccessControlRequestDto;
 import org.accounting.system.dtos.acl.AccessControlResponseDto;
 import org.accounting.system.dtos.acl.AccessControlUpdateDto;
@@ -15,6 +16,7 @@ import org.accounting.system.enums.Collection;
 import org.accounting.system.exceptions.ConflictException;
 import org.accounting.system.mappers.AccessControlMapper;
 import org.accounting.system.mappers.MetricDefinitionMapper;
+import org.accounting.system.mappers.MetricMapper;
 import org.accounting.system.repositories.MetricRepository;
 import org.accounting.system.repositories.acl.AccessControlRepository;
 import org.accounting.system.repositories.metricdefinition.MetricDefinitionRepository;
@@ -157,26 +159,29 @@ public class MetricDefinitionService {
      * @param uriInfo The current uri.
      * @return An object represents the paginated results.
      */
-    public PageResource<Metric>  findMetricsByMetricDefinitionIdPageable(String metricDefinitionId, int page, int size, UriInfo uriInfo){
+    public PageResource<Metric, MetricResponseDto>  findMetricsByMetricDefinitionIdPageable(String metricDefinitionId, int page, int size, UriInfo uriInfo){
 
         metricDefinitionRepository.fetchEntityById(new ObjectId(metricDefinitionId));
 
         PanacheQuery<Metric> panacheQuery = metricRepository.findMetricsByMetricDefinitionIdPageable(metricDefinitionId, page, size);
 
-        return new PageResource<>(panacheQuery, uriInfo);
+        return new PageResource<>(panacheQuery, MetricMapper.INSTANCE.metricsToResponse(panacheQuery.list()), uriInfo);
     }
 
     /**
      * Converts the request for {@link AccessControlRequestDto permissions} to {@link org.accounting.system.entities.acl.AccessControl} and stores it in the database.
      *
      * @param metricDefinitionId The metric definition to which permissions will be assigned.
-     * @param request Contains, to whom the permissions will be granted.
+     * @param who To whom the permissions will be granted.
+     * @param request The permissions
      */
-    public void grantPermission(String metricDefinitionId, AccessControlRequestDto request){
+    public void grantPermission(String metricDefinitionId, String who, AccessControlRequestDto request){
 
         var accessControl = AccessControlMapper.INSTANCE.requestToAccessControl(request);
 
         accessControl.setEntity(metricDefinitionId);
+
+        accessControl.setWho(who);
 
         accessControl.setCollection(Collection.MetricDefinition);
 
