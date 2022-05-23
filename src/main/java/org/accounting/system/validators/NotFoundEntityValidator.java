@@ -22,11 +22,13 @@ public class NotFoundEntityValidator implements ConstraintValidator<NotFoundEnti
 
     private String message;
     private Class<? extends PanacheMongoRepositoryBase<?,?>> repository;
+    private Class<?> id;
 
     @Override
     public void initialize(NotFoundEntity constraintAnnotation) {
         this.message = constraintAnnotation.message();
         this.repository = constraintAnnotation.repository();
+        this.id = constraintAnnotation.id();
     }
 
     @Override
@@ -45,9 +47,18 @@ public class NotFoundEntityValidator implements ConstraintValidator<NotFoundEnti
         PanacheMongoRepositoryBase repository = CDI.current().select(this.repository).get();
 
         Try
-                .run(()->repository.findByIdOptional(new ObjectId(value)).orElseThrow(()->new CustomValidationException(builder.toString(), HttpResponseStatus.NOT_FOUND)))
+                .run(()->repository.findByIdOptional(id(this.id, value)).orElseThrow(()->new CustomValidationException(builder.toString(), HttpResponseStatus.NOT_FOUND)))
                 .getOrElseThrow(()->new CustomValidationException(builder.toString(), HttpResponseStatus.NOT_FOUND));
 
         return true;
+    }
+
+    private <T> T id(Class<?> id, String value){
+
+        if(id.equals(ObjectId.class)){
+            return (T) new ObjectId(value);
+        } else {
+            return (T) value;
+        }
     }
 }

@@ -1,4 +1,4 @@
-package org.accounting.system.dtos;
+package org.accounting.system.dtos.pagination;
 
 import lombok.Builder;
 import org.eclipse.microprofile.openapi.annotations.enums.SchemaType;

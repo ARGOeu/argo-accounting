@@ -3,7 +3,7 @@ package org.accounting.system.endpoints;
 import io.quarkus.security.Authenticated;
 import org.accounting.system.constraints.NotFoundEntity;
 import org.accounting.system.dtos.InformativeResponse;
-import org.accounting.system.dtos.PageResource;
+import org.accounting.system.dtos.pagination.PageResource;
 import org.accounting.system.dtos.acl.AccessControlRequestDto;
 import org.accounting.system.dtos.acl.AccessControlResponseDto;
 import org.accounting.system.dtos.acl.AccessControlUpdateDto;
@@ -259,7 +259,7 @@ public class MetricDefinitionEndpoint {
     @Operation(
             summary = "Updates an existing Metric Definition.",
             description = "In order to update the resource properties, the body of the request must contain an updated representation of Metric Definition. " +
-                    "You can update a part or all attributes of the Metric Definition except for metric_definition_id. The empty or null values are ignored.")
+                    "You can update a part or all attributes of Metric Definition except for metric_definition_id. The empty or null values are ignored.")
     @APIResponse(
             responseCode = "200",
             description = "Metric Definition was updated successfully.",

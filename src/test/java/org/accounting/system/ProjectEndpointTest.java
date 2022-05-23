@@ -1,5 +1,6 @@
 package org.accounting.system;
 
+import io.quarkus.test.common.QuarkusTestResource;
 import io.quarkus.test.common.http.TestHTTPEndpoint;
 import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.test.junit.TestProfile;
@@ -11,6 +12,7 @@ import org.accounting.system.dtos.project.ProjectResponseDto;
 import org.accounting.system.endpoints.ProjectEndpoint;
 import org.accounting.system.entities.Project;
 import org.accounting.system.mappers.ProjectMapper;
+import org.accounting.system.wiremock.ProjectWireMockServer;
 import org.eclipse.microprofile.rest.client.inject.RestClient;
 import org.junit.jupiter.api.Test;
 
@@ -23,6 +25,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 @QuarkusTest
 @TestProfile(AccountingSystemTestProfile.class)
 @TestHTTPEndpoint(ProjectEndpoint.class)
+@QuarkusTestResource(ProjectWireMockServer.class)
 public class ProjectEndpointTest {
 
     @Inject

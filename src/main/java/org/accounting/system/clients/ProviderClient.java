@@ -5,11 +5,14 @@ import org.accounting.system.clients.responses.eoscportal.Total;
 import org.eclipse.microprofile.rest.client.inject.RegisterRestClient;
 import org.jboss.resteasy.annotations.jaxrs.QueryParam;
 
+import javax.enterprise.context.ApplicationScoped;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
+import java.util.concurrent.CompletionStage;
 
 @Path("/provider")
 @RegisterRestClient
+@ApplicationScoped
 /**
  * This HTTP client communicates with EOSC Portal to retrieve providers.
  */
@@ -22,7 +25,7 @@ public interface ProviderClient {
      */
     @GET
     @Path("/all")
-    Total getTotalNumberOfProviders();
+    CompletionStage<Total> getTotalNumberOfProviders();
 
     /**
      * Communicates with EOSC Portal to fetch the available EOSC Providers.
@@ -32,5 +35,5 @@ public interface ProviderClient {
      */
     @GET
     @Path("/all")
-    Response getAll(@QueryParam("quantity") int quantity);
+    CompletionStage<Response> getAll(@QueryParam("quantity") int quantity);
 }

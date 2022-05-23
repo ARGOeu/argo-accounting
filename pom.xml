@@ -27,6 +27,7 @@
     <vavr.version>0.10.4</vavr.version>
     <type.tools.version>0.6.3</type.tools.version>
     <jacoco.version>0.8.8</jacoco.version>
+    <wiremock.version>2.33.2</wiremock.version>
   </properties>
   <dependencyManagement>
     <dependencies>
@@ -169,6 +170,12 @@
       <groupId>net.jodah</groupId>
       <artifactId>typetools</artifactId>
       <version>${type.tools.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>com.github.tomakehurst</groupId>
+      <artifactId>wiremock-jre8</artifactId>
+      <version>${wiremock.version}</version>
+      <scope>test</scope>
     </dependency>
   </dependencies>
   <build>

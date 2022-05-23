@@ -1,18 +1,21 @@
 package org.accounting.system.mappers;
 
+import org.accounting.system.beans.RequestInformation;
 import org.accounting.system.dtos.metric.MetricRequestDto;
 import org.accounting.system.dtos.metric.MetricResponseDto;
 import org.accounting.system.dtos.metric.UpdateMetricRequestDto;
 import org.accounting.system.entities.Metric;
 import org.apache.commons.lang3.StringUtils;
+import org.mapstruct.AfterMapping;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.MappingTarget;
 import org.mapstruct.factory.Mappers;
 
+import javax.enterprise.inject.spi.CDI;
 import java.time.Instant;
-import java.util.Objects;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * This interface is responsible for turning a Metric Entity into a request/response and vice versa.
@@ -38,4 +41,10 @@ public interface MetricMapper {
 
     @Mapping( target="id", expression="java(metric.getId().toString())")
     List<MetricResponseDto> metricsToResponse(List<Metric> metrics);
+
+    @AfterMapping
+    default void setCreatorId(MetricRequestDto source, @MappingTarget Metric metric) {
+        RequestInformation requestInformation = CDI.current().select(RequestInformation.class).get();
+        metric.setCreatorId(requestInformation.getSubjectOfToken());
+    }
 }

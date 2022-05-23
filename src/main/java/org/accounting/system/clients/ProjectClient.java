@@ -4,6 +4,7 @@ import org.accounting.system.clients.responses.openaire.OpenAireProject;
 import org.eclipse.microprofile.rest.client.inject.RegisterRestClient;
 import org.jboss.resteasy.annotations.jaxrs.QueryParam;
 
+import javax.enterprise.context.ApplicationScoped;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 
@@ -12,6 +13,7 @@ import javax.ws.rs.Path;
  */
 @Path("/search")
 @RegisterRestClient
+@ApplicationScoped
 public interface ProjectClient {
 
     /**

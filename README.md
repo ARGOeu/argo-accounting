@@ -184,6 +184,7 @@ The available Accounting System API collections are:
 | MetricDefinition | 
 | Metric           | 
 | Role             | 
+| Provider         | 
 
 ### Examples
 

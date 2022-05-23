@@ -477,7 +477,6 @@ public class MetricDefinitionEndpointTest {
         metricDefinitionToBeUpdated.unitType = "SECOND";
         metricDefinitionToBeUpdated.metricType = "aggregated";
 
-
         var response = given()
                 .auth()
                 .oauth2(getAccessToken("admin"))

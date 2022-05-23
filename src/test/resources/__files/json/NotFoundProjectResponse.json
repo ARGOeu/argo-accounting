@@ -1,0 +1,24 @@
+{
+  "response": {
+    "header": {
+      "query": {
+        "$": "(oaftype exact project) and (projectcode_nt exact \"lalala\")"
+      },
+      "locale": {
+        "$": "en_US"
+      },
+      "size": {
+        "$": 10
+      },
+      "page": {
+        "$": 1
+      },
+      "total": {
+        "$": 0
+      },
+      "fields": null
+    },
+    "results": null,
+    "browseResults": null
+  }
+}

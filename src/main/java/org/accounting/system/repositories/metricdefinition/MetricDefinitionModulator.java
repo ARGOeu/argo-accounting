@@ -18,11 +18,18 @@ public class MetricDefinitionModulator extends AbstractModulator<MetricDefinitio
     @Inject
     MetricDefinitionAccessAlwaysRepository metricDefinitionAccessAlwaysRepository;
 
-    public MetricDefinition updateEntity(ObjectId id, UpdateMetricDefinitionRequestDto updateMetricDefinitionRequestDto) {
+    /**
+     * This method is responsible for updating a part or all attributes of existing Metric Definition.
+     *
+     * @param id The Metric Definition to be updated.
+     * @param request The Metric Definition attributes to be updated.
+     * @return The updated Metric Definition.
+     */
+    public MetricDefinition updateEntity(ObjectId id, UpdateMetricDefinitionRequestDto request) {
 
         MetricDefinition entity = findById(id);
 
-        MetricDefinitionMapper.INSTANCE.updateMetricDefinitionFromDto(updateMetricDefinitionRequestDto, entity);
+        MetricDefinitionMapper.INSTANCE.updateMetricDefinitionFromDto(request, entity);
 
         return super.updateEntity(entity, id);
     }
