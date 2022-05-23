@@ -363,6 +363,31 @@
                 }
                 ],
                 collection: "Role"
+                },
+                {
+                permissions: [
+                {
+                operation: "CREATE",
+                accessType: "ALWAYS"
+                },
+                {
+                operation: "UPDATE",
+                accessType: "ALWAYS"
+                },
+                {
+                operation: "DELETE",
+                accessType: "ALWAYS"
+                },
+                {
+                operation: "READ",
+                accessType: "ALWAYS"
+                },
+                {
+                operation: "ACL",
+                accessType: "ALWAYS"
+                }
+                ],
+                collection: "Provider"
                 }]
                 }
             </ext:document>

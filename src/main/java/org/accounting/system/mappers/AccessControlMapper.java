@@ -1,14 +1,17 @@
 package org.accounting.system.mappers;
 
+import org.accounting.system.beans.RequestInformation;
 import org.accounting.system.dtos.acl.AccessControlRequestDto;
 import org.accounting.system.dtos.acl.AccessControlResponseDto;
 import org.accounting.system.dtos.acl.AccessControlUpdateDto;
 import org.accounting.system.entities.acl.AccessControl;
+import org.mapstruct.AfterMapping;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.MappingTarget;
 import org.mapstruct.factory.Mappers;
 
+import javax.enterprise.inject.spi.CDI;
 import java.util.List;
 
 /**
@@ -30,4 +33,10 @@ public interface AccessControlMapper {
     @Mapping(target = "collection", ignore = true)
     @Mapping(target = "entity", ignore = true)
     void updateAccessControlFromDto(AccessControlUpdateDto dto, @MappingTarget AccessControl accessControl);
+
+    @AfterMapping
+    default void setCreatorId(AccessControlRequestDto source, @MappingTarget AccessControl accessControl) {
+        RequestInformation requestInformation = CDI.current().select(RequestInformation.class).get();
+        accessControl.setCreatorId(requestInformation.getSubjectOfToken());
+    }
 }

@@ -5,7 +5,7 @@ import io.quarkus.scheduler.Scheduled;
 import org.accounting.system.clients.ProviderClient;
 import org.accounting.system.clients.responses.eoscportal.EOSCProvider;
 import org.accounting.system.mappers.ProviderMapper;
-import org.accounting.system.repositories.ProviderRepository;
+import org.accounting.system.repositories.provider.ProviderRepository;
 import org.eclipse.microprofile.rest.client.inject.RestClient;
 import org.jboss.logging.Logger;
 
@@ -42,26 +42,29 @@ public class ProviderScheduler {
      */
     public void execute(){
 
-        var eoscProviders = retrieveEoscProviders();
-        saveOrUpdate(eoscProviders);
+        retrieveEoscProviders();
     }
 
     /**
      * This method fetches the available Providers from EOSC-Portal.
      */
-    private List<EOSCProvider> retrieveEoscProviders(){
+    private void retrieveEoscProviders(){
 
         LOG.info("Retrieving the total number of EOSC Providers.");
 
-        var total = providerClient.getTotalNumberOfProviders();
+        var asyncTotalResponse = providerClient.getTotalNumberOfProviders();
 
-        LOG.infof("There are %s Providers in EOSC Portal.", total.total);
+        asyncTotalResponse
+                .thenCompose(total -> {
+                    LOG.infof("There are %s Providers in EOSC Portal.", total.total);
+                    LOG.info("Retrieving the available Providers from EOSC-Portal.");
 
-        LOG.info("Retrieving the available Providers from EOSC-Portal.");
-
-        var response = providerClient.getAll(total.total);
-
-        return response.results;
+                    return providerClient.getAll(total.total);})
+                .thenAccept(response -> saveOrUpdate(response.results))
+                .exceptionally(ex -> {
+                    LOG.error("Failed to communicate with EOSC-Portal. ", ex);
+                    return null;
+                });
     }
 
     /**
