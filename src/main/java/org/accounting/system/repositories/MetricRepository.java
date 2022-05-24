@@ -5,6 +5,8 @@ import io.quarkus.mongodb.panache.PanacheQuery;
 import io.quarkus.panache.common.Page;
 import io.quarkus.panache.common.Sort;
 import org.accounting.system.entities.Metric;
+import org.bson.Document;
+import org.bson.conversions.Bson;
 import org.bson.types.ObjectId;
 
 import javax.enterprise.context.ApplicationScoped;
@@ -21,7 +23,7 @@ import java.util.stream.Collectors;
 @ApplicationScoped
 public class MetricRepository implements PanacheMongoRepository<Metric> {
 
-    public List<Metric> findMetricsByMetricDefinitionId(String metricDefinitionId){
+    public List<Metric> findMetricsByMetricDefinitionId(String metricDefinitionId) {
 
         return find("metricDefinitionId = ?1", metricDefinitionId).stream().collect(Collectors.toList());
     }
@@ -32,18 +34,18 @@ public class MetricRepository implements PanacheMongoRepository<Metric> {
      * @param metricDefinitionId
      * @return the number of the Metrics assigned to the given metric definition id
      */
-    public long countMetricsByMetricDefinitionId(String metricDefinitionId){
+    public long countMetricsByMetricDefinitionId(String metricDefinitionId) {
 
         return count("metricDefinitionId = ?1", metricDefinitionId);
     }
 
     /**
-     *  Executes a query to find a Metric by given id.
+     * Executes a query to find a Metric by given id.
      *
      * @param id The metric id
      * @return Optional of Metric
      */
-    public Optional<Metric> findMetricById(String id){
+    public Optional<Metric> findMetricById(String id) {
 
         return findByIdOptional(new ObjectId(id));
     }
@@ -53,12 +55,16 @@ public class MetricRepository implements PanacheMongoRepository<Metric> {
      * The page parameter indicates the requested page number, and the size parameter the number of entities by page.
      *
      * @param metricDefinitionId The Metric Definition id
-     * @param page The page to be retrieved
-     * @param size The requested size of page
+     * @param page               The page to be retrieved
+     * @param size               The requested size of page
      * @return An object represents the paginated results
      */
-    public PanacheQuery<Metric> findMetricsByMetricDefinitionIdPageable(String metricDefinitionId, int page, int size){
+    public PanacheQuery<Metric> findMetricsByMetricDefinitionIdPageable(String metricDefinitionId, int page, int size) {
 
         return find("metricDefinitionId", Sort.by("metricDefinitionId"), metricDefinitionId).page(Page.of(page, size));
+    }
+
+    public List<Metric> search(Bson query) {
+        return find(Document.parse(query.toBsonDocument().toJson())).stream().collect(Collectors.toList());
     }
 }
