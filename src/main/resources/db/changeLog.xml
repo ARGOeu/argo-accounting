@@ -47,10 +47,10 @@
     <changeSet id="2" author="accounting-system">
         <ext:createIndex collectionName="MetricDefinition">
             <ext:keys>
-                { metric_name: 1, unit_type: 1}
+                { unit_type: 1, metric_name: 1}
             </ext:keys>
             <ext:options>
-                {unique: true, name: "unique_name_unit_type"}
+                {unique: true, name: "unique_unit_type_name", collation: { locale: "en" }}
             </ext:options>
         </ext:createIndex>
     </changeSet>
@@ -388,6 +388,31 @@
                 }
                 ],
                 collection: "Provider"
+                },
+                {
+                permissions: [
+                {
+                operation: "CREATE",
+                accessType: "ALWAYS"
+                },
+                {
+                operation: "UPDATE",
+                accessType: "ALWAYS"
+                },
+                {
+                operation: "DELETE",
+                accessType: "ALWAYS"
+                },
+                {
+                operation: "READ",
+                accessType: "ALWAYS"
+                },
+                {
+                operation: "ACL",
+                accessType: "ALWAYS"
+                }
+                ],
+                collection: "Installation"
                 }]
                 }
             </ext:document>
@@ -401,6 +426,54 @@
             </ext:keys>
             <ext:options>
                 {unique: true, name: "unique_access_control_entry"}
+            </ext:options>
+        </ext:createIndex>
+    </changeSet>
+
+    <changeSet id="9" author="accounting-system">
+        <ext:insertOne collectionName="Role">
+            <ext:document>
+                {
+                name: "installation_creator",
+                description: "installation_creator can create new Installations, but can update, delete or read only its Installations.",
+                collectionPermission: [
+                {
+                permissions: [
+                {
+                operation: "CREATE",
+                accessType: "ALWAYS"
+                },
+                {
+                operation: "UPDATE",
+                accessType: "ENTITY"
+                },
+                {
+                operation: "DELETE",
+                accessType: "ENTITY"
+                },
+                {
+                operation: "READ",
+                accessType: "ENTITY"
+                },
+                {
+                operation: "ACL",
+                accessType: "ENTITY"
+                }
+                ],
+                collection: "Installation"
+                }]
+                }
+            </ext:document>
+        </ext:insertOne>
+    </changeSet>
+
+    <changeSet id="10" author="accounting-system">
+        <ext:createIndex collectionName="Installation">
+            <ext:keys>
+                { organisation: 1, infrastructure: 1, installation: 1}
+            </ext:keys>
+            <ext:options>
+                {unique: true, name: "unique_installation_entry"}
             </ext:options>
         </ext:createIndex>
     </changeSet>

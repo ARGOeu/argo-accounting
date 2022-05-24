@@ -1,5 +1,8 @@
 package org.accounting.system.repositories.metricdefinition;
 
+import com.mongodb.client.model.Collation;
+import com.mongodb.client.model.CollationStrength;
+import io.quarkus.mongodb.panache.PanacheMongoRepository;
 import org.accounting.system.entities.MetricDefinition;
 
 import javax.enterprise.context.ApplicationScoped;
@@ -14,7 +17,7 @@ import java.util.Optional;
  * Since {@link MetricDefinitionRepository this repository} extends {@link MetricDefinitionModulator},
  * it has access to all queries, which determine the degree of accessibility of the data.
  *
- * Also, all the operations that are defined on {@link io.quarkus.mongodb.panache.PanacheMongoRepository} are available on this repository.
+ * Also, all the operations that are defined on {@link PanacheMongoRepository} are available on this repository.
  * In this repository, we essentially define the queries that will be executed on the database without any restrictions.
  */
 @ApplicationScoped
@@ -22,6 +25,6 @@ public class MetricDefinitionRepository extends MetricDefinitionModulator {
 
     public Optional<MetricDefinition> exist(String unitType, String name){
 
-        return find("unitType = ?1 and metricName = ?2", unitType, name).stream().findAny();
+        return find("unitType = ?1 and metricName = ?2", unitType, name).withCollation(Collation.builder().locale("en").collationStrength(CollationStrength.SECONDARY).build()).stream().findAny();
     }
 }

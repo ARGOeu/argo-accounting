@@ -168,7 +168,7 @@ public class MetricDefinitionEndpoint {
     @Tag(name = "Metric Definition")
     @Operation(
             summary = "Returns the recorded Metric Definitions.",
-            description = "This operation fetches all database records of Metric Definition.")
+            description = "This operation fetches all database records of Metric Definition. By default, the first page of 10 Providers will be returned. You can tune the default values by using the query parameters page and size.")
     @APIResponse(
             responseCode = "200",
             description = "Array of Metric Definitions.",
@@ -198,9 +198,17 @@ public class MetricDefinitionEndpoint {
     @GET
     @Produces(value = MediaType.APPLICATION_JSON)
     @Permission(collection = Collection.MetricDefinition, operation = org.accounting.system.enums.Operation.READ)
-    public Response getAll(){
+    public Response getAll(@Parameter(name = "page", in = QUERY,
+            description = "Indicates the page number. Page number must be >= 1.") @DefaultValue("1") @QueryParam("page") int page,
+                           @Parameter(name = "size", in = QUERY,
+                                   description = "The page size.") @DefaultValue("10") @QueryParam("size") int size,
+                           @Context UriInfo uriInfo){
 
-        return Response.ok().entity(metricDefinitionService.fetchAllMetricDefinitions()).build();
+        if(page <1){
+            throw new BadRequestException("Page number must be >= 1.");
+        }
+
+        return Response.ok().entity(metricDefinitionService.findAllMetricDefinitionsPageable(page, size, uriInfo)).build();
     }
 
     @Tag(name = "Metric Definition")

@@ -30,7 +30,6 @@ public interface MetricDefinitionMapper {
     @Mapping( target="id", expression="java(metricDefinition.getId().toString())")
     List<MetricDefinitionResponseDto> metricDefinitionsToResponse(List<MetricDefinition> metricDefinitions);
 
-
     @Mapping(target = "metricName", expression = "java(StringUtils.isNotEmpty(request.metricName) ? request.metricName : metricDefinition.getMetricName())")
     @Mapping(target = "metricDescription", expression = "java(StringUtils.isNotEmpty(request.metricDescription) ? request.metricDescription : metricDefinition.getMetricDescription())")
     @Mapping(target = "unitType", expression = "java(StringUtils.isNotEmpty(request.unitType) ? request.unitType : metricDefinition.getUnitType())")

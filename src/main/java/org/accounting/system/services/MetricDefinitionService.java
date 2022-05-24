@@ -10,6 +10,7 @@ import org.accounting.system.dtos.metricdefinition.MetricDefinitionRequestDto;
 import org.accounting.system.dtos.metricdefinition.MetricDefinitionResponseDto;
 import org.accounting.system.dtos.metricdefinition.UpdateMetricDefinitionRequestDto;
 import org.accounting.system.dtos.pagination.PageResource;
+import org.accounting.system.endpoints.MetricDefinitionEndpoint;
 import org.accounting.system.entities.Metric;
 import org.accounting.system.entities.MetricDefinition;
 import org.accounting.system.enums.Collection;
@@ -33,7 +34,7 @@ import java.util.stream.Collectors;
 
 /**
  * This service exposes business logic, which uses the {@link MetricDefinitionRepository}.
- * It is used to keep logic to a minimum in {@link org.accounting.system.endpoints.MetricDefinitionEndpoint} and
+ * It is used to keep logic to a minimum in {@link MetricDefinitionEndpoint} and
  * {@link MetricDefinitionRepository}
  */
 @ApplicationScoped
@@ -100,6 +101,21 @@ public class MetricDefinitionService {
 
 
     /**
+     * Returns the N Metric Definitions from the given page.
+     *
+     * @param page Indicates the page number.
+     * @param size The number of Metric Definitions to be retrieved.
+     * @param uriInfo The current uri.
+     * @return An object represents the paginated results.
+     */
+    public PageResource<MetricDefinition, MetricDefinitionResponseDto> findAllMetricDefinitionsPageable(int page, int size, UriInfo uriInfo){
+
+        PanacheQuery<MetricDefinition> panacheQuery = metricDefinitionRepository.findAllPageable(page, size);
+
+        return new PageResource<>(panacheQuery, MetricDefinitionMapper.INSTANCE.metricDefinitionsToResponse(panacheQuery.list()), uriInfo);
+    }
+
+    /**
      * This method calls the {@link MetricDefinitionRepository metricDefinitionRepository} to update a Metric Definition.
      *
      * @param id The Metric Definition to be updated.
@@ -140,7 +156,7 @@ public class MetricDefinitionService {
     public void exist(String unitType, String name){
 
         metricDefinitionRepository.exist(unitType, name)
-                .ifPresent(metricDefinition -> {throw new ConflictException("There is a Metric Definition with unit type "+metricDefinition.getUnitType()+" and name "+metricDefinition.getMetricName()+". Its id is "+metricDefinition.getId().toString());});
+                .ifPresent(metricDefinition -> {throw new ConflictException("There is a Metric Definition with unit type "+unitType+" and name "+name+". Its id is "+metricDefinition.getId().toString());});
     }
 
     /**

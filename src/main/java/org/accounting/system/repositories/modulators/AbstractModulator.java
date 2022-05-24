@@ -1,8 +1,10 @@
 package org.accounting.system.repositories.modulators;
 
 import com.mongodb.MongoWriteException;
+import io.quarkus.mongodb.panache.PanacheQuery;
 import org.accounting.system.entities.Entity;
 import org.accounting.system.entities.acl.AccessControl;
+import org.accounting.system.entities.projections.ProjectionQuery;
 import org.accounting.system.exceptions.ConflictException;
 
 import java.util.List;
@@ -35,6 +37,12 @@ public abstract class AbstractModulator<E extends Entity, I> extends AccessModul
         return get().getAllEntities();
     }
 
+    @Override
+    public PanacheQuery<E> findAllPageable(int page, int size) {
+        return get().findAllPageable(page, size);
+    }
+
+    @Override
     public void grantPermission(AccessControl accessControl){
         try{
             get().grantPermission(accessControl);
@@ -61,6 +69,16 @@ public abstract class AbstractModulator<E extends Entity, I> extends AccessModul
     @Override
     public List<AccessControl> getAllPermissions() {
         return get().getAllPermissions();
+    }
+
+    @Override
+    public <T> ProjectionQuery<T> lookup(String from, String localField, String foreignField, String as, int page, int size, Class<T> projection) {
+        return get().lookup(from, localField, foreignField, as, page, size, projection);
+    }
+
+    @Override
+    public <T> T lookUpEntityById(String from, String localField, String foreignField, String as, Class<T> projection, I id) {
+        return get().lookUpEntityById(from, localField, foreignField, as, projection, id);
     }
 
     public abstract AccessAlwaysModulator<E, I> always();

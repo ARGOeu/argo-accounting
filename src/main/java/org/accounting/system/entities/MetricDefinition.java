@@ -14,7 +14,6 @@ public class MetricDefinition extends Entity {
     private ObjectId id;
     @EqualsAndHashCode.Include
     @BsonProperty("metric_name")
-
     private String metricName;
     @BsonProperty("metric_description")
     private String metricDescription;
