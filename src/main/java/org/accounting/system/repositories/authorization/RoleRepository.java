@@ -1,5 +1,6 @@
 package org.accounting.system.repositories.authorization;
 
+import io.quarkus.mongodb.panache.PanacheMongoRepository;
 import org.accounting.system.entities.authorization.Permission;
 import org.accounting.system.entities.authorization.Role;
 import org.accounting.system.enums.Collection;
@@ -18,7 +19,7 @@ import java.util.stream.Collectors;
  * Since {@link RoleRepository this repository} extends {@link RoleModulator},
  * it has access to all queries, which determine the degree of accessibility of the data.
  *
- * Also, all the operations that are defined on {@link io.quarkus.mongodb.panache.PanacheMongoRepository} are available on this repository.
+ * Also, all the operations that are defined on {@link PanacheMongoRepository} are available on this repository.
  * In this repository, we essentially define the queries that will be executed on the database without any restrictions.
  */
 

@@ -1,10 +1,12 @@
 package org.accounting.system.services.authorization;
 
 import com.mongodb.MongoWriteException;
+import io.quarkus.mongodb.panache.PanacheQuery;
 import org.accounting.system.beans.RequestInformation;
 import org.accounting.system.dtos.authorization.RoleRequestDto;
 import org.accounting.system.dtos.authorization.RoleResponseDto;
 import org.accounting.system.dtos.authorization.update.UpdateRoleRequestDto;
+import org.accounting.system.dtos.pagination.PageResource;
 import org.accounting.system.entities.authorization.Role;
 import org.accounting.system.enums.AccessType;
 import org.accounting.system.enums.Collection;
@@ -17,6 +19,7 @@ import org.bson.types.ObjectId;
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 import javax.ws.rs.NotFoundException;
+import javax.ws.rs.core.UriInfo;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -82,6 +85,21 @@ public class RoleService {
         var rolesToResponse = RoleMapper.INSTANCE.rolesToResponse(roles);
 
         return rolesToResponse;
+    }
+
+    /**
+     * Returns the N Roles from the given page.
+     *
+     * @param page Indicates the page number.
+     * @param size The number of Roles to be retrieved.
+     * @param uriInfo The current uri.
+     * @return An object represents the paginated results.
+     */
+    public PageResource<Role, RoleResponseDto> findAllRolesPageable(int page, int size, UriInfo uriInfo){
+
+        PanacheQuery<Role> panacheQuery = roleRepository.findAllPageable(page, size);
+
+        return new PageResource<>(panacheQuery, RoleMapper.INSTANCE.rolesToResponse(panacheQuery.list()), uriInfo);
     }
 
     /**

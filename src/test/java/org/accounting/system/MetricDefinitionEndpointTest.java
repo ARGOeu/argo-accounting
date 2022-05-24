@@ -7,11 +7,12 @@ import io.quarkus.test.junit.mockito.InjectMock;
 import io.quarkus.test.keycloak.client.KeycloakTestClient;
 import io.restassured.http.ContentType;
 import org.accounting.system.dtos.InformativeResponse;
-import org.accounting.system.dtos.metricdefinition.MetricDefinitionRequestDto;
-import org.accounting.system.dtos.metricdefinition.MetricDefinitionResponseDto;
 import org.accounting.system.dtos.metric.MetricRequestDto;
 import org.accounting.system.dtos.metric.MetricResponseDto;
+import org.accounting.system.dtos.metricdefinition.MetricDefinitionRequestDto;
+import org.accounting.system.dtos.metricdefinition.MetricDefinitionResponseDto;
 import org.accounting.system.dtos.metricdefinition.UpdateMetricDefinitionRequestDto;
+import org.accounting.system.dtos.pagination.PageResource;
 import org.accounting.system.endpoints.MetricDefinitionEndpoint;
 import org.accounting.system.entities.MetricDefinition;
 import org.accounting.system.mappers.MetricDefinitionMapper;
@@ -24,7 +25,6 @@ import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
 import javax.inject.Inject;
-import java.util.List;
 import java.util.Optional;
 
 import static io.restassured.RestAssured.given;
@@ -66,7 +66,7 @@ public class MetricDefinitionEndpointTest {
         assertEquals(401, notAuthenticatedResponse.statusCode());
     }
 
-        @Test
+    @Test
     public void createMetricDefinitionRequestBodyIsEmpty() {
 
         var response = given()
@@ -104,7 +104,7 @@ public class MetricDefinitionEndpointTest {
 
         Mockito.when(readPredefinedTypesService.searchForUnitType(any())).thenReturn(Optional.empty());
         Mockito.when(readPredefinedTypesService.searchForMetricType(any())).thenReturn(Optional.of("Aggregated"));
-        MetricDefinitionRequestDto request= new MetricDefinitionRequestDto();
+        var request= new MetricDefinitionRequestDto();
 
         request.metricName = "metric";
         request.metricDescription = "description";
@@ -131,7 +131,7 @@ public class MetricDefinitionEndpointTest {
 
         Mockito.when(readPredefinedTypesService.searchForUnitType(any())).thenReturn(Optional.of("SECOND"));
         Mockito.when(readPredefinedTypesService.searchForMetricType(any())).thenReturn(Optional.empty());
-        MetricDefinitionRequestDto request= new MetricDefinitionRequestDto();
+        var request= new MetricDefinitionRequestDto();
 
         request.metricName = "metric";
         request.metricDescription = "description";
@@ -257,6 +257,37 @@ public class MetricDefinitionEndpointTest {
                 .as(InformativeResponse.class);
 
         assertEquals("There is a Metric Definition with unit type SECOND and name metric. Its id is "+metricDefinition.id, response.message);
+    }
+
+    @Test
+    public void createMetricDefinitionSimilarLowerCase() {
+
+        Mockito.when(readPredefinedTypesService.searchForUnitType(any())).thenReturn(Optional.of("SECOND"));
+        Mockito.when(readPredefinedTypesService.searchForMetricType(any())).thenReturn(Optional.of("Aggregated"));
+        MetricDefinitionRequestDto request= new MetricDefinitionRequestDto();
+
+        request.metricName = "metric";
+        request.metricDescription = "description";
+        request.unitType = "SECOND";
+        request.metricType = "Aggregated";
+
+        var metricDefinition = createMetricDefinition(request);
+
+        request.metricName = "Metric";
+
+        var response = given()
+                .auth()
+                .oauth2(getAccessToken("admin"))
+                .body(request)
+                .contentType(ContentType.JSON)
+                .post()
+                .then()
+                .assertThat()
+                .statusCode(409)
+                .extract()
+                .as(InformativeResponse.class);
+
+        assertEquals("There is a Metric Definition with unit type SECOND and name Metric. Its id is "+metricDefinition.id, response.message);
     }
 
     @Test
@@ -778,7 +809,7 @@ public class MetricDefinitionEndpointTest {
                 .thenReturn();
 
         assertEquals(200, fetchResponse.statusCode());
-        assertEquals(2, fetchResponse.body().as(List.class).size());
+        assertEquals(2, fetchResponse.body().as(PageResource.class).totalElements);
     }
 
     @Test

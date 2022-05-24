@@ -1,9 +1,16 @@
 package org.accounting.system.repositories.modulators;
 
+import com.mongodb.client.model.Aggregates;
+import com.mongodb.client.model.Filters;
+import io.quarkus.mongodb.panache.PanacheQuery;
 import org.accounting.system.entities.Entity;
 import org.accounting.system.entities.acl.AccessControl;
-import org.bson.types.ObjectId;
+import org.accounting.system.entities.projections.ProjectionQuery;
+import org.accounting.system.util.Utility;
+import org.bson.Document;
+import org.bson.conversions.Bson;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -59,9 +66,65 @@ public abstract class AccessEntityModulator<E extends Entity, I> extends AccessM
         return combineTwoLists(fromCollection, fromAccessControl);
     }
     @Override
+    public PanacheQuery<E> findAllPageable(int page, int size) {
+
+        List<String> entities = accessControlModulator().getAccessControlEntities();
+
+        return find("creatorId = ?1 or _id in ?2", getRequestInformation().getSubjectOfToken(), Utility.transformIdsToSpecificClassType(getIdentity(), entities)).page(page, size);
+    }
+
+    @Override
+    public <T> ProjectionQuery<T> lookup(String from, String localField, String foreignField, String as, int page, int size, Class<T> projection) {
+
+        Bson bson = Aggregates.lookup(from, localField, foreignField, as);
+
+        List<String> entities = accessControlModulator().getAccessControlEntities();
+
+        List<T> projections = getMongoCollection()
+                .aggregate(List
+                        .of(bson,
+                                Aggregates.skip(size * (page)),
+                                Aggregates.limit(size),
+                                Aggregates.match(Filters.or(Filters.eq("creatorId", getRequestInformation().getSubjectOfToken()), Filters.in("_id",  Utility.transformIdsToSpecificClassType(getIdentity(), entities))))
+                        ), projection)
+                .into(new ArrayList<>());
+
+        List<Document> totalDocuments = getMongoCollection()
+                .aggregate(List
+                        .of(Aggregates.match(Filters.or(Filters.eq("creatorId", getRequestInformation().getSubjectOfToken()), Filters.in("_id",  Utility.transformIdsToSpecificClassType(getIdentity(), entities))))
+                        ))
+                .into(new ArrayList<>());
+
+        var projectionQuery = new ProjectionQuery<T>();
+
+        projectionQuery.list = projections;
+        projectionQuery.index = page;
+        projectionQuery.size = size;
+        projectionQuery.count = totalDocuments.size();
+
+        return projectionQuery;
+    }
+
+    @Override
+    public <T> T lookUpEntityById(String from, String localField, String foreignField, String as, Class<T> projection, I id) {
+
+        Bson bson = Aggregates.lookup(from, localField, foreignField, as);
+
+        List<T> projections = getMongoCollection()
+                .aggregate(List.of(bson, Aggregates.match(Filters.and(Filters.eq("_id", id), Filters.eq("creatorId", getRequestInformation().getSubjectOfToken())))), projection)
+                .into(new ArrayList<>());
+
+        if(projections.isEmpty()){
+            return accessControlModulator().lookUpEntityById(from, localField, foreignField, as, projection, id);
+        } else {
+            return projections.get(0);
+        }
+    }
+
+    @Override
     public void grantPermission(AccessControl accessControl) {
 
-        E entity = findById((I) new ObjectId(accessControl.getEntity()));
+        E entity = findById(Utility.transformIdToSpecificClassType(getIdentity(), accessControl.getEntity()));
 
         if (isIdentifiable(entity.getCreatorId())) {
             getAccessControlRepository().persist(accessControl);

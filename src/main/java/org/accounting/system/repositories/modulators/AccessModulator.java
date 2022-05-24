@@ -1,15 +1,20 @@
 package org.accounting.system.repositories.modulators;
 
+import com.mongodb.client.MongoClient;
+import com.mongodb.client.MongoCollection;
 import io.quarkus.mongodb.panache.PanacheMongoRepository;
 import io.quarkus.mongodb.panache.PanacheMongoRepositoryBase;
+import io.quarkus.mongodb.panache.PanacheQuery;
 import net.jodah.typetools.TypeResolver;
 import org.accounting.system.beans.RequestInformation;
 import org.accounting.system.entities.Entity;
 import org.accounting.system.entities.acl.AccessControl;
+import org.accounting.system.entities.projections.ProjectionQuery;
 import org.accounting.system.enums.Collection;
 import org.accounting.system.repositories.acl.AccessControlRepository;
 import org.bson.Document;
 import org.bson.conversions.Bson;
+import org.eclipse.microprofile.config.inject.ConfigProperty;
 
 import javax.inject.Inject;
 import javax.ws.rs.ForbiddenException;
@@ -32,11 +37,20 @@ public abstract class AccessModulator<E extends Entity, I> implements PanacheMon
     @Inject
     AccessControlRepository accessControlRepository;
 
+    @Inject
+    MongoClient mongoClient;
+
+    @ConfigProperty(name = "quarkus.mongodb.database")
+    String database;
+
     protected Class<E> clazz;
+
+    private Class<I> identity;
 
     public AccessModulator(){
         Class<?>[] typeArguments = TypeResolver.resolveRawArguments(AccessModulator.class, getClass());
         this.clazz = (Class<E>) typeArguments[0];
+        this.identity = (Class<I>) typeArguments[1];
     }
 
     public  E fetchEntityById(I id){
@@ -53,6 +67,18 @@ public abstract class AccessModulator<E extends Entity, I> implements PanacheMon
 
     public List<E> getAllEntities(){
         return Collections.emptyList();
+    }
+
+    /**
+     * Executes a query in mongo database and returns the paginated results.
+     * The page parameter indicates the requested page number, and the size parameter the number of entities by page.
+     *
+     * @param page The page to be retrieved
+     * @param size The requested size of page
+     * @return An object represents the paginated results
+     */
+    public PanacheQuery<E> findAllPageable(int page, int size){
+        throw new ForbiddenException("You have no access to this operations.");
     }
 
     /**
@@ -95,6 +121,14 @@ public abstract class AccessModulator<E extends Entity, I> implements PanacheMon
         return Collections.emptyList();
     }
 
+    public <T> ProjectionQuery<T> lookup(String from, String localField, String foreignField, String as, int page, int size, Class<T> projection){
+        throw new ForbiddenException("You have no access to this operation.");
+    }
+
+    public <T> T lookUpEntityById(String from, String localField, String foreignField, String as, Class<T> projection, I id){
+        throw new ForbiddenException("You have no access to this entity : " + id.toString());
+    }
+
     public List<E> combineTwoLists(List<E> a, List<E> b){
 
         // We wanna avoid duplicates
@@ -105,6 +139,11 @@ public abstract class AccessModulator<E extends Entity, I> implements PanacheMon
 
         return new ArrayList<>(setA);
     }
+
+    public MongoCollection<Document> getMongoCollection(){
+        return mongoClient.getDatabase(database).getCollection(clazz.getSimpleName());
+    }
+
     public RequestInformation getRequestInformation() {
         return requestInformation;
     }
@@ -117,5 +156,9 @@ public abstract class AccessModulator<E extends Entity, I> implements PanacheMon
     }
     public List<E> search(Bson query){
         return  find(Document.parse(query.toBsonDocument().toJson())).stream().collect(Collectors.toList());
+    }
+
+    public Class<I> getIdentity() {
+        return identity;
     }
 }

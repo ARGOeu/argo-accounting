@@ -14,7 +14,6 @@ import org.apache.commons.lang3.StringUtils;
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 import javax.ws.rs.ForbiddenException;
-import javax.ws.rs.NotFoundException;
 import javax.ws.rs.core.UriInfo;
 import java.util.Objects;
 
@@ -29,17 +28,13 @@ public class ProviderService {
      * Returns the N Providers from the given page.
      *
      * @param page Indicates the page number.
-     * @param size The number of Metrics to be retrieved.
+     * @param size The number of Providers to be retrieved.
      * @param uriInfo The current uri.
      * @return An object represents the paginated results.
      */
     public PageResource<Provider, ProviderResponseDto> findAllProvidersPageable(int page, int size, UriInfo uriInfo){
 
-        PanacheQuery<Provider> panacheQuery = providerRepository.findAllProvidersPageable(page, size);
-
-        if(panacheQuery.list().isEmpty()){
-            throw new NotFoundException("Not Found.");
-        }
+        PanacheQuery<Provider> panacheQuery = providerRepository.findAllPageable(page, size);
 
         return new PageResource<>(panacheQuery, ProviderMapper.INSTANCE.providersToResponse(panacheQuery.list()), uriInfo);
     }

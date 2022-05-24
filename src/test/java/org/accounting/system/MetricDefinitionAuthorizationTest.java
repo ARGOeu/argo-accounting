@@ -10,6 +10,7 @@ import org.accounting.system.dtos.InformativeResponse;
 import org.accounting.system.dtos.metricdefinition.MetricDefinitionRequestDto;
 import org.accounting.system.dtos.metricdefinition.MetricDefinitionResponseDto;
 import org.accounting.system.dtos.metricdefinition.UpdateMetricDefinitionRequestDto;
+import org.accounting.system.dtos.pagination.PageResource;
 import org.accounting.system.enums.AccessType;
 import org.accounting.system.enums.Collection;
 import org.accounting.system.enums.Operation;
@@ -21,7 +22,6 @@ import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
 import javax.inject.Inject;
-import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -543,27 +543,25 @@ public class MetricDefinitionAuthorizationTest {
 
         var fetchAdminMetricDefinitions = fetchAllMetricDefinitions("admin");
 
-        var adminList= fetchAdminMetricDefinitions
-                .then()
-                .assertThat()
-                .statusCode(200)
-                .extract()
-                .as(List.class);
+        var fetchAdminMetricDefinitionsResponse = fetchAdminMetricDefinitions.thenReturn();
+
+        assertEquals(200, fetchAdminMetricDefinitionsResponse.statusCode());
+
+        var fetchAdminMetricDefinitionsResponseBody = fetchAdminMetricDefinitions.body().as(PageResource.class);
 
         //because admin can access all metric definitions the size of list should be 3
-        assertEquals(3, adminList.size());
+        assertEquals(3, fetchAdminMetricDefinitionsResponseBody.totalElements);
 
         var fetchCreatorMetricDefinitions = fetchAllMetricDefinitions("creator");
 
-        var creatorList= fetchCreatorMetricDefinitions
-                .then()
-                .assertThat()
-                .statusCode(200)
-                .extract()
-                .as(List.class);
+        var fetchCreatorMetricDefinitionsResponse = fetchCreatorMetricDefinitions.thenReturn();
+
+        assertEquals(200, fetchCreatorMetricDefinitionsResponse.statusCode());
+
+        var fetchCreatorMetricDefinitionsResponseBody = fetchCreatorMetricDefinitions.body().as(PageResource.class);
 
         //because creator can access only its Metric Definitions the size of list should be 1
-        assertEquals(1, creatorList.size());
+        assertEquals(1, fetchCreatorMetricDefinitionsResponseBody.totalElements);
     }
 
     private Response createMetricDefinition(MetricDefinitionRequestDto request, String user){
