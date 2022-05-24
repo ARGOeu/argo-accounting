@@ -1,6 +1,7 @@
-package org.accounting.system.entities;
+package org.accounting.system.entities.provider;
 
 import lombok.EqualsAndHashCode;
+import org.accounting.system.entities.Entity;
 import org.bson.codecs.pojo.annotations.BsonId;
 
 public class Provider extends Entity {

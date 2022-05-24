@@ -1,0 +1,1954 @@
+{
+  "response": {
+    "header": {
+      "query": {
+        "$": "(oaftype exact project) and (projectcode_nt exact \"777536\")"
+      },
+      "locale": {
+        "$": "en_US"
+      },
+      "size": {
+        "$": 10
+      },
+      "page": {
+        "$": 1
+      },
+      "total": {
+        "$": 1
+      },
+      "fields": null
+    },
+    "results": {
+      "result": [
+        {
+          "header": {
+            "dri:objIdentifier": {
+              "$": "corda__h2020::5f29eb8fd762816208e20c6a156435a9"
+            },
+            "dri:dateOfCollection": {
+              "$": "2018-03-12"
+            },
+            "dri:dateOfTransformation": {
+              "$": "2022-03-29"
+            }
+          },
+          "metadata": {
+            "oaf:entity": {
+              "@xsi:schemaLocation": "http://namespace.openaire.eu/oaf https://www.openaire.eu/schema/1.0/oaf-1.0.xsd",
+              "oaf:project": {
+                "collectedfrom": {
+                  "@name": "CORDA - COmmon Research DAta Warehouse - Horizon 2020",
+                  "@id": "openaire____::a55eb91348674d853191f4f4fd73d078"
+                },
+                "originalId": {
+                  "$": "corda__h2020::777536"
+                },
+                "code": {
+                  "$": "777536"
+                },
+                "acronym": {
+                  "$": "EOSC-hub"
+                },
+                "title": {
+                  "$": "Integrating and managing services for the European Open Science Cloud"
+                },
+                "startdate": {
+                  "$": "2018-01-01"
+                },
+                "enddate": {
+                  "$": "2021-03-31"
+                },
+                "callidentifier": {
+                  "$": "H2020-EINFRA-2017"
+                },
+                "duration": {
+                  "$": 0
+                },
+                "ecarticle29_3": {
+                  "$": true
+                },
+                "subject": {
+                  "@classid": "ec:h2020topics",
+                  "@classname": "Horizon 2020 Topics",
+                  "@schemeid": "dnet:subject_classification_typologies",
+                  "@schemename": "dnet:subject_classification_typologies",
+                  "@inferred": false,
+                  "@provenanceaction": "sysimport:crosswalk:entityregistry",
+                  "@trust": "0.900",
+                  "$": "Data and Distributed Computing e-infrastructures for Open Science"
+                },
+                "oamandatepublications": {
+                  "$": true
+                },
+                "ecsc39": {
+                  "$": false
+                },
+                "summary": {
+                  "$": "The EOSC-hub project creates the integration and management system of the future European Open Science Cloud that delivers a catalogue of services, software and data from the EGI Federation, EUDAT CDI, INDIGO-DataCloud and major research e-infrastructures. This integration and management system (the Hub) builds on mature processes, policies and tools from the leading European federated e-Infrastructures to cover the whole life-cycle of services, from planning to delivery. The Hub aggregates services from local, regional and national e-Infrastructures in Europe, Africa, Asia, Canada and South America. The Hub acts as a single contact point for researchers and innovators to discover, access, use and reuse a broad spectrum of resources for advanced data-driven research. Through the virtual access mechanism, more scientific communities and users have access to services supporting their scientific discovery and collaboration across disciplinary and geographical boundaries. The project also improves skills and knowledge among researchers and service operators by delivering specialised trainings and by establishing competence centres to co-create solutions with the users. In the area of engagement with the private sector, the project creates a Joint Digital Innovation Hub that stimulates an ecosystem of industry/SMEs, service providers and researchers to support business pilots, market take-up and commercial boost strategies. EOSC-hub builds on existing technology already at TRL 8 and addresses the need for interoperability by promoting the adoption of open standards and protocols. By mobilizing e-Infrastructures comprising more than 300 data centres worldwide and 18 pan-European infrastructures, this project is a ground-breaking milestone for the implementation of the European Open Science Cloud."
+                },
+                "currency": {
+                  "$": "EUR"
+                },
+                "totalcost": {
+                  "$": 3.32057E7
+                },
+                "fundedamount": {
+                  "$": 3.0E7
+                },
+                "fundingtree": {
+                  "funder": {
+                    "id": {
+                      "$": "ec__________::EC"
+                    },
+                    "shortname": {
+                      "$": "EC"
+                    },
+                    "name": {
+                      "$": "European Commission"
+                    },
+                    "jurisdiction": {
+                      "$": "EU"
+                    }
+                  },
+                  "funding_level_1": {
+                    "id": {
+                      "$": "ec__________::EC::H2020::RIA"
+                    },
+                    "description": {
+                      "$": "Research and Innovation action"
+                    },
+                    "name": {
+                      "$": "RIA"
+                    },
+                    "class": {
+                      "$": "ec:h2020toas"
+                    },
+                    "parent": {
+                      "funding_level_0": {
+                        "id": {
+                          "$": "ec__________::EC::H2020"
+                        },
+                        "name": {
+                          "$": "H2020"
+                        },
+                        "description": {
+                          "$": "Horizon 2020 Framework Programme"
+                        },
+                        "parent": null,
+                        "class": {
+                          "$": "ec:h2020fundings"
+                        }
+                      }
+                    }
+                  }
+                },
+                "datainfo": {
+                  "inferred": {
+                    "$": false
+                  },
+                  "deletedbyinference": {
+                    "$": false
+                  },
+                  "trust": {
+                    "$": 0.900
+                  },
+                  "inferenceprovenance": {
+                    "$": "null"
+                  },
+                  "provenanceaction": {
+                    "@classid": "sysimport:crosswalk:entityregistry",
+                    "@classname": "Harvested",
+                    "@schemeid": "dnet:provenanceActions",
+                    "@schemename": "dnet:provenanceActions"
+                  }
+                },
+                "rels": {
+                  "rel": [
+                    {
+                      "@inferred": false,
+                      "@trust": "0.900",
+                      "@inferenceprovenance": "",
+                      "@provenanceaction": "sysimport:crosswalk:entityregistry",
+                      "to": {
+                        "@class": "hasParticipant",
+                        "@scheme": "dnet:project_organization_relations",
+                        "@type": "organization",
+                        "$": "pending_org_::3f88bae3f2748ee178c28379cb8196db"
+                      },
+                      "legalshortname": {
+                        "$": "MARIS"
+                      },
+                      "legalname": {
+                        "$": "MARIENE INFORMATIE SERVICE MARIS BV"
+                      },
+                      "country": {
+                        "@classid": "NL",
+                        "@classname": "Netherlands",
+                        "@schemeid": "dnet:countries",
+                        "@schemename": "dnet:countries"
+                      }
+                    },
+                    {
+                      "@inferred": false,
+                      "@trust": "0.900",
+                      "@inferenceprovenance": "",
+                      "@provenanceaction": "sysimport:crosswalk:entityregistry",
+                      "to": {
+                        "@class": "hasParticipant",
+                        "@scheme": "dnet:project_organization_relations",
+                        "@type": "organization",
+                        "$": "pending_org_::e094c807f6c0674865b7bbde529fe54c"
+                      },
+                      "country": {
+                        "@classid": "PL",
+                        "@classname": "Poland",
+                        "@schemeid": "dnet:countries",
+                        "@schemename": "dnet:countries"
+                      },
+                      "legalname": {
+                        "$": "CLOUDFERRO SP ZOO"
+                      },
+                      "legalshortname": {
+                        "$": "CLOUDFERRO SP ZOO"
+                      }
+                    },
+                    {
+                      "@inferred": false,
+                      "@trust": "0.900",
+                      "@inferenceprovenance": "",
+                      "@provenanceaction": "sysimport:crosswalk:entityregistry",
+                      "to": {
+                        "@class": "hasParticipant",
+                        "@scheme": "dnet:project_organization_relations",
+                        "@type": "organization",
+                        "$": "openorgs____::82ca4d62ea8811c2314433397a65b25d"
+                      },
+                      "legalname": {
+                        "$": "Uppsala University"
+                      },
+                      "legalshortname": {
+                        "$": "Uppsala University"
+                      },
+                      "country": {
+                        "@classid": "SE",
+                        "@classname": "Sweden",
+                        "@schemeid": "dnet:countries",
+                        "@schemename": "dnet:countries"
+                      }
+                    },
+                    {
+                      "@inferred": false,
+                      "@trust": "0.900",
+                      "@inferenceprovenance": "",
+                      "@provenanceaction": "sysimport:crosswalk:entityregistry",
+                      "to": {
+                        "@class": "hasParticipant",
+                        "@scheme": "dnet:project_organization_relations",
+                        "@type": "organization",
+                        "$": "openorgs____::c45cd1edc764b8f920c2b09de7921cc5"
+                      },
+                      "legalshortname": {
+                        "$": "University of Liège"
+                      },
+                      "country": {
+                        "@classid": "BE",
+                        "@classname": "Belgium",
+                        "@schemeid": "dnet:countries",
+                        "@schemename": "dnet:countries"
+                      },
+                      "legalname": {
+                        "$": "University of Liège"
+                      }
+                    },
+                    {
+                      "@inferred": false,
+                      "@trust": "0.900",
+                      "@inferenceprovenance": "",
+                      "@provenanceaction": "sysimport:crosswalk:entityregistry",
+                      "to": {
+                        "@class": "hasParticipant",
+                        "@scheme": "dnet:project_organization_relations",
+                        "@type": "organization",
+                        "$": "openorgs____::5665ec851e301a1f816ee0be3e98757b"
+                      },
+                      "legalname": {
+                        "$": "University of Seville"
+                      },
+                      "legalshortname": {
+                        "$": "University of Seville"
+                      },
+                      "country": {
+                        "@classid": "ES",
+                        "@classname": "Spain",
+                        "@schemeid": "dnet:countries",
+                        "@schemename": "dnet:countries"
+                      }
+                    },
+                    {
+                      "@inferred": false,
+                      "@trust": "0.900",
+                      "@inferenceprovenance": "",
+                      "@provenanceaction": "sysimport:crosswalk:entityregistry",
+                      "to": {
+                        "@class": "hasParticipant",
+                        "@scheme": "dnet:project_organization_relations",
+                        "@type": "organization",
+                        "$": "pending_org_::69c10663194a5b1caa670afe7947bd7d"
+                      },
+                      "country": {
+                        "@classid": "IT",
+                        "@classname": "Italy",
+                        "@schemeid": "dnet:countries",
+                        "@schemename": "dnet:countries"
+                      },
+                      "legalname": {
+                        "$": "MOXOFF SPA"
+                      },
+                      "legalshortname": {
+                        "$": "MOXOFF"
+                      }
+                    },
+                    {
+                      "@inferred": false,
+                      "@trust": "0.900",
+                      "@inferenceprovenance": "",
+                      "@provenanceaction": "sysimport:crosswalk:entityregistry",
+                      "to": {
+                        "@class": "hasParticipant",
+                        "@scheme": "dnet:project_organization_relations",
+                        "@type": "organization",
+                        "$": "pending_org_::ac56182743eb4eaa1f593e9dca0add4b"
+                      },
+                      "legalname": {
+                        "$": "LUNDS UNIVERSITET"
+                      },
+                      "legalshortname": {
+                        "$": "LUNDS UNIVERSITET"
+                      },
+                      "country": {
+                        "@classid": "SE",
+                        "@classname": "Sweden",
+                        "@schemeid": "dnet:countries",
+                        "@schemename": "dnet:countries"
+                      }
+                    },
+                    {
+                      "@inferred": false,
+                      "@trust": "0.900",
+                      "@inferenceprovenance": "",
+                      "@provenanceaction": "sysimport:crosswalk:entityregistry",
+                      "to": {
+                        "@class": "hasParticipant",
+                        "@scheme": "dnet:project_organization_relations",
+                        "@type": "organization",
+                        "$": "openorgs____::6363a88f20cca34629ae690d539f9b67"
+                      },
+                      "country": {
+                        "@classid": "BE",
+                        "@classname": "Belgium",
+                        "@schemeid": "dnet:countries",
+                        "@schemename": "dnet:countries"
+                      },
+                      "legalshortname": {
+                        "$": "VUB"
+                      },
+                      "legalname": {
+                        "$": "Vrije Universiteit Brussel"
+                      }
+                    },
+                    {
+                      "@inferred": false,
+                      "@trust": "0.900",
+                      "@inferenceprovenance": "",
+                      "@provenanceaction": "sysimport:crosswalk:entityregistry",
+                      "to": {
+                        "@class": "hasParticipant",
+                        "@scheme": "dnet:project_organization_relations",
+                        "@type": "organization",
+                        "$": "pending_org_::be33f9413a7319da80cba2bbbdcfb1e7"
+                      },
+                      "legalshortname": {
+                        "$": "SUITE5 DATA INTELLIGENCE SOLUTIONS LIMITED"
+                      },
+                      "country": {
+                        "@classid": "IE",
+                        "@classname": "Ireland",
+                        "@schemeid": "dnet:countries",
+                        "@schemename": "dnet:countries"
+                      },
+                      "legalname": {
+                        "$": "SUITE5 DATA INTELLIGENCE SOLUTIONS LIMITED"
+                      }
+                    },
+                    {
+                      "@inferred": false,
+                      "@trust": "0.900",
+                      "@inferenceprovenance": "",
+                      "@provenanceaction": "sysimport:crosswalk:entityregistry",
+                      "to": {
+                        "@class": "hasParticipant",
+                        "@scheme": "dnet:project_organization_relations",
+                        "@type": "organization",
+                        "$": "openorgs____::cb92d2ed6f9a724e1c181a734c59f713"
+                      },
+                      "legalname": {
+                        "$": "Forschungszentrum Jülich"
+                      },
+                      "legalshortname": {
+                        "$": "FZJ"
+                      },
+                      "country": {
+                        "@classid": "DE",
+                        "@classname": "Germany",
+                        "@schemeid": "dnet:countries",
+                        "@schemename": "dnet:countries"
+                      }
+                    },
+                    {
+                      "@inferred": false,
+                      "@trust": "0.900",
+                      "@inferenceprovenance": "",
+                      "@provenanceaction": "sysimport:crosswalk:entityregistry",
+                      "to": {
+                        "@class": "hasParticipant",
+                        "@scheme": "dnet:project_organization_relations",
+                        "@type": "organization",
+                        "$": "openorgs____::eeeeee00563ed0908fb396a26358e2fc"
+                      },
+                      "legalshortname": {
+                        "$": "KIT"
+                      },
+                      "country": {
+                        "@classid": "DE",
+                        "@classname": "Germany",
+                        "@schemeid": "dnet:countries",
+                        "@schemename": "dnet:countries"
+                      },
+                      "legalname": {
+                        "$": "Karlsruhe Institute of Technology"
+                      }
+                    },
+                    {
+                      "@inferred": false,
+                      "@trust": "0.900",
+                      "@inferenceprovenance": "",
+                      "@provenanceaction": "sysimport:crosswalk:entityregistry",
+                      "to": {
+                        "@class": "hasParticipant",
+                        "@scheme": "dnet:project_organization_relations",
+                        "@type": "organization",
+                        "$": "openorgs____::2ed6bd98927a816a6b2ac40bb6d8ad1f"
+                      },
+                      "country": {
+                        "@classid": "GB",
+                        "@classname": "United Kingdom",
+                        "@schemeid": "dnet:countries",
+                        "@schemename": "dnet:countries"
+                      },
+                      "legalname": {
+                        "$": "Trust IT Services"
+                      },
+                      "legalshortname": {
+                        "$": "Trust IT Services"
+                      }
+                    },
+                    {
+                      "@inferred": false,
+                      "@trust": "0.900",
+                      "@inferenceprovenance": "",
+                      "@provenanceaction": "sysimport:crosswalk:entityregistry",
+                      "to": {
+                        "@class": "hasParticipant",
+                        "@scheme": "dnet:project_organization_relations",
+                        "@type": "organization",
+                        "$": "pending_org_::7a36c56d01ee2a9bdfb382c71b383550"
+                      },
+                      "country": {
+                        "@classid": "GB",
+                        "@classname": "United Kingdom",
+                        "@schemeid": "dnet:countries",
+                        "@schemename": "dnet:countries"
+                      },
+                      "legalname": {
+                        "$": "SCIENCE AND TECHNOLOGY FACILITIES COUNCIL"
+                      },
+                      "legalshortname": {
+                        "$": "STFC"
+                      }
+                    },
+                    {
+                      "@inferred": false,
+                      "@trust": "0.900",
+                      "@inferenceprovenance": "",
+                      "@provenanceaction": "sysimport:crosswalk:entityregistry",
+                      "to": {
+                        "@class": "hasParticipant",
+                        "@scheme": "dnet:project_organization_relations",
+                        "@type": "organization",
+                        "$": "openorgs____::6b9ffe53ea10040e83ddc7c3d99249ce"
+                      },
+                      "country": {
+                        "@classid": "GR",
+                        "@classname": "Greece",
+                        "@schemeid": "dnet:countries",
+                        "@schemename": "dnet:countries"
+                      },
+                      "legalshortname": {
+                        "$": "NOA"
+                      },
+                      "legalname": {
+                        "$": "National Observatory of Athens"
+                      }
+                    },
+                    {
+                      "@inferred": false,
+                      "@trust": "0.900",
+                      "@inferenceprovenance": "",
+                      "@provenanceaction": "sysimport:crosswalk:entityregistry",
+                      "to": {
+                        "@class": "hasParticipant",
+                        "@scheme": "dnet:project_organization_relations",
+                        "@type": "organization",
+                        "$": "pending_org_::b5d6c11ab221197b458dced8c7025802"
+                      },
+                      "legalshortname": {
+                        "$": "BBMRI-ERIC"
+                      },
+                      "legalname": {
+                        "$": "BIOBANKS AND BIOMOLECULAR RESOURCES RESEARCH INFRASTRUCTURE CONSORTIUM (BBMRI-ERIC)"
+                      },
+                      "country": {
+                        "@classid": "AT",
+                        "@classname": "Austria",
+                        "@schemeid": "dnet:countries",
+                        "@schemename": "dnet:countries"
+                      }
+                    },
+                    {
+                      "@inferred": false,
+                      "@trust": "0.900",
+                      "@inferenceprovenance": "",
+                      "@provenanceaction": "sysimport:crosswalk:entityregistry",
+                      "to": {
+                        "@class": "hasParticipant",
+                        "@scheme": "dnet:project_organization_relations",
+                        "@type": "organization",
+                        "$": "openorgs____::d0d9397b680559a977f6b7b080125a0d"
+                      },
+                      "country": {
+                        "@classid": "ES",
+                        "@classname": "Spain",
+                        "@schemeid": "dnet:countries",
+                        "@schemename": "dnet:countries"
+                      },
+                      "legalshortname": {
+                        "$": "UC"
+                      },
+                      "legalname": {
+                        "$": "University of Cantabria"
+                      }
+                    },
+                    {
+                      "@inferred": false,
+                      "@trust": "0.900",
+                      "@inferenceprovenance": "",
+                      "@provenanceaction": "sysimport:crosswalk:entityregistry",
+                      "to": {
+                        "@class": "hasParticipant",
+                        "@scheme": "dnet:project_organization_relations",
+                        "@type": "organization",
+                        "$": "openorgs____::db6ece0cdeb6add0888e16305c49d1bd"
+                      },
+                      "country": {
+                        "@classid": "PL",
+                        "@classname": "Poland",
+                        "@schemeid": "dnet:countries",
+                        "@schemename": "dnet:countries"
+                      },
+                      "legalshortname": {
+                        "$": "IBCH PAS"
+                      },
+                      "legalname": {
+                        "$": "Institute of Bioorganic Chemistry, Polish Academy of Sciences"
+                      }
+                    },
+                    {
+                      "@inferred": false,
+                      "@trust": "0.900",
+                      "@inferenceprovenance": "",
+                      "@provenanceaction": "sysimport:crosswalk:entityregistry",
+                      "to": {
+                        "@class": "hasParticipant",
+                        "@scheme": "dnet:project_organization_relations",
+                        "@type": "organization",
+                        "$": "pending_org_::4f83db37723e5959dd4f8d5c20a4c4e4"
+                      },
+                      "legalname": {
+                        "$": "IDEGO GROUP SP ZOO"
+                      },
+                      "country": {
+                        "@classid": "PL",
+                        "@classname": "Poland",
+                        "@schemeid": "dnet:countries",
+                        "@schemename": "dnet:countries"
+                      },
+                      "legalshortname": {
+                        "$": "IDEGO GROUP SP ZOO"
+                      }
+                    },
+                    {
+                      "@inferred": false,
+                      "@trust": "0.900",
+                      "@inferenceprovenance": "",
+                      "@provenanceaction": "sysimport:crosswalk:entityregistry",
+                      "to": {
+                        "@class": "hasParticipant",
+                        "@scheme": "dnet:project_organization_relations",
+                        "@type": "organization",
+                        "$": "pending_org_::0506af25ce7f9e79a74b3e14bd205776"
+                      },
+                      "country": {
+                        "@classid": "IE",
+                        "@classname": "Ireland",
+                        "@schemeid": "dnet:countries",
+                        "@schemename": "dnet:countries"
+                      },
+                      "legalname": {
+                        "$": "BENTLEY SYSTEMS INTERNATIONAL LIMITED"
+                      },
+                      "legalshortname": {
+                        "$": "Bentley Systems"
+                      }
+                    },
+                    {
+                      "@inferred": false,
+                      "@trust": "0.900",
+                      "@inferenceprovenance": "",
+                      "@provenanceaction": "sysimport:crosswalk:entityregistry",
+                      "to": {
+                        "@class": "hasParticipant",
+                        "@scheme": "dnet:project_organization_relations",
+                        "@type": "organization",
+                        "$": "pending_org_::ec5f96dc28448f0e6d117fea017cc032"
+                      },
+                      "legalname": {
+                        "$": "KOMA NORD SPOLKA Z OGRANICZONA ODPOWIEDZIALNOSCIA"
+                      },
+                      "legalshortname": {
+                        "$": "KOMA NORD SPOLKA Z OGRANICZONA ODPOWIEDZIALNOSCIA"
+                      },
+                      "country": {
+                        "@classid": "PL",
+                        "@classname": "Poland",
+                        "@schemeid": "dnet:countries",
+                        "@schemename": "dnet:countries"
+                      }
+                    },
+                    {
+                      "@inferred": false,
+                      "@trust": "0.900",
+                      "@inferenceprovenance": "",
+                      "@provenanceaction": "sysimport:crosswalk:entityregistry",
+                      "to": {
+                        "@class": "hasParticipant",
+                        "@scheme": "dnet:project_organization_relations",
+                        "@type": "organization",
+                        "$": "pending_org_::d68927c9a3492e7e8b98b59fa4ebeab3"
+                      },
+                      "legalshortname": {
+                        "$": "INSTITUT FRANCAIS DE RECHERCHE POUR L'EXPLOITATION DE LA MER"
+                      },
+                      "legalname": {
+                        "$": "INSTITUT FRANCAIS DE RECHERCHE POUR L'EXPLOITATION DE LA MER"
+                      },
+                      "country": {
+                        "@classid": "FR",
+                        "@classname": "France",
+                        "@schemeid": "dnet:countries",
+                        "@schemename": "dnet:countries"
+                      }
+                    },
+                    {
+                      "@inferred": false,
+                      "@trust": "0.900",
+                      "@inferenceprovenance": "",
+                      "@provenanceaction": "sysimport:crosswalk:entityregistry",
+                      "to": {
+                        "@class": "hasParticipant",
+                        "@scheme": "dnet:project_organization_relations",
+                        "@type": "organization",
+                        "$": "pending_org_::763708f022b626836d0126943abb1ea0"
+                      },
+                      "legalname": {
+                        "$": "BARCELONA SUPERCOMPUTING CENTER-CENTRO NACIONAL DE SUPERCOMPUTACION"
+                      },
+                      "legalshortname": {
+                        "$": "BSC CNS"
+                      },
+                      "country": {
+                        "@classid": "ES",
+                        "@classname": "Spain",
+                        "@schemeid": "dnet:countries",
+                        "@schemename": "dnet:countries"
+                      }
+                    },
+                    {
+                      "@inferred": false,
+                      "@trust": "0.900",
+                      "@inferenceprovenance": "",
+                      "@provenanceaction": "sysimport:crosswalk:entityregistry",
+                      "to": {
+                        "@class": "hasParticipant",
+                        "@scheme": "dnet:project_organization_relations",
+                        "@type": "organization",
+                        "$": "pending_org_::487887e3d189cf7293c66f317c6a2181"
+                      },
+                      "legalname": {
+                        "$": "ETHNIKO DIKTYO EREVNAS TECHNOLOGIAS AE"
+                      },
+                      "legalshortname": {
+                        "$": "EDET GREEK RESEARCH AND TECHNOLOGY NETWORK SA"
+                      },
+                      "country": {
+                        "@classid": "GR",
+                        "@classname": "Greece",
+                        "@schemeid": "dnet:countries",
+                        "@schemename": "dnet:countries"
+                      }
+                    },
+                    {
+                      "@inferred": false,
+                      "@trust": "0.900",
+                      "@inferenceprovenance": "",
+                      "@provenanceaction": "sysimport:crosswalk:entityregistry",
+                      "to": {
+                        "@class": "hasParticipant",
+                        "@scheme": "dnet:project_organization_relations",
+                        "@type": "organization",
+                        "$": "pending_org_::c4e000b1d764d773650e972770734e92"
+                      },
+                      "legalshortname": {
+                        "$": "SUITE5 DATA INTELLIGENCE SOLUTIONS LIMITED"
+                      },
+                      "country": {
+                        "@classid": "CY",
+                        "@classname": "Cyprus",
+                        "@schemeid": "dnet:countries",
+                        "@schemename": "dnet:countries"
+                      },
+                      "legalname": {
+                        "$": "SUITE5 DATA INTELLIGENCE SOLUTIONS LIMITED"
+                      }
+                    },
+                    {
+                      "@inferred": false,
+                      "@trust": "0.900",
+                      "@inferenceprovenance": "",
+                      "@provenanceaction": "sysimport:crosswalk:entityregistry",
+                      "to": {
+                        "@class": "hasParticipant",
+                        "@scheme": "dnet:project_organization_relations",
+                        "@type": "organization",
+                        "$": "openorgs____::d8ded2aea1187f88055edf31b624d4eb"
+                      },
+                      "country": {
+                        "@classid": "GB",
+                        "@classname": "United Kingdom",
+                        "@schemeid": "dnet:countries",
+                        "@schemename": "dnet:countries"
+                      },
+                      "legalshortname": {
+                        "$": "Jisc"
+                      },
+                      "legalname": {
+                        "$": "Jisc"
+                      }
+                    },
+                    {
+                      "@inferred": false,
+                      "@trust": "0.900",
+                      "@inferenceprovenance": "",
+                      "@provenanceaction": "sysimport:crosswalk:entityregistry",
+                      "to": {
+                        "@class": "hasParticipant",
+                        "@scheme": "dnet:project_organization_relations",
+                        "@type": "organization",
+                        "$": "openorgs____::df5fef1daf907ee9d64e5586c8de8161"
+                      },
+                      "legalname": {
+                        "$": "AGH University of Science and Technology"
+                      },
+                      "country": {
+                        "@classid": "PL",
+                        "@classname": "Poland",
+                        "@schemeid": "dnet:countries",
+                        "@schemename": "dnet:countries"
+                      },
+                      "legalshortname": {
+                        "$": "AGH UST"
+                      }
+                    },
+                    {
+                      "@inferred": false,
+                      "@trust": "0.900",
+                      "@inferenceprovenance": "",
+                      "@provenanceaction": "sysimport:crosswalk:entityregistry",
+                      "to": {
+                        "@class": "hasParticipant",
+                        "@scheme": "dnet:project_organization_relations",
+                        "@type": "organization",
+                        "$": "pending_org_::ef2fd2c033c5be81179e2f7fc3cb4940"
+                      },
+                      "legalname": {
+                        "$": "EISCAT SCIENTIFIC ASSOCIATION"
+                      },
+                      "country": {
+                        "@classid": "SE",
+                        "@classname": "Sweden",
+                        "@schemeid": "dnet:countries",
+                        "@schemename": "dnet:countries"
+                      },
+                      "legalshortname": {
+                        "$": "EISCAT"
+                      }
+                    },
+                    {
+                      "@inferred": false,
+                      "@trust": "0.900",
+                      "@inferenceprovenance": "",
+                      "@provenanceaction": "sysimport:crosswalk:entityregistry",
+                      "to": {
+                        "@class": "hasParticipant",
+                        "@scheme": "dnet:project_organization_relations",
+                        "@type": "organization",
+                        "$": "openorgs____::352d0953bd793d5e919d327c14ab7467"
+                      },
+                      "legalname": {
+                        "$": "MTA Institute for Computer Science and Control"
+                      },
+                      "legalshortname": {
+                        "$": "MTA SZTAKI"
+                      },
+                      "country": {
+                        "@classid": "HU",
+                        "@classname": "Hungary",
+                        "@schemeid": "dnet:countries",
+                        "@schemename": "dnet:countries"
+                      }
+                    },
+                    {
+                      "@inferred": false,
+                      "@trust": "0.900",
+                      "@inferenceprovenance": "",
+                      "@provenanceaction": "sysimport:crosswalk:entityregistry",
+                      "to": {
+                        "@class": "hasParticipant",
+                        "@scheme": "dnet:project_organization_relations",
+                        "@type": "organization",
+                        "$": "openorgs____::f1fb4bc68bfec29fc2b3a3ad87182f3b"
+                      },
+                      "country": {
+                        "@classid": "PT",
+                        "@classname": "Portugal",
+                        "@schemeid": "dnet:countries",
+                        "@schemename": "dnet:countries"
+                      },
+                      "legalshortname": {
+                        "$": "LNEC"
+                      },
+                      "legalname": {
+                        "$": "National Laboratory for Civil Engineering"
+                      }
+                    },
+                    {
+                      "@inferred": false,
+                      "@trust": "0.900",
+                      "@inferenceprovenance": "",
+                      "@provenanceaction": "sysimport:crosswalk:entityregistry",
+                      "to": {
+                        "@class": "hasParticipant",
+                        "@scheme": "dnet:project_organization_relations",
+                        "@type": "organization",
+                        "$": "pending_org_::454e63f9ba992f77ea812e2b18eae7e6"
+                      },
+                      "legalshortname": {
+                        "$": "CSC-IT CENTER FOR SCIENCE LTD"
+                      },
+                      "legalname": {
+                        "$": "CSC-TIETEEN TIETOTEKNIIKAN KESKUS OY"
+                      },
+                      "country": {
+                        "@classid": "FI",
+                        "@classname": "Finland",
+                        "@schemeid": "dnet:countries",
+                        "@schemename": "dnet:countries"
+                      }
+                    },
+                    {
+                      "@inferred": false,
+                      "@trust": "0.900",
+                      "@inferenceprovenance": "",
+                      "@provenanceaction": "sysimport:crosswalk:entityregistry",
+                      "to": {
+                        "@class": "hasParticipant",
+                        "@scheme": "dnet:project_organization_relations",
+                        "@type": "organization",
+                        "$": "openorgs____::783049bde5148fe368711ae171c57c48"
+                      },
+                      "legalname": {
+                        "$": "Academia Sinica"
+                      },
+                      "country": {
+                        "@classid": "TW",
+                        "@classname": "Taiwan",
+                        "@schemeid": "dnet:countries",
+                        "@schemename": "dnet:countries"
+                      },
+                      "legalshortname": {
+                        "$": "Academia Sinica"
+                      }
+                    },
+                    {
+                      "@inferred": false,
+                      "@trust": "0.900",
+                      "@inferenceprovenance": "",
+                      "@provenanceaction": "sysimport:crosswalk:entityregistry",
+                      "to": {
+                        "@class": "hasParticipant",
+                        "@scheme": "dnet:project_organization_relations",
+                        "@type": "organization",
+                        "$": "pending_org_::721b582a6c8da5a2989a88531f38ad83"
+                      },
+                      "country": {
+                        "@classid": "IT",
+                        "@classname": "Italy",
+                        "@schemeid": "dnet:countries",
+                        "@schemename": "dnet:countries"
+                      },
+                      "legalshortname": {
+                        "$": "ISTITUTO NAZIONALE DI GEOFISICA E VULCANOLOGIA"
+                      },
+                      "legalname": {
+                        "$": "ISTITUTO NAZIONALE DI GEOFISICA E VULCANOLOGIA"
+                      }
+                    },
+                    {
+                      "@inferred": false,
+                      "@trust": "0.900",
+                      "@inferenceprovenance": "",
+                      "@provenanceaction": "sysimport:crosswalk:entityregistry",
+                      "to": {
+                        "@class": "hasParticipant",
+                        "@scheme": "dnet:project_organization_relations",
+                        "@type": "organization",
+                        "$": "pending_org_::a46ec126752d6be66c74d7c53f1cf765"
+                      },
+                      "country": {
+                        "@classid": "GB",
+                        "@classname": "United Kingdom",
+                        "@schemeid": "dnet:countries",
+                        "@schemename": "dnet:countries"
+                      },
+                      "legalshortname": {
+                        "$": "CCFE"
+                      },
+                      "legalname": {
+                        "$": "UNITED KINGDOM ATOMIC ENERGY AUTHORITY"
+                      }
+                    },
+                    {
+                      "@inferred": false,
+                      "@trust": "0.900",
+                      "@inferenceprovenance": "",
+                      "@provenanceaction": "sysimport:crosswalk:entityregistry",
+                      "to": {
+                        "@class": "hasParticipant",
+                        "@scheme": "dnet:project_organization_relations",
+                        "@type": "organization",
+                        "$": "pending_org_::486d9948a35a9d0c34da0a0bdc03ac24"
+                      },
+                      "country": {
+                        "@classid": "FR",
+                        "@classname": "France",
+                        "@schemeid": "dnet:countries",
+                        "@schemename": "dnet:countries"
+                      },
+                      "legalshortname": {
+                        "$": "ECRIN"
+                      },
+                      "legalname": {
+                        "$": "ECRIN EUROPEAN CLINICAL RESEARCH INFRASTRUCTURE NETWORK"
+                      }
+                    },
+                    {
+                      "@inferred": false,
+                      "@trust": "0.900",
+                      "@inferenceprovenance": "",
+                      "@provenanceaction": "sysimport:crosswalk:entityregistry",
+                      "to": {
+                        "@class": "hasParticipant",
+                        "@scheme": "dnet:project_organization_relations",
+                        "@type": "organization",
+                        "$": "openorgs____::644d885ebc8c6725934c493da32893d1"
+                      },
+                      "legalshortname": {
+                        "$": "EGI"
+                      },
+                      "country": {
+                        "@classid": "NL",
+                        "@classname": "Netherlands",
+                        "@schemeid": "dnet:countries",
+                        "@schemename": "dnet:countries"
+                      },
+                      "legalname": {
+                        "$": "EGI Foundation"
+                      }
+                    },
+                    {
+                      "@inferred": false,
+                      "@trust": "0.900",
+                      "@inferenceprovenance": "",
+                      "@provenanceaction": "sysimport:crosswalk:entityregistry",
+                      "to": {
+                        "@class": "hasParticipant",
+                        "@scheme": "dnet:project_organization_relations",
+                        "@type": "organization",
+                        "$": "pending_org_::bb1968a4e357f10e39a2eca07bbc6546"
+                      },
+                      "country": {
+                        "@classid": "IT",
+                        "@classname": "Italy",
+                        "@schemeid": "dnet:countries",
+                        "@schemename": "dnet:countries"
+                      },
+                      "legalname": {
+                        "$": "CINECA CONSORZIO INTERUNIVERSITARIO"
+                      },
+                      "legalshortname": {
+                        "$": "CINECA"
+                      }
+                    },
+                    {
+                      "@inferred": false,
+                      "@trust": "0.900",
+                      "@inferenceprovenance": "",
+                      "@provenanceaction": "sysimport:crosswalk:entityregistry",
+                      "to": {
+                        "@class": "hasParticipant",
+                        "@scheme": "dnet:project_organization_relations",
+                        "@type": "organization",
+                        "$": "openorgs____::36765698e0266d5ad082e90ede0218ab"
+                      },
+                      "legalname": {
+                        "$": "Institute of Accelerating Systems and Applications"
+                      },
+                      "country": {
+                        "@classid": "GR",
+                        "@classname": "Greece",
+                        "@schemeid": "dnet:countries",
+                        "@schemename": "dnet:countries"
+                      },
+                      "legalshortname": {
+                        "$": "IASA"
+                      }
+                    },
+                    {
+                      "@inferred": false,
+                      "@trust": "0.900",
+                      "@inferenceprovenance": "",
+                      "@provenanceaction": "sysimport:crosswalk:entityregistry",
+                      "to": {
+                        "@class": "hasParticipant",
+                        "@scheme": "dnet:project_organization_relations",
+                        "@type": "organization",
+                        "$": "openorgs____::254da6549a0e5eef83e591a51ccf8f9f"
+                      },
+                      "country": {
+                        "@classid": "GB",
+                        "@classname": "United Kingdom",
+                        "@schemeid": "dnet:countries",
+                        "@schemename": "dnet:countries"
+                      },
+                      "legalshortname": {
+                        "$": "MRC"
+                      },
+                      "legalname": {
+                        "$": "Medical Research Council"
+                      }
+                    },
+                    {
+                      "@inferred": false,
+                      "@trust": "0.900",
+                      "@inferenceprovenance": "",
+                      "@provenanceaction": "sysimport:crosswalk:entityregistry",
+                      "to": {
+                        "@class": "hasParticipant",
+                        "@scheme": "dnet:project_organization_relations",
+                        "@type": "organization",
+                        "$": "openorgs____::d169c7407dd417152596908d48c11460"
+                      },
+                      "legalname": {
+                        "$": "Masaryk University"
+                      },
+                      "legalshortname": {
+                        "$": "MU"
+                      },
+                      "country": {
+                        "@classid": "CZ",
+                        "@classname": "Czech Republic",
+                        "@schemeid": "dnet:countries",
+                        "@schemename": "dnet:countries"
+                      }
+                    },
+                    {
+                      "@inferred": false,
+                      "@trust": "0.900",
+                      "@inferenceprovenance": "",
+                      "@provenanceaction": "sysimport:crosswalk:entityregistry",
+                      "to": {
+                        "@class": "hasParticipant",
+                        "@scheme": "dnet:project_organization_relations",
+                        "@type": "organization",
+                        "$": "pending_org_::1c1bde2384a4ec39951d372eaf36e014"
+                      },
+                      "legalname": {
+                        "$": "SVEUCILISTE U ZAGREBU SVEUCILISNI RACUNSKI CENTAR"
+                      },
+                      "country": {
+                        "@classid": "HR",
+                        "@classname": "Croatia",
+                        "@schemeid": "dnet:countries",
+                        "@schemename": "dnet:countries"
+                      },
+                      "legalshortname": {
+                        "$": "SRCE"
+                      }
+                    },
+                    {
+                      "@inferred": false,
+                      "@trust": "0.900",
+                      "@inferenceprovenance": "",
+                      "@provenanceaction": "sysimport:crosswalk:entityregistry",
+                      "to": {
+                        "@class": "hasParticipant",
+                        "@scheme": "dnet:project_organization_relations",
+                        "@type": "organization",
+                        "$": "pending_org_::877f4d9b3525b0314c37d820bf64cdc9"
+                      },
+                      "legalname": {
+                        "$": "CESNET ZAJMOVE SDRUZENI PRAVNICKYCH OSOB"
+                      },
+                      "legalshortname": {
+                        "$": "CESNET"
+                      },
+                      "country": {
+                        "@classid": "CZ",
+                        "@classname": "Czech Republic",
+                        "@schemeid": "dnet:countries",
+                        "@schemename": "dnet:countries"
+                      }
+                    },
+                    {
+                      "@inferred": false,
+                      "@trust": "0.900",
+                      "@inferenceprovenance": "",
+                      "@provenanceaction": "sysimport:crosswalk:entityregistry",
+                      "to": {
+                        "@class": "hasParticipant",
+                        "@scheme": "dnet:project_organization_relations",
+                        "@type": "organization",
+                        "$": "openorgs____::b26fbdb2a24cc272682e85b103f77fe4"
+                      },
+                      "legalname": {
+                        "$": "Helmholtz Centre Potsdam - GFZ German Research Centre for Geosciences"
+                      },
+                      "legalshortname": {
+                        "$": "GFZ"
+                      },
+                      "country": {
+                        "@classid": "DE",
+                        "@classname": "Germany",
+                        "@schemeid": "dnet:countries",
+                        "@schemename": "dnet:countries"
+                      }
+                    },
+                    {
+                      "@inferred": false,
+                      "@trust": "0.900",
+                      "@inferenceprovenance": "",
+                      "@provenanceaction": "sysimport:crosswalk:entityregistry",
+                      "to": {
+                        "@class": "hasParticipant",
+                        "@scheme": "dnet:project_organization_relations",
+                        "@type": "organization",
+                        "$": "pending_org_::488acd85ad9e42fc510c86d5e2e5e9a4"
+                      },
+                      "country": {
+                        "@classid": "PT",
+                        "@classname": "Portugal",
+                        "@schemeid": "dnet:countries",
+                        "@schemename": "dnet:countries"
+                      },
+                      "legalshortname": {
+                        "$": "ACTION MODULERS"
+                      },
+                      "legalname": {
+                        "$": "ACTION MODULERS - CONSULTING & TECNOLOGY, LDA"
+                      }
+                    },
+                    {
+                      "@inferred": false,
+                      "@trust": "0.900",
+                      "@inferenceprovenance": "",
+                      "@provenanceaction": "sysimport:crosswalk:entityregistry",
+                      "to": {
+                        "@class": "hasParticipant",
+                        "@scheme": "dnet:project_organization_relations",
+                        "@type": "organization",
+                        "$": "openorgs____::ec3665affa01aeafa28b7852c4176dbd"
+                      },
+                      "country": {
+                        "@classid": "HR",
+                        "@classname": "Croatia",
+                        "@schemeid": "dnet:countries",
+                        "@schemename": "dnet:countries"
+                      },
+                      "legalshortname": {
+                        "$": "IRB"
+                      },
+                      "legalname": {
+                        "$": "Rudjer Boskovic Institute"
+                      }
+                    },
+                    {
+                      "@inferred": false,
+                      "@trust": "0.900",
+                      "@inferenceprovenance": "",
+                      "@provenanceaction": "sysimport:crosswalk:entityregistry",
+                      "to": {
+                        "@class": "hasParticipant",
+                        "@scheme": "dnet:project_organization_relations",
+                        "@type": "organization",
+                        "$": "pending_org_::babcc55d4271ab617c8614c786478c1a"
+                      },
+                      "country": {
+                        "@classid": "SK",
+                        "@classname": "Slovakia",
+                        "@schemeid": "dnet:countries",
+                        "@schemename": "dnet:countries"
+                      },
+                      "legalshortname": {
+                        "$": "INSTITUTE OF INFORMATICS SAS"
+                      },
+                      "legalname": {
+                        "$": "USTAV INFORMATIKY, SLOVENSKA AKADEMIA VIED"
+                      }
+                    },
+                    {
+                      "@inferred": false,
+                      "@trust": "0.900",
+                      "@inferenceprovenance": "",
+                      "@provenanceaction": "sysimport:crosswalk:entityregistry",
+                      "to": {
+                        "@class": "hasParticipant",
+                        "@scheme": "dnet:project_organization_relations",
+                        "@type": "organization",
+                        "$": "openorgs____::48fe35ff34622537027baed2af98ad07"
+                      },
+                      "legalname": {
+                        "$": "Instituto Tecnológico Metalmecánico, Mueble, Madera, Embalaje y Afines"
+                      },
+                      "country": {
+                        "@classid": "ES",
+                        "@classname": "Spain",
+                        "@schemeid": "dnet:countries",
+                        "@schemename": "dnet:countries"
+                      },
+                      "legalshortname": {
+                        "$": "AIDIMME"
+                      }
+                    },
+                    {
+                      "@inferred": false,
+                      "@trust": "0.900",
+                      "@inferenceprovenance": "",
+                      "@provenanceaction": "sysimport:crosswalk:entityregistry",
+                      "to": {
+                        "@class": "hasParticipant",
+                        "@scheme": "dnet:project_organization_relations",
+                        "@type": "organization",
+                        "$": "pending_org_::f3c2b9503a17139bf5fe284d0f1f634d"
+                      },
+                      "country": {
+                        "@classid": "IT",
+                        "@classname": "Italy",
+                        "@schemeid": "dnet:countries",
+                        "@schemename": "dnet:countries"
+                      },
+                      "legalshortname": {
+                        "$": "MEEO"
+                      },
+                      "legalname": {
+                        "$": "METEOROLOGICAL AND ENVIRONMENTAL EARTH OBSERVATION SRL"
+                      }
+                    },
+                    {
+                      "@inferred": false,
+                      "@trust": "0.900",
+                      "@inferenceprovenance": "",
+                      "@provenanceaction": "sysimport:crosswalk:entityregistry",
+                      "to": {
+                        "@class": "hasParticipant",
+                        "@scheme": "dnet:project_organization_relations",
+                        "@type": "organization",
+                        "$": "pending_org_::8f5d9b2f0ddb2e498bd7ef7823343229"
+                      },
+                      "legalshortname": {
+                        "$": "SIGMA2"
+                      },
+                      "country": {
+                        "@classid": "NO",
+                        "@classname": "Norway",
+                        "@schemeid": "dnet:countries",
+                        "@schemename": "dnet:countries"
+                      },
+                      "legalname": {
+                        "$": "UNINETT SIGMA2 AS"
+                      }
+                    },
+                    {
+                      "@inferred": false,
+                      "@trust": "0.900",
+                      "@inferenceprovenance": "",
+                      "@provenanceaction": "sysimport:crosswalk:entityregistry",
+                      "to": {
+                        "@class": "hasParticipant",
+                        "@scheme": "dnet:project_organization_relations",
+                        "@type": "organization",
+                        "$": "openorgs____::5a405a89387d1881afa956f475994e10"
+                      },
+                      "legalname": {
+                        "$": "Max Planck Society"
+                      },
+                      "country": {
+                        "@classid": "DE",
+                        "@classname": "Germany",
+                        "@schemeid": "dnet:countries",
+                        "@schemename": "dnet:countries"
+                      },
+                      "legalshortname": {
+                        "$": "MPG"
+                      }
+                    },
+                    {
+                      "@inferred": false,
+                      "@trust": "0.900",
+                      "@inferenceprovenance": "",
+                      "@provenanceaction": "sysimport:crosswalk:entityregistry",
+                      "to": {
+                        "@class": "hasParticipant",
+                        "@scheme": "dnet:project_organization_relations",
+                        "@type": "organization",
+                        "$": "pending_org_::ec98a602fa61f571dfe03106a1ade993"
+                      },
+                      "legalshortname": {
+                        "$": "CEA"
+                      },
+                      "country": {
+                        "@classid": "FR",
+                        "@classname": "France",
+                        "@schemeid": "dnet:countries",
+                        "@schemename": "dnet:countries"
+                      },
+                      "legalname": {
+                        "$": "COMMISSARIAT A L ENERGIE ATOMIQUE ET AUX ENERGIES ALTERNATIVES"
+                      }
+                    },
+                    {
+                      "@inferred": false,
+                      "@trust": "0.900",
+                      "@inferenceprovenance": "",
+                      "@provenanceaction": "sysimport:crosswalk:entityregistry",
+                      "to": {
+                        "@class": "hasParticipant",
+                        "@scheme": "dnet:project_organization_relations",
+                        "@type": "organization",
+                        "$": "pending_org_::7af8be9d10f08990b31f39609906186b"
+                      },
+                      "legalname": {
+                        "$": "F6S NETWORK LIMITED"
+                      },
+                      "country": {
+                        "@classid": "GB",
+                        "@classname": "United Kingdom",
+                        "@schemeid": "dnet:countries",
+                        "@schemename": "dnet:countries"
+                      },
+                      "legalshortname": {
+                        "$": "F6S NETWORK LIMITED"
+                      }
+                    },
+                    {
+                      "@inferred": false,
+                      "@trust": "0.900",
+                      "@inferenceprovenance": "",
+                      "@provenanceaction": "sysimport:crosswalk:entityregistry",
+                      "to": {
+                        "@class": "hasParticipant",
+                        "@scheme": "dnet:project_organization_relations",
+                        "@type": "organization",
+                        "$": "openorgs____::d41cf6bd4ab1b1362a44397e0b95c975"
+                      },
+                      "country": {
+                        "@classid": "IT",
+                        "@classname": "Italy",
+                        "@schemeid": "dnet:countries",
+                        "@schemename": "dnet:countries"
+                      },
+                      "legalshortname": {
+                        "$": "CNR"
+                      },
+                      "legalname": {
+                        "$": "National Research Council"
+                      }
+                    },
+                    {
+                      "@inferred": false,
+                      "@trust": "0.900",
+                      "@inferenceprovenance": "",
+                      "@provenanceaction": "sysimport:crosswalk:entityregistry",
+                      "to": {
+                        "@class": "hasParticipant",
+                        "@scheme": "dnet:project_organization_relations",
+                        "@type": "organization",
+                        "$": "openorgs____::c83f7a44f74914928f9d053a2bd79178"
+                      },
+                      "legalshortname": {
+                        "$": "GWDG"
+                      },
+                      "country": {
+                        "@classid": "DE",
+                        "@classname": "Germany",
+                        "@schemeid": "dnet:countries",
+                        "@schemename": "dnet:countries"
+                      },
+                      "legalname": {
+                        "$": "Gesellschaft für wissenschaftliche Datenverarbeitung mbH Göttingen"
+                      }
+                    },
+                    {
+                      "@inferred": false,
+                      "@trust": "0.900",
+                      "@inferenceprovenance": "",
+                      "@provenanceaction": "sysimport:crosswalk:entityregistry",
+                      "to": {
+                        "@class": "hasParticipant",
+                        "@scheme": "dnet:project_organization_relations",
+                        "@type": "organization",
+                        "$": "pending_org_::c11f1751a75bf5c7523df4779d80ca17"
+                      },
+                      "country": {
+                        "@classid": "IT",
+                        "@classname": "Italy",
+                        "@schemeid": "dnet:countries",
+                        "@schemename": "dnet:countries"
+                      },
+                      "legalname": {
+                        "$": "TERRADUE SRL"
+                      },
+                      "legalshortname": {
+                        "$": "TERRADUE"
+                      }
+                    },
+                    {
+                      "@inferred": false,
+                      "@trust": "0.900",
+                      "@inferenceprovenance": "",
+                      "@provenanceaction": "sysimport:crosswalk:entityregistry",
+                      "to": {
+                        "@class": "hasParticipant",
+                        "@scheme": "dnet:project_organization_relations",
+                        "@type": "organization",
+                        "$": "pending_org_::60b68dd6bae0d7a25e0dc20bb3b50347"
+                      },
+                      "country": {
+                        "@classid": "NL",
+                        "@classname": "Netherlands",
+                        "@schemeid": "dnet:countries",
+                        "@schemename": "dnet:countries"
+                      },
+                      "legalname": {
+                        "$": "GEANT VERENIGING"
+                      },
+                      "legalshortname": {
+                        "$": "GEANT VERENIGING"
+                      }
+                    },
+                    {
+                      "@inferred": false,
+                      "@trust": "0.900",
+                      "@inferenceprovenance": "",
+                      "@provenanceaction": "sysimport:crosswalk:entityregistry",
+                      "to": {
+                        "@class": "hasParticipant",
+                        "@scheme": "dnet:project_organization_relations",
+                        "@type": "organization",
+                        "$": "openorgs____::f031b1a0bb3f7636ff6fbdfa79fd5dec"
+                      },
+                      "country": {
+                        "@classid": "GB",
+                        "@classname": "United Kingdom",
+                        "@schemeid": "dnet:countries",
+                        "@schemename": "dnet:countries"
+                      },
+                      "legalname": {
+                        "$": "University College London"
+                      },
+                      "legalshortname": {
+                        "$": "UCL"
+                      }
+                    },
+                    {
+                      "@inferred": false,
+                      "@trust": "0.900",
+                      "@inferenceprovenance": "",
+                      "@provenanceaction": "sysimport:crosswalk:entityregistry",
+                      "to": {
+                        "@class": "hasParticipant",
+                        "@scheme": "dnet:project_organization_relations",
+                        "@type": "organization",
+                        "$": "pending_org_::d51fadff8468c8d2f29ec98109618d84"
+                      },
+                      "country": {
+                        "@classid": "IT",
+                        "@classname": "Italy",
+                        "@schemeid": "dnet:countries",
+                        "@schemename": "dnet:countries"
+                      },
+                      "legalname": {
+                        "$": "CONSORZIO INTERUNIVERSITARIO RISONANZE MAGNETICHE DI METALLO PROTEINE"
+                      },
+                      "legalshortname": {
+                        "$": "CIRMMP"
+                      }
+                    },
+                    {
+                      "@inferred": false,
+                      "@trust": "0.900",
+                      "@inferenceprovenance": "",
+                      "@provenanceaction": "sysimport:crosswalk:entityregistry",
+                      "to": {
+                        "@class": "hasParticipant",
+                        "@scheme": "dnet:project_organization_relations",
+                        "@type": "organization",
+                        "$": "openorgs____::b15b534e576535e50a702454bb728cca"
+                      },
+                      "country": {
+                        "@classid": "DK",
+                        "@classname": "Denmark",
+                        "@schemeid": "dnet:countries",
+                        "@schemename": "dnet:countries"
+                      },
+                      "legalname": {
+                        "$": "Technical University of Denmark"
+                      },
+                      "legalshortname": {
+                        "$": "DTU"
+                      }
+                    },
+                    {
+                      "@inferred": false,
+                      "@trust": "0.900",
+                      "@inferenceprovenance": "",
+                      "@provenanceaction": "sysimport:crosswalk:entityregistry",
+                      "to": {
+                        "@class": "hasParticipant",
+                        "@scheme": "dnet:project_organization_relations",
+                        "@type": "organization",
+                        "$": "pending_org_::1bb752edf6d7cdd179b8b8c1373551b3"
+                      },
+                      "country": {
+                        "@classid": "ES",
+                        "@classname": "Spain",
+                        "@schemeid": "dnet:countries",
+                        "@schemename": "dnet:countries"
+                      },
+                      "legalname": {
+                        "$": "HIDRONAV TECHNOLOGIES S.L."
+                      },
+                      "legalshortname": {
+                        "$": "HIDRONAV"
+                      }
+                    },
+                    {
+                      "@inferred": false,
+                      "@trust": "0.900",
+                      "@inferenceprovenance": "",
+                      "@provenanceaction": "sysimport:crosswalk:entityregistry",
+                      "to": {
+                        "@class": "hasParticipant",
+                        "@scheme": "dnet:project_organization_relations",
+                        "@type": "organization",
+                        "$": "pending_org_::cda7c6c9848f675750742eeb21dfe5d5"
+                      },
+                      "country": {
+                        "@classid": "NL",
+                        "@classname": "Netherlands",
+                        "@schemeid": "dnet:countries",
+                        "@schemename": "dnet:countries"
+                      },
+                      "legalshortname": {
+                        "$": "COMMON LANGUAGE RESOURCES AND TECHNOLOGY INFRASTRUCTURE ASA EUROPEAN RESEARCH INFRASTRUCTURECONSORTI"
+                      },
+                      "legalname": {
+                        "$": "CLARIN ERIC"
+                      }
+                    },
+                    {
+                      "@inferred": false,
+                      "@trust": "0.900",
+                      "@inferenceprovenance": "",
+                      "@provenanceaction": "sysimport:crosswalk:entityregistry",
+                      "to": {
+                        "@class": "hasParticipant",
+                        "@scheme": "dnet:project_organization_relations",
+                        "@type": "organization",
+                        "$": "pending_org_::d10c268aeebb810a3a6897817975823e"
+                      },
+                      "legalshortname": {
+                        "$": "E-SCIENCE DATA FACTORY"
+                      },
+                      "country": {
+                        "@classid": "FR",
+                        "@classname": "France",
+                        "@schemeid": "dnet:countries",
+                        "@schemename": "dnet:countries"
+                      },
+                      "legalname": {
+                        "$": "E-SCIENCE DATA FACTORY"
+                      }
+                    },
+                    {
+                      "@inferred": false,
+                      "@trust": "0.900",
+                      "@inferenceprovenance": "",
+                      "@provenanceaction": "sysimport:crosswalk:entityregistry",
+                      "to": {
+                        "@class": "hasParticipant",
+                        "@scheme": "dnet:project_organization_relations",
+                        "@type": "organization",
+                        "$": "pending_org_::eba117d337abc8e288f3a1e9084499f5"
+                      },
+                      "legalshortname": {
+                        "$": "ASTRON"
+                      },
+                      "country": {
+                        "@classid": "NL",
+                        "@classname": "Netherlands",
+                        "@schemeid": "dnet:countries",
+                        "@schemename": "dnet:countries"
+                      },
+                      "legalname": {
+                        "$": "STICHTING ASTRON, NETHERLANDS INSTITUTE FOR RADIO ASTRONOMY"
+                      }
+                    },
+                    {
+                      "@inferred": false,
+                      "@trust": "0.900",
+                      "@inferenceprovenance": "",
+                      "@provenanceaction": "sysimport:crosswalk:entityregistry",
+                      "to": {
+                        "@class": "hasParticipant",
+                        "@scheme": "dnet:project_organization_relations",
+                        "@type": "organization",
+                        "$": "openorgs____::c90bfccc9ead491dc3facb62eac68a4a"
+                      },
+                      "legalname": {
+                        "$": "National Computer Center for Higher Education"
+                      },
+                      "country": {
+                        "@classid": "FR",
+                        "@classname": "France",
+                        "@schemeid": "dnet:countries",
+                        "@schemename": "dnet:countries"
+                      },
+                      "legalshortname": {
+                        "$": "CINES"
+                      }
+                    },
+                    {
+                      "@inferred": false,
+                      "@trust": "0.900",
+                      "@inferenceprovenance": "",
+                      "@provenanceaction": "sysimport:crosswalk:entityregistry",
+                      "to": {
+                        "@class": "hasParticipant",
+                        "@scheme": "dnet:project_organization_relations",
+                        "@type": "organization",
+                        "$": "pending_org_::8de81cc8b8d57a2cffb4cec20786f369"
+                      },
+                      "legalname": {
+                        "$": "RASDAMAN GMBH"
+                      },
+                      "legalshortname": {
+                        "$": "RASDAMAN"
+                      },
+                      "country": {
+                        "@classid": "DE",
+                        "@classname": "Germany",
+                        "@schemeid": "dnet:countries",
+                        "@schemename": "dnet:countries"
+                      }
+                    },
+                    {
+                      "@inferred": false,
+                      "@trust": "0.900",
+                      "@inferenceprovenance": "",
+                      "@provenanceaction": "sysimport:crosswalk:entityregistry",
+                      "to": {
+                        "@class": "hasParticipant",
+                        "@scheme": "dnet:project_organization_relations",
+                        "@type": "organization",
+                        "$": "pending_org_::abbe6876848dd408e5ee92c4bc90708a"
+                      },
+                      "country": {
+                        "@classid": "PT",
+                        "@classname": "Portugal",
+                        "@schemeid": "dnet:countries",
+                        "@schemename": "dnet:countries"
+                      },
+                      "legalshortname": {
+                        "$": "LIP"
+                      },
+                      "legalname": {
+                        "$": "LABORATORIO DE INSTRUMENTACAO E FISICA EXPERIMENTAL DE PARTICULAS LIP"
+                      }
+                    },
+                    {
+                      "@inferred": false,
+                      "@trust": "0.900",
+                      "@inferenceprovenance": "",
+                      "@provenanceaction": "sysimport:crosswalk:entityregistry",
+                      "to": {
+                        "@class": "hasParticipant",
+                        "@scheme": "dnet:project_organization_relations",
+                        "@type": "organization",
+                        "$": "openorgs____::6c3b43743c4fa1a8b60edd2a24fbfeb0"
+                      },
+                      "country": {
+                        "@classid": "DE",
+                        "@classname": "Germany",
+                        "@schemeid": "dnet:countries",
+                        "@schemename": "dnet:countries"
+                      },
+                      "legalname": {
+                        "$": "German Climate Computing Centre"
+                      },
+                      "legalshortname": {
+                        "$": "DKRZ"
+                      }
+                    },
+                    {
+                      "@inferred": false,
+                      "@trust": "0.900",
+                      "@inferenceprovenance": "",
+                      "@provenanceaction": "sysimport:crosswalk:entityregistry",
+                      "to": {
+                        "@class": "hasParticipant",
+                        "@scheme": "dnet:project_organization_relations",
+                        "@type": "organization",
+                        "$": "pending_org_::5c59ad8f0059910b86a5ac2727f31c64"
+                      },
+                      "country": {
+                        "@classid": "IT",
+                        "@classname": "Italy",
+                        "@schemeid": "dnet:countries",
+                        "@schemename": "dnet:countries"
+                      },
+                      "legalshortname": {
+                        "$": "YOTTACLE SRL"
+                      },
+                      "legalname": {
+                        "$": "YOTTACLE SRL"
+                      }
+                    },
+                    {
+                      "@inferred": false,
+                      "@trust": "0.900",
+                      "@inferenceprovenance": "",
+                      "@provenanceaction": "sysimport:crosswalk:entityregistry",
+                      "to": {
+                        "@class": "hasParticipant",
+                        "@scheme": "dnet:project_organization_relations",
+                        "@type": "organization",
+                        "$": "pending_org_::b5d97b9cc49205967fd8cb4a2627286b"
+                      },
+                      "legalshortname": {
+                        "$": "ECOHYDROS"
+                      },
+                      "legalname": {
+                        "$": "ECOHYDROS SL"
+                      },
+                      "country": {
+                        "@classid": "ES",
+                        "@classname": "Spain",
+                        "@schemeid": "dnet:countries",
+                        "@schemename": "dnet:countries"
+                      }
+                    },
+                    {
+                      "@inferred": false,
+                      "@trust": "0.900",
+                      "@inferenceprovenance": "",
+                      "@provenanceaction": "sysimport:crosswalk:entityregistry",
+                      "to": {
+                        "@class": "hasParticipant",
+                        "@scheme": "dnet:project_organization_relations",
+                        "@type": "organization",
+                        "$": "pending_org_::84285f3f4443714b0b14abb567c339e3"
+                      },
+                      "country": {
+                        "@classid": "SI",
+                        "@classname": "Slovenia",
+                        "@schemeid": "dnet:countries",
+                        "@schemename": "dnet:countries"
+                      },
+                      "legalshortname": {
+                        "$": "SINERGISE"
+                      },
+                      "legalname": {
+                        "$": "SINERGISE LABORATORIJ ZA GEOGRAFSKE INFORMACIJSKE SISTEME DOO"
+                      }
+                    },
+                    {
+                      "@inferred": false,
+                      "@trust": "0.900",
+                      "@inferenceprovenance": "",
+                      "@provenanceaction": "sysimport:crosswalk:entityregistry",
+                      "to": {
+                        "@class": "hasParticipant",
+                        "@scheme": "dnet:project_organization_relations",
+                        "@type": "organization",
+                        "$": "openorgs____::6abea26a3a3d667713f66eb9383bb8dc"
+                      },
+                      "country": {
+                        "@classid": "GB",
+                        "@classname": "United Kingdom",
+                        "@schemeid": "dnet:countries",
+                        "@schemename": "dnet:countries"
+                      },
+                      "legalname": {
+                        "$": "University of Edinburgh"
+                      },
+                      "legalshortname": {
+                        "$": "University of Edinburgh"
+                      }
+                    },
+                    {
+                      "@inferred": false,
+                      "@trust": "0.900",
+                      "@inferenceprovenance": "",
+                      "@provenanceaction": "sysimport:crosswalk:entityregistry",
+                      "to": {
+                        "@class": "hasParticipant",
+                        "@scheme": "dnet:project_organization_relations",
+                        "@type": "organization",
+                        "$": "openorgs____::7fbdf9cd4423c4604745a16afe728bc7"
+                      },
+                      "country": {
+                        "@classid": "FR",
+                        "@classname": "France",
+                        "@schemeid": "dnet:countries",
+                        "@schemename": "dnet:countries"
+                      },
+                      "legalshortname": {
+                        "$": "CNRS"
+                      },
+                      "legalname": {
+                        "$": "French National Centre for Scientific Research"
+                      }
+                    },
+                    {
+                      "@inferred": false,
+                      "@trust": "0.900",
+                      "@inferenceprovenance": "",
+                      "@provenanceaction": "sysimport:crosswalk:entityregistry",
+                      "to": {
+                        "@class": "hasParticipant",
+                        "@scheme": "dnet:project_organization_relations",
+                        "@type": "organization",
+                        "$": "pending_org_::259821c1648d53a1d5d09a66c5dc6f17"
+                      },
+                      "legalname": {
+                        "$": "EODC EARTH OBSERVATION DATA CENTREFOR WATER RESOURCES MONITORING GMBH"
+                      },
+                      "country": {
+                        "@classid": "AT",
+                        "@classname": "Austria",
+                        "@schemeid": "dnet:countries",
+                        "@schemename": "dnet:countries"
+                      },
+                      "legalshortname": {
+                        "$": "EODC"
+                      }
+                    },
+                    {
+                      "@inferred": false,
+                      "@trust": "0.900",
+                      "@inferenceprovenance": "",
+                      "@provenanceaction": "sysimport:crosswalk:entityregistry",
+                      "to": {
+                        "@class": "hasParticipant",
+                        "@scheme": "dnet:project_organization_relations",
+                        "@type": "organization",
+                        "$": "pending_org_::2eec3a337e82661310360ea1b20b06e2"
+                      },
+                      "country": {
+                        "@classid": "IT",
+                        "@classname": "Italy",
+                        "@schemeid": "dnet:countries",
+                        "@schemename": "dnet:countries"
+                      },
+                      "legalshortname": {
+                        "$": "INFN"
+                      },
+                      "legalname": {
+                        "$": "ISTITUTO NAZIONALE DI FISICA NUCLEARE"
+                      }
+                    },
+                    {
+                      "@inferred": false,
+                      "@trust": "0.900",
+                      "@inferenceprovenance": "",
+                      "@provenanceaction": "sysimport:crosswalk:entityregistry",
+                      "to": {
+                        "@class": "hasParticipant",
+                        "@scheme": "dnet:project_organization_relations",
+                        "@type": "organization",
+                        "$": "pending_org_::8082f623d16836b54550620050bd5a50"
+                      },
+                      "country": {
+                        "@classid": "IT",
+                        "@classname": "Italy",
+                        "@schemeid": "dnet:countries",
+                        "@schemename": "dnet:countries"
+                      },
+                      "legalshortname": {
+                        "$": "FONDAZIONE CMCC"
+                      },
+                      "legalname": {
+                        "$": "FONDAZIONE CENTRO EURO-MEDITERRANEOSUI CAMBIAMENTI CLIMATICI"
+                      }
+                    }
+                  ]
+                },
+                "children": null
+              }
+            }
+          }
+        }
+      ]
+    },
+    "browseResults": null
+  }
+}

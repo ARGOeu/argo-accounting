@@ -1,4 +1,4 @@
-package org.accounting.system.dtos;
+package org.accounting.system.dtos.pagination;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.quarkus.mongodb.panache.PanacheQuery;

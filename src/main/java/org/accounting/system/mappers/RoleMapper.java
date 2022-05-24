@@ -1,5 +1,6 @@
 package org.accounting.system.mappers;
 
+import org.accounting.system.beans.RequestInformation;
 import org.accounting.system.dtos.authorization.RoleRequestDto;
 import org.accounting.system.dtos.authorization.RoleResponseDto;
 import org.accounting.system.dtos.authorization.update.UpdateCollectionPermissionDto;
@@ -7,6 +8,7 @@ import org.accounting.system.dtos.authorization.update.UpdateRoleRequestDto;
 import org.accounting.system.entities.authorization.CollectionPermission;
 import org.accounting.system.entities.authorization.Role;
 import org.apache.commons.lang3.StringUtils;
+import org.mapstruct.AfterMapping;
 import org.mapstruct.BeanMapping;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
@@ -15,6 +17,7 @@ import org.mapstruct.Named;
 import org.mapstruct.NullValuePropertyMappingStrategy;
 import org.mapstruct.factory.Mappers;
 
+import javax.enterprise.inject.spi.CDI;
 import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
@@ -58,4 +61,11 @@ public interface RoleMapper {
             }
         return null;
     }
+
+    @AfterMapping
+    default void setCreatorId(RoleRequestDto source, @MappingTarget Role role) {
+        RequestInformation requestInformation = CDI.current().select(RequestInformation.class).get();
+        role.setCreatorId(requestInformation.getSubjectOfToken());
+    }
+
 }

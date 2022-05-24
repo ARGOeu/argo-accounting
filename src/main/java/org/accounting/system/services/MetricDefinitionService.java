@@ -2,14 +2,14 @@ package org.accounting.system.services;
 
 import com.mongodb.MongoWriteException;
 import io.quarkus.mongodb.panache.PanacheQuery;
-import org.accounting.system.dtos.metricdefinition.MetricDefinitionRequestDto;
-import org.accounting.system.dtos.metricdefinition.MetricDefinitionResponseDto;
-import org.accounting.system.dtos.metric.MetricResponseDto;
-import org.accounting.system.dtos.PageResource;
-import org.accounting.system.dtos.metricdefinition.UpdateMetricDefinitionRequestDto;
 import org.accounting.system.dtos.acl.AccessControlRequestDto;
 import org.accounting.system.dtos.acl.AccessControlResponseDto;
 import org.accounting.system.dtos.acl.AccessControlUpdateDto;
+import org.accounting.system.dtos.metric.MetricResponseDto;
+import org.accounting.system.dtos.metricdefinition.MetricDefinitionRequestDto;
+import org.accounting.system.dtos.metricdefinition.MetricDefinitionResponseDto;
+import org.accounting.system.dtos.metricdefinition.UpdateMetricDefinitionRequestDto;
+import org.accounting.system.dtos.pagination.PageResource;
 import org.accounting.system.entities.Metric;
 import org.accounting.system.entities.MetricDefinition;
 import org.accounting.system.enums.Collection;
@@ -24,7 +24,6 @@ import org.bson.types.ObjectId;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
-import javax.ws.rs.NotFoundException;
 import javax.ws.rs.core.UriInfo;
 import java.util.List;
 
@@ -93,12 +92,12 @@ public class MetricDefinitionService {
     }
 
     /**
-     * This method is responsible for updating a part or all attributes of existing Metric Definition.
+     * This method calls the {@link MetricDefinitionRepository metricDefinitionRepository} to update a Metric Definition.
      *
      * @param id The Metric Definition to be updated.
      * @param request The Metric Definition attributes to be updated.
      * @return The updated Metric Definition.
-     * @throws NotFoundException If the Metric Definition doesn't exist.
+     * @throws ConflictException If the Metric Definition with the given combination of unit_type and metric_name exists
      */
     public MetricDefinitionResponseDto update(String id, UpdateMetricDefinitionRequestDto request){
 
@@ -117,7 +116,6 @@ public class MetricDefinitionService {
      * Delete a Metric Definition by given id.
      * @param metricDefinitionId The Metric Definition to be deleted.
      * @return If the operation is successful or not.
-     * @throws NotFoundException If the Metric Definition doesn't exist.
      */
     public boolean delete(String metricDefinitionId){
 
