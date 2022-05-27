@@ -1,8 +1,15 @@
 package org.accounting.system.repositories.modulators;
 
+import com.mongodb.client.model.Aggregates;
+import com.mongodb.client.model.Filters;
+import io.quarkus.mongodb.panache.PanacheQuery;
+import io.quarkus.panache.common.Page;
 import org.accounting.system.entities.Entity;
 import org.accounting.system.entities.acl.AccessControl;
+import org.accounting.system.entities.projections.ProjectionQuery;
+import org.bson.conversions.Bson;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -36,6 +43,36 @@ public abstract class AccessAlwaysModulator<E extends Entity, I> extends AccessM
         return findAll().list();
     }
 
+
+    @Override
+    public PanacheQuery<E> findAllPageable(int page, int size) {
+        return findAll().page(Page.of(page, size));
+    }
+
+    @Override
+    public <T> ProjectionQuery<T> lookup(String from, String localField, String foreignField, String as, int page, int size, Class<T> projection) {
+
+        Bson bson = Aggregates.lookup(from, localField, foreignField, as);
+
+        List<T> projections = getMongoCollection().aggregate(List.of(bson, Aggregates.skip(size * (page)), Aggregates.limit(size)), projection).into(new ArrayList<>());
+
+        var projectionQuery = new ProjectionQuery<T>();
+
+        projectionQuery.list = projections;
+        projectionQuery.index = page;
+        projectionQuery.size = size;
+        projectionQuery.count = getMongoCollection().countDocuments();
+
+        return projectionQuery;
+    }
+
+    @Override
+    public <T> T lookUpEntityById(String from, String localField, String foreignField, String as, Class<T> projection, I id) {
+
+        Bson bson = Aggregates.lookup(from, localField, foreignField, as);
+        List<T> projections = getMongoCollection().aggregate(List.of(bson, Aggregates.match(Filters.eq("_id", id))), projection).into(new ArrayList<>());
+        return projections.get(0);
+    }
 
     @Override
     public void grantPermission(AccessControl accessControl) {

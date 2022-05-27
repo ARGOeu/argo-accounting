@@ -8,5 +8,6 @@ public enum Collection {
     MetricDefinition,
     Metric,
     Role,
-    Provider;
+    Provider,
+    Installation;
 }

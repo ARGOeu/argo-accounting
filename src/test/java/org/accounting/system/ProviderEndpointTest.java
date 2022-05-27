@@ -81,19 +81,6 @@ public class ProviderEndpointTest {
     }
 
     @Test
-    public void fetchProviderById() {
-
-        var paginateResponse = given()
-                .auth()
-                .oauth2(getAccessToken("admin"))
-                .queryParam("id", "sites")
-                .get()
-                .thenReturn();
-
-        assertEquals(200, paginateResponse.statusCode());
-    }
-
-    @Test
     public void createProviderNotAuthenticated() {
 
         var notAuthenticatedResponse = given()

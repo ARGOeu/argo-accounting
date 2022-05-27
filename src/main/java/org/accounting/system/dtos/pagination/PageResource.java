@@ -2,6 +2,7 @@ package org.accounting.system.dtos.pagination;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.quarkus.mongodb.panache.PanacheQuery;
+import org.accounting.system.entities.projections.ProjectionQuery;
 import org.eclipse.microprofile.openapi.annotations.enums.SchemaType;
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
 
@@ -54,7 +55,7 @@ public class PageResource<T, R> {
             description = "Paginated entities."
     )
     @JsonProperty("content")
-    public final List<R> content;
+    public List<R> content;
 
     @Schema(
             type = SchemaType.ARRAY,
@@ -64,7 +65,33 @@ public class PageResource<T, R> {
     @JsonProperty("links")
     public  List<PageLink> links;
 
+    public PageResource() {
+    }
 
+    public PageResource(ProjectionQuery<T> projectionQuery, List<R> content, UriInfo uriInfo){
+
+        links = new ArrayList<>();
+        this.content = content;
+        this.sizeOfPage = projectionQuery.list.size();
+        this.numberOfPage = projectionQuery.index+1;
+        this.totalElements = projectionQuery.count;
+        this.totalPages = projectionQuery.pageCount();
+
+        if(totalPages !=1){
+            links.add(buildPageLink(uriInfo, 1, sizeOfPage, "first"));
+            links.add(buildPageLink(uriInfo, totalPages, sizeOfPage, "last"));
+            links.add(buildPageLink(uriInfo, numberOfPage, sizeOfPage, "self"));
+
+
+            if(projectionQuery.hasPreviousPage() && projectionQuery.list.size()!=0) {
+                links.add(buildPageLink(uriInfo, numberOfPage -1, sizeOfPage, "prev"));
+            }
+
+            if(projectionQuery.hasNextPage()) {
+                links.add(buildPageLink(uriInfo, numberOfPage +1, sizeOfPage, "next"));
+            }
+        }
+    }
 
     public PageResource(PanacheQuery<T> panacheQuery, List<R> content, UriInfo uriInfo){
 

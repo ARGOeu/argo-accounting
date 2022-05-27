@@ -3,6 +3,7 @@ package org.accounting.system.services;
 import org.accounting.system.dtos.metric.MetricRequestDto;
 import org.accounting.system.dtos.metric.MetricResponseDto;
 import org.accounting.system.dtos.metric.UpdateMetricRequestDto;
+import org.accounting.system.endpoints.MetricEndpoint;
 import org.accounting.system.entities.Metric;
 import org.accounting.system.mappers.MetricMapper;
 import org.accounting.system.repositories.MetricRepository;
@@ -21,7 +22,7 @@ import java.util.Optional;
 
 /**
  * This service exposes business logic, which uses the {@link MetricRepository}.
- * It is used to keep logic to a minimum in {@link org.accounting.system.endpoints.MetricEndpoint} and
+ * It is used to keep logic to a minimum in {@link MetricEndpoint} and
  * {@link MetricRepository}
  */
 @ApplicationScoped

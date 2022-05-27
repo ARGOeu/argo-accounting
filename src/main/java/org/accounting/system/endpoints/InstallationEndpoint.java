@@ -3,13 +3,13 @@ package org.accounting.system.endpoints;
 import io.quarkus.security.Authenticated;
 import org.accounting.system.constraints.NotFoundEntity;
 import org.accounting.system.dtos.InformativeResponse;
-import org.accounting.system.dtos.authorization.RoleRequestDto;
-import org.accounting.system.dtos.authorization.RoleResponseDto;
-import org.accounting.system.dtos.authorization.update.UpdateRoleRequestDto;
+import org.accounting.system.dtos.installation.InstallationRequestDto;
+import org.accounting.system.dtos.installation.InstallationResponseDto;
+import org.accounting.system.dtos.installation.UpdateInstallationRequestDto;
 import org.accounting.system.enums.Collection;
 import org.accounting.system.interceptors.annotations.Permission;
-import org.accounting.system.repositories.authorization.RoleRepository;
-import org.accounting.system.services.authorization.RoleService;
+import org.accounting.system.repositories.installation.InstallationRepository;
+import org.accounting.system.services.installation.InstallationService;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.eclipse.microprofile.openapi.annotations.Operation;
 import org.eclipse.microprofile.openapi.annotations.enums.SchemaType;
@@ -27,7 +27,6 @@ import org.jboss.resteasy.specimpl.ResteasyUriInfo;
 import javax.inject.Inject;
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
-import javax.ws.rs.BadRequestException;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.DefaultValue;
@@ -45,7 +44,7 @@ import javax.ws.rs.core.UriInfo;
 
 import static org.eclipse.microprofile.openapi.annotations.enums.ParameterIn.QUERY;
 
-@Path("/roles")
+@Path("/installations")
 @Authenticated
 @SecurityScheme(securitySchemeName = "Authentication",
         description = "JWT token",
@@ -54,7 +53,7 @@ import static org.eclipse.microprofile.openapi.annotations.enums.ParameterIn.QUE
         bearerFormat = "JWT",
         in = SecuritySchemeIn.HEADER)
 
-public class RoleEndpoint {
+public class InstallationEndpoint {
 
     @ConfigProperty(name = "quarkus.resteasy.path")
     String basePath;
@@ -63,22 +62,19 @@ public class RoleEndpoint {
     String serverUrl;
 
     @Inject
-    RoleService roleService;
+    InstallationService installationService;
 
-    public RoleEndpoint(RoleService roleService) {
-        this.roleService = roleService;
-    }
-
-    @Tag(name = "Role")
+    @Tag(name = "Installation")
     @Operation(
-            summary = "Register a new Role.",
-            description = "Retrieves and inserts a Role into the database.")
+            summary = "Generates a new Installation.",
+            description = "This operation is responsible for generating and storing in the Accounting System database " +
+                    "a new Installation.")
     @APIResponse(
             responseCode = "201",
-            description = "Role has been created successfully.",
+            description = "Installation has been created successfully.",
             content = @Content(schema = @Schema(
                     type = SchemaType.OBJECT,
-                    implementation = RoleResponseDto.class)))
+                    implementation = InstallationResponseDto.class)))
     @APIResponse(
             responseCode = "400",
             description = "Bad Request.",
@@ -99,7 +95,7 @@ public class RoleEndpoint {
                     implementation = InformativeResponse.class)))
     @APIResponse(
             responseCode = "409",
-            description = "There is a Role with that name.",
+            description = "There is a Metric Definition with that unit_type and metric_name.",
             content = @Content(schema = @Schema(
                     type = SchemaType.OBJECT,
                     implementation = InformativeResponse.class)))
@@ -120,23 +116,66 @@ public class RoleEndpoint {
     @POST
     @Produces(value = MediaType.APPLICATION_JSON)
     @Consumes(value = MediaType.APPLICATION_JSON)
-    @Permission(collection = Collection.Role, operation = org.accounting.system.enums.Operation.CREATE)
-    public Response save(@Valid @NotNull(message = "The request body is empty.") RoleRequestDto roleRequestDto, @Context UriInfo uriInfo){
+    @Permission(collection = Collection.Installation, operation = org.accounting.system.enums.Operation.CREATE)
+    public Response save(@Valid @NotNull(message = "The request body is empty.") InstallationRequestDto installationRequestDto, @Context UriInfo uriInfo) {
 
-        UriInfo serverInfo = new ResteasyUriInfo(serverUrl.concat(basePath).concat(uriInfo.getPath()), basePath);
+        var serverInfo = new ResteasyUriInfo(serverUrl.concat(basePath).concat(uriInfo.getPath()), basePath);
 
-        var response = roleService.save(roleRequestDto);
+        var response = installationService.save(installationRequestDto);
 
         return Response.created(serverInfo.getAbsolutePathBuilder().path(response.id).build()).entity(response).build();
     }
 
-    @Tag(name = "Role")
+    @Tag(name = "Installation")
     @Operation(
-            summary = "Deletes an existing Role.",
-            description = "You can delete an existing role by its id.")
+            summary = "Returns all Installations.",
+            description = "Essentially, this operation returns all Installations which have been added to Accounting System. By default, the first page of 10 Installations will be returned. " +
+                    "You can tune the default values by using the query parameters page and size.")
     @APIResponse(
             responseCode = "200",
-            description = "Role has been deleted successfully.",
+            description = "Array of Installations.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.ARRAY,
+                    implementation = InstallationResponseDto.class)))
+    @APIResponse(
+            responseCode = "401",
+            description = "User/Service has not been authenticated.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "403",
+            description = "The authenticated user/service is not permitted to perform the requested operation.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "500",
+            description = "Internal Server Errors.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @SecurityRequirement(name = "Authentication")
+
+    @GET
+    @Produces(value = MediaType.APPLICATION_JSON)
+    @Permission(collection = Collection.Installation, operation = org.accounting.system.enums.Operation.READ)
+    public Response getAllPagination(@Parameter(name = "page", in = QUERY,
+            description = "Indicates the page number. Page number must be >= 1.") @DefaultValue("1") @QueryParam("page") int page,
+                           @Parameter(name = "size", in = QUERY,
+                                   description = "The page size.") @DefaultValue("10") @QueryParam("size") int size,
+                           @Context UriInfo uriInfo){
+
+        return Response.ok().entity(installationService.findAllInstallationsPageable(page-1, size, uriInfo)).build();
+    }
+
+    @Tag(name = "Installation")
+    @Operation(
+            summary = "Deletes an existing Installation.",
+            description = "This operation deletes an existing Installation registered through Accounting System API.")
+    @APIResponse(
+            responseCode = "200",
+            description = "Installation has been deleted successfully.",
             content = @Content(schema = @Schema(
                     type = SchemaType.OBJECT,
                     implementation = InformativeResponse.class)))
@@ -154,7 +193,7 @@ public class RoleEndpoint {
                     implementation = InformativeResponse.class)))
     @APIResponse(
             responseCode = "404",
-            description = "Role has not been found.",
+            description = "Installation has not been found.",
             content = @Content(schema = @Schema(
                     type = SchemaType.ARRAY,
                     implementation = InformativeResponse.class)))
@@ -169,72 +208,38 @@ public class RoleEndpoint {
     @DELETE()
     @Path("/{id}")
     @Produces(value = MediaType.APPLICATION_JSON)
-    @Permission(collection = Collection.Role, operation = org.accounting.system.enums.Operation.DELETE)
+    @Permission(collection = Collection.Installation, operation = org.accounting.system.enums.Operation.DELETE)
     public Response delete(@Parameter(
-            description = "The Role to be deleted.",
+            description = "The Installation to be deleted.",
             required = true,
             example = "507f1f77bcf86cd799439011",
             schema = @Schema(type = SchemaType.STRING))
-                           @PathParam("id") @Valid @NotFoundEntity(repository = RoleRepository.class, message = "There is no Role with the following id:") String id) {
+                           @PathParam("id") @Valid @NotFoundEntity(repository = InstallationRepository.class, message = "There is no Installation with the following id:") String id) {
 
-
-        var success = roleService.delete(id);
+        var success = installationService.delete(id);
 
         var successResponse = new InformativeResponse();
 
         if(success){
             successResponse.code = 200;
-            successResponse.message = "Role has been deleted successfully.";
+            successResponse.message = "Installation has been deleted successfully.";
         } else {
             successResponse.code = 500;
-            successResponse.message = "Role cannot be deleted due to a server issue. Please try again.";
+            successResponse.message = "Installation cannot be deleted due to a server issue. Please try again.";
         }
         return Response.ok().entity(successResponse).build();
     }
 
-    @Tag(name = "Role")
+    @Tag(name = "Installation")
     @Operation(
-            summary = "Returns the available roles.",
-            description = "This operation fetches the registered Accounting System roles. By default, the first page of 10 Providers will be returned. " +
-                    "You can tune the default values by using the query parameters page and size.")
+            summary = "Returns an existing Installation.",
+            description = "This operation accepts the id of an Installation and fetches from the database the corresponding record.")
     @APIResponse(
             responseCode = "200",
-            description = "Array of available roles.",
-            content = @Content(schema = @Schema(
-                    type = SchemaType.ARRAY,
-                    implementation = RoleResponseDto.class)))
-    @APIResponse(
-            responseCode = "500",
-            description = "Internal Server Errors.",
+            description = "The corresponding Installation.",
             content = @Content(schema = @Schema(
                     type = SchemaType.OBJECT,
-                    implementation = InformativeResponse.class)))
-
-    @GET
-    @Produces(value = MediaType.APPLICATION_JSON)
-    @Permission(collection = Collection.Role, operation = org.accounting.system.enums.Operation.READ)
-    public Response getRoles(@Parameter(name = "page", in = QUERY,
-            description = "Indicates the page number. Page number must be >= 1.") @DefaultValue("1") @QueryParam("page") int page,
-                             @Parameter(name = "size", in = QUERY,
-                                     description = "The page size.") @DefaultValue("10") @QueryParam("size") int size,
-                             @Context UriInfo uriInfo){
-        if(page <1){
-            throw new BadRequestException("Page number must be >= 1.");
-        }
-
-        return Response.ok().entity(roleService.findAllRolesPageable(page-1, size, uriInfo)).build();
-    }
-
-    @Tag(name = "Role")
-    @Operation(
-            summary = "Returns an existing Role.",
-            description = "This operation accepts the id of a Role and fetches from the database the corresponding record.")
-    @APIResponse(
-            responseCode = "200",
-            description = "The corresponding Role.",
-            content = @Content(schema = @Schema(
-                    type = SchemaType.OBJECT,
-                    implementation = RoleResponseDto.class)))
+                    implementation = InstallationResponseDto.class)))
     @APIResponse(
             responseCode = "401",
             description = "User/Service has not been authenticated.",
@@ -249,7 +254,7 @@ public class RoleEndpoint {
                     implementation = InformativeResponse.class)))
     @APIResponse(
             responseCode = "404",
-            description = "Role has not been found.",
+            description = "Installation has not been found.",
             content = @Content(schema = @Schema(
                     type = SchemaType.OBJECT,
                     implementation = InformativeResponse.class)))
@@ -264,31 +269,31 @@ public class RoleEndpoint {
     @GET
     @Path("/{id}")
     @Produces(value = MediaType.APPLICATION_JSON)
-    @Permission(collection = Collection.Role, operation = org.accounting.system.enums.Operation.READ)
+    @Permission(collection = Collection.Installation, operation = org.accounting.system.enums.Operation.READ)
     public Response get(
             @Parameter(
-                    description = "The Role to be retrieved.",
+                    description = "The Installation to be retrieved.",
                     required = true,
                     example = "507f1f77bcf86cd799439011",
                     schema = @Schema(type = SchemaType.STRING))
-            @PathParam("id") @Valid @NotFoundEntity(repository = RoleRepository.class, message = "There is no Role with the following id:") String id){
+            @PathParam("id") @Valid @NotFoundEntity(repository = InstallationRepository.class, message = "There is no Installation with the following id:") String id){
 
-        RoleResponseDto response = roleService.fetchRole(id);
+        var response = installationService.fetchInstallation(id);
 
         return Response.ok().entity(response).build();
     }
 
-    @Tag(name = "Role")
+    @Tag(name = "Installation")
     @Operation(
-            summary = "Updates an existing Role.",
-            description = "In order to update the resource properties, the body of the request must contain an updated representation of Role. " +
-                    "You can update a part or all attributes of the Role except for its id. The empty or null values are ignored.")
+            summary = "Updates an existing Installation.",
+            description = "This operation updates an existing Installation registered through the Accounting System API. Finally, " +
+                    "you can update a part or all attributes of Installation. The empty or null values are ignored.")
     @APIResponse(
             responseCode = "200",
-            description = "Role was updated successfully.",
+            description = "Installation was updated successfully.",
             content = @Content(schema = @Schema(
                     type = SchemaType.OBJECT,
-                    implementation = RoleResponseDto.class)))
+                    implementation = InstallationResponseDto.class)))
     @APIResponse(
             responseCode = "400",
             description = "Bad Request.",
@@ -303,19 +308,19 @@ public class RoleEndpoint {
                     implementation = InformativeResponse.class)))
     @APIResponse(
             responseCode = "403",
-            description = "The authenticated user/service is not permitted to perform the requested operation.",
+            description = "It is not permitted to perform the requested operation.",
             content = @Content(schema = @Schema(
                     type = SchemaType.OBJECT,
                     implementation = InformativeResponse.class)))
     @APIResponse(
             responseCode = "404",
-            description = "Role has not been found.",
+            description = "Installation has not been found.",
             content = @Content(schema = @Schema(
                     type = SchemaType.OBJECT,
                     implementation = InformativeResponse.class)))
     @APIResponse(
             responseCode = "409",
-            description = "There is a Role with that name.",
+            description = "The Installation already exists.",
             content = @Content(schema = @Schema(
                     type = SchemaType.OBJECT,
                     implementation = InformativeResponse.class)))
@@ -337,16 +342,16 @@ public class RoleEndpoint {
     @Path("/{id}")
     @Produces(value = MediaType.APPLICATION_JSON)
     @Consumes(value = MediaType.APPLICATION_JSON)
-    @Permission(collection = Collection.Role, operation = org.accounting.system.enums.Operation.UPDATE)
+    @Permission(collection = Collection.Installation, operation = org.accounting.system.enums.Operation.UPDATE)
     public Response update(
             @Parameter(
-                    description = "The Role to be updated.",
+                    description = "The Installation to be updated.",
                     required = true,
                     example = "507f1f77bcf86cd799439011",
                     schema = @Schema(type = SchemaType.STRING))
-            @PathParam("id") @Valid @NotFoundEntity(repository = RoleRepository.class, message = "There is no Role with the following id:") String id, @Valid @NotNull(message = "The request body is empty.") UpdateRoleRequestDto updateRoleRequestDto) {
+            @PathParam("id") @Valid @NotFoundEntity(repository = InstallationRepository.class, message = "There is no Installation with the following id:") String id, @Valid @NotNull(message = "The request body is empty.") UpdateInstallationRequestDto updateInstallationRequestDto){
 
-        RoleResponseDto response = roleService.update(id, updateRoleRequestDto);
+        var response = installationService.update(id, updateInstallationRequestDto);
 
         return Response.ok().entity(response).build();
     }

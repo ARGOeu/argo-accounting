@@ -114,8 +114,7 @@ public class ProviderEndpoint {
 
     @GET
     @Produces(value = MediaType.APPLICATION_JSON)
-    @SecurityRequirement(name = "Authentication")
-
+    @Permission(collection = Collection.Provider, operation = org.accounting.system.enums.Operation.READ)
     public Response get(@Parameter(name = "page", in = QUERY,
                                 description = "Indicates the page number. Page number must be >= 1.") @DefaultValue("1") @QueryParam("page") int page,
                         @Parameter(name = "size", in = QUERY,

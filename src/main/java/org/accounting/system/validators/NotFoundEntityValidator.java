@@ -6,8 +6,8 @@ import io.quarkus.mongodb.panache.PanacheMongoRepositoryBase;
 import io.vavr.control.Try;
 import org.accounting.system.constraints.NotFoundEntity;
 import org.accounting.system.exceptions.CustomValidationException;
+import org.accounting.system.util.Utility;
 import org.apache.commons.lang3.StringUtils;
-import org.bson.types.ObjectId;
 
 import javax.enterprise.inject.spi.CDI;
 import javax.validation.ConstraintValidator;
@@ -47,18 +47,9 @@ public class NotFoundEntityValidator implements ConstraintValidator<NotFoundEnti
         PanacheMongoRepositoryBase repository = CDI.current().select(this.repository).get();
 
         Try
-                .run(()->repository.findByIdOptional(id(this.id, value)).orElseThrow(()->new CustomValidationException(builder.toString(), HttpResponseStatus.NOT_FOUND)))
+                .run(()->repository.findByIdOptional(Utility.transformIdToSpecificClassType(this.id, value)).orElseThrow(()->new CustomValidationException(builder.toString(), HttpResponseStatus.NOT_FOUND)))
                 .getOrElseThrow(()->new CustomValidationException(builder.toString(), HttpResponseStatus.NOT_FOUND));
 
         return true;
-    }
-
-    private <T> T id(Class<?> id, String value){
-
-        if(id.equals(ObjectId.class)){
-            return (T) new ObjectId(value);
-        } else {
-            return (T) value;
-        }
     }
 }
