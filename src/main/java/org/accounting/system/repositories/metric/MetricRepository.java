@@ -1,4 +1,4 @@
-package org.accounting.system.repositories;
+package org.accounting.system.repositories.metric;
 
 import io.quarkus.mongodb.panache.PanacheMongoRepository;
 import io.quarkus.mongodb.panache.PanacheQuery;
@@ -15,13 +15,19 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 /**
- * This repository {@link MetricRepository} encapsulates the logic required to access
- * Metric data stored in the mongo database. More specifically, it encapsulates the queries
- * that can be performed on the Metric collection. Finally, is is responsible for mapping
+ * {@link MetricRepository This repository} encapsulates the logic required to access
+ * {@link Metric} data stored in the mongo database. More specifically, it encapsulates the queries
+ * that can be performed on the {@link Metric} collection. It is also responsible for mapping
  * the data from the storage format to the {@link Metric}.
+ *
+ * Since {@link MetricRepository this repository} extends {@link MetricModulator},
+ * it has access to all queries, which determine the degree of accessibility of the data.
+ *
+ * Also, all the operations that are defined on {@link PanacheMongoRepository} are available on this repository.
+ * In this repository, we essentially define the queries that will be executed on the database without any restrictions.
  */
 @ApplicationScoped
-public class MetricRepository implements PanacheMongoRepository<Metric> {
+public class MetricRepository extends MetricModulator {
 
     public List<Metric> findMetricsByMetricDefinitionId(String metricDefinitionId) {
 

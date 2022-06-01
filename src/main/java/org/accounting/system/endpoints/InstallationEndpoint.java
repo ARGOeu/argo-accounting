@@ -27,6 +27,7 @@ import org.jboss.resteasy.specimpl.ResteasyUriInfo;
 import javax.inject.Inject;
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
+import javax.ws.rs.BadRequestException;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.DefaultValue;
@@ -165,6 +166,10 @@ public class InstallationEndpoint {
                            @Parameter(name = "size", in = QUERY,
                                    description = "The page size.") @DefaultValue("10") @QueryParam("size") int size,
                            @Context UriInfo uriInfo){
+
+        if(page <1){
+            throw new BadRequestException("Page number must be >= 1.");
+        }
 
         return Response.ok().entity(installationService.findAllInstallationsPageable(page-1, size, uriInfo)).build();
     }
