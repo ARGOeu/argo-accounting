@@ -16,6 +16,7 @@ import org.eclipse.microprofile.openapi.annotations.enums.SchemaType;
 import org.eclipse.microprofile.openapi.annotations.enums.SecuritySchemeIn;
 import org.eclipse.microprofile.openapi.annotations.enums.SecuritySchemeType;
 import org.eclipse.microprofile.openapi.annotations.media.Content;
+import org.eclipse.microprofile.openapi.annotations.media.ExampleObject;
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
 import org.eclipse.microprofile.openapi.annotations.parameters.Parameter;
 import org.eclipse.microprofile.openapi.annotations.parameters.RequestBody;
@@ -282,7 +283,53 @@ public class MetricEndpoint {
     @Produces(value = MediaType.APPLICATION_JSON)
     @Consumes(value = MediaType.APPLICATION_JSON)
 
-    public Response search(@Valid @NotNull(message = "The request body is empty.") @RequestBody String json) throws  NoSuchFieldException, ParseException {
+    public Response search(@Valid @NotNull(message = "The request body is empty.") @RequestBody(            content = @Content(
+            schema = @Schema(implementation = String.class),
+            mediaType = MediaType.APPLICATION_JSON,
+            examples = {
+                    @ExampleObject(
+                            name = "An example request of a search on metrics",
+                            value ="{\n" +
+                                    "           \"type\":\"query\",\n" +
+                                    "           \"field\": \"time_period_start\",\n" +
+                                    "           \"values\": \"2022-01-05T09:13:07Z\",\n" +
+                                    "           \"operand\": \"gte\"\n" +
+                                    "}\n",
+                            summary = "A simple search on a  specific field of the metric"),
+                    @ExampleObject(
+                            name = "An example request with a combination of criteria of a search on metrics",
+                            value = "{\n" +
+                                    "  \"type\": \"filter\",\n" +
+                                    "  \"operator\": \"OR\",\n" +
+                                    "  \"criteria\": [\n" +
+                                    "    {\n" +
+                                    "      \"type\": \"query\",\n" +
+                                    "      \"field\": \"value\",\n" +
+                                    "      \"values\": 60,\n" +
+                                    "      \"operand\": lt\n" +
+                                    "    },\n" +
+                                    "    {\n" +
+                                    "      \"type\": \"filter\",\n" +
+                                    "      \"operator\": \"AND\",\n" +
+                                    "      \"criteria\": [\n" +
+                                    "        {\n" +
+                                    "          \"type\": \"query\",\n" +
+                                    "          \"field\": \"time_period_start\",\n" +
+                                    "          \"values\": \"2022-01-05T09:13:07Z\",\n" +
+                                    "          \"operand\": \"gte\"\n" +
+                                    "        },\n" +
+                                    "        {\n" +
+                                    "          \"type\": \"query\",\n" +
+                                    "          \"field\": \"time_period_end\",\n" +
+                                    "          \"values\": \"2022-10-05T09:15:07Z\",\n" +
+                                    "          \"operand\": \"lt\"\n" +
+                                    "        }\n" +
+                                    "      ]\n" +
+                                    "    }\n" +
+                                    "  ]\n" +
+                                    "}\n",
+                            summary = "A complex search on Metrics ") })
+    ) String json) throws  NoSuchFieldException, ParseException {
 
 
 

@@ -26,6 +26,7 @@ import org.eclipse.microprofile.openapi.annotations.enums.SchemaType;
 import org.eclipse.microprofile.openapi.annotations.enums.SecuritySchemeIn;
 import org.eclipse.microprofile.openapi.annotations.enums.SecuritySchemeType;
 import org.eclipse.microprofile.openapi.annotations.media.Content;
+import org.eclipse.microprofile.openapi.annotations.media.ExampleObject;
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
 import org.eclipse.microprofile.openapi.annotations.parameters.Parameter;
 import org.eclipse.microprofile.openapi.annotations.parameters.RequestBody;
@@ -962,7 +963,56 @@ public class MetricDefinitionEndpoint {
     @Consumes(value = MediaType.APPLICATION_JSON)
     @Permission(operation = org.accounting.system.enums.Operation.READ, collection = Collection.MetricDefinition)
 
-    public Response search(@Valid @NotNull(message = "The request body is empty.") @RequestBody String json) throws  NoSuchFieldException, ParseException {
+    public Response search(@Valid @NotNull(message = "The request body is empty.") @RequestBody(description = "a json object to describe the search criteria",
+
+            content = @Content(
+                    schema = @Schema(implementation = String.class),
+                    mediaType = MediaType.APPLICATION_JSON,
+                    examples = {
+                            @ExampleObject(
+                                    name = "An example of a search on metric definitions",
+                                    value ="{\n" +
+                                            "           \"type\":\"query\",\n" +
+                                            "           \"field\": \"metric_type\",\n" +
+                                            "           \"values\": \"count\",\n" +
+                                            "           \"operand\": \"eq\"\n" +
+                                            "}\n",
+                                    summary = "A simple search on a specific field of the metric definition"),
+                            @ExampleObject(
+                                    name ="An example request with a combination of criteria of a search on metric definitions",
+                                    value = "{\n" +
+                                            "  \"type\": \"filter\",\n" +
+                                            "  \"operator\": \"OR\",\n" +
+                                            "  \"criteria\": [\n" +
+                                            "    {\n" +
+                                            "      \"type\": \"query\",\n" +
+                                            "      \"field\": \"metric_name\",\n" +
+                                            "      \"values\": \"mdname1\",\n" +
+                                            "      \"operand\": \"eq\"\n" +
+                                            "    },\n" +
+                                            "    {\n" +
+                                            "      \"type\": \"filter\",\n" +
+                                            "      \"operator\": \"AND\",\n" +
+                                            "      \"criteria\": [\n" +
+                                            "        {\n" +
+                                            "          \"type\": \"query\",\n" +
+                                            "          \"field\": \"metric_type\",\n" +
+                                            "          \"values\": \"count\",\n" +
+                                            "          \"operand\": \"eq\"\n" +
+                                            "        },\n" +
+                                            "        {\n" +
+                                            "          \"type\": \"query\",\n" +
+                                            "          \"field\": \"unit_type\",\n" +
+                                            "          \"values\": \"#\",\n" +
+                                            "          \"operand\": \"eq\"\n" +
+                                            "        }\n" +
+                                            "      ]\n" +
+                                            "    }\n" +
+                                            "  ]\n" +
+                                            "}\n",
+                                    summary = "A complex search on Metric definitions") })
+
+    ) String json) throws  NoSuchFieldException, ParseException {
 
         var list=metricDefinitionService.searchMetricDefinition(json,  requestInformation.getAccessType().equals(AccessType.ALWAYS));
         return Response.ok().entity(list).build();
