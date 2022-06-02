@@ -272,5 +272,4 @@ public class MetricDefinitionService {
         Bson query=queryParser.parseFile(json, isAlwaysPermission, entityIds);
         return  MetricDefinitionMapper.INSTANCE.metricDefinitionsToResponse( metricDefinitionRepository.search(query));
     }
-
 }
