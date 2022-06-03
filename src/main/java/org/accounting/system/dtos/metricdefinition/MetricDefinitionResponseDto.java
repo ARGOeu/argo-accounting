@@ -56,9 +56,7 @@ public class MetricDefinitionResponseDto {
     @JsonProperty("metric_type")
     public String metricType;
 
-    public ObjectId getObjectId(){
-        return new ObjectId(this.id);
-
+    public String getId() {
+        return id;
     }
-
 }

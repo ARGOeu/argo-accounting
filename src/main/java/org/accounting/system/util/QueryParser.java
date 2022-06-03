@@ -22,7 +22,7 @@ import java.util.List;
 @ApplicationScoped
 public class QueryParser {
 
-    public Bson parseFile(String json, boolean isAlwaysPermission, List<ObjectId> objectIds) throws ParseException, NoSuchFieldException {
+    public Bson parseFile(String json, boolean isAlwaysPermission, List<String> objectIds) throws ParseException, NoSuchFieldException {
         if (json != null) {
             JSONParser parser = new JSONParser();
             JSONObject jsonObject = (JSONObject) parser.parse(json);
@@ -167,9 +167,14 @@ public class QueryParser {
 
     }
 
-    public Bson accessFilter(Bson filter, List<ObjectId> ids) {
+    public Bson accessFilter(Bson filter, List<String> ids) {
 
-        Bson accessFilter = Filters.in("_id", ids);
+        List<ObjectId> objectIds=new ArrayList<>();
+        for(String stId: ids){
+
+            objectIds.add(new ObjectId(stId));
+        }
+        Bson accessFilter = Filters.in("_id", objectIds);
 
         Bson query = Filters.and(accessFilter, filter);
         return query;
