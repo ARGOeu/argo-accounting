@@ -1,5 +1,6 @@
 package org.accounting.system;
 
+import io.quarkus.test.common.QuarkusTestResource;
 import io.quarkus.test.common.http.TestHTTPEndpoint;
 import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.test.junit.TestProfile;
@@ -20,7 +21,10 @@ import org.accounting.system.mappers.ProviderMapper;
 import org.accounting.system.repositories.installation.InstallationRepository;
 import org.accounting.system.repositories.metricdefinition.MetricDefinitionRepository;
 import org.accounting.system.repositories.provider.ProviderRepository;
+import org.accounting.system.services.ProjectService;
 import org.accounting.system.services.ReadPredefinedTypesService;
+import org.accounting.system.wiremock.ProjectWireMockServer;
+import org.accounting.system.wiremock.ProviderWireMockServer;
 import org.eclipse.microprofile.rest.client.inject.RestClient;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
@@ -39,6 +43,8 @@ import static org.mockito.ArgumentMatchers.any;
 @QuarkusTest
 @TestProfile(AccountingSystemTestProfile.class)
 @TestHTTPEndpoint(InstallationEndpoint.class)
+@QuarkusTestResource(ProjectWireMockServer.class)
+@QuarkusTestResource(ProviderWireMockServer.class)
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 public class InstallationAuthorizationTest {
 
@@ -55,6 +61,9 @@ public class InstallationAuthorizationTest {
     ReadPredefinedTypesService readPredefinedTypesService;
 
     @Inject
+    ProjectService projectService;
+
+    @Inject
     @RestClient
     ProviderClient providerClient;
 
@@ -68,6 +77,9 @@ public class InstallationAuthorizationTest {
         Response response = providerClient.getAll(total.total).toCompletableFuture().get();
 
         providerRepository.persistOrUpdate(ProviderMapper.INSTANCE.eoscProvidersToProviders(response.results));
+
+        //We are going to register the EOSC-hub project from OpenAire API
+        projectService.getById("777536");
     }
 
     @BeforeEach
@@ -96,6 +108,7 @@ public class InstallationAuthorizationTest {
 
         var request= new InstallationRequestDto();
 
+        request.project = "777536";
         request.organisation = "grnet";
         request.infrastructure = "okeanos-knossos";
         request.installation = "SECOND";
@@ -107,9 +120,10 @@ public class InstallationAuthorizationTest {
 
         var request1= new InstallationRequestDto();
 
+        request1.project = "777536";
         request1.organisation = "sites";
         request1.infrastructure = "okeanos-knossos";
-        request1.installation = "SECOND";
+        request1.installation = "GRNET-KNS";
         request1.unitOfAccess = metricDefinitionResponse.id;
 
         createInstallation(request1, "admin");
@@ -118,6 +132,7 @@ public class InstallationAuthorizationTest {
 
         var request2= new InstallationRequestDto();
 
+        request2.project = "777536";
         request2.organisation = "sites";
         request2.infrastructure = "okeanos-knossos";
         request2.installation = "okeanos";
@@ -158,6 +173,7 @@ public class InstallationAuthorizationTest {
 
         var request= new InstallationRequestDto();
 
+        request.project = "777536";
         request.organisation = "grnet";
         request.infrastructure = "okeanos-knossos";
         request.installation = "SECOND";
@@ -169,9 +185,10 @@ public class InstallationAuthorizationTest {
 
         var request1= new InstallationRequestDto();
 
+        request1.project = "777536";
         request1.organisation = "sites";
         request1.infrastructure = "okeanos-knossos";
-        request1.installation = "SECOND";
+        request1.installation = "GRNET-KNS";
         request1.unitOfAccess = metricDefinitionResponse.id;
 
         var installation1 = createInstallation(request1, "admin");

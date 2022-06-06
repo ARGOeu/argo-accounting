@@ -13,6 +13,9 @@ public class InstallationProjection {
     private ObjectId id;
 
     @EqualsAndHashCode.Include
+    private String project;
+
+    @EqualsAndHashCode.Include
     private String organisation;
 
     @EqualsAndHashCode.Include
@@ -72,5 +75,13 @@ public class InstallationProjection {
 
     public void setMetricDefinition(MetricDefinition metricDefinition) {
         this.metricDefinition = metricDefinition;
+    }
+
+    public String getProject() {
+        return project;
+    }
+
+    public void setProject(String project) {
+        this.project = project;
     }
 }

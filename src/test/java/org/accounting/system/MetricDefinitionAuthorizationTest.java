@@ -255,6 +255,7 @@ public class MetricDefinitionAuthorizationTest {
 
         //then creator user is trying to update the Metric Definition that has been created by admin
         UpdateMetricDefinitionRequestDto update = new UpdateMetricDefinitionRequestDto();
+
         var updateMetricDefinitionResponse = updateMetricDefinitionById(update, "creator", metricDefinitionResponseDto.id);
 
         var informativeResponse = updateMetricDefinitionResponse

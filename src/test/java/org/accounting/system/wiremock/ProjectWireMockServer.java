@@ -24,7 +24,14 @@ public class ProjectWireMockServer implements QuarkusTestResourceLifecycleManage
                 .willReturn(aResponse()
                         .withHeader("Content-Type", "application/json")
                         .withStatus(200)
-                        .withBodyFile("json/ProjectResponse.json")));
+                        .withBodyFile("json/ProjectResponse_EOSC.json")));
+
+        wireMockServer.stubFor(get(urlEqualTo("/search/projects?grantID=101017567&format=json"))
+                .willReturn(aResponse()
+                        .withHeader("Content-Type", "application/json")
+                        .withStatus(200)
+                        .withBodyFile("json/ProjectResponse_EGI.json")));
+
 
         wireMockServer.stubFor(get(urlEqualTo("/search/projects?grantID=lalala&format=json"))
                 .willReturn(aResponse()

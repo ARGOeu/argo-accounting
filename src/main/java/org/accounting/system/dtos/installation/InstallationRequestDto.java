@@ -2,6 +2,7 @@ package org.accounting.system.dtos.installation;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import org.accounting.system.constraints.NotFoundEntity;
+import org.accounting.system.repositories.ProjectRepository;
 import org.accounting.system.repositories.metricdefinition.MetricDefinitionRepository;
 import org.accounting.system.repositories.provider.ProviderRepository;
 import org.eclipse.microprofile.openapi.annotations.enums.SchemaType;
@@ -12,6 +13,18 @@ import javax.validation.constraints.NotEmpty;
 @Schema(name="InstallationRequest", description="An object represents a request for creating a new Installation.")
 public class
 InstallationRequestDto {
+
+    @Schema(
+            type = SchemaType.STRING,
+            implementation = String.class,
+            description = "It must point to a Project ID that has been either registered through the OpenAire or Accounting System API.",
+            example = "447535",
+            required = true
+    )
+    @JsonProperty("project")
+    @NotEmpty(message = "project may not be empty.")
+    @NotFoundEntity(repository = ProjectRepository.class, id = String.class, message = "There is no Project with the following id:")
+    public String project;
 
     @Schema(
             type = SchemaType.STRING,

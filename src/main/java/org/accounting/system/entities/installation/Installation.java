@@ -1,11 +1,15 @@
-package org.accounting.system.entities;
+package org.accounting.system.entities.installation;
 
+import org.accounting.system.entities.Entity;
 import org.bson.codecs.pojo.annotations.BsonProperty;
 import org.bson.types.ObjectId;
 
-public class Installation extends Entity{
+public class Installation extends Entity {
 
     private ObjectId id;
+
+    @BsonProperty("project")
+    private String project;
 
     @BsonProperty("organisation")
     private String organisation;
@@ -57,5 +61,13 @@ public class Installation extends Entity{
 
     public void setUnitOfAccess(ObjectId unitOfAccess) {
         this.unitOfAccess = unitOfAccess;
+    }
+
+    public String getProject() {
+        return project;
+    }
+
+    public void setProject(String project) {
+        this.project = project;
     }
 }

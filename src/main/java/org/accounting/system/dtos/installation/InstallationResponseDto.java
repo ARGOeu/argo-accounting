@@ -20,8 +20,18 @@ public class InstallationResponseDto {
     @Schema(
             type = SchemaType.STRING,
             implementation = String.class,
-            description = "Organisation short name.",
-            example = "GRNET"
+            description = "The Project that this Installation belongs to.",
+            example = "447535",
+            required = true
+    )
+    @JsonProperty("project")
+    public String project;
+
+    @Schema(
+            type = SchemaType.STRING,
+            implementation = String.class,
+            description = "The Provider that this Installation belongs to.",
+            example = "grnet"
     )
     @JsonProperty("organisation")
     public String organisation;

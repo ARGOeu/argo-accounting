@@ -2,6 +2,7 @@ package org.accounting.system.dtos.installation;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import org.accounting.system.constraints.NotFoundEntity;
+import org.accounting.system.repositories.ProjectRepository;
 import org.accounting.system.repositories.metricdefinition.MetricDefinitionRepository;
 import org.accounting.system.repositories.provider.ProviderRepository;
 import org.eclipse.microprofile.openapi.annotations.enums.SchemaType;
@@ -13,7 +14,18 @@ public class UpdateInstallationRequestDto {
     @Schema(
             type = SchemaType.STRING,
             implementation = String.class,
-            description = "Organisation short name.",
+            description = "The Project that this Installation belongs to.",
+            example = "447535",
+            required = true
+    )
+    @NotFoundEntity(repository = ProjectRepository.class, id = String.class, message = "There is no Project with the following id:")
+    @JsonProperty("project")
+    public String project;
+
+    @Schema(
+            type = SchemaType.STRING,
+            implementation = String.class,
+            description = "The Provider that this Installation belongs to.",
             example = "GRNET"
     )
     @JsonProperty("organisation")

@@ -1,12 +1,9 @@
 package org.accounting.system.repositories.metricdefinition;
 
-import com.mongodb.client.model.Collation;
-import com.mongodb.client.model.CollationStrength;
 import io.quarkus.mongodb.panache.PanacheMongoRepository;
 import org.accounting.system.entities.MetricDefinition;
 
 import javax.enterprise.context.ApplicationScoped;
-import java.util.Optional;
 
 /**
  * {@link MetricDefinitionRepository This repository} encapsulates the logic required to access
@@ -23,8 +20,5 @@ import java.util.Optional;
 @ApplicationScoped
 public class MetricDefinitionRepository extends MetricDefinitionModulator {
 
-    public Optional<MetricDefinition> exist(String unitType, String name){
 
-        return find("unitType = ?1 and metricName = ?2", unitType, name).withCollation(Collation.builder().locale("en").collationStrength(CollationStrength.SECONDARY).build()).stream().findAny();
-    }
 }

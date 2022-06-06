@@ -1,5 +1,6 @@
 package org.accounting.system;
 
+import io.quarkus.test.common.QuarkusTestResource;
 import io.quarkus.test.common.http.TestHTTPEndpoint;
 import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.test.junit.TestProfile;
@@ -19,7 +20,10 @@ import org.accounting.system.mappers.ProviderMapper;
 import org.accounting.system.repositories.installation.InstallationRepository;
 import org.accounting.system.repositories.metricdefinition.MetricDefinitionRepository;
 import org.accounting.system.repositories.provider.ProviderRepository;
+import org.accounting.system.services.ProjectService;
 import org.accounting.system.services.ReadPredefinedTypesService;
+import org.accounting.system.wiremock.ProjectWireMockServer;
+import org.accounting.system.wiremock.ProviderWireMockServer;
 import org.eclipse.microprofile.rest.client.inject.RestClient;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
@@ -38,6 +42,8 @@ import static org.mockito.ArgumentMatchers.any;
 @QuarkusTest
 @TestProfile(AccountingSystemTestProfile.class)
 @TestHTTPEndpoint(InstallationEndpoint.class)
+@QuarkusTestResource(ProjectWireMockServer.class)
+@QuarkusTestResource(ProviderWireMockServer.class)
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 public class InstallationEndpointTest {
 
@@ -49,6 +55,9 @@ public class InstallationEndpointTest {
 
     @Inject
     ProviderRepository providerRepository;
+
+    @Inject
+    ProjectService projectService;
 
     @InjectMock
     ReadPredefinedTypesService readPredefinedTypesService;
@@ -67,6 +76,12 @@ public class InstallationEndpointTest {
         Response response = providerClient.getAll(total.total).toCompletableFuture().get();
 
         providerRepository.persistOrUpdate(ProviderMapper.INSTANCE.eoscProvidersToProviders(response.results));
+
+        //We are going to register the EOSC-hub project from OpenAire API
+        projectService.getById("777536");
+
+        //We are going to register the EGI-ACE project from OpenAire API
+        projectService.getById("101017567");
     }
 
     @BeforeEach
@@ -122,6 +137,43 @@ public class InstallationEndpointTest {
     }
 
     @Test
+    public void createInstallationNoProvider(){
+
+        Mockito.when(readPredefinedTypesService.searchForUnitType(any())).thenReturn(Optional.of("SECOND"));
+        Mockito.when(readPredefinedTypesService.searchForMetricType(any())).thenReturn(Optional.of("Aggregated"));
+        var requestForMetricDefinition = new MetricDefinitionRequestDto();
+
+        requestForMetricDefinition.metricName = "metric";
+        requestForMetricDefinition.metricDescription = "description";
+        requestForMetricDefinition.unitType = "SECOND";
+        requestForMetricDefinition.metricType = "Aggregated";
+
+        var metricDefinitionResponse = createMetricDefinition(requestForMetricDefinition, "admin");
+
+        var requestProjectNotFound= new InstallationRequestDto();
+
+        requestProjectNotFound.project = "7775905";
+        requestProjectNotFound.organisation = "grnet";
+        requestProjectNotFound.infrastructure = "okeanos-knossos";
+        requestProjectNotFound.installation = "SECOND";
+        requestProjectNotFound.unitOfAccess = metricDefinitionResponse.id;
+
+        InformativeResponse responseProviderNotFound = given()
+                .auth()
+                .oauth2(getAccessToken("admin"))
+                .body(requestProjectNotFound)
+                .contentType(ContentType.JSON)
+                .post()
+                .then()
+                .assertThat()
+                .statusCode(404)
+                .extract()
+                .as(InformativeResponse.class);
+
+        assertEquals("There is no Project with the following id: "+requestProjectNotFound.project, responseProviderNotFound.message);
+    }
+
+    @Test
     public void createInstallationNoRequiredEntities(){
 
         Mockito.when(readPredefinedTypesService.searchForUnitType(any())).thenReturn(Optional.of("SECOND"));
@@ -137,6 +189,7 @@ public class InstallationEndpointTest {
 
         var requestMetricDefinitionNotFound= new InstallationRequestDto();
 
+        requestMetricDefinitionNotFound.project = "777536";
         requestMetricDefinitionNotFound.organisation = "grnet";
         requestMetricDefinitionNotFound.infrastructure = "okeanos-knossos";
         requestMetricDefinitionNotFound.installation = "SECOND";
@@ -158,6 +211,7 @@ public class InstallationEndpointTest {
 
         var requestProviderNotFound= new InstallationRequestDto();
 
+        requestProviderNotFound.project = "777536";
         requestProviderNotFound.organisation = "GRNET";
         requestProviderNotFound.infrastructure = "okeanos-knossos";
         requestProviderNotFound.installation = "SECOND";
@@ -194,6 +248,7 @@ public class InstallationEndpointTest {
 
         var requestNoOrganisation= new InstallationRequestDto();
 
+        requestNoOrganisation.project = "777536";
         requestNoOrganisation.infrastructure = "okeanos-knossos";
         requestNoOrganisation.installation = "SECOND";
         requestNoOrganisation.unitOfAccess = metricDefinitionResponse.id;
@@ -214,6 +269,7 @@ public class InstallationEndpointTest {
 
         var requestNoInfrastructure= new InstallationRequestDto();
 
+        requestNoInfrastructure.project = "777536";
         requestNoInfrastructure.organisation = "grnet";
         requestNoInfrastructure.installation = "SECOND";
         requestNoInfrastructure.unitOfAccess = metricDefinitionResponse.id;
@@ -234,6 +290,7 @@ public class InstallationEndpointTest {
 
         var requestNoInstallation= new InstallationRequestDto();
 
+        requestNoInstallation.project = "777536";
         requestNoInstallation.organisation = "grnet";
         requestNoInstallation.infrastructure = "okeanos-knossos";
         requestNoInstallation.unitOfAccess = metricDefinitionResponse.id;
@@ -254,6 +311,7 @@ public class InstallationEndpointTest {
 
         var requestNoMetricDefinition= new InstallationRequestDto();
 
+        requestNoMetricDefinition.project = "777536";
         requestNoMetricDefinition.organisation = "grnet";
         requestNoMetricDefinition.infrastructure = "okeanos-knossos";
         requestNoMetricDefinition.installation = "SECOND";
@@ -289,12 +347,13 @@ public class InstallationEndpointTest {
 
         var request= new InstallationRequestDto();
 
+        request.project = "777536";
         request.organisation = "grnet";
         request.infrastructure = "okeanos-knossos";
-        request.installation = "SECOND";
+        request.installation = "GRNET-KNS";
         request.unitOfAccess = metricDefinitionResponse.id;
 
-        createInstallation(request, "admin");
+        var installation = createInstallation(request, "admin");
 
         var informativeResponse = given()
                 .auth()
@@ -308,7 +367,7 @@ public class InstallationEndpointTest {
                 .extract()
                 .as(InformativeResponse.class);
 
-        assertEquals("There is already an installation with {organisation, infrastructure, installation}: " + "{"+request.organisation+", "+request.infrastructure+", "+request.installation+"}.", informativeResponse.message);
+        assertEquals("There is an Installation with infrastructure "+request.infrastructure+" and installation "+request.installation+". Its id is "+installation.id, informativeResponse.message);
     }
 
     @Test
@@ -327,6 +386,7 @@ public class InstallationEndpointTest {
 
         var request= new InstallationRequestDto();
 
+        request.project = "777536";
         request.organisation = "grnet";
         request.infrastructure = "okeanos-knossos";
         request.installation = "SECOND";
@@ -334,6 +394,7 @@ public class InstallationEndpointTest {
 
        var response = createInstallation(request, "admin");
 
+        assertEquals(request.project, response.project);
         assertEquals(request.organisation, response.organisation);
         assertEquals(request.infrastructure, response.infrastructure);
         assertEquals(request.installation, response.installation);
@@ -384,6 +445,7 @@ public class InstallationEndpointTest {
 
         var request= new InstallationRequestDto();
 
+        request.project = "777536";
         request.organisation = "grnet";
         request.infrastructure = "okeanos-knossos";
         request.installation = "SECOND";
@@ -464,6 +526,7 @@ public class InstallationEndpointTest {
 
         var request= new InstallationRequestDto();
 
+        request.project = "777536";
         request.organisation = "grnet";
         request.infrastructure = "okeanos-knossos";
         request.installation = "SECOND";
@@ -530,6 +593,7 @@ public class InstallationEndpointTest {
 
         var request= new InstallationRequestDto();
 
+        request.project = "777536";
         request.organisation = "grnet";
         request.infrastructure = "okeanos-knossos";
         request.installation = "SECOND";
@@ -567,6 +631,7 @@ public class InstallationEndpointTest {
 
         var request= new InstallationRequestDto();
 
+        request.project = "777536";
         request.organisation = "grnet";
         request.infrastructure = "okeanos-knossos";
         request.installation = "SECOND";
@@ -609,6 +674,7 @@ public class InstallationEndpointTest {
 
         var request= new InstallationRequestDto();
 
+        request.project = "777536";
         request.organisation = "grnet";
         request.infrastructure = "okeanos-knossos";
         request.installation = "SECOND";
@@ -651,6 +717,7 @@ public class InstallationEndpointTest {
 
         var request= new InstallationRequestDto();
 
+        request.project = "777536";
         request.organisation = "grnet";
         request.infrastructure = "okeanos-knossos";
         request.installation = "SECOND";
@@ -675,6 +742,7 @@ public class InstallationEndpointTest {
                 .extract()
                 .as(InstallationResponseDto.class);
 
+        assertEquals(request.project, updatedInstallation.project);
         assertEquals(request.organisation, updatedInstallation.organisation);
         assertEquals(requestForUpdating.infrastructure, updatedInstallation.infrastructure);
         assertEquals(requestForUpdating.installation, updatedInstallation.installation);
@@ -697,6 +765,7 @@ public class InstallationEndpointTest {
 
         var request= new InstallationRequestDto();
 
+        request.project = "777536";
         request.organisation = "grnet";
         request.infrastructure = "okeanos-knossos";
         request.installation = "SECOND";
@@ -718,6 +787,7 @@ public class InstallationEndpointTest {
 
         var requestForUpdating= new InstallationRequestDto();
 
+        requestForUpdating.project = "101017567";
         requestForUpdating.organisation = "sites";
         requestForUpdating.infrastructure = "okeanos-knossos-test";
         requestForUpdating.installation = "installation-test";
@@ -735,10 +805,69 @@ public class InstallationEndpointTest {
                 .extract()
                 .as(InstallationResponseDto.class);
 
+        assertEquals(requestForUpdating.project, updatedInstallation.project);
         assertEquals(requestForUpdating.organisation, updatedInstallation.organisation);
         assertEquals(requestForUpdating.infrastructure, updatedInstallation.infrastructure);
         assertEquals(requestForUpdating.installation, updatedInstallation.installation);
         assertEquals(requestForUpdating.unitOfAccess, updatedInstallation.metricDefinition.id);
+    }
+
+    @Test
+    public void updateInstallationConflict() {
+
+        Mockito.when(readPredefinedTypesService.searchForUnitType(any())).thenReturn(Optional.of("SECOND"));
+        Mockito.when(readPredefinedTypesService.searchForMetricType(any())).thenReturn(Optional.of("Aggregated"));
+        var requestForMetricDefinition = new MetricDefinitionRequestDto();
+
+        requestForMetricDefinition.metricName = "metric";
+        requestForMetricDefinition.metricDescription = "description";
+        requestForMetricDefinition.unitType = "SECOND";
+        requestForMetricDefinition.metricType = "Aggregated";
+
+        var metricDefinitionResponse = createMetricDefinition(requestForMetricDefinition, "admin");
+
+        var request= new InstallationRequestDto();
+
+        request.project = "777536";
+        request.organisation = "grnet";
+        request.infrastructure = "okeanos-knossos";
+        request.installation = "GRNET-KNS";
+        request.unitOfAccess = metricDefinitionResponse.id;
+
+        var installation = createInstallation(request, "admin");
+
+        Mockito.when(readPredefinedTypesService.searchForUnitType(any())).thenReturn(Optional.of("KG"));
+        Mockito.when(readPredefinedTypesService.searchForMetricType(any())).thenReturn(Optional.of("Aggregated"));
+        var requestForMetricDefinition1 = new MetricDefinitionRequestDto();
+
+        requestForMetricDefinition1.metricName = "metric";
+        requestForMetricDefinition1.metricDescription = "description";
+        requestForMetricDefinition1.unitType = "KG";
+        requestForMetricDefinition1.metricType = "Aggregated";
+
+        var metricDefinitionResponse1 = createMetricDefinition(requestForMetricDefinition1, "admin");
+
+        var requestForUpdating= new InstallationRequestDto();
+
+        requestForUpdating.project = "101017567";
+        requestForUpdating.organisation = "sites";
+        requestForUpdating.infrastructure = "okeanos-knossos";
+        requestForUpdating.installation = "grnet-kns";
+        requestForUpdating.unitOfAccess = metricDefinitionResponse1.id;
+
+        var informativeResponse = given()
+                .auth()
+                .oauth2(getAccessToken("admin"))
+                .body(requestForUpdating)
+                .contentType(ContentType.JSON)
+                .patch("/{id}", installation.id)
+                .then()
+                .assertThat()
+                .statusCode(409)
+                .extract()
+                .as(InformativeResponse.class);
+
+        assertEquals("There is an Installation with infrastructure "+requestForUpdating.infrastructure+" and installation "+requestForUpdating.installation+". Its id is "+installation.id, informativeResponse.message);
     }
 
     private InstallationResponseDto createInstallation(InstallationRequestDto request, String user){

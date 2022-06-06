@@ -87,12 +87,25 @@ public class HierarchicalRelationService {
         return MetricMapper.INSTANCE.metricToResponse(metric);
     }
 
+    /**
+     * This method delegates to {@link HierarchicalRelationRepository hierarchicalRelationRepository} to check if the given Provider belongs to a specific Project
+     *
+     * checks if the given Provider belongs to a specific Project
+     *
+     * @param projectId The Project ID.
+     * @param providerId The Provider ID.
+     * @return if provider belongs to project.
+     */
+    public boolean providerBelongsToProject(String projectId, String providerId){
+
+        return hierarchicalRelationRepository.providerBelongsToProject(projectId, providerId);
+    }
+
     public PageResource<MetricProjection, MetricProjection> fetchAllMetrics(String id, int page, int size, UriInfo uriInfo){
 
         var projection = hierarchicalRelationRepository.findByExternalId(id, page, size);
 
         return new PageResource<>(projection, projection.list, uriInfo);
-
     }
 
 

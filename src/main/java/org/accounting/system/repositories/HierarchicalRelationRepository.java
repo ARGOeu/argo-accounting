@@ -48,6 +48,24 @@ public class HierarchicalRelationRepository implements PanacheMongoRepositoryBas
         }
     }
 
+    /**
+     * This method executes a query to check if the given Provider belongs to a specific Project.
+     *
+     * @param projectId The Project ID.
+     * @param providerId The Provider ID.
+     * @return if provider belongs to project.
+     */
+    public boolean providerBelongsToProject(String projectId, String providerId){
+
+        Bson regex = Aggregates.match(Filters.regex("_id", projectId + HierarchicalRelation.PATH_SEPARATOR + providerId));
+
+        Document count = getMongoCollection()
+                .aggregate(List
+                        .of(regex, Aggregates.count())).first();
+
+        return count != null && Long.parseLong(count.get("count").toString()) > 0L;
+    }
+
     public List<HierarchicalRelation> findAllByExternalId(String id){
         return find("externalId = ?1", id).stream().collect(Collectors.toList());
     }

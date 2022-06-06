@@ -155,8 +155,7 @@ public class MetricDefinitionService {
      */
     public void exist(String unitType, String name){
 
-        metricDefinitionRepository.exist(unitType, name)
-                .ifPresent(metricDefinition -> {throw new ConflictException("There is a Metric Definition with unit type "+unitType+" and name "+name+". Its id is "+metricDefinition.getId().toString());});
+        metricDefinitionRepository.exist(unitType, name);
     }
 
     /**
