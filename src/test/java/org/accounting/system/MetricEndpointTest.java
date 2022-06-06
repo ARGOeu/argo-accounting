@@ -28,6 +28,7 @@ import org.accounting.system.repositories.installation.InstallationRepository;
 import org.accounting.system.repositories.metric.MetricRepository;
 import org.accounting.system.repositories.metricdefinition.MetricDefinitionRepository;
 import org.accounting.system.repositories.provider.ProviderRepository;
+import org.accounting.system.services.ProjectService;
 import org.accounting.system.services.ReadPredefinedTypesService;
 import org.accounting.system.wiremock.ProjectWireMockServer;
 import org.accounting.system.wiremock.ProviderWireMockServer;
@@ -75,6 +76,9 @@ public class MetricEndpointTest {
     @Inject
     MetricRepository metricRepository;
 
+    @Inject
+    ProjectService projectService;
+
     KeycloakTestClient keycloakClient = new KeycloakTestClient();
 
     @BeforeAll
@@ -85,6 +89,9 @@ public class MetricEndpointTest {
         Response response = providerClient.getAll(total.total).toCompletableFuture().get();
 
         providerRepository.persistOrUpdate(ProviderMapper.INSTANCE.eoscProvidersToProviders(response.results));
+
+        //We are going to register the EOSC-hub project from OpenAire API
+        projectService.getById("777536");
     }
 
     @BeforeEach
@@ -1113,6 +1120,7 @@ public class MetricEndpointTest {
 
         var request= new InstallationRequestDto();
 
+        request.project = "777536";
         request.organisation = "grnet";
         request.infrastructure = "okeanos-knossos";
         request.installation = "SECOND";

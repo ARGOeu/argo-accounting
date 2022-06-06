@@ -446,6 +446,52 @@ public class MetricDefinitionEndpointTest {
     }
 
     @Test
+    public void updateMetricDefinitionConflict() {
+
+        Mockito.when(readPredefinedTypesService.searchForUnitType(any())).thenReturn(Optional.of("SECOND"));
+        Mockito.when(readPredefinedTypesService.searchForMetricType(any())).thenReturn(Optional.of("Aggregated"));
+        var request= new MetricDefinitionRequestDto();
+
+        request.metricName = "metric";
+        request.metricDescription = "description";
+        request.unitType = "SECOND";
+        request.metricType = "Aggregated";
+
+        var metricDefinition = createMetricDefinition(request);
+
+        Mockito.when(readPredefinedTypesService.searchForMetricType(any())).thenReturn(Optional.of("Aggregated"));
+        var request1= new MetricDefinitionRequestDto();
+
+        request1.metricName = "metric1";
+        request1.metricDescription = "description";
+        request1.unitType = "SECOND";
+        request1.metricType = "Aggregated";
+
+        var metricDefinition1 = createMetricDefinition(request1);
+
+        var metricDefinitionToBeUpdated = new MetricDefinitionRequestDto();
+
+        metricDefinitionToBeUpdated.metricName = "METRIC";
+
+        Mockito.when(readPredefinedTypesService.searchForUnitType(any())).thenReturn(Optional.empty());
+        Mockito.when(readPredefinedTypesService.searchForMetricType(any())).thenReturn(Optional.empty());
+
+        var informativeResponse = given()
+                .auth()
+                .oauth2(getAccessToken("admin"))
+                .body(metricDefinitionToBeUpdated)
+                .contentType(ContentType.JSON)
+                .patch("/{id}", metricDefinition1.id)
+                .then()
+                .assertThat()
+                .statusCode(409)
+                .extract()
+                .as(InformativeResponse.class);
+
+        assertEquals("There is a Metric Definition with unit type "+request1.unitType+" and name "+metricDefinitionToBeUpdated.metricName+". Its id is "+metricDefinition.getId().toString(), informativeResponse.message);
+    }
+
+    @Test
     public void updateMetricDefinitionNoUnitType() {
 
         Mockito.when(readPredefinedTypesService.searchForUnitType(any())).thenReturn(Optional.of("SECOND"));

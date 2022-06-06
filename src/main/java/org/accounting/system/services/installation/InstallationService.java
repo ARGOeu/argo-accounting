@@ -1,15 +1,16 @@
 package org.accounting.system.services.installation;
 
-import com.mongodb.MongoWriteException;
 import org.accounting.system.dtos.installation.InstallationRequestDto;
 import org.accounting.system.dtos.installation.InstallationResponseDto;
 import org.accounting.system.dtos.installation.UpdateInstallationRequestDto;
 import org.accounting.system.dtos.pagination.PageResource;
 import org.accounting.system.endpoints.InstallationEndpoint;
-import org.accounting.system.entities.Installation;
+import org.accounting.system.entities.HierarchicalRelation;
+import org.accounting.system.entities.installation.Installation;
 import org.accounting.system.entities.projections.InstallationProjection;
-import org.accounting.system.exceptions.ConflictException;
+import org.accounting.system.enums.RelationType;
 import org.accounting.system.mappers.InstallationMapper;
+import org.accounting.system.repositories.HierarchicalRelationRepository;
 import org.accounting.system.repositories.installation.InstallationRepository;
 import org.accounting.system.repositories.provider.ProviderRepository;
 import org.bson.types.ObjectId;
@@ -30,6 +31,9 @@ public class InstallationService {
     @Inject
     InstallationRepository installationRepository;
 
+    @Inject
+    HierarchicalRelationRepository hierarchicalRelationRepository;
+
     /**
      * Maps the {@link InstallationRequestDto} to {@link Installation}.
      * Then the {@link Installation} is stored in the mongo database.
@@ -39,15 +43,21 @@ public class InstallationService {
      */
     public InstallationResponseDto save(InstallationRequestDto request) {
 
-        var installation = InstallationMapper.INSTANCE.requestToInstallation(request);
+        var installationToBeStored = InstallationMapper.INSTANCE.requestToInstallation(request);
 
-        try{
-            installationRepository.persist(installation);
-        } catch (MongoWriteException e) {
-            throw new ConflictException("There is already an installation with {organisation, infrastructure, installation}: " + "{"+request.organisation+", "+request.infrastructure+", "+request.installation+"}.");
-        }
+        installationRepository.persist(installationToBeStored);
 
-        return fetchInstallation(installation.getId().toString());
+        HierarchicalRelation project = new HierarchicalRelation(request.project, RelationType.PROJECT);
+
+        HierarchicalRelation provider = new HierarchicalRelation(request.organisation, project, RelationType.PROVIDER);
+
+        HierarchicalRelation installation = new HierarchicalRelation(installationToBeStored.getId().toString(), provider, RelationType.INSTALLATION);
+
+        hierarchicalRelationRepository.save(project, null);
+        hierarchicalRelationRepository.save(provider, null);
+        hierarchicalRelationRepository.save(installation, null);
+
+        return fetchInstallation(installationToBeStored.getId().toString());
     }
 
     /**
@@ -118,4 +128,10 @@ public class InstallationService {
             throw new BadRequestException(String.format("The installation doesn't belong to the following Provider : %s", providerId));
         }
     }
+
+    public void exist(String infrastructure, String installation){
+
+        installationRepository.exist(infrastructure, installation);
+    }
+
 }

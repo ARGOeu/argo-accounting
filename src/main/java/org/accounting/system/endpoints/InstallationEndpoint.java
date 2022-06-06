@@ -9,6 +9,7 @@ import org.accounting.system.dtos.installation.UpdateInstallationRequestDto;
 import org.accounting.system.enums.Collection;
 import org.accounting.system.interceptors.annotations.Permission;
 import org.accounting.system.repositories.installation.InstallationRepository;
+import org.accounting.system.services.HierarchicalRelationService;
 import org.accounting.system.services.installation.InstallationService;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.eclipse.microprofile.openapi.annotations.Operation;
@@ -64,6 +65,9 @@ public class InstallationEndpoint {
 
     @Inject
     InstallationService installationService;
+
+    @Inject
+    HierarchicalRelationService hierarchicalRelationService;
 
     @Tag(name = "Installation")
     @Operation(
@@ -121,6 +125,15 @@ public class InstallationEndpoint {
     public Response save(@Valid @NotNull(message = "The request body is empty.") InstallationRequestDto installationRequestDto, @Context UriInfo uriInfo) {
 
         var serverInfo = new ResteasyUriInfo(serverUrl.concat(basePath).concat(uriInfo.getPath()), basePath);
+
+//        var belongs = hierarchicalRelationService.providerBelongsToProject(installationRequestDto.project, installationRequestDto.organisation);
+//
+//        if(!belongs){
+//            String message = String.format("There is no relationship between Project {%s} and Provider {%s}", installationRequestDto.project, installationRequestDto.organisation);
+//            throw new BadRequestException(message);
+//        }
+
+        installationService.exist(installationRequestDto.infrastructure, installationRequestDto.installation);
 
         var response = installationService.save(installationRequestDto);
 

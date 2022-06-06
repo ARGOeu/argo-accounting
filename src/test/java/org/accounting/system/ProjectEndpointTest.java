@@ -199,6 +199,7 @@ public class ProjectEndpointTest {
 
         var request= new InstallationRequestDto();
 
+        request.project = "777536";
         request.organisation = "grnet";
         request.infrastructure = "okeanos-knossos";
         request.installation = "SECOND";
@@ -258,6 +259,7 @@ public class ProjectEndpointTest {
 
         var request= new InstallationRequestDto();
 
+        request.project = "777536";
         request.organisation = "grnet";
         request.infrastructure = "okeanos-knossos";
         request.installation = "SECOND";
@@ -330,6 +332,7 @@ public class ProjectEndpointTest {
 
         var request= new InstallationRequestDto();
 
+        request.project = "777536";
         request.organisation = "grnet";
         request.infrastructure = "okeanos-knossos";
         request.installation = "SECOND";

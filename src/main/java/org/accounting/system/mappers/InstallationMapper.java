@@ -4,7 +4,7 @@ import org.accounting.system.beans.RequestInformation;
 import org.accounting.system.dtos.installation.InstallationRequestDto;
 import org.accounting.system.dtos.installation.InstallationResponseDto;
 import org.accounting.system.dtos.installation.UpdateInstallationRequestDto;
-import org.accounting.system.entities.Installation;
+import org.accounting.system.entities.installation.Installation;
 import org.accounting.system.entities.projections.InstallationProjection;
 import org.apache.commons.lang3.StringUtils;
 import org.bson.types.ObjectId;
@@ -36,6 +36,7 @@ public interface InstallationMapper {
     @Mapping( target="id", expression="java(installation.getId().toString())")
     InstallationResponseDto installationProjectionToResponse(InstallationProjection installation);
 
+    @Mapping(target = "project", expression = "java(StringUtils.isNotEmpty(request.project) ? request.project : installation.getProject())")
     @Mapping(target = "organisation", expression = "java(StringUtils.isNotEmpty(request.organisation) ? request.organisation : installation.getOrganisation())")
     @Mapping(target = "infrastructure", expression = "java(StringUtils.isNotEmpty(request.infrastructure) ? request.infrastructure : installation.getInfrastructure())")
     @Mapping(target = "installation", expression = "java(StringUtils.isNotEmpty(request.installation) ? request.installation : installation.getInstallation())")

@@ -1,7 +1,7 @@
 package org.accounting.system.repositories.installation;
 
 import io.quarkus.mongodb.panache.PanacheMongoRepository;
-import org.accounting.system.entities.Installation;
+import org.accounting.system.entities.installation.Installation;
 
 import javax.enterprise.context.ApplicationScoped;
 
