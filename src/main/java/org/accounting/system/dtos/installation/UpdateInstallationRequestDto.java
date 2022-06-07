@@ -8,7 +8,7 @@ import org.accounting.system.repositories.provider.ProviderRepository;
 import org.eclipse.microprofile.openapi.annotations.enums.SchemaType;
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
 
-@Schema(name="InstallationRequest", description="An object represents a request for updating an existing Installation.")
+@Schema(name="UpdateInstallationRequest", description="An object represents a request for updating an existing Installation.")
 public class UpdateInstallationRequestDto {
 
     @Schema(

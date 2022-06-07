@@ -20,7 +20,10 @@ import org.bson.types.ObjectId;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
+import javax.ws.rs.BadRequestException;
+import javax.ws.rs.NotFoundException;
 import javax.ws.rs.core.UriInfo;
+import java.util.List;
 import java.util.Set;
 
 @ApplicationScoped
@@ -98,12 +101,63 @@ public class HierarchicalRelationService {
      */
     public boolean providerBelongsToProject(String projectId, String providerId){
 
-        return hierarchicalRelationRepository.providerBelongsToProject(projectId, providerId);
+        return hierarchicalRelationRepository.hierarchicalRelationshipExists(projectId + HierarchicalRelation.PATH_SEPARATOR + providerId);
+    }
+
+    /**
+     * This method delegates to {@link HierarchicalRelationRepository hierarchicalRelationRepository} to check if the given hierarchical relationship exists
+     **
+     * @param projectId The Project ID.
+     * @param providerId The Provider ID.
+     * @param installationId The Installation ID.
+     * @throws BadRequestException If the  projectId.providerId.installationId hierarchical relationship doesn't exist.
+     */
+    public void hierarchicalRelationshipExists(String projectId, String providerId, String installationId){
+
+        var exists = hierarchicalRelationRepository.hierarchicalRelationshipExists(projectId + HierarchicalRelation.PATH_SEPARATOR + providerId + HierarchicalRelation.PATH_SEPARATOR + installationId);
+
+        if(!exists){
+            String message = String.format("There is no relationship among {%s, %s, %s}",projectId, providerId, installationId);
+            throw new BadRequestException(message);
+        }
+    }
+
+    /**
+     * This method correlates the given Providers with a specific Project and creates an hierarchical structure with root
+     * the given Project and children the given Providers.
+     *
+     * @param projectId The Project id with which the Providers are to be correlated.
+     * @param providerIds List of Providers which will be correlated with a specific Provider
+     * @throws NotFoundException If a Provider doesn't exist
+     */
+    public void createProjectProviderRelationship(String projectId, List<String> providerIds){
+
+        for(String providerId : providerIds){
+            providerRepository.findByIdOptional(providerId).orElseThrow(()->new NotFoundException("There is no Provider with the following id: "+providerId));
+        }
+
+        for(String providerId : providerIds){
+
+            HierarchicalRelation project = new HierarchicalRelation(projectId, RelationType.PROJECT);
+            HierarchicalRelation provider = new HierarchicalRelation(providerId, project, RelationType.PROVIDER);
+
+            hierarchicalRelationRepository.save(project, null);
+            hierarchicalRelationRepository.save(provider, null);
+        }
+    }
+
+    public List<HierarchicalRelationProjection> hierarchicalStructure(final String externalId) {
+
+        return hierarchicalRelationRepository.hierarchicalStructure(externalId);
     }
 
     public PageResource<MetricProjection, MetricProjection> fetchAllMetrics(String id, int page, int size, UriInfo uriInfo){
 
         var projection = hierarchicalRelationRepository.findByExternalId(id, page, size);
+
+        if(projection.count == 0){
+            throw new NotFoundException("No metrics added.");
+        }
 
         return new PageResource<>(projection, projection.list, uriInfo);
     }

@@ -21,6 +21,7 @@ import org.accounting.system.mappers.ProviderMapper;
 import org.accounting.system.repositories.installation.InstallationRepository;
 import org.accounting.system.repositories.metricdefinition.MetricDefinitionRepository;
 import org.accounting.system.repositories.provider.ProviderRepository;
+import org.accounting.system.services.HierarchicalRelationService;
 import org.accounting.system.services.ProjectService;
 import org.accounting.system.services.ReadPredefinedTypesService;
 import org.accounting.system.wiremock.ProjectWireMockServer;
@@ -33,6 +34,7 @@ import org.junit.jupiter.api.TestInstance;
 import org.mockito.Mockito;
 
 import javax.inject.Inject;
+import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.ExecutionException;
 
@@ -64,6 +66,9 @@ public class InstallationAuthorizationTest {
     ProjectService projectService;
 
     @Inject
+    HierarchicalRelationService hierarchicalRelationService;
+
+    @Inject
     @RestClient
     ProviderClient providerClient;
 
@@ -80,6 +85,8 @@ public class InstallationAuthorizationTest {
 
         //We are going to register the EOSC-hub project from OpenAire API
         projectService.getById("777536");
+
+        hierarchicalRelationService.createProjectProviderRelationship("777536", List.of("grnet", "sites"));
     }
 
     @BeforeEach

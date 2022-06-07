@@ -2,6 +2,7 @@ package org.accounting.system.templates;
 
 import io.quarkus.qute.Template;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
+import org.eclipse.microprofile.openapi.annotations.Operation;
 
 import javax.inject.Inject;
 import javax.ws.rs.GET;
@@ -32,6 +33,7 @@ public class KeycloakClientTemplate {
 
     @GET
     @Produces(MediaType.TEXT_HTML)
+    @Operation(hidden = true)
     public String keycloakClient() {
         return keycloak.data("keycloak_server_url", keycloakServerUrl, "keycloak_server_realm", keycloakServerRealm, "keycloak_server_client_id", keycloakServerClientId).render();
     }
