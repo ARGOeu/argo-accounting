@@ -41,6 +41,7 @@ import javax.ws.rs.BadRequestException;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DefaultValue;
 import javax.ws.rs.GET;
+import javax.ws.rs.NotFoundException;
 import javax.ws.rs.POST;
 import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
@@ -549,6 +550,10 @@ public class ProjectEndpoint {
             @PathParam("id") String id) throws JsonProcessingException {
 
         var response = hierarchicalRelationService.hierarchicalStructure(id);
+
+        if(response.isEmpty()){
+            throw new NotFoundException("There are no any Provider or Installation correlating with the Project: "+id);
+        }
 
         SimpleModule module = new SimpleModule();
         module.addSerializer(new HierarchicalRelationSerializer(HierarchicalRelationProjection.class));
