@@ -3,6 +3,7 @@ package org.accounting.system.repositories;
 import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.model.Aggregates;
+import com.mongodb.client.model.Field;
 import com.mongodb.client.model.Filters;
 import io.quarkus.mongodb.panache.PanacheMongoRepositoryBase;
 import liquibase.repackaged.org.apache.commons.collections4.CollectionUtils;
@@ -49,15 +50,14 @@ public class HierarchicalRelationRepository implements PanacheMongoRepositoryBas
     }
 
     /**
-     * This method executes a query to check if the given Provider belongs to a specific Project.
+     * This method executes a query to check if the given hierarchical relationship exists
      *
-     * @param projectId The Project ID.
-     * @param providerId The Provider ID.
-     * @return if provider belongs to project.
+     * @param path Hierarchical relationship path
+     * @return if the given path exists.
      */
-    public boolean providerBelongsToProject(String projectId, String providerId){
+    public boolean hierarchicalRelationshipExists(String path){
 
-        Bson regex = Aggregates.match(Filters.regex("_id", projectId + HierarchicalRelation.PATH_SEPARATOR + providerId));
+        Bson regex = Aggregates.match(Filters.regex("_id", path));
 
         Document count = getMongoCollection()
                 .aggregate(List
@@ -105,7 +105,7 @@ public class HierarchicalRelationRepository implements PanacheMongoRepositoryBas
         return projectionQuery;
     }
 
-//    public List<HierarchicalRelationProjection> findByExternalId(final String externalId, int page, int size, UriInfo uriInfo) {
+//    public List<HierarchicalRelationProjection> findByExternalId(final String externalId) {
 //
 //        Document externalIdToInstallation = Document.parse("{\n" +
 //                "        $cond: [\n" +
@@ -191,6 +191,96 @@ public class HierarchicalRelationRepository implements PanacheMongoRepositoryBas
 //                .map(document->build(document, getMongoCollection().aggregate(List.of(fields, lookupMetric, lookupInstallation, regex, Aggregates.addFields(remove)), HierarchicalRelationProjection.class).into(new ArrayList<>())))
 //                .collect(Collectors.toList());
 //    }
+
+    public List<HierarchicalRelationProjection> hierarchicalStructure(final String externalId) {
+
+        Document externalIdToInstallation = Document.parse("{\n" +
+                "        $cond: [\n" +
+                "          {\n" +
+                "            $eq: [\n" +
+                "              \"$relationType\",\n" +
+                "              \"INSTALLATION\"\n" +
+                "            ]\n" +
+                "          },\n" +
+                "          {\n" +
+                "            \"$toObjectId\": \"$externalId\"\n" +
+                "          },\n" +
+                "          \"$$REMOVE\"\n" +
+                "        ]\n" +
+                "      }");
+
+        Document externalIdToProject = Document.parse("{\n" +
+                "        $cond: [\n" +
+                "          {\n" +
+                "            $eq: [\n" +
+                "              \"$relationType\",\n" +
+                "              \"PROJECT\"\n" +
+                "            ]\n" +
+                "          },\n" +
+                "          \"$externalId\",\n" +
+                "          \"$$REMOVE\"\n" +
+                "        ]\n" +
+                "      }");
+
+        Document externalIdToProvider = Document.parse("{\n" +
+                "        $cond: [\n" +
+                "          {\n" +
+                "            $eq: [\n" +
+                "              \"$relationType\",\n" +
+                "              \"PROVIDER\"\n" +
+                "            ]\n" +
+                "          },\n" +
+                "          \"$externalId\",\n" +
+                "          \"$$REMOVE\"\n" +
+                "        ]\n" +
+                "      }");
+
+        Document removeInstallationFunction = Document.parse("{\n" +
+                "        $cond: [\n" +
+                "          {\n" +
+                "            $eq: [\n" +
+                "              {\n" +
+                "                $size: \"$installation\"\n" +
+                "              },\n" +
+                "              0\n" +
+                "            ]\n" +
+                "          },\n" +
+                "          \"$$REMOVE\",\n" +
+                "          \"$installation\"\n" +
+                "        ]\n" +
+                "      }");
+
+
+        Field installation = new Field<>("installation", externalIdToInstallation);
+        Field provider = new Field<>("provider", externalIdToProvider);
+        Field project = new Field<>("project", externalIdToProject);
+
+        Field remove = new Field<>("installation", removeInstallationFunction);
+
+        Bson fields = Aggregates.addFields(installation, provider, project);
+
+        Bson lookupInstallation = Aggregates.lookup("Installation", "installation", "_id", "installation");
+        Bson lookupProject = Aggregates.lookup("Project", "project", "_id", "project");
+        Bson lookupProvider = Aggregates.lookup("Provider", "provider", "_id", "provider");
+
+
+        //Bson regex = Aggregates.match(Filters.regex("_id", externalId + "[.\\s]"));
+
+        Bson regex = Aggregates.match(Filters.regex("_id", externalId + "[.\\s]"));
+
+        Bson documentsByExternalId = Aggregates.match(Filters.eq("_id", externalId));
+
+        final var documents = getMongoCollection().aggregate(List.of(fields, lookupInstallation, lookupProject, documentsByExternalId, Aggregates.addFields(remove)), HierarchicalRelationProjection.class).into(new ArrayList<>());
+
+        if( documents == null ) {
+            return documents;
+        }
+
+        return documents.
+                stream()
+                .map(document->build(document, getMongoCollection().aggregate(List.of(fields, lookupInstallation, lookupProvider, regex, Aggregates.addFields(remove)), HierarchicalRelationProjection.class).into(new ArrayList<>())))
+                .collect(Collectors.toList());
+    }
 
     private HierarchicalRelationProjection build(final HierarchicalRelationProjection root, final Collection<HierarchicalRelationProjection> documents ) {
         final Map<String, HierarchicalRelationProjection> map = new HashMap<>();

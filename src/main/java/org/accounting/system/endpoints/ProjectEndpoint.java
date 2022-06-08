@@ -1,12 +1,18 @@
 package org.accounting.system.endpoints;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.module.SimpleModule;
 import io.quarkus.security.Authenticated;
+import org.accounting.system.HierarchicalRelationSerializer;
 import org.accounting.system.constraints.NotFoundEntity;
 import org.accounting.system.dtos.InformativeResponse;
 import org.accounting.system.dtos.metric.MetricRequestDto;
 import org.accounting.system.dtos.metric.MetricResponseDto;
+import org.accounting.system.dtos.project.CorrelateProjectProviderRequestDto;
 import org.accounting.system.dtos.project.ProjectResponseDto;
 import org.accounting.system.entities.HierarchicalRelation;
+import org.accounting.system.entities.projections.HierarchicalRelationProjection;
 import org.accounting.system.entities.projections.MetricProjection;
 import org.accounting.system.repositories.ProjectRepository;
 import org.accounting.system.repositories.installation.InstallationRepository;
@@ -36,6 +42,7 @@ import javax.ws.rs.Consumes;
 import javax.ws.rs.DefaultValue;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
+import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
@@ -66,6 +73,9 @@ public class ProjectEndpoint {
 
     @Inject
     HierarchicalRelationService hierarchicalRelationService;
+
+    @Inject
+    ObjectMapper objectMapper;
 
     @ConfigProperty(name = "quarkus.resteasy.path")
     String basePath;
@@ -199,14 +209,14 @@ public class ProjectEndpoint {
 
         var serverInfo = new ResteasyUriInfo(serverUrl.concat(basePath).concat("/metrics"), basePath);
 
-        installationService.checkIfInstallationBelongsToProvider(installationId, providerId);
+        hierarchicalRelationService.hierarchicalRelationshipExists(projectId, providerId, installationId);
 
         var response = hierarchicalRelationService.assign(projectId, providerId, installationId, metricRequestDto);
 
         return Response.created(serverInfo.getAbsolutePathBuilder().path(response.id).build()).entity(response).build();
     }
 
-    @Tag(name = "Fetching Metrics for different levels")
+    @Tag(name = "Fetching Metrics from different levels")
     @Operation(
             summary = "Returns all Metrics under a specific Project.",
             description = "This operation is responsible for fetching all Metrics under a specific Project. "+
@@ -260,16 +270,10 @@ public class ProjectEndpoint {
 
         var response = hierarchicalRelationService.fetchAllMetrics(id, page-1, size, uriInfo);
 
-//        SimpleModule module = new SimpleModule();
-//        module.addSerializer(HierarchicalRelationProjection.class, new HierarchicalRelationSerializer());
-//        objectMapper.registerModule(module);
-//
-//        String serialized = objectMapper.writeValueAsString(response);
-
         return Response.ok().entity(response).build();
     }
 
-    @Tag(name = "Fetching Metrics for different levels")
+    @Tag(name = "Fetching Metrics from different levels")
     @Operation(
             summary = "Returns all Metrics under a specific Provider.",
             description = "This operation is responsible for fetching all Metrics under a specific Provider. "+
@@ -332,7 +336,7 @@ public class ProjectEndpoint {
         return Response.ok().entity(response).build();
     }
 
-    @Tag(name = "Fetching Metrics for different levels")
+    @Tag(name = "Fetching Metrics from different levels")
     @Operation(
             summary = "Returns all Metrics under a specific Installation.",
             description = "This operation is responsible for fetching all Metrics under a specific Installation. "+
@@ -399,5 +403,159 @@ public class ProjectEndpoint {
         var response = hierarchicalRelationService.fetchAllMetrics(projectId + HierarchicalRelation.PATH_SEPARATOR + providerId + HierarchicalRelation.PATH_SEPARATOR + installationId, page-1, size, uriInfo);
 
         return Response.ok().entity(response).build();
+    }
+
+    @Tag(name = "Project")
+    @Operation(
+            summary = "Registers in a Project different Providers.",
+            description = "There is a hierarchical relation between Project and Providers which can be expressed as follows: a Project can have a number of different Providers. " +
+                    "By passing a list of Providers ids to this operation, you can correlates those Providers with a specific Project. Finally, it should be noted that any Provider can belong to more than one Project.")
+    @APIResponse(
+            responseCode = "200",
+            description = "Providers have been successfully registered to Project.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "400",
+            description = "Bad Request.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "401",
+            description = "User/Service has not been authenticated.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "403",
+            description = "The authenticated user/service is not permitted to perform the requested operation.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "404",
+            description = "Project has not been found.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "415",
+            description = "Cannot consume content type.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "500",
+            description = "Internal Server Errors.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @SecurityRequirement(name = "Authentication")
+
+    @PUT
+    @Path("/{id}")
+    @Produces(value = MediaType.APPLICATION_JSON)
+    @Consumes(value = MediaType.APPLICATION_JSON)
+    public Response createProjectProviderRelationship(
+            @Parameter(
+                    description = "The Project in which the Providers will be registered.",
+                    required = true,
+                    example = "447535",
+                    schema = @Schema(type = SchemaType.STRING))
+            @PathParam("id") @Valid @NotFoundEntity(repository = ProjectRepository.class, id = String.class, message = "There is no Project with the following id:") String id, @Valid @NotNull(message = "The request body is empty.") CorrelateProjectProviderRequestDto request) {
+
+        hierarchicalRelationService.createProjectProviderRelationship(id, request.providers);
+
+        InformativeResponse response = new InformativeResponse();
+        response.code = 200;
+        response.message = "The following providers " +request.providers.toString() + " have been correlated with Project "+id;
+
+        return Response.ok().entity(response).build();
+    }
+
+    @Tag(name = "Project")
+    @Operation(
+            summary = "Returns the Project hierarchical structure.",
+            description = "Basically, this operations returns the providers and installations associated with a specific Project.")
+    @APIResponse(
+            responseCode = "200",
+            description = "The corresponding Project hierarchical structure.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = Object.class),
+            example = "{\n" +
+                    "    \"project\": \"101017567\",\n" +
+                    "    \"providers\": [\n" +
+                    "        {\n" +
+                    "            \"provider\": \"bioexcel\",\n" +
+                    "            \"installations\": []\n" +
+                    "        },\n" +
+                    "        {\n" +
+                    "            \"provider\": \"grnet\",\n" +
+                    "            \"installations\": [\n" +
+                    "                {\n" +
+                    "                    \"installation\": \"629eff3a7b0f5d02ab734879\"\n" +
+                    "                }\n" +
+                    "            ]\n" +
+                    "        },\n" +
+                    "        {\n" +
+                    "            \"provider\": \"osmooc\",\n" +
+                    "            \"installations\": []\n" +
+                    "        },\n" +
+                    "        {\n" +
+                    "            \"provider\": \"sites\",\n" +
+                    "            \"installations\": []\n" +
+                    "        }\n" +
+                    "    ]\n" +
+                    "}"))
+    @APIResponse(
+            responseCode = "401",
+            description = "User/Service has not been authenticated.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "403",
+            description = "The authenticated user/service is not permitted to perform the requested operation.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "404",
+            description = "Project has not been found.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "500",
+            description = "Internal Server Errors.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+
+    @GET
+    @Path("/{id}/hierarchical-structure")
+    @Produces(value = MediaType.APPLICATION_JSON)
+    @SecurityRequirement(name = "Authentication")
+
+    public Response getProjectHierarchicalStructure(
+            @Parameter(
+                    description = "The Project ID.",
+                    required = true,
+                    example = "447535",
+                    schema = @Schema(type = SchemaType.STRING))
+            @PathParam("id") String id) throws JsonProcessingException {
+
+        var response = hierarchicalRelationService.hierarchicalStructure(id);
+
+        SimpleModule module = new SimpleModule();
+        module.addSerializer(new HierarchicalRelationSerializer(HierarchicalRelationProjection.class));
+        objectMapper.registerModule(module);
+
+        String serialized = objectMapper.writeValueAsString(response.get(0));
+
+        return Response.ok().entity(serialized).build();
     }
 }

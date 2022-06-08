@@ -126,12 +126,12 @@ public class InstallationEndpoint {
 
         var serverInfo = new ResteasyUriInfo(serverUrl.concat(basePath).concat(uriInfo.getPath()), basePath);
 
-//        var belongs = hierarchicalRelationService.providerBelongsToProject(installationRequestDto.project, installationRequestDto.organisation);
-//
-//        if(!belongs){
-//            String message = String.format("There is no relationship between Project {%s} and Provider {%s}", installationRequestDto.project, installationRequestDto.organisation);
-//            throw new BadRequestException(message);
-//        }
+        var belongs = hierarchicalRelationService.providerBelongsToProject(installationRequestDto.project, installationRequestDto.organisation);
+
+        if(!belongs){
+            String message = String.format("There is no relationship between Project {%s} and Provider {%s}", installationRequestDto.project, installationRequestDto.organisation);
+            throw new BadRequestException(message);
+        }
 
         installationService.exist(installationRequestDto.infrastructure, installationRequestDto.installation);
 

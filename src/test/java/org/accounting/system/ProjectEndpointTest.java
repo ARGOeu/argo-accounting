@@ -27,6 +27,8 @@ import org.accounting.system.mappers.ProviderMapper;
 import org.accounting.system.repositories.installation.InstallationRepository;
 import org.accounting.system.repositories.metricdefinition.MetricDefinitionRepository;
 import org.accounting.system.repositories.provider.ProviderRepository;
+import org.accounting.system.services.HierarchicalRelationService;
+import org.accounting.system.services.ProjectService;
 import org.accounting.system.services.ReadPredefinedTypesService;
 import org.accounting.system.wiremock.ProjectWireMockServer;
 import org.accounting.system.wiremock.ProviderWireMockServer;
@@ -38,6 +40,7 @@ import org.junit.jupiter.api.TestInstance;
 import org.mockito.Mockito;
 
 import javax.inject.Inject;
+import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.ExecutionException;
 
@@ -74,6 +77,12 @@ public class ProjectEndpointTest {
     @Inject
     MetricDefinitionRepository metricDefinitionRepository;
 
+    @Inject
+    HierarchicalRelationService hierarchicalRelationService;
+
+    @Inject
+    ProjectService projectService;
+
     KeycloakTestClient keycloakClient = new KeycloakTestClient();
 
     @BeforeAll
@@ -84,6 +93,12 @@ public class ProjectEndpointTest {
         Response response = providerClient.getAll(total.total).toCompletableFuture().get();
 
         providerRepository.persistOrUpdate(ProviderMapper.INSTANCE.eoscProvidersToProviders(response.results));
+
+        //Registering a project
+
+        projectService.getById("777536");
+
+        hierarchicalRelationService.createProjectProviderRelationship("777536", List.of("grnet"));
     }
 
     @BeforeEach
@@ -174,17 +189,6 @@ public class ProjectEndpointTest {
     @Test
     public void assignMetric(){
 
-        //Registering a project
-        var project = given()
-                .auth()
-                .oauth2(getAccessToken("admin"))
-                .get("/{id}", "777536")
-                .then()
-                .assertThat()
-                .statusCode(200)
-                .extract()
-                .as(ProjectResponseDto.class);
-
         //Registering an installation
         Mockito.when(readPredefinedTypesService.searchForUnitType(any())).thenReturn(Optional.of("SECOND"));
         Mockito.when(readPredefinedTypesService.searchForMetricType(any())).thenReturn(Optional.of("Aggregated"));
@@ -219,7 +223,7 @@ public class ProjectEndpointTest {
                 .oauth2(getAccessToken("admin"))
                 .body(metric)
                 .contentType(ContentType.JSON)
-                .post("/{projectId}/providers/{providerId}/installations/{installationId}/metrics", project.id, "grnet", installation.id)
+                .post("/{projectId}/providers/{providerId}/installations/{installationId}/metrics", "777536", "grnet", installation.id)
                 .then()
                 .assertThat()
                 .statusCode(201)
@@ -233,17 +237,6 @@ public class ProjectEndpointTest {
 
     @Test
     public void assignMetricAndGeneratingConflict(){
-
-        //Registering a project
-        var project = given()
-                .auth()
-                .oauth2(getAccessToken("admin"))
-                .get("/{id}", "777536")
-                .then()
-                .assertThat()
-                .statusCode(200)
-                .extract()
-                .as(ProjectResponseDto.class);
 
         //Registering an installation
         Mockito.when(readPredefinedTypesService.searchForUnitType(any())).thenReturn(Optional.of("SECOND"));
@@ -279,7 +272,7 @@ public class ProjectEndpointTest {
                 .oauth2(getAccessToken("admin"))
                 .body(metric)
                 .contentType(ContentType.JSON)
-                .post("/{projectId}/providers/{providerId}/installations/{installationId}/metrics", project.id, "grnet", installation.id)
+                .post("/{projectId}/providers/{providerId}/installations/{installationId}/metrics", "777536", "grnet", installation.id)
                 .then()
                 .assertThat()
                 .statusCode(201)
@@ -292,7 +285,7 @@ public class ProjectEndpointTest {
                 .oauth2(getAccessToken("admin"))
                 .body(metric)
                 .contentType(ContentType.JSON)
-                .post("/{projectId}/providers/{providerId}/installations/{installationId}/metrics", project.id, "grnet", installation.id)
+                .post("/{projectId}/providers/{providerId}/installations/{installationId}/metrics", "777536", "grnet", installation.id)
                 .then()
                 .assertThat()
                 .statusCode(409)
@@ -300,7 +293,7 @@ public class ProjectEndpointTest {
                 .as(InformativeResponse.class);
 
         assertEquals(String.format("There is a Metric at {%s, %s, %s} with the following attributes : {%s, %s, %s, %s}",
-                project.acronym, "grnet", installation.installation,
+                "EOSC-hub", "grnet", installation.installation,
                 metric.metricDefinitionId, metric.start, metric.end, metric.value), conflict.message);
     }
 
@@ -359,7 +352,7 @@ public class ProjectEndpointTest {
                 .extract()
                 .as(InformativeResponse.class);
 
-        assertEquals(String.format("The installation doesn't belong to the following Provider : %s", "sites"), conflict.message);
+        assertEquals(String.format(String.format("There is no relationship among {%s, %s, %s}", project.id, "sites", installation.id)), conflict.message);
     }
 
     private InstallationResponseDto createInstallation(InstallationRequestDto request, String user){

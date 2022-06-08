@@ -20,6 +20,7 @@ import org.accounting.system.mappers.ProviderMapper;
 import org.accounting.system.repositories.installation.InstallationRepository;
 import org.accounting.system.repositories.metricdefinition.MetricDefinitionRepository;
 import org.accounting.system.repositories.provider.ProviderRepository;
+import org.accounting.system.services.HierarchicalRelationService;
 import org.accounting.system.services.ProjectService;
 import org.accounting.system.services.ReadPredefinedTypesService;
 import org.accounting.system.wiremock.ProjectWireMockServer;
@@ -32,6 +33,7 @@ import org.junit.jupiter.api.TestInstance;
 import org.mockito.Mockito;
 
 import javax.inject.Inject;
+import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.ExecutionException;
 
@@ -59,6 +61,9 @@ public class InstallationEndpointTest {
     @Inject
     ProjectService projectService;
 
+    @Inject
+    HierarchicalRelationService hierarchicalRelationService;
+
     @InjectMock
     ReadPredefinedTypesService readPredefinedTypesService;
 
@@ -82,6 +87,8 @@ public class InstallationEndpointTest {
 
         //We are going to register the EGI-ACE project from OpenAire API
         projectService.getById("101017567");
+
+        hierarchicalRelationService.createProjectProviderRelationship("777536", List.of("grnet"));
     }
 
     @BeforeEach
