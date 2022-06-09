@@ -87,7 +87,7 @@ public class RoleEndpoint {
                     implementation = InformativeResponse.class)))
     @APIResponse(
             responseCode = "401",
-            description = "User/Service has not been authenticated.",
+            description = "Client has not been authenticated.",
             content = @Content(schema = @Schema(
                     type = SchemaType.OBJECT,
                     implementation = InformativeResponse.class)))
@@ -142,7 +142,7 @@ public class RoleEndpoint {
                     implementation = InformativeResponse.class)))
     @APIResponse(
             responseCode = "401",
-            description = "User/Service has not been authenticated.",
+            description = "Client has not been authenticated.",
             content = @Content(schema = @Schema(
                     type = SchemaType.OBJECT,
                     implementation = InformativeResponse.class)))
@@ -237,7 +237,7 @@ public class RoleEndpoint {
                     implementation = RoleResponseDto.class)))
     @APIResponse(
             responseCode = "401",
-            description = "User/Service has not been authenticated.",
+            description = "Client has not been authenticated.",
             content = @Content(schema = @Schema(
                     type = SchemaType.OBJECT,
                     implementation = InformativeResponse.class)))
@@ -297,7 +297,7 @@ public class RoleEndpoint {
                     implementation = InformativeResponse.class)))
     @APIResponse(
             responseCode = "401",
-            description = "User/Service has not been authenticated.",
+            description = "Client has not been authenticated.",
             content = @Content(schema = @Schema(
                     type = SchemaType.OBJECT,
                     implementation = InformativeResponse.class)))

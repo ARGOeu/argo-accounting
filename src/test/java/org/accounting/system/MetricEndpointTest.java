@@ -1099,7 +1099,7 @@ public class MetricEndpointTest {
                 .auth()
                 .oauth2(getAccessToken("admin"))
                 .basePath("accounting-system/projects")
-                .get("/{id}", "777536")
+                .post("/{id}", "777536")
                 .then()
                 .assertThat()
                 .statusCode(200)

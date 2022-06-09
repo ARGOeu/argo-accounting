@@ -98,7 +98,7 @@ public class ProjectEndpoint {
                     implementation = ProjectResponseDto.class)))
     @APIResponse(
             responseCode = "401",
-            description = "User/Service has not been authenticated.",
+            description = "Client has not been authenticated.",
             content = @Content(schema = @Schema(
                     type = SchemaType.OBJECT,
                     implementation = InformativeResponse.class)))
@@ -121,7 +121,7 @@ public class ProjectEndpoint {
                     type = SchemaType.OBJECT,
                     implementation = InformativeResponse.class)))
 
-    @GET
+    @POST
     @Path("/{id}")
     @Produces(value = MediaType.APPLICATION_JSON)
     @SecurityRequirement(name = "Authentication")
@@ -159,7 +159,7 @@ public class ProjectEndpoint {
                     implementation = InformativeResponse.class)))
     @APIResponse(
             responseCode = "401",
-            description = "User/Service has not been authenticated.",
+            description = "Client has not been authenticated.",
             content = @Content(schema = @Schema(
                     type = SchemaType.OBJECT,
                     implementation = InformativeResponse.class)))
@@ -231,7 +231,7 @@ public class ProjectEndpoint {
                     implementation = MetricProjection.class)))
     @APIResponse(
             responseCode = "401",
-            description = "User/Service has not been authenticated.",
+            description = "Client has not been authenticated.",
             content = @Content(schema = @Schema(
                     type = SchemaType.OBJECT,
                     implementation = InformativeResponse.class)))
@@ -288,7 +288,7 @@ public class ProjectEndpoint {
                     implementation = MetricProjection.class)))
     @APIResponse(
             responseCode = "401",
-            description = "User/Service has not been authenticated.",
+            description = "Client has not been authenticated.",
             content = @Content(schema = @Schema(
                     type = SchemaType.OBJECT,
                     implementation = InformativeResponse.class)))
@@ -351,7 +351,7 @@ public class ProjectEndpoint {
                     implementation = MetricProjection.class)))
     @APIResponse(
             responseCode = "401",
-            description = "User/Service has not been authenticated.",
+            description = "Client has not been authenticated.",
             content = @Content(schema = @Schema(
                     type = SchemaType.OBJECT,
                     implementation = InformativeResponse.class)))
@@ -425,7 +425,7 @@ public class ProjectEndpoint {
                     implementation = InformativeResponse.class)))
     @APIResponse(
             responseCode = "401",
-            description = "User/Service has not been authenticated.",
+            description = "Client has not been authenticated.",
             content = @Content(schema = @Schema(
                     type = SchemaType.OBJECT,
                     implementation = InformativeResponse.class)))
@@ -513,7 +513,7 @@ public class ProjectEndpoint {
                     "}"))
     @APIResponse(
             responseCode = "401",
-            description = "User/Service has not been authenticated.",
+            description = "Client has not been authenticated.",
             content = @Content(schema = @Schema(
                     type = SchemaType.OBJECT,
                     implementation = InformativeResponse.class)))
