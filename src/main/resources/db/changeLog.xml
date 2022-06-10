@@ -413,6 +413,23 @@
                 }
                 ],
                 collection: "Installation"
+                },
+                {
+                permissions: [
+                {
+                operation: "DELETE",
+                accessType: "ALWAYS"
+                },
+                {
+                operation: "READ",
+                accessType: "ALWAYS"
+                },
+                {
+                operation: "ACL",
+                accessType: "ALWAYS"
+                }
+                ],
+                collection: "Client"
                 }]
                 }
             </ext:document>

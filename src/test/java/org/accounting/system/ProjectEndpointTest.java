@@ -143,7 +143,7 @@ public class ProjectEndpointTest {
         var notAuthenticatedResponse = given()
                 .auth()
                 .oauth2("invalidToken")
-                .get("/{id}", "447535")
+                .post("/{id}", "447535")
                 .thenReturn();
 
         assertEquals(401, notAuthenticatedResponse.statusCode());
@@ -155,7 +155,7 @@ public class ProjectEndpointTest {
         var project = given()
                 .auth()
                 .oauth2(getAccessToken("admin"))
-                .get("/{id}", "777536")
+                .post("/{id}", "777536")
                 .then()
                 .assertThat()
                 .statusCode(200)
@@ -176,7 +176,7 @@ public class ProjectEndpointTest {
         var response = given()
                 .auth()
                 .oauth2(getAccessToken("admin"))
-                .get("/{id}", "lalala")
+                .post("/{id}", "lalala")
                 .then()
                 .assertThat()
                 .statusCode(404)
@@ -304,7 +304,7 @@ public class ProjectEndpointTest {
         var project = given()
                 .auth()
                 .oauth2(getAccessToken("admin"))
-                .get("/{id}", "777536")
+                .post("/{id}", "777536")
                 .then()
                 .assertThat()
                 .statusCode(200)

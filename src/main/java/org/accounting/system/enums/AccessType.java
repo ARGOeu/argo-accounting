@@ -6,9 +6,9 @@ import java.util.List;
 /**
  * The available access types are :
  * <ul>
- *   <li>ALWAYS -> User/Service is always able to perform the corresponding operation</li>
- *   <li>NEVER  -> User/Service is never able to perform the corresponding operation</li>
- *   <li>ENTITY -> User/Service has only access to entities that they have created</li>
+ *   <li>ALWAYS -> Client is always able to perform the corresponding operation</li>
+ *   <li>NEVER  -> Client is never able to perform the corresponding operation</li>
+ *   <li>ENTITY -> Client has only access to entities that they have created</li>
  * </ul>
  *
  * If the service has more than one role :

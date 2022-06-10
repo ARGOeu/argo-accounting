@@ -9,5 +9,6 @@ public enum Collection {
     Metric,
     Role,
     Provider,
-    Installation;
+    Installation,
+    Client;
 }

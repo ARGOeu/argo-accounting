@@ -115,7 +115,7 @@ public class MetricDefinitionEndpoint {
                     implementation = InformativeResponse.class)))
     @APIResponse(
             responseCode = "401",
-            description = "User/Service has not been authenticated.",
+            description = "Client has not been authenticated.",
             content = @Content(schema = @Schema(
                     type = SchemaType.OBJECT,
                     implementation = InformativeResponse.class)))
@@ -178,7 +178,7 @@ public class MetricDefinitionEndpoint {
                     implementation = MetricDefinitionResponseDto.class)))
     @APIResponse(
             responseCode = "401",
-            description = "User/Service has not been authenticated.",
+            description = "Client has not been authenticated.",
             content = @Content(schema = @Schema(
                     type = SchemaType.OBJECT,
                     implementation = InformativeResponse.class)))
@@ -224,7 +224,7 @@ public class MetricDefinitionEndpoint {
                     implementation = MetricDefinitionResponseDto.class)))
     @APIResponse(
             responseCode = "401",
-            description = "User/Service has not been authenticated.",
+            description = "Client has not been authenticated.",
             content = @Content(schema = @Schema(
                     type = SchemaType.OBJECT,
                     implementation = InformativeResponse.class)))
@@ -284,7 +284,7 @@ public class MetricDefinitionEndpoint {
                     implementation = InformativeResponse.class)))
     @APIResponse(
             responseCode = "401",
-            description = "User/Service has not been authenticated.",
+            description = "Client has not been authenticated.",
             content = @Content(schema = @Schema(
                     type = SchemaType.OBJECT,
                     implementation = InformativeResponse.class)))
@@ -350,7 +350,7 @@ public class MetricDefinitionEndpoint {
                     implementation = InformativeResponse.class)))
     @APIResponse(
             responseCode = "401",
-            description = "User/Service has not been authenticated.",
+            description = "Client has not been authenticated.",
             content = @Content(schema = @Schema(
                     type = SchemaType.OBJECT,
                     implementation = InformativeResponse.class)))
@@ -433,7 +433,7 @@ public class MetricDefinitionEndpoint {
                     "}")))
     @APIResponse(
             responseCode = "401",
-            description = "User/Service has not been authenticated.",
+            description = "Client has not been authenticated.",
             content = @Content(schema = @Schema(
                     type = SchemaType.OBJECT,
                     implementation = InformativeResponse.class)))
@@ -479,7 +479,7 @@ public class MetricDefinitionEndpoint {
                             "}")))
     @APIResponse(
             responseCode = "401",
-            description = "User/Service has not been authenticated.",
+            description = "Client has not been authenticated.",
             content = @Content(schema = @Schema(
                     type = SchemaType.OBJECT,
                     implementation = InformativeResponse.class)))
@@ -521,7 +521,7 @@ public class MetricDefinitionEndpoint {
                     implementation = InformativeResponse.class)))
     @APIResponse(
             responseCode = "401",
-            description = "User/Service has not been authenticated.",
+            description = "Client has not been authenticated.",
             content = @Content(schema = @Schema(
                     type = SchemaType.OBJECT,
                     implementation = InformativeResponse.class)))
@@ -601,7 +601,7 @@ public class MetricDefinitionEndpoint {
                     implementation = InformativeResponse.class)))
     @APIResponse(
             responseCode = "401",
-            description = "User/Service has not been authenticated.",
+            description = "Client has not been authenticated.",
             content = @Content(schema = @Schema(
                     type = SchemaType.OBJECT,
                     implementation = InformativeResponse.class)))
@@ -688,7 +688,7 @@ public class MetricDefinitionEndpoint {
                     implementation = InformativeResponse.class)))
     @APIResponse(
             responseCode = "401",
-            description = "User/Service has not been authenticated.",
+            description = "Client has not been authenticated.",
             content = @Content(schema = @Schema(
                     type = SchemaType.OBJECT,
                     implementation = InformativeResponse.class)))
@@ -763,7 +763,7 @@ public class MetricDefinitionEndpoint {
                     implementation = InformativeResponse.class)))
     @APIResponse(
             responseCode = "401",
-            description = "User/Service has not been authenticated.",
+            description = "Client has not been authenticated.",
             content = @Content(schema = @Schema(
                     type = SchemaType.OBJECT,
                     implementation = InformativeResponse.class)))
@@ -829,7 +829,7 @@ public class MetricDefinitionEndpoint {
                     implementation = AccessControlResponseDto.class)))
     @APIResponse(
             responseCode = "401",
-            description = "User/Service has not been authenticated.",
+            description = "Client has not been authenticated.",
             content = @Content(schema = @Schema(
                     type = SchemaType.OBJECT,
                     implementation = InformativeResponse.class)))
@@ -890,7 +890,7 @@ public class MetricDefinitionEndpoint {
                     implementation = AccessControlResponseDto.class)))
     @APIResponse(
             responseCode = "401",
-            description = "User/Service has not been authenticated.",
+            description = "Client has not been authenticated.",
             content = @Content(schema = @Schema(
                     type = SchemaType.OBJECT,
                     implementation = InformativeResponse.class)))
@@ -939,7 +939,7 @@ public class MetricDefinitionEndpoint {
                     implementation = MetricDefinitionResponseDto.class)))
     @APIResponse(
         responseCode = "401",
-            description = "User/Service has not been authenticated.",
+            description = "Client has not been authenticated.",
             content = @Content(schema = @Schema(
                     type = SchemaType.OBJECT,
                     implementation = InformativeResponse.class)))
