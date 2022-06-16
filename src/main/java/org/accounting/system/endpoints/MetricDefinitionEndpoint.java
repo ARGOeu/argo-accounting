@@ -73,8 +73,6 @@ public class MetricDefinitionEndpoint {
 
     @Inject
     Utility utility;
-    @Inject
-    QueryParser queryParser;
 
     @Inject
     RequestInformation requestInformation;

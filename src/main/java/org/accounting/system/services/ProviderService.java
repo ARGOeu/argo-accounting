@@ -9,20 +9,27 @@ import org.accounting.system.entities.provider.Provider;
 import org.accounting.system.exceptions.ConflictException;
 import org.accounting.system.mappers.ProviderMapper;
 import org.accounting.system.repositories.provider.ProviderRepository;
+import org.accounting.system.util.QueryParser;
 import org.apache.commons.lang3.StringUtils;
+import org.bson.conversions.Bson;
+import org.json.simple.parser.ParseException;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 import javax.ws.rs.ForbiddenException;
 import javax.ws.rs.core.UriInfo;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 @ApplicationScoped
 public class ProviderService {
 
     @Inject
     ProviderRepository providerRepository;
-
+    @Inject
+    QueryParser queryParser;
 
     /**
      * Returns the N Providers from the given page.
@@ -134,4 +141,15 @@ public class ProviderService {
         return ProviderMapper.INSTANCE.providerToResponse(provider);
     }
 
+
+    public List<ProviderResponseDto> searchProvider(String json, boolean isAlwaysPermission) throws ParseException, NoSuchFieldException {
+
+        List<String> entityIds=new ArrayList<>();
+        if(!isAlwaysPermission){
+
+            entityIds= providerRepository.findAll().stream().map(Provider::getId).collect(Collectors.toList());
+        }
+        Bson query=queryParser.parseFile(json, isAlwaysPermission, entityIds);
+        return  ProviderMapper.INSTANCE.providersToResponse( providerRepository.search(query));
+    }
 }
