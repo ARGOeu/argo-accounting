@@ -2,12 +2,13 @@ package org.accounting.system.services.client;
 
 import io.quarkus.mongodb.panache.PanacheQuery;
 import io.quarkus.oidc.TokenIntrospection;
-import io.quarkus.security.spi.runtime.AuthorizationController;
+import io.quarkus.oidc.UserInfo;
 import org.accounting.system.dtos.client.ClientResponseDto;
 import org.accounting.system.dtos.pagination.PageResource;
 import org.accounting.system.entities.client.Client;
 import org.accounting.system.mappers.ClientMapper;
 import org.accounting.system.repositories.client.ClientRepository;
+import org.apache.commons.lang3.StringUtils;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 
 import javax.enterprise.context.ApplicationScoped;
@@ -26,7 +27,7 @@ public class ClientService {
     TokenIntrospection tokenIntrospection;
 
     @Inject
-    AuthorizationController authorizationController;
+    UserInfo userInfo;
 
     @ConfigProperty(name = "key.to.retrieve.id.from.access.token")
     String key;
@@ -41,14 +42,14 @@ public class ClientService {
      */
     public ClientResponseDto register(){
 
+        String id = tokenIntrospection.getJsonObject().getString(key);
 
-        if(Objects.isNull(tokenIntrospection.getJsonObject())){
-            throw new ForbiddenException("The authentication process couldn't be performed, so the client registration is not possible.");
+        if(StringUtils.isEmpty(id)){
+            throw new ForbiddenException("voperson_id is empty. The client cannot be registered without voperson_id.");
         }
 
-        String id = tokenIntrospection.getJsonObject().getString(key);
-        String name = Objects.isNull(tokenIntrospection.getJsonObject().get("name")) ? "": tokenIntrospection.getJsonObject().getString("name");
-        String email = Objects.isNull(tokenIntrospection.getJsonObject().get("email")) ? "": tokenIntrospection.getJsonObject().getString("email");
+        String name = Objects.isNull(userInfo.getJsonObject().get("name")) ? "": userInfo.getJsonObject().getString("name");
+        String email = Objects.isNull(userInfo.getJsonObject().get("email")) ? "": userInfo.getJsonObject().getString("email");
 
         Client client = new Client();
 

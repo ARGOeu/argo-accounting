@@ -4,6 +4,10 @@ import io.quarkus.test.common.http.TestHTTPEndpoint;
 import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.test.junit.TestProfile;
 import io.quarkus.test.keycloak.client.KeycloakTestClient;
+import io.quarkus.test.security.TestSecurity;
+import io.quarkus.test.security.oidc.OidcSecurity;
+import io.quarkus.test.security.oidc.TokenIntrospection;
+import io.quarkus.test.security.oidc.UserInfo;
 import org.accounting.system.dtos.client.ClientResponseDto;
 import org.accounting.system.endpoints.ClientEndpoint;
 import org.accounting.system.entities.client.Client;
@@ -38,11 +42,20 @@ public class ClientEndpointTest {
     }
 
     @Test
+    @TestSecurity(user = "test-user")
+    @OidcSecurity(introspectionRequired = true,
+            introspection = {
+                    @TokenIntrospection(key = "voperson_id", value = "xyz@example.org"),
+                    @TokenIntrospection(key = "sub", value = "xyz@example.org"),
+            },
+            userinfo = {
+                    @UserInfo(key = "name", value = "John Doe"),
+                    @UserInfo(key = "email", value = "john.doe@example.org")
+            }
+    )
     public void registerUser(){
 
         var response = given()
-                .auth()
-                .oauth2(getAccessToken("admin"))
                 .post()
                 .then()
                 .assertThat()

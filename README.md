@@ -75,12 +75,12 @@ Finally, under the folder `/files`, you can find samples of those files.
 
 ## Authentication
 
-To access Accounting System API resources, you have to be authenticated by GRNET's keycloak. These resources are protected and can only be accessed if a client is sending a bearer token along with the request,
+To access Accounting System API resources, you have to be authenticated by EOSC Core Infrastructure Proxy. These resources are protected and can only be accessed if a client is sending a bearer token along with the request,
 which must be valid and trusted by the Accounting System API.
 
-### Authentication via Keycloak Login Page
+### Authentication via EOSC Core Infrastructure Proxy
 
-The GRNET's keycloak offers various Identity Providers where the authentication process can be performed.
+The EOSC Core Infrastructure Proxy offers various Identity Providers where the authentication process can be performed.
 
 ![Login Page](images/login_page.png)
 
@@ -94,12 +94,8 @@ curl http://localhost:8080/accounting-system/metric-definition
 ```
 
 There is an ancillary web page at `{accounting_system_host}` where you can identify yourself. This page is responsible for :
--   redirecting a user to Keycloak's login page in order to be authenticated
+-   redirecting a user to EOSC Core Infrastructure Proxy in order to be authenticated
 -   displaying the obtained token
-
-Generally, [the ancillary web page](src/main/resources/templates/keycloak.html) applies a client-side JavaScript library that can be used to secure HTML5/JavaScript applications. 
-More details you can find [here](https://github.com/keycloak/keycloak-documentation/blob/main/securing_apps/topics/oidc/javascript-adapter.adoc). If you want to secure your application,
-you can apply any of the available [Keycloak adapters](https://www.keycloak.org/docs/latest/securing_apps/#_oidc).
 
 ### Client Credentials Flow
 
@@ -123,28 +119,20 @@ Quarkus starts a Keycloak container for both the dev and/or test modes and initi
 creating a new realm with the client and users for you to start developing the Accounting System application secured by Keycloak immediately. 
 More details about how to obtain access tokens in dev mode you can find [here](https://quarkus.io/guides/security-openid-connect-dev-services).
 
-### Integrating with External keycloak in Dev mode
+### Integrating with External OIDC Server in Dev mode
 
-If you want to integrate with external keycloak, you have to remove the prefix `%prod.` from `%prod.quarkus.oidc.auth-server-url`. 
+If you want to integrate with external OIDC Server, you have to remove the prefix `%prod.` from `%prod.quarkus.oidc.auth-server-url`. 
 Then you have to configure the following variables in `application.properties`:
--   `quarkus.oidc.auth-server-url={The base URL of the Keycloak server. The base URL will be in the following format: https://host:port/auth/realms/{realm}.`
+-   `quarkus.oidc.auth-server-url={The base URL of the OIDC server}`
 -   `quarkus.oidc.client-id={Specifies an alpha-numeric string that will be used as the client identifier for OIDC requests}`
 -   `quarkus.oidc.credentials.secret={Client secret which is used for a client_secret_basic authentication method}`
--   `%dev.key.to.retrieve.roles.from.access.token=roles`
 
-To use a UI Page to obtain an access token from the external keycloak, which will be accessible at {accounting_system_host}, you have to configure the following variables in `application.properties`:
-
--   `keycloak.server.url={The base URL of Keycloak server. Make sure the base URL is in the following format: https://host:port/auth}`
--   `keycloak.server.realm={The name of the Keycloak realm}`
--   `keycloak.server.client.id={Specifies an alpha-numeric string that will be used as the client identifier for OIDC requests}`
-
-The `keycloak.server.url`, `keycloak.server.realm` and `keycloak.server.client.id` are used in order to feed the [keycloak.html](src/main/resources/templates/keycloak.html) template.
-There also is an [endpoint](src/main/java/org/accounting/system/templates/KeycloakClientTemplate.java) which is responsible for rendering that html page.
+You also need to comment out all the properties that start with `%dev.quarkus.oidc`.
 
 ## Authorization
 
 Collection-level permissions control services’ access to the collection. Collection permissions are configured using roles, and each collection contains a set of roles that allows services to create, read, update and delete entities of that collection.
-We assign permissions to services based on their roles. A role is a collection of permissions that you can apply to services. We can assign one or more roles to each service and one or more permissions to each role.
+We assign permissions to services based on their roles. A role is a collection of permissions that you can apply to every service. We can assign one or more roles to each service and one or more permissions to each role.
 
 To generate a role, we have to define the available API operations and access types. By combining operations and access types, you can generate permissions and then you can assign these permissions to each role.
 
