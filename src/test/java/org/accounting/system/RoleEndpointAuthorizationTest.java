@@ -7,14 +7,14 @@ import io.quarkus.test.keycloak.client.KeycloakTestClient;
 import io.restassured.http.ContentType;
 import io.restassured.response.Response;
 import org.accounting.system.dtos.InformativeResponse;
-import org.accounting.system.dtos.authorization.RoleResponseDto;
-import org.accounting.system.dtos.authorization.CollectionPermissionDto;
-import org.accounting.system.dtos.authorization.PermissionDto;
-import org.accounting.system.dtos.authorization.RoleRequestDto;
+import org.accounting.system.dtos.authorization.AccessPermissionDto;
+import org.accounting.system.dtos.authorization.CollectionAccessPermissionDto;
+import org.accounting.system.dtos.authorization.request.RoleRequestDto;
+import org.accounting.system.dtos.authorization.response.RoleResponseDto;
 import org.accounting.system.endpoints.RoleEndpoint;
 import org.junit.jupiter.api.Test;
 
-import java.util.ArrayList;
+import java.util.HashSet;
 
 import static io.restassured.RestAssured.given;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -40,7 +40,7 @@ public class RoleEndpointAuthorizationTest {
                 .extract()
                 .as(InformativeResponse.class);
 
-        assertEquals("The authenticated user/service is not permitted to perform the requested operation.", informativeResponse.message);
+        assertEquals("The authenticated client is not permitted to perform the requested operation.", informativeResponse.message);
     }
 
     @Test
@@ -57,7 +57,7 @@ public class RoleEndpointAuthorizationTest {
                 .extract()
                 .as(InformativeResponse.class);
 
-        assertEquals("The authenticated user/service is not permitted to perform the requested operation.", informativeResponse.message);
+        assertEquals("The authenticated client is not permitted to perform the requested operation.", informativeResponse.message);
     }
 
     @Test
@@ -67,23 +67,23 @@ public class RoleEndpointAuthorizationTest {
         var request= new RoleRequestDto();
         request.name = "test_role";
 
-        var collectionPermission = new ArrayList<CollectionPermissionDto>();
-        CollectionPermissionDto collectionPermissionDto = new CollectionPermissionDto();
+        var collectionPermission = new HashSet<CollectionAccessPermissionDto>();
+        CollectionAccessPermissionDto collectionAccessPermissionDto = new CollectionAccessPermissionDto();
 
-        var permissions = new ArrayList<PermissionDto>();
+        var permissions = new HashSet<AccessPermissionDto>();
 
-        var permissionDto = new PermissionDto();
+        var permissionDto = new AccessPermissionDto();
         permissionDto.operation = "READ";
         permissionDto.accessType = "ALWAYS";
 
         permissions.add(permissionDto);
 
-        collectionPermissionDto.permissions = permissions;
-        collectionPermissionDto.collection = "Role";
+        collectionAccessPermissionDto.accessPermissions = permissions;
+        collectionAccessPermissionDto.collection = "Role";
 
-        collectionPermission.add(collectionPermissionDto);
+        collectionPermission.add(collectionAccessPermissionDto);
 
-        request.collectionPermission = collectionPermission;
+        request.collectionsAccessPermissions = collectionPermission;
 
         var response = createRole(request, "admin");
 
@@ -105,7 +105,7 @@ public class RoleEndpointAuthorizationTest {
                 .extract()
                 .as(InformativeResponse.class);
 
-        assertEquals("The authenticated user/service is not permitted to perform the requested operation.", informativeResponse.message);
+        assertEquals("The authenticated client is not permitted to perform the requested operation.", informativeResponse.message);
     }
 
     @Test
@@ -120,7 +120,7 @@ public class RoleEndpointAuthorizationTest {
                 .extract()
                 .as(InformativeResponse.class);
 
-        assertEquals("The authenticated user/service is not permitted to perform the requested operation.", informativeResponse.message);
+        assertEquals("The authenticated client is not permitted to perform the requested operation.", informativeResponse.message);
     }
 
     @Test
@@ -135,7 +135,7 @@ public class RoleEndpointAuthorizationTest {
                 .extract()
                 .as(InformativeResponse.class);
 
-        assertEquals("The authenticated user/service is not permitted to perform the requested operation.", informativeResponse.message);
+        assertEquals("The authenticated client is not permitted to perform the requested operation.", informativeResponse.message);
     }
 
     @Test
@@ -150,7 +150,7 @@ public class RoleEndpointAuthorizationTest {
                 .extract()
                 .as(InformativeResponse.class);
 
-        assertEquals("The authenticated user/service is not permitted to perform the requested operation.", informativeResponse.message);
+        assertEquals("The authenticated client is not permitted to perform the requested operation.", informativeResponse.message);
     }
 
     protected String getAccessToken(String userName) {

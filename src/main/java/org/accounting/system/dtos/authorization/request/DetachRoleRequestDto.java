@@ -1,0 +1,30 @@
+package org.accounting.system.dtos.authorization.request;
+
+import com.fasterxml.jackson.annotation.JsonProperty;
+import org.eclipse.microprofile.openapi.annotations.enums.SchemaType;
+import org.eclipse.microprofile.openapi.annotations.media.Schema;
+
+import javax.validation.constraints.NotEmpty;
+import java.util.Set;
+
+@Schema(name="DetachRoleRequest", description="This object should contain a list of Roles that are going to be detached from a registered client.")
+public class DetachRoleRequestDto {
+
+    @Schema(
+            type = SchemaType.ARRAY,
+            implementation = String.class,
+            required = true,
+            description = "This list contains the name of roles.",
+            minItems = 1,
+            example = "{\n" +
+                    "   \"roles\":[\n" +
+                    "      \"role_admin\",\n" +
+                    "      \"metric_definition_creator\",\n" +
+                    "      \"metric_inspector\"\n" +
+                    "   ]\n" +
+                    "}\n"
+    )
+    @JsonProperty("roles")
+    @NotEmpty(message = "List should have at least one entry.")
+    public Set<String> roles;
+}

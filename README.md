@@ -211,10 +211,10 @@ POST 'https://host/accounting-system/roles'
 
 {
   "name" : "metric_definition_admin",
-  "collection_permission_list":[
+  "collections_access_permissions":[
     {
     "collection": "MetricDefinition",
-    "permissions" :[
+    "access_permissions" :[
       {
         "operation" : "CREATE",
         "access_type" : "ALWAYS"
@@ -234,10 +234,9 @@ POST 'https://host/accounting-system/roles'
       {
         "operation" : "ACL",
         "access_type" : "ALWAYS"
-      },
+      }
     ]
-    },
-  
+    }
 ]
 }
 ```
@@ -247,17 +246,16 @@ POST 'https://host/accounting-system/roles'
 
 {
   "name" : "metric_inspector",
-  "collection_permission_list":[
+  "collections_access_permissions":[
     {
     "collection": "Metric",
-    "permissions" :[
+    "access_permissions" :[
       {
         "operation" : "READ",
         "access_type" : "ALWAYS"
       }
     ]
-    },
-  
+    }
 ]
 }
 ```
@@ -267,10 +265,10 @@ POST 'https://host/accounting-system/roles'
 
 {
   "name" : "metric_creator",
-  "collection_permission_list":[
+  "collections_access_permissions":[
     {
     "collection": "Metric",
-    "permissions" :[
+    "access_permissions" :[
       {
         "operation" : "CREATE",
         "access_type" : "ALWAYS"
@@ -292,8 +290,7 @@ POST 'https://host/accounting-system/roles'
         "access_type" : "ENTITY"
       }
     ]
-    },
-  
+    }
 ]
 }
 ```
@@ -303,10 +300,10 @@ POST 'https://host/accounting-system/roles'
 
 {
   "name" : "role_editor",
-  "collection_permission_list":[
+  "collections_access_permissions":[
     {
     "collection": "Role",
-    "permissions" :[
+    "access_permissions" :[
       {
         "operation" : "CREATE",
         "access_type" : "ALWAYS"
@@ -324,8 +321,7 @@ POST 'https://host/accounting-system/roles'
         "access_type" : "ALWAYS"
       }
     ]
-    },
-  
+    }
 ]
 }
 ```
@@ -337,10 +333,10 @@ POST 'https://host/accounting-system/roles'
 
 {
   "name" : "editor",
-  "collection_permission_list":[
+  "collections_access_permissions":[
     {
     "collection": "Role",
-    "permissions" :[
+    "access_permissions" :[
       {
         "operation" : "CREATE",
         "access_type" : "ALWAYS"
@@ -357,7 +353,7 @@ POST 'https://host/accounting-system/roles'
     },
    {
     "collection": "Metric",
-    "permissions" :[
+    "access_permissions" :[
       {
         "operation" : "CREATE",
         "access_type" : "ALWAYS"
@@ -374,7 +370,7 @@ POST 'https://host/accounting-system/roles'
     },
   {
     "collection": "MetricDefinition",
-    "permissions" :[
+    "access_permissions" :[
       {
         "operation" : "CREATE",
         "access_type" : "ALWAYS"

@@ -1,10 +1,11 @@
-package org.accounting.system.dtos.authorization;
+package org.accounting.system.dtos.authorization.response;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import org.accounting.system.dtos.authorization.CollectionAccessPermissionDto;
 import org.eclipse.microprofile.openapi.annotations.enums.SchemaType;
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
 
-import java.util.List;
+import java.util.Set;
 
 @Schema(name="RoleResponse", description="An object represents the stored Roles.")
 public class RoleResponseDto {
@@ -39,11 +40,10 @@ public class RoleResponseDto {
 
     @Schema(
             type = SchemaType.ARRAY,
-            implementation = CollectionPermissionDto.class,
-            description = "This list encapsulates the permissions upon the API collections. It should have at least one entry of CollectionPermission.",
-            required = true,
-            minItems = 1
+            implementation = CollectionAccessPermissionDto.class,
+            description = "This list encapsulates the access permissions upon the API collections."
     )
-    @JsonProperty("collection_permission_list")
-    public List<CollectionPermissionDto> collectionPermission;
+    @JsonProperty("collections_access_permissions")
+    public Set<CollectionAccessPermissionDto> collectionsAccessPermissions;
+
 }

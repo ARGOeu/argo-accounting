@@ -3,6 +3,8 @@ package org.accounting.system.entities.client;
 import org.accounting.system.entities.Entity;
 import org.bson.codecs.pojo.annotations.BsonId;
 
+import java.util.Set;
+
 public class Client extends Entity {
 
     @BsonId
@@ -12,6 +14,7 @@ public class Client extends Entity {
 
     private String email;
 
+    private Set<String> roles;
 
     public String getId() {
         return id;
@@ -35,5 +38,13 @@ public class Client extends Entity {
 
     public void setEmail(String email) {
         this.email = email;
+    }
+
+    public Set<String> getRoles() {
+        return roles;
+    }
+
+    public void setRoles(Set<String> roles) {
+        this.roles = roles;
     }
 }

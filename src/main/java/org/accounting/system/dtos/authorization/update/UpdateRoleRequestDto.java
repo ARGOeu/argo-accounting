@@ -5,7 +5,7 @@ import org.eclipse.microprofile.openapi.annotations.enums.SchemaType;
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
 
 import javax.validation.Valid;
-import java.util.List;
+import java.util.Set;
 
 @Schema(name="UpdateRoleRequest", description="An object represents a request for updating a Role.")
 public class UpdateRoleRequestDto {
@@ -30,9 +30,9 @@ public class UpdateRoleRequestDto {
 
     @Schema(
             type = SchemaType.ARRAY,
-            implementation = UpdateCollectionPermissionDto.class,
+            implementation = UpdateCollectionAccessPermissionDto.class,
             description = "This list encapsulates the permissions upon the API collections."
     )
-    @JsonProperty("collection_permission_list")
-    public List<@Valid UpdateCollectionPermissionDto> collectionPermission;
+    @JsonProperty("collections_access_permissions")
+    public Set<@Valid UpdateCollectionAccessPermissionDto> collectionsAccessPermissions;
 }

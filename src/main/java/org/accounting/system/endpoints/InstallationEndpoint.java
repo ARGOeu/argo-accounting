@@ -6,13 +6,13 @@ import org.accounting.system.dtos.InformativeResponse;
 import org.accounting.system.dtos.installation.InstallationRequestDto;
 import org.accounting.system.dtos.installation.InstallationResponseDto;
 import org.accounting.system.dtos.installation.UpdateInstallationRequestDto;
+import org.accounting.system.enums.Operation;
 import org.accounting.system.enums.Collection;
-import org.accounting.system.interceptors.annotations.Permission;
+import org.accounting.system.interceptors.annotations.AccessPermission;
 import org.accounting.system.repositories.installation.InstallationRepository;
 import org.accounting.system.services.HierarchicalRelationService;
 import org.accounting.system.services.installation.InstallationService;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
-import org.eclipse.microprofile.openapi.annotations.Operation;
 import org.eclipse.microprofile.openapi.annotations.enums.SchemaType;
 import org.eclipse.microprofile.openapi.annotations.enums.SecuritySchemeIn;
 import org.eclipse.microprofile.openapi.annotations.enums.SecuritySchemeType;
@@ -70,7 +70,7 @@ public class InstallationEndpoint {
     HierarchicalRelationService hierarchicalRelationService;
 
     @Tag(name = "Installation")
-    @Operation(
+    @org.eclipse.microprofile.openapi.annotations.Operation(
             summary = "Generates a new Installation.",
             description = "This operation is responsible for generating and storing in the Accounting System database " +
                     "a new Installation.")
@@ -94,7 +94,7 @@ public class InstallationEndpoint {
                     implementation = InformativeResponse.class)))
     @APIResponse(
             responseCode = "403",
-            description = "The authenticated user/service is not permitted to perform the requested operation.",
+            description = "The authenticated client is not permitted to perform the requested operation.",
             content = @Content(schema = @Schema(
                     type = SchemaType.OBJECT,
                     implementation = InformativeResponse.class)))
@@ -121,7 +121,7 @@ public class InstallationEndpoint {
     @POST
     @Produces(value = MediaType.APPLICATION_JSON)
     @Consumes(value = MediaType.APPLICATION_JSON)
-    @Permission(collection = Collection.Installation, operation = org.accounting.system.enums.Operation.CREATE)
+    @AccessPermission(collection = Collection.Installation, operation = Operation.CREATE)
     public Response save(@Valid @NotNull(message = "The request body is empty.") InstallationRequestDto installationRequestDto, @Context UriInfo uriInfo) {
 
         var serverInfo = new ResteasyUriInfo(serverUrl.concat(basePath).concat(uriInfo.getPath()), basePath);
@@ -141,7 +141,7 @@ public class InstallationEndpoint {
     }
 
     @Tag(name = "Installation")
-    @Operation(
+    @org.eclipse.microprofile.openapi.annotations.Operation(
             summary = "Returns all Installations.",
             description = "Essentially, this operation returns all Installations which have been added to Accounting System. By default, the first page of 10 Installations will be returned. " +
                     "You can tune the default values by using the query parameters page and size.")
@@ -159,7 +159,7 @@ public class InstallationEndpoint {
                     implementation = InformativeResponse.class)))
     @APIResponse(
             responseCode = "403",
-            description = "The authenticated user/service is not permitted to perform the requested operation.",
+            description = "The authenticated client is not permitted to perform the requested operation.",
             content = @Content(schema = @Schema(
                     type = SchemaType.OBJECT,
                     implementation = InformativeResponse.class)))
@@ -173,7 +173,7 @@ public class InstallationEndpoint {
 
     @GET
     @Produces(value = MediaType.APPLICATION_JSON)
-    @Permission(collection = Collection.Installation, operation = org.accounting.system.enums.Operation.READ)
+    @AccessPermission(collection = Collection.Installation, operation = Operation.READ)
     public Response getAllPagination(@Parameter(name = "page", in = QUERY,
             description = "Indicates the page number. Page number must be >= 1.") @DefaultValue("1") @QueryParam("page") int page,
                            @Parameter(name = "size", in = QUERY,
@@ -188,7 +188,7 @@ public class InstallationEndpoint {
     }
 
     @Tag(name = "Installation")
-    @Operation(
+    @org.eclipse.microprofile.openapi.annotations.Operation(
             summary = "Deletes an existing Installation.",
             description = "This operation deletes an existing Installation registered through Accounting System API.")
     @APIResponse(
@@ -205,7 +205,7 @@ public class InstallationEndpoint {
                     implementation = InformativeResponse.class)))
     @APIResponse(
             responseCode = "403",
-            description = "The authenticated user/service is not permitted to perform the requested operation.",
+            description = "The authenticated client is not permitted to perform the requested operation.",
             content = @Content(schema = @Schema(
                     type = SchemaType.OBJECT,
                     implementation = InformativeResponse.class)))
@@ -226,7 +226,7 @@ public class InstallationEndpoint {
     @DELETE()
     @Path("/{id}")
     @Produces(value = MediaType.APPLICATION_JSON)
-    @Permission(collection = Collection.Installation, operation = org.accounting.system.enums.Operation.DELETE)
+    @AccessPermission(collection = Collection.Installation, operation = Operation.DELETE)
     public Response delete(@Parameter(
             description = "The Installation to be deleted.",
             required = true,
@@ -249,7 +249,7 @@ public class InstallationEndpoint {
     }
 
     @Tag(name = "Installation")
-    @Operation(
+    @org.eclipse.microprofile.openapi.annotations.Operation(
             summary = "Returns an existing Installation.",
             description = "This operation accepts the id of an Installation and fetches from the database the corresponding record.")
     @APIResponse(
@@ -266,7 +266,7 @@ public class InstallationEndpoint {
                     implementation = InformativeResponse.class)))
     @APIResponse(
             responseCode = "403",
-            description = "The authenticated user/service is not permitted to perform the requested operation.",
+            description = "The authenticated client is not permitted to perform the requested operation.",
             content = @Content(schema = @Schema(
                     type = SchemaType.OBJECT,
                     implementation = InformativeResponse.class)))
@@ -287,7 +287,7 @@ public class InstallationEndpoint {
     @GET
     @Path("/{id}")
     @Produces(value = MediaType.APPLICATION_JSON)
-    @Permission(collection = Collection.Installation, operation = org.accounting.system.enums.Operation.READ)
+    @AccessPermission(collection = Collection.Installation, operation = Operation.READ)
     public Response get(
             @Parameter(
                     description = "The Installation to be retrieved.",
@@ -302,7 +302,7 @@ public class InstallationEndpoint {
     }
 
     @Tag(name = "Installation")
-    @Operation(
+    @org.eclipse.microprofile.openapi.annotations.Operation(
             summary = "Updates an existing Installation.",
             description = "This operation updates an existing Installation registered through the Accounting System API. Finally, " +
                     "you can update a part or all attributes of Installation. The empty or null values are ignored.")
@@ -360,7 +360,7 @@ public class InstallationEndpoint {
     @Path("/{id}")
     @Produces(value = MediaType.APPLICATION_JSON)
     @Consumes(value = MediaType.APPLICATION_JSON)
-    @Permission(collection = Collection.Installation, operation = org.accounting.system.enums.Operation.UPDATE)
+    @AccessPermission(collection = Collection.Installation, operation = Operation.UPDATE)
     public Response update(
             @Parameter(
                     description = "The Installation to be updated.",

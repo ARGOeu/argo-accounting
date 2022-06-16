@@ -3,15 +3,16 @@ package org.accounting.system.endpoints;
 import io.quarkus.security.Authenticated;
 import org.accounting.system.constraints.NotFoundEntity;
 import org.accounting.system.dtos.InformativeResponse;
-import org.accounting.system.dtos.authorization.RoleRequestDto;
-import org.accounting.system.dtos.authorization.RoleResponseDto;
+import org.accounting.system.dtos.authorization.request.RoleRequestDto;
+import org.accounting.system.dtos.authorization.response.RoleResponseDto;
 import org.accounting.system.dtos.authorization.update.UpdateRoleRequestDto;
+import org.accounting.system.enums.Operation;
 import org.accounting.system.enums.Collection;
-import org.accounting.system.interceptors.annotations.Permission;
+import org.accounting.system.interceptors.annotations.AccessPermission;
 import org.accounting.system.repositories.authorization.RoleRepository;
 import org.accounting.system.services.authorization.RoleService;
+import org.accounting.system.util.Utility;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
-import org.eclipse.microprofile.openapi.annotations.Operation;
 import org.eclipse.microprofile.openapi.annotations.enums.SchemaType;
 import org.eclipse.microprofile.openapi.annotations.enums.SecuritySchemeIn;
 import org.eclipse.microprofile.openapi.annotations.enums.SecuritySchemeType;
@@ -65,12 +66,15 @@ public class RoleEndpoint {
     @Inject
     RoleService roleService;
 
+    @Inject
+    Utility utility;
+
     public RoleEndpoint(RoleService roleService) {
         this.roleService = roleService;
     }
 
     @Tag(name = "Role")
-    @Operation(
+    @org.eclipse.microprofile.openapi.annotations.Operation(
             summary = "Register a new Role.",
             description = "Retrieves and inserts a Role into the database.")
     @APIResponse(
@@ -93,7 +97,7 @@ public class RoleEndpoint {
                     implementation = InformativeResponse.class)))
     @APIResponse(
             responseCode = "403",
-            description = "The authenticated user/service is not permitted to perform the requested operation.",
+            description = "The authenticated client is not permitted to perform the requested operation.",
             content = @Content(schema = @Schema(
                     type = SchemaType.OBJECT,
                     implementation = InformativeResponse.class)))
@@ -120,8 +124,10 @@ public class RoleEndpoint {
     @POST
     @Produces(value = MediaType.APPLICATION_JSON)
     @Consumes(value = MediaType.APPLICATION_JSON)
-    @Permission(collection = Collection.Role, operation = org.accounting.system.enums.Operation.CREATE)
+    @AccessPermission(collection = Collection.Role, operation = Operation.CREATE)
     public Response save(@Valid @NotNull(message = "The request body is empty.") RoleRequestDto roleRequestDto, @Context UriInfo uriInfo){
+
+        utility.collectionHasTheAppropriatePermissions(roleRequestDto);
 
         UriInfo serverInfo = new ResteasyUriInfo(serverUrl.concat(basePath).concat(uriInfo.getPath()), basePath);
 
@@ -131,7 +137,7 @@ public class RoleEndpoint {
     }
 
     @Tag(name = "Role")
-    @Operation(
+    @org.eclipse.microprofile.openapi.annotations.Operation(
             summary = "Deletes an existing Role.",
             description = "You can delete an existing role by its id.")
     @APIResponse(
@@ -148,7 +154,7 @@ public class RoleEndpoint {
                     implementation = InformativeResponse.class)))
     @APIResponse(
             responseCode = "403",
-            description = "The authenticated user/service is not permitted to perform the requested operation.",
+            description = "The authenticated client is not permitted to perform the requested operation.",
             content = @Content(schema = @Schema(
                     type = SchemaType.OBJECT,
                     implementation = InformativeResponse.class)))
@@ -169,7 +175,7 @@ public class RoleEndpoint {
     @DELETE()
     @Path("/{id}")
     @Produces(value = MediaType.APPLICATION_JSON)
-    @Permission(collection = Collection.Role, operation = org.accounting.system.enums.Operation.DELETE)
+    @AccessPermission(collection = Collection.Role, operation = Operation.DELETE)
     public Response delete(@Parameter(
             description = "The Role to be deleted.",
             required = true,
@@ -193,7 +199,7 @@ public class RoleEndpoint {
     }
 
     @Tag(name = "Role")
-    @Operation(
+    @org.eclipse.microprofile.openapi.annotations.Operation(
             summary = "Returns the available roles.",
             description = "This operation fetches the registered Accounting System roles. By default, the first page of 10 Providers will be returned. " +
                     "You can tune the default values by using the query parameters page and size.")
@@ -212,7 +218,7 @@ public class RoleEndpoint {
 
     @GET
     @Produces(value = MediaType.APPLICATION_JSON)
-    @Permission(collection = Collection.Role, operation = org.accounting.system.enums.Operation.READ)
+    @AccessPermission(collection = Collection.Role, operation = Operation.READ)
     public Response getRoles(@Parameter(name = "page", in = QUERY,
             description = "Indicates the page number. Page number must be >= 1.") @DefaultValue("1") @QueryParam("page") int page,
                              @Parameter(name = "size", in = QUERY,
@@ -226,7 +232,7 @@ public class RoleEndpoint {
     }
 
     @Tag(name = "Role")
-    @Operation(
+    @org.eclipse.microprofile.openapi.annotations.Operation(
             summary = "Returns an existing Role.",
             description = "This operation accepts the id of a Role and fetches from the database the corresponding record.")
     @APIResponse(
@@ -243,7 +249,7 @@ public class RoleEndpoint {
                     implementation = InformativeResponse.class)))
     @APIResponse(
             responseCode = "403",
-            description = "The authenticated user/service is not permitted to perform the requested operation.",
+            description = "The authenticated client is not permitted to perform the requested operation.",
             content = @Content(schema = @Schema(
                     type = SchemaType.OBJECT,
                     implementation = InformativeResponse.class)))
@@ -264,7 +270,7 @@ public class RoleEndpoint {
     @GET
     @Path("/{id}")
     @Produces(value = MediaType.APPLICATION_JSON)
-    @Permission(collection = Collection.Role, operation = org.accounting.system.enums.Operation.READ)
+    @AccessPermission(collection = Collection.Role, operation = Operation.READ)
     public Response get(
             @Parameter(
                     description = "The Role to be retrieved.",
@@ -279,7 +285,7 @@ public class RoleEndpoint {
     }
 
     @Tag(name = "Role")
-    @Operation(
+    @org.eclipse.microprofile.openapi.annotations.Operation(
             summary = "Updates an existing Role.",
             description = "In order to update the resource properties, the body of the request must contain an updated representation of Role. " +
                     "You can update a part or all attributes of the Role except for its id. The empty or null values are ignored.")
@@ -303,7 +309,7 @@ public class RoleEndpoint {
                     implementation = InformativeResponse.class)))
     @APIResponse(
             responseCode = "403",
-            description = "The authenticated user/service is not permitted to perform the requested operation.",
+            description = "The authenticated client is not permitted to perform the requested operation.",
             content = @Content(schema = @Schema(
                     type = SchemaType.OBJECT,
                     implementation = InformativeResponse.class)))
@@ -337,7 +343,7 @@ public class RoleEndpoint {
     @Path("/{id}")
     @Produces(value = MediaType.APPLICATION_JSON)
     @Consumes(value = MediaType.APPLICATION_JSON)
-    @Permission(collection = Collection.Role, operation = org.accounting.system.enums.Operation.UPDATE)
+    @AccessPermission(collection = Collection.Role, operation = Operation.UPDATE)
     public Response update(
             @Parameter(
                     description = "The Role to be updated.",
@@ -345,6 +351,7 @@ public class RoleEndpoint {
                     example = "507f1f77bcf86cd799439011",
                     schema = @Schema(type = SchemaType.STRING))
             @PathParam("id") @Valid @NotFoundEntity(repository = RoleRepository.class, message = "There is no Role with the following id:") String id, @Valid @NotNull(message = "The request body is empty.") UpdateRoleRequestDto updateRoleRequestDto) {
+
 
         RoleResponseDto response = roleService.update(id, updateRoleRequestDto);
 

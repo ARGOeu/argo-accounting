@@ -33,8 +33,8 @@ import org.junit.jupiter.api.TestInstance;
 import org.mockito.Mockito;
 
 import javax.inject.Inject;
-import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.ExecutionException;
 
 import static io.restassured.RestAssured.given;
@@ -88,7 +88,7 @@ public class InstallationEndpointTest {
         //We are going to register the EGI-ACE project from OpenAire API
         projectService.getById("101017567");
 
-        hierarchicalRelationService.createProjectProviderRelationship("777536", List.of("grnet"));
+        hierarchicalRelationService.createProjectProviderRelationship("777536", Set.of("grnet"));
     }
 
     @BeforeEach

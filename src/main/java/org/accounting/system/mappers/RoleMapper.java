@@ -1,9 +1,9 @@
 package org.accounting.system.mappers;
 
 import org.accounting.system.beans.RequestInformation;
-import org.accounting.system.dtos.authorization.RoleRequestDto;
-import org.accounting.system.dtos.authorization.RoleResponseDto;
-import org.accounting.system.dtos.authorization.update.UpdateCollectionPermissionDto;
+import org.accounting.system.dtos.authorization.request.RoleRequestDto;
+import org.accounting.system.dtos.authorization.response.RoleResponseDto;
+import org.accounting.system.dtos.authorization.update.UpdateCollectionAccessPermissionDto;
 import org.accounting.system.dtos.authorization.update.UpdateRoleRequestDto;
 import org.accounting.system.entities.authorization.CollectionPermission;
 import org.accounting.system.entities.authorization.Role;
@@ -21,6 +21,7 @@ import javax.enterprise.inject.spi.CDI;
 import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 
 /**
  * This interface is responsible for turning a Role Entity into a request/response and vice versa.
@@ -32,7 +33,7 @@ public interface RoleMapper {
 
     List<RoleResponseDto> rolesToResponse(List<Role> roles);
 
-    List<CollectionPermission> updateCollectionPermissionToCollectionPermission(List<UpdateCollectionPermissionDto> permissions);
+    Set<CollectionPermission> updateCollectionPermissionToCollectionPermission(Set<UpdateCollectionAccessPermissionDto> permissions);
 
     Role requestToRole(RoleRequestDto request);
 
@@ -40,20 +41,20 @@ public interface RoleMapper {
 
     @Mapping(target = "name", expression = "java(StringUtils.isNotEmpty(request.name) ? request.name : role.getName())")
     @Mapping(target = "description", expression = "java(StringUtils.isNotEmpty(request.description) ? request.description : role.getDescription())")
-    @Mapping(source = "collectionPermission", target = "collectionPermission", qualifiedByName = "permissions")
+    @Mapping(source = "collectionsAccessPermissions", target = "collectionsAccessPermissions", qualifiedByName = "access_permissions")
     @BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
     void updateRoleFromDto(UpdateRoleRequestDto request, @MappingTarget Role role);
 
-    @Named("permissions")
-    default List<CollectionPermission> permissions(List<UpdateCollectionPermissionDto> permissions) {
+    @Named("access_permissions")
+    default Set<CollectionPermission> accessPermissions(Set<UpdateCollectionAccessPermissionDto> permissions) {
 
         if(Objects.nonNull(permissions) && permissions
                     .stream()
-                    .allMatch(collectionPermission -> Objects.nonNull(collectionPermission.collection) && Objects.nonNull(collectionPermission.permissions))
+                    .allMatch(collectionPermission -> Objects.nonNull(collectionPermission.collection) && Objects.nonNull(collectionPermission.accessPermissions))
                     &&
                     permissions
                             .stream()
-                            .map(cp->cp.permissions)
+                            .map(cp->cp.accessPermissions)
                             .flatMap(Collection::stream)
                             .allMatch(permission -> Objects.nonNull(permission.operation) && Objects.nonNull(permission.accessType))){
 
@@ -67,5 +68,4 @@ public interface RoleMapper {
         RequestInformation requestInformation = CDI.current().select(RequestInformation.class).get();
         role.setCreatorId(requestInformation.getSubjectOfToken());
     }
-
 }

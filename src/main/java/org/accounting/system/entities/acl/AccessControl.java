@@ -19,7 +19,7 @@ public class AccessControl extends Entity {
     private ObjectId id;
 
     /**
-     *{@link #getWho() who} is the id of a Service/User that the AccessControl grants access.
+     *{@link #getWho() who} is the id of a client that the AccessControl grants access.
      */
     @EqualsAndHashCode.Include
     private String who;

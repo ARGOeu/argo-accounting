@@ -4,7 +4,7 @@ import io.quarkus.arc.ArcInvocationContext;
 import io.quarkus.oidc.TokenIntrospection;
 import org.accounting.system.beans.RequestInformation;
 import org.accounting.system.enums.AccessType;
-import org.accounting.system.interceptors.annotations.Permission;
+import org.accounting.system.interceptors.annotations.AccessPermission;
 import org.accounting.system.services.authorization.RoleService;
 import org.accounting.system.util.DisabledAuthController;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
@@ -24,16 +24,16 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-@Permission
+@AccessPermission
 @Interceptor
 @Priority(3000)
 /**
  * This interceptor checks whether the service/user has the appropriate permission to create, update, delete or read an entity.
  * It collects the {@link org.accounting.system.enums.Operation} and the {@link org.accounting.system.enums.Collection} from the
- * {@link Permission} as well as the service/user role from {@link TokenIntrospection}, which contains the metadata of an access token.
+ * {@link AccessPermission} as well as the service/user role from {@link TokenIntrospection}, which contains the metadata of an access token.
  * Combining this information, we execute a query to Role collection to inspect if this role can execute that operation to that specific collection.
  */
-public class PermissionInterceptor {
+public class AccessPermissionInterceptor {
 
     @Inject
     TokenIntrospection tokenIntrospection;
@@ -63,33 +63,40 @@ public class PermissionInterceptor {
 
     private Object hasAccess(InvocationContext context) throws Exception {
 
-        Permission permission = Stream
+        AccessPermission accessPermission = Stream
                 .of(context.getContextData().get(ArcInvocationContext.KEY_INTERCEPTOR_BINDINGS))
                 .map(annotations-> (Set<Annotation>) annotations)
                 .flatMap(java.util.Collection::stream)
-                .filter(annotation -> annotation.annotationType().equals(Permission.class))
-                .map(annotation -> (Permission) annotation)
+                .filter(annotation -> annotation.annotationType().equals(AccessPermission.class))
+                .map(annotation -> (AccessPermission) annotation)
                 .findFirst()
                 .get();
 
-        JsonArray jsonArray = tokenIntrospection.getArray(key);
+        List<String> providedRoles = null;
 
-        if(Objects.isNull(jsonArray)){
-            throw new ForbiddenException("The authenticated user/service is not permitted to perform the requested operation.");
+        Object object = tokenIntrospection.getJsonObject().get(key);
+
+        if(object instanceof JsonString){
+            providedRoles = List.of(tokenIntrospection.getString(key));
+        } else {
+            JsonArray jsonArray = tokenIntrospection.getArray(key);
+            providedRoles = jsonArray
+                    .stream()
+                    .map(jsonValue -> ((JsonString) jsonValue).getString())
+                    .collect(Collectors.toList());
         }
 
-        List<String> providedRoles = jsonArray
-                .stream()
-                .map(jsonValue -> ((JsonString) jsonValue).getString())
-                .collect(Collectors.toList());
+        if(Objects.isNull(providedRoles)){
+            throw new ForbiddenException("The authenticated client is not permitted to perform the requested operation.");
+        }
 
         // sub -> Usually a machine-readable identifier of the resource owner who authorized this token
         requestInformation.setSubjectOfToken(tokenIntrospection.getJsonObject().getString("sub"));
 
-        var access = roleService.hasAccess(providedRoles, permission.collection(), permission.operation());
+        var access = roleService.hasAccess(providedRoles, accessPermission.collection(), accessPermission.operation());
 
         if(!access){
-            throw new ForbiddenException("The authenticated user/service is not permitted to perform the requested operation.");
+            throw new ForbiddenException("The authenticated client is not permitted to perform the requested operation.");
         }
 
         return context.proceed();

@@ -104,7 +104,7 @@ public class ProjectEndpoint {
                     implementation = InformativeResponse.class)))
     @APIResponse(
             responseCode = "403",
-            description = "The authenticated user/service is not permitted to perform the requested operation.",
+            description = "The authenticated client is not permitted to perform the requested operation.",
             content = @Content(schema = @Schema(
                     type = SchemaType.OBJECT,
                     implementation = InformativeResponse.class)))
@@ -431,7 +431,7 @@ public class ProjectEndpoint {
                     implementation = InformativeResponse.class)))
     @APIResponse(
             responseCode = "403",
-            description = "The authenticated user/service is not permitted to perform the requested operation.",
+            description = "The authenticated client is not permitted to perform the requested operation.",
             content = @Content(schema = @Schema(
                     type = SchemaType.OBJECT,
                     implementation = InformativeResponse.class)))
@@ -461,7 +461,7 @@ public class ProjectEndpoint {
     @Consumes(value = MediaType.APPLICATION_JSON)
     public Response createProjectProviderRelationship(
             @Parameter(
-                    description = "The Project in which the Providers will be registered.",
+                    description = "The Project in which the Providers will be correlated with.",
                     required = true,
                     example = "447535",
                     schema = @Schema(type = SchemaType.STRING))
@@ -519,7 +519,7 @@ public class ProjectEndpoint {
                     implementation = InformativeResponse.class)))
     @APIResponse(
             responseCode = "403",
-            description = "The authenticated user/service is not permitted to perform the requested operation.",
+            description = "The authenticated client is not permitted to perform the requested operation.",
             content = @Content(schema = @Schema(
                     type = SchemaType.OBJECT,
                     implementation = InformativeResponse.class)))

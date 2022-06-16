@@ -12,16 +12,16 @@ import org.accounting.system.dtos.metricdefinition.MetricDefinitionRequestDto;
 import org.accounting.system.dtos.metricdefinition.MetricDefinitionResponseDto;
 import org.accounting.system.dtos.metricdefinition.UpdateMetricDefinitionRequestDto;
 import org.accounting.system.enums.AccessType;
+import org.accounting.system.enums.Operation;
 import org.accounting.system.enums.Collection;
 import org.accounting.system.exceptions.UnprocessableException;
-import org.accounting.system.interceptors.annotations.Permission;
+import org.accounting.system.interceptors.annotations.AccessPermission;
 import org.accounting.system.repositories.metricdefinition.MetricDefinitionRepository;
 import org.accounting.system.services.MetricDefinitionService;
 import org.accounting.system.services.ReadPredefinedTypesService;
 import org.accounting.system.util.QueryParser;
 import org.accounting.system.util.Utility;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
-import org.eclipse.microprofile.openapi.annotations.Operation;
 import org.eclipse.microprofile.openapi.annotations.enums.SchemaType;
 import org.eclipse.microprofile.openapi.annotations.enums.SecuritySchemeIn;
 import org.eclipse.microprofile.openapi.annotations.enums.SecuritySchemeType;
@@ -88,7 +88,7 @@ public class MetricDefinitionEndpoint {
 
 
     @Tag(name = "Metric Definition")
-    @Operation(
+    @org.eclipse.microprofile.openapi.annotations.Operation(
             operationId = "submit-metric-definition",
             summary = "Records a new Metric Definition.",
             description = "Retrieves and inserts a Metric Definition into the database. Typically, " +
@@ -121,7 +121,7 @@ public class MetricDefinitionEndpoint {
                     implementation = InformativeResponse.class)))
     @APIResponse(
             responseCode = "403",
-            description = "The authenticated user/service is not permitted to perform the requested operation.",
+            description = "The authenticated client is not permitted to perform the requested operation.",
             content = @Content(schema = @Schema(
                     type = SchemaType.OBJECT,
                     implementation = InformativeResponse.class)))
@@ -154,7 +154,7 @@ public class MetricDefinitionEndpoint {
     @POST
     @Produces(value = MediaType.APPLICATION_JSON)
     @Consumes(value = MediaType.APPLICATION_JSON)
-    @Permission(collection = Collection.MetricDefinition, operation = org.accounting.system.enums.Operation.CREATE)
+    @AccessPermission(collection = Collection.MetricDefinition, operation = Operation.CREATE)
     public Response save(@Valid @NotNull(message = "The request body is empty.") MetricDefinitionRequestDto metricDefinitionRequestDto, @Context UriInfo uriInfo) {
 
         var serverInfo = new ResteasyUriInfo(serverUrl.concat(basePath).concat(uriInfo.getPath()), basePath);
@@ -167,7 +167,7 @@ public class MetricDefinitionEndpoint {
     }
 
     @Tag(name = "Metric Definition")
-    @Operation(
+    @org.eclipse.microprofile.openapi.annotations.Operation(
             summary = "Returns the recorded Metric Definitions.",
             description = "This operation fetches all database records of Metric Definition. By default, the first page of 10 Providers will be returned. You can tune the default values by using the query parameters page and size.")
     @APIResponse(
@@ -184,7 +184,7 @@ public class MetricDefinitionEndpoint {
                     implementation = InformativeResponse.class)))
     @APIResponse(
             responseCode = "403",
-            description = "The authenticated user/service is not permitted to perform the requested operation.",
+            description = "The authenticated client is not permitted to perform the requested operation.",
             content = @Content(schema = @Schema(
                     type = SchemaType.OBJECT,
                     implementation = InformativeResponse.class)))
@@ -198,7 +198,7 @@ public class MetricDefinitionEndpoint {
 
     @GET
     @Produces(value = MediaType.APPLICATION_JSON)
-    @Permission(collection = Collection.MetricDefinition, operation = org.accounting.system.enums.Operation.READ)
+    @AccessPermission(collection = Collection.MetricDefinition, operation = Operation.READ)
     public Response getAll(@Parameter(name = "page", in = QUERY,
             description = "Indicates the page number. Page number must be >= 1.") @DefaultValue("1") @QueryParam("page") int page,
                            @Parameter(name = "size", in = QUERY,
@@ -213,7 +213,7 @@ public class MetricDefinitionEndpoint {
     }
 
     @Tag(name = "Metric Definition")
-    @Operation(
+    @org.eclipse.microprofile.openapi.annotations.Operation(
             summary = "Returns an existing Metric Definition.",
             description = "This operation accepts the id of a Metric Definition and fetches from the database the corresponding record.")
     @APIResponse(
@@ -230,7 +230,7 @@ public class MetricDefinitionEndpoint {
                     implementation = InformativeResponse.class)))
     @APIResponse(
             responseCode = "403",
-            description = "The authenticated user/service is not permitted to perform the requested operation.",
+            description = "The authenticated client is not permitted to perform the requested operation.",
             content = @Content(schema = @Schema(
                     type = SchemaType.OBJECT,
                     implementation = InformativeResponse.class)))
@@ -251,7 +251,7 @@ public class MetricDefinitionEndpoint {
     @GET
     @Path("/{id}")
     @Produces(value = MediaType.APPLICATION_JSON)
-    @Permission(collection = Collection.MetricDefinition, operation = org.accounting.system.enums.Operation.READ)
+    @AccessPermission(collection = Collection.MetricDefinition, operation = Operation.READ)
     public Response get(
             @Parameter(
                     description = "The Metric Definition to be retrieved.",
@@ -266,7 +266,7 @@ public class MetricDefinitionEndpoint {
     }
 
     @Tag(name = "Metric Definition")
-    @Operation(
+    @org.eclipse.microprofile.openapi.annotations.Operation(
             summary = "Updates an existing Metric Definition.",
             description = "In order to update the resource properties, the body of the request must contain an updated representation of Metric Definition. " +
                     "You can update a part or all attributes of Metric Definition except for metric_definition_id. The empty or null values are ignored.")
@@ -290,7 +290,7 @@ public class MetricDefinitionEndpoint {
                     implementation = InformativeResponse.class)))
     @APIResponse(
             responseCode = "403",
-            description = "The authenticated user/service is not permitted to perform the requested operation.",
+            description = "The authenticated client is not permitted to perform the requested operation.",
             content = @Content(schema = @Schema(
                     type = SchemaType.OBJECT,
                     implementation = InformativeResponse.class)))
@@ -324,7 +324,7 @@ public class MetricDefinitionEndpoint {
     @Path("/{id}")
     @Produces(value = MediaType.APPLICATION_JSON)
     @Consumes(value = MediaType.APPLICATION_JSON)
-    @Permission(collection = Collection.MetricDefinition, operation = org.accounting.system.enums.Operation.UPDATE)
+    @AccessPermission(collection = Collection.MetricDefinition, operation = Operation.UPDATE)
     public Response update(
             @Parameter(
                     description = "The Metric Definition to be updated.",
@@ -339,7 +339,7 @@ public class MetricDefinitionEndpoint {
     }
 
     @Tag(name = "Metric Definition")
-    @Operation(
+    @org.eclipse.microprofile.openapi.annotations.Operation(
             summary = "Deletes an existing Metric Definition.",
             description = "You can delete only a Metric Definition that doesn’t have any assigned Metrics to it. If the Metric Definition has no Metrics, you can safely delete it.")
     @APIResponse(
@@ -356,7 +356,7 @@ public class MetricDefinitionEndpoint {
                     implementation = InformativeResponse.class)))
     @APIResponse(
             responseCode = "403",
-            description = "The authenticated user/service is not permitted to perform the requested operation.",
+            description = "The authenticated client is not permitted to perform the requested operation.",
             content = @Content(schema = @Schema(
                     type = SchemaType.OBJECT,
                     implementation = InformativeResponse.class)))
@@ -377,7 +377,7 @@ public class MetricDefinitionEndpoint {
     @DELETE()
     @Path("/{id}")
     @Produces(value = MediaType.APPLICATION_JSON)
-    @Permission(collection = Collection.MetricDefinition, operation = org.accounting.system.enums.Operation.DELETE)
+    @AccessPermission(collection = Collection.MetricDefinition, operation = Operation.DELETE)
     public Response delete(@Parameter(
             description = "The Metric Definition to be deleted.",
             required = true,
@@ -402,7 +402,7 @@ public class MetricDefinitionEndpoint {
     }
 
     @Tag(name = "Unit Type")
-    @Operation(
+    @org.eclipse.microprofile.openapi.annotations.Operation(
             operationId = "unit-type",
             summary = "Returns the unit types.",
             description = "The unit type is an attribute of Metric Definition and defines the unit of a Metric." +
@@ -456,7 +456,7 @@ public class MetricDefinitionEndpoint {
     }
 
     @Tag(name = "Metric Type")
-    @Operation(
+    @org.eclipse.microprofile.openapi.annotations.Operation(
             operationId = "metric-type",
             summary = "Returns the metric types.",
             description = "The metric type is an attribute of Metric Definition and defines the metric type of a Metric." +
@@ -502,7 +502,7 @@ public class MetricDefinitionEndpoint {
     }
 
     @Tag(name = "Metric Definition")
-    @Operation(
+    @org.eclipse.microprofile.openapi.annotations.Operation(
             summary = "Retrieves Metrics for specific Metric Registration.",
             description = "This operation returns the Metrics assigned to a Metric Registration. " +
                     "By default, the first page of 10 entities will be returned. You can tune the default values by using " +
@@ -527,7 +527,7 @@ public class MetricDefinitionEndpoint {
                     implementation = InformativeResponse.class)))
     @APIResponse(
             responseCode = "403",
-            description = "The authenticated user/service is not permitted to perform the requested operation.",
+            description = "The authenticated client is not permitted to perform the requested operation.",
             content = @Content(schema = @Schema(
                     type = SchemaType.OBJECT,
                     implementation = InformativeResponse.class)))
@@ -554,7 +554,7 @@ public class MetricDefinitionEndpoint {
     @GET
     @Path("/{metric_definition_id}/metrics")
     @Produces(value = MediaType.APPLICATION_JSON)
-    @Permission(operation = org.accounting.system.enums.Operation.READ, collection = Collection.MetricDefinition)
+    @AccessPermission(operation = Operation.READ, collection = Collection.MetricDefinition)
     public Response get(@Parameter(
             description = "The Metric Definition id.",
             required = true,
@@ -582,7 +582,7 @@ public class MetricDefinitionEndpoint {
     }
 
     @Tag(name = "Metric Definition")
-    @Operation(
+    @org.eclipse.microprofile.openapi.annotations.Operation(
             summary = "Generates a new Access Control Entry.",
             description = "This endpoint is responsible for generating a new Access Control Entry. " +
                     "Access Control Entry rules specify which services/users are granted or denied access to particular Metric Definition entities. " +
@@ -607,7 +607,7 @@ public class MetricDefinitionEndpoint {
                     implementation = InformativeResponse.class)))
     @APIResponse(
             responseCode = "403",
-            description = "The authenticated user/service is not permitted to perform the requested operation.",
+            description = "The authenticated client is not permitted to perform the requested operation.",
             content = @Content(schema = @Schema(
                     type = SchemaType.OBJECT,
                     implementation = InformativeResponse.class)))
@@ -641,7 +641,7 @@ public class MetricDefinitionEndpoint {
     @Path("/{metric_definition_id}/acl/{who}")
     @Produces(value = MediaType.APPLICATION_JSON)
     @Consumes(value = MediaType.APPLICATION_JSON)
-    @Permission(collection = Collection.MetricDefinition, operation = org.accounting.system.enums.Operation.ACL)
+    @AccessPermission(collection = Collection.MetricDefinition, operation = Operation.ACL)
     public Response createAccessControl(@Valid @NotNull(message = "The request body is empty.") AccessControlRequestDto accessControlRequestDto,
                                         @Parameter(
                                                 description = "metric_definition_id is the id of the entity to which the permissions apply.",
@@ -652,7 +652,7 @@ public class MetricDefinitionEndpoint {
                                         @Valid
                                         @NotFoundEntity(repository = MetricDefinitionRepository.class, message = "There is no Metric Definition with the following id:") String metricDefinitionId,
                                         @Parameter(
-                                                description = "who is the id of a Service/User that the Access Control grants access.",
+                                                description = "who is the id of a client that the Access Control grants access.",
                                                 required = true,
                                                 example = "fbdb4e4a-6e93-4b08-a1e7-0b7bd08520a6",
                                                 schema = @Schema(type = SchemaType.STRING))
@@ -669,7 +669,7 @@ public class MetricDefinitionEndpoint {
     }
 
     @Tag(name = "Metric Definition")
-    @Operation(
+    @org.eclipse.microprofile.openapi.annotations.Operation(
             summary = "Modify an existing Access Control Entry.",
             description = "This endpoint is responsible for updating an existing Access Control Entry. It will modify a specific Access Control Entry " +
                     "which has granted permissions on a Metric Definition to a specific service/user." +
@@ -694,7 +694,7 @@ public class MetricDefinitionEndpoint {
                     implementation = InformativeResponse.class)))
     @APIResponse(
             responseCode = "403",
-            description = "The authenticated user/service is not permitted to perform the requested operation.",
+            description = "The authenticated client is not permitted to perform the requested operation.",
             content = @Content(schema = @Schema(
                     type = SchemaType.OBJECT,
                     implementation = InformativeResponse.class)))
@@ -728,7 +728,7 @@ public class MetricDefinitionEndpoint {
     @Path("/{metric_definition_id}/acl/{who}")
     @Produces(value = MediaType.APPLICATION_JSON)
     @Consumes(value = MediaType.APPLICATION_JSON)
-    @Permission(collection = Collection.MetricDefinition, operation = org.accounting.system.enums.Operation.ACL)
+    @AccessPermission(collection = Collection.MetricDefinition, operation = Operation.ACL)
     public Response modifyAccessControl(@Valid @NotNull(message = "The request body is empty.") AccessControlUpdateDto accessControlUpdateDto,
                                         @Parameter(
                                                 description = "metric_definition_id in which permissions have been granted.",
@@ -752,7 +752,7 @@ public class MetricDefinitionEndpoint {
     }
 
     @Tag(name = "Metric Definition")
-    @Operation(
+    @org.eclipse.microprofile.openapi.annotations.Operation(
             summary = "Deletes an existing Access Control entry.",
             description = "You can delete the permissions that a service/user can access to manage a specific Metric Definition.")
     @APIResponse(
@@ -769,7 +769,7 @@ public class MetricDefinitionEndpoint {
                     implementation = InformativeResponse.class)))
     @APIResponse(
             responseCode = "403",
-            description = "The authenticated user/service is not permitted to perform the requested operation.",
+            description = "The authenticated client is not permitted to perform the requested operation.",
             content = @Content(schema = @Schema(
                     type = SchemaType.OBJECT,
                     implementation = InformativeResponse.class)))
@@ -790,7 +790,7 @@ public class MetricDefinitionEndpoint {
     @DELETE()
     @Path("/{metric_definition_id}/acl/{who}")
     @Produces(value = MediaType.APPLICATION_JSON)
-    @Permission(collection = Collection.MetricDefinition, operation = org.accounting.system.enums.Operation.ACL)
+    @AccessPermission(collection = Collection.MetricDefinition, operation = Operation.ACL)
     public Response deleteAccessControl(@Parameter(
             description = "metric_definition_id in which permissions have been granted.",
             required = true,
@@ -818,7 +818,7 @@ public class MetricDefinitionEndpoint {
     }
 
     @Tag(name = "Metric Definition")
-    @Operation(
+    @org.eclipse.microprofile.openapi.annotations.Operation(
             summary = "Returns an existing Access Control entry.",
             description = "This operation returns the Access Control entry created for a service/user upon a Metric Definition entity.")
     @APIResponse(
@@ -835,7 +835,7 @@ public class MetricDefinitionEndpoint {
                     implementation = InformativeResponse.class)))
     @APIResponse(
             responseCode = "403",
-            description = "The authenticated user/service is not permitted to perform the requested operation.",
+            description = "The authenticated client is not permitted to perform the requested operation.",
             content = @Content(schema = @Schema(
                     type = SchemaType.OBJECT,
                     implementation = InformativeResponse.class)))
@@ -856,7 +856,7 @@ public class MetricDefinitionEndpoint {
     @GET
     @Path("/{metric_definition_id}/acl/{who}")
     @Produces(value = MediaType.APPLICATION_JSON)
-    @Permission(collection = Collection.MetricDefinition, operation = org.accounting.system.enums.Operation.ACL)
+    @AccessPermission(collection = Collection.MetricDefinition, operation = Operation.ACL)
     public Response getAccessControl(
             @Parameter(
                     description = "metric_definition_id in which permissions have been granted.",
@@ -879,7 +879,7 @@ public class MetricDefinitionEndpoint {
     }
 
     @Tag(name = "Metric Definition")
-    @Operation(
+    @org.eclipse.microprofile.openapi.annotations.Operation(
             summary = "Returns all Access Control entries that have been created for Metric Definition collection.",
             description = "Returns all Access Control entries that have been created for Metric Definition collection.")
     @APIResponse(
@@ -896,7 +896,7 @@ public class MetricDefinitionEndpoint {
                     implementation = InformativeResponse.class)))
     @APIResponse(
             responseCode = "403",
-            description = "The authenticated user/service is not permitted to perform the requested operation.",
+            description = "The authenticated client is not permitted to perform the requested operation.",
             content = @Content(schema = @Schema(
                     type = SchemaType.OBJECT,
                     implementation = InformativeResponse.class)))
@@ -917,7 +917,7 @@ public class MetricDefinitionEndpoint {
     @GET
     @Path("/acl")
     @Produces(value = MediaType.APPLICATION_JSON)
-    @Permission(collection = Collection.MetricDefinition, operation = org.accounting.system.enums.Operation.ACL)
+    @AccessPermission(collection = Collection.MetricDefinition, operation = Operation.ACL)
     public Response getAllAccessControl(){
 
         var response = metricDefinitionService.fetchAllPermissions();
@@ -927,7 +927,7 @@ public class MetricDefinitionEndpoint {
 
 
     @Tag(name = "Search Metric Definition")
-    @Operation(
+    @org.eclipse.microprofile.openapi.annotations.Operation(
             operationId = "search-metric-definition",
             summary = "Searches a new Metric Definition.",
             description = "Searches a metric definition ")
@@ -945,7 +945,7 @@ public class MetricDefinitionEndpoint {
                     implementation = InformativeResponse.class)))
     @APIResponse(
             responseCode = "403",
-            description = "The authenticated user/service is not permitted to perform the requested operation.",
+            description = "The authenticated client is not permitted to perform the requested operation.",
             content = @Content(schema = @Schema(
                     type = SchemaType.OBJECT,
                     implementation = InformativeResponse.class)))
@@ -961,7 +961,7 @@ public class MetricDefinitionEndpoint {
     @Path("/search")
     @Produces(value = MediaType.APPLICATION_JSON)
     @Consumes(value = MediaType.APPLICATION_JSON)
-    @Permission(operation = org.accounting.system.enums.Operation.READ, collection = Collection.MetricDefinition)
+    @AccessPermission(operation = Operation.READ, collection = Collection.MetricDefinition)
 
     public Response search(@Valid @NotNull(message = "The request body is empty.") @RequestBody(description = "a json object to describe the search criteria",
 

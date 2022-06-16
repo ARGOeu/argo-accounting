@@ -6,12 +6,12 @@ import org.accounting.system.dtos.InformativeResponse;
 import org.accounting.system.dtos.metric.MetricResponseDto;
 import org.accounting.system.dtos.metric.UpdateMetricRequestDto;
 import org.accounting.system.dtos.metricdefinition.MetricDefinitionResponseDto;
+import org.accounting.system.enums.Operation;
 import org.accounting.system.enums.Collection;
-import org.accounting.system.interceptors.annotations.Permission;
+import org.accounting.system.interceptors.annotations.AccessPermission;
 import org.accounting.system.repositories.metric.MetricRepository;
 import org.accounting.system.services.MetricService;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
-import org.eclipse.microprofile.openapi.annotations.Operation;
 import org.eclipse.microprofile.openapi.annotations.enums.SchemaType;
 import org.eclipse.microprofile.openapi.annotations.enums.SecuritySchemeIn;
 import org.eclipse.microprofile.openapi.annotations.enums.SecuritySchemeType;
@@ -66,7 +66,7 @@ public class MetricEndpoint {
 
 
     @Tag(name = "Metric")
-    @Operation(
+    @org.eclipse.microprofile.openapi.annotations.Operation(
             summary = "Returns an existing Metric.",
             description = "This operation accepts the id of a Metric and fetches from the database the corresponding record.")
     @APIResponse(
@@ -98,7 +98,7 @@ public class MetricEndpoint {
     @GET
     @Path("/{id}")
     @Produces(value = MediaType.APPLICATION_JSON)
-    @Permission(collection = Collection.Metric, operation = org.accounting.system.enums.Operation.READ)
+    @AccessPermission(collection = Collection.Metric, operation = Operation.READ)
     public Response get(
             @Parameter(
                     description = "The Metric to be retrieved.",
@@ -113,7 +113,7 @@ public class MetricEndpoint {
     }
 
     @Tag(name = "Metric")
-    @Operation(
+    @org.eclipse.microprofile.openapi.annotations.Operation(
             summary = "Deletes an existing Metric.",
             description = "Deletes an existing Metric.")
     @APIResponse(
@@ -145,7 +145,7 @@ public class MetricEndpoint {
     @DELETE()
     @Path("/{id}")
     @Produces(value = MediaType.APPLICATION_JSON)
-    @Permission(collection = Collection.Metric, operation = org.accounting.system.enums.Operation.DELETE)
+    @AccessPermission(collection = Collection.Metric, operation = Operation.DELETE)
     public Response delete(@Parameter(
             description = "The Metric to be deleted.",
             required = true,
@@ -169,7 +169,7 @@ public class MetricEndpoint {
     }
 
     @Tag(name = "Metric")
-    @Operation(
+    @org.eclipse.microprofile.openapi.annotations.Operation(
             summary = "Updates an existing Metric.",
             description = "In order to update the resource properties, the body of the request must contain an updated representation of Metric. " +
                     "You can update a part or all attributes of the Metric except for metric_id. The empty or null values are ignored.")
@@ -215,7 +215,7 @@ public class MetricEndpoint {
     @Path("/{id}")
     @Produces(value = MediaType.APPLICATION_JSON)
     @Consumes(value = MediaType.APPLICATION_JSON)
-    @Permission(collection = Collection.Metric, operation = org.accounting.system.enums.Operation.UPDATE)
+    @AccessPermission(collection = Collection.Metric, operation = Operation.UPDATE)
     public Response update(
             @Parameter(
                  description = "The Metric to be updated.",
@@ -232,7 +232,7 @@ public class MetricEndpoint {
 
 
     @Tag(name = "Metric")
-    @Operation(
+    @org.eclipse.microprofile.openapi.annotations.Operation(
             operationId = "search-metric",
             summary = "Searches a new Metric.",
             description = "Searches a metric ")
@@ -256,7 +256,7 @@ public class MetricEndpoint {
                     implementation = InformativeResponse.class)))
     @APIResponse(
             responseCode = "403",
-            description = "The authenticated user/service is not permitted to perform the requested operation.",
+            description = "The authenticated client is not permitted to perform the requested operation.",
             content = @Content(schema = @Schema(
                     type = SchemaType.OBJECT,
                     implementation = InformativeResponse.class)))
