@@ -2,11 +2,11 @@ package org.accounting.system.interceptors;
 
 import io.quarkus.arc.ArcInvocationContext;
 import io.quarkus.oidc.TokenIntrospection;
-import io.quarkus.security.spi.runtime.AuthorizationController;
 import org.accounting.system.beans.RequestInformation;
 import org.accounting.system.enums.AccessType;
 import org.accounting.system.interceptors.annotations.Permission;
 import org.accounting.system.services.authorization.RoleService;
+import org.accounting.system.util.DisabledAuthController;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 
 import javax.annotation.Priority;
@@ -42,7 +42,7 @@ public class PermissionInterceptor {
     RoleService roleService;
 
     @Inject
-    AuthorizationController authorizationController;
+    DisabledAuthController authorizationController;
 
     @Inject
     RequestInformation requestInformation;
@@ -53,7 +53,7 @@ public class PermissionInterceptor {
     @AroundInvoke
     Object check(InvocationContext context) throws Exception {
 
-        if(!authorizationController.isAuthorizationEnabled() && Objects.isNull(tokenIntrospection.getJsonObject())){
+        if(!authorizationController.isAuthorizationEnabled()){
             requestInformation.setAccessType(AccessType.ALWAYS);
             return context.proceed();
         } else {
