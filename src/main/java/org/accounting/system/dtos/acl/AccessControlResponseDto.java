@@ -23,7 +23,7 @@ public class AccessControlResponseDto {
     @Schema(
             type = SchemaType.STRING,
             implementation = String.class,
-            description = "who is the id of a Service/User that the Access Control grants or denies access.",
+            description = "who is the id of a client that the Access Control grants or denies access.",
             example = "fbdb4e4a-6e93-4b08-a1e7-0b7bd08520a6"
     )
     @JsonProperty("who")

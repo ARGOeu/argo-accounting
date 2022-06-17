@@ -12,8 +12,8 @@ import org.accounting.system.dtos.metricdefinition.MetricDefinitionResponseDto;
 import org.accounting.system.dtos.metricdefinition.UpdateMetricDefinitionRequestDto;
 import org.accounting.system.dtos.pagination.PageResource;
 import org.accounting.system.enums.AccessType;
-import org.accounting.system.enums.Collection;
 import org.accounting.system.enums.Operation;
+import org.accounting.system.enums.Collection;
 import org.accounting.system.repositories.authorization.RoleRepository;
 import org.accounting.system.repositories.metricdefinition.MetricDefinitionRepository;
 import org.accounting.system.services.ReadPredefinedTypesService;
@@ -72,7 +72,7 @@ public class MetricDefinitionAuthorizationTest {
                 .extract()
                 .as(InformativeResponse.class);
 
-        assertEquals("The authenticated user/service is not permitted to perform the requested operation.", informativeResponse.message);
+        assertEquals("The authenticated client is not permitted to perform the requested operation.", informativeResponse.message);
     }
 
     @Test
@@ -96,67 +96,7 @@ public class MetricDefinitionAuthorizationTest {
                 .extract()
                 .as(InformativeResponse.class);
 
-        assertEquals("The authenticated user/service is not permitted to perform the requested operation.", informativeResponse.message);
-    }
-
-    @Test
-    public void createMetricDefinitionCombineForbidden(){
-
-        Mockito.when(readPredefinedTypesService.searchForUnitType(any())).thenReturn(Optional.of("SECOND"));
-        Mockito.when(readPredefinedTypesService.searchForMetricType(any())).thenReturn(Optional.of("Aggregated"));
-        MetricDefinitionRequestDto request= new MetricDefinitionRequestDto();
-
-        request.metricName = "metric";
-        request.metricDescription = "description";
-        request.unitType = "SECOND";
-        request.metricType = "Aggregated";
-
-        var metricDefinitionResponse = createMetricDefinition(request, "combine");
-
-        var informativeResponse = metricDefinitionResponse
-                .then()
-                .assertThat()
-                .statusCode(403)
-                .extract()
-                .as(InformativeResponse.class);
-
-        assertEquals("The authenticated user/service is not permitted to perform the requested operation.", informativeResponse.message);
-    }
-
-    @Test
-    public void createMetricDefinitionCreatorForbidden(){
-
-        Mockito.when(readPredefinedTypesService.searchForUnitType(any())).thenReturn(Optional.of("SECOND"));
-        Mockito.when(readPredefinedTypesService.searchForMetricType(any())).thenReturn(Optional.of("Aggregated"));
-        MetricDefinitionRequestDto request= new MetricDefinitionRequestDto();
-
-        request.metricName = "metric";
-        request.metricDescription = "description";
-        request.unitType = "SECOND";
-        request.metricType = "Aggregated";
-
-        var metricDefinitionResponse = createMetricDefinition(request, "admin");
-
-        // admin user create a Metric Definition
-        var metricDefinitionResponseDto = metricDefinitionResponse
-                .then()
-                .assertThat()
-                .statusCode(201)
-                .extract()
-                .as(MetricDefinitionResponseDto.class);
-
-        // user with creator role is trying to access the Metric Definition that has been created by admin
-
-        var fetchMetricDefinitionResponse = fetchMetricDefinition("creator", metricDefinitionResponseDto.id);
-
-        var informativeResponse = fetchMetricDefinitionResponse
-                .then()
-                .assertThat()
-                .statusCode(403)
-                .extract()
-                .as(InformativeResponse.class);
-
-        assertEquals("You have no access to this entity : "+metricDefinitionResponseDto.id, informativeResponse.message);
+        assertEquals("The authenticated client is not permitted to perform the requested operation.", informativeResponse.message);
     }
 
     @Test
@@ -180,7 +120,7 @@ public class MetricDefinitionAuthorizationTest {
                 .extract()
                 .as(InformativeResponse.class);
 
-        assertEquals("The authenticated user/service is not permitted to perform the requested operation.", informativeResponse.message);
+        assertEquals("The authenticated client is not permitted to perform the requested operation.", informativeResponse.message);
     }
 
     @Test
@@ -204,31 +144,7 @@ public class MetricDefinitionAuthorizationTest {
                 .extract()
                 .as(InformativeResponse.class);
 
-        assertEquals("The authenticated user/service is not permitted to perform the requested operation.", informativeResponse.message);
-    }
-
-    @Test
-    public void updateMetricDefinitionCombineForbidden(){
-
-        Mockito.when(readPredefinedTypesService.searchForUnitType(any())).thenReturn(Optional.of("SECOND"));
-        Mockito.when(readPredefinedTypesService.searchForMetricType(any())).thenReturn(Optional.of("Aggregated"));
-        MetricDefinitionRequestDto request= new MetricDefinitionRequestDto();
-
-        request.metricName = "metric";
-        request.metricDescription = "description";
-        request.unitType = "SECOND";
-        request.metricType = "Aggregated";
-
-        var metricDefinitionResponse = updateMetricDefinition(request, "combine");
-
-        var informativeResponse = metricDefinitionResponse
-                .then()
-                .assertThat()
-                .statusCode(403)
-                .extract()
-                .as(InformativeResponse.class);
-
-        assertEquals("The authenticated user/service is not permitted to perform the requested operation.", informativeResponse.message);
+        assertEquals("The authenticated client is not permitted to perform the requested operation.", informativeResponse.message);
     }
 
     @Test
@@ -314,11 +230,11 @@ public class MetricDefinitionAuthorizationTest {
                 .extract()
                 .as(InformativeResponse.class);
 
-        assertEquals("The authenticated user/service is not permitted to perform the requested operation.", informativeResponse.message);
+        assertEquals("The authenticated client is not permitted to perform the requested operation.", informativeResponse.message);
     }
 
     @Test
-    public void deleteMetricDefinitionNoRelevantRoleForbidden(){
+    public void deleteMetricDefinitionNoRelevantRoleForbidden() {
 
         var metricDefinitionResponse = deleteMetricDefinition("alice");
 
@@ -329,22 +245,7 @@ public class MetricDefinitionAuthorizationTest {
                 .extract()
                 .as(InformativeResponse.class);
 
-        assertEquals("The authenticated user/service is not permitted to perform the requested operation.", informativeResponse.message);
-    }
-
-    @Test
-    public void deleteMetricDefinitionCombineForbidden(){
-
-        var metricDefinitionResponse = deleteMetricDefinition("combine");
-
-        var informativeResponse = metricDefinitionResponse
-                .then()
-                .assertThat()
-                .statusCode(403)
-                .extract()
-                .as(InformativeResponse.class);
-
-        assertEquals("The authenticated user/service is not permitted to perform the requested operation.", informativeResponse.message);
+        assertEquals("The authenticated client is not permitted to perform the requested operation.", informativeResponse.message);
     }
 
     @Test
@@ -419,10 +320,10 @@ public class MetricDefinitionAuthorizationTest {
         var metricDefinitionRole = roleRepository.getRoleByName("metric_definition_admin").stream().findAny().get();
 
         var permissions = metricDefinitionRole
-                .getCollectionPermission()
+                .getCollectionsAccessPermissions()
                 .stream()
                 .filter(collectionPermission -> collectionPermission.collection.equals(Collection.MetricDefinition))
-                .flatMap(md->md.permissions.stream())
+                .flatMap(md->md.accessPermissions.stream())
                 .collect(Collectors.toList());
 
         assertEquals(AccessType.ALWAYS, permissions
@@ -457,10 +358,10 @@ public class MetricDefinitionAuthorizationTest {
         var metricDefinitionRole = roleRepository.getRoleByName("metric_definition_inspector").stream().findAny().get();
 
         var permissions = metricDefinitionRole
-                .getCollectionPermission()
+                .getCollectionsAccessPermissions()
                 .stream()
                 .filter(collectionPermission -> collectionPermission.collection.equals(Collection.MetricDefinition))
-                .flatMap(md->md.permissions.stream())
+                .flatMap(md->md.accessPermissions.stream())
                 .collect(Collectors.toList());
 
         assertEquals(AccessType.NEVER, permissions

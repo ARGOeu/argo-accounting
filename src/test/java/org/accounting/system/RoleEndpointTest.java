@@ -7,12 +7,12 @@ import io.quarkus.test.keycloak.client.KeycloakTestClient;
 import io.restassured.http.ContentType;
 import io.restassured.response.Response;
 import org.accounting.system.dtos.InformativeResponse;
-import org.accounting.system.dtos.authorization.CollectionPermissionDto;
-import org.accounting.system.dtos.authorization.PermissionDto;
-import org.accounting.system.dtos.authorization.RoleRequestDto;
-import org.accounting.system.dtos.authorization.RoleResponseDto;
-import org.accounting.system.dtos.authorization.update.UpdateCollectionPermissionDto;
-import org.accounting.system.dtos.authorization.update.UpdatePermissionDto;
+import org.accounting.system.dtos.authorization.AccessPermissionDto;
+import org.accounting.system.dtos.authorization.CollectionAccessPermissionDto;
+import org.accounting.system.dtos.authorization.request.RoleRequestDto;
+import org.accounting.system.dtos.authorization.response.RoleResponseDto;
+import org.accounting.system.dtos.authorization.update.UpdateAccessPermissionDto;
+import org.accounting.system.dtos.authorization.update.UpdateCollectionAccessPermissionDto;
 import org.accounting.system.dtos.authorization.update.UpdateRoleRequestDto;
 import org.accounting.system.endpoints.RoleEndpoint;
 import org.accounting.system.enums.AccessType;
@@ -24,7 +24,7 @@ import org.accounting.system.util.Utility;
 import org.junit.jupiter.api.Test;
 
 import javax.inject.Inject;
-import java.util.ArrayList;
+import java.util.HashSet;
 
 import static io.restassured.RestAssured.given;
 import static org.hamcrest.Matchers.is;
@@ -94,11 +94,11 @@ public class RoleEndpointTest {
 
         var request= new RoleRequestDto();
 
-        var list = new ArrayList<CollectionPermissionDto>();
-        CollectionPermissionDto collectionPermissionDto = new CollectionPermissionDto();
-        list.add(collectionPermissionDto);
+        var list = new HashSet<CollectionAccessPermissionDto>();
+        CollectionAccessPermissionDto collectionAccessPermissionDto = new CollectionAccessPermissionDto();
+        list.add(collectionAccessPermissionDto);
 
-        request.collectionPermission = list;
+        request.collectionsAccessPermissions = list;
 
         var response = given()
                 .auth()
@@ -133,7 +133,7 @@ public class RoleEndpointTest {
                 .extract()
                 .as(InformativeResponse.class);
 
-        assertEquals("collection_permission_list should have at least one entry.", response.message);
+        assertEquals("collections_access_permissions should have at least one entry.", response.message);
     }
 
     @Test
@@ -141,7 +141,7 @@ public class RoleEndpointTest {
 
         var request= new RoleRequestDto();
         request.name = "role";
-        request.collectionPermission = new ArrayList<>();
+        request.collectionsAccessPermissions = new HashSet<>();
 
         var response = given()
                 .auth()
@@ -155,7 +155,7 @@ public class RoleEndpointTest {
                 .extract()
                 .as(InformativeResponse.class);
 
-        assertEquals("collection_permission_list should have at least one entry.", response.message);
+        assertEquals("collections_access_permissions should have at least one entry.", response.message);
     }
 
     @Test
@@ -164,12 +164,12 @@ public class RoleEndpointTest {
         var request= new RoleRequestDto();
         request.name = "role";
 
-        var collectionPermission = new ArrayList<CollectionPermissionDto>();
-        CollectionPermissionDto collectionPermissionDto = new CollectionPermissionDto();
-        collectionPermissionDto.collection = "Role";
-        collectionPermission.add(collectionPermissionDto);
+        var collectionPermission = new HashSet<CollectionAccessPermissionDto>();
+        CollectionAccessPermissionDto collectionAccessPermissionDto = new CollectionAccessPermissionDto();
+        collectionAccessPermissionDto.collection = "Role";
+        collectionPermission.add(collectionAccessPermissionDto);
 
-        request.collectionPermission = collectionPermission;
+        request.collectionsAccessPermissions = collectionPermission;
 
         var response = given()
                 .auth()
@@ -183,7 +183,7 @@ public class RoleEndpointTest {
                 .extract()
                 .as(InformativeResponse.class);
 
-        assertEquals("permissions list should have at least one entry.", response.message);
+        assertEquals("access_permissions list should have at least one entry.", response.message);
     }
 
     @Test
@@ -192,17 +192,17 @@ public class RoleEndpointTest {
         var request= new RoleRequestDto();
         request.name = "role";
 
-        var collectionPermission = new ArrayList<CollectionPermissionDto>();
-        CollectionPermissionDto collectionPermissionDto = new CollectionPermissionDto();
-        collectionPermissionDto.collection = "Role";
+        var collectionPermission = new HashSet<CollectionAccessPermissionDto>();
+        CollectionAccessPermissionDto collectionAccessPermissionDto = new CollectionAccessPermissionDto();
+        collectionAccessPermissionDto.collection = "Role";
 
-        var permissions = new ArrayList<PermissionDto>();
+        var permissions = new HashSet<AccessPermissionDto>();
 
-        collectionPermissionDto.permissions = permissions;
+        collectionAccessPermissionDto.accessPermissions = permissions;
 
-        collectionPermission.add(collectionPermissionDto);
+        collectionPermission.add(collectionAccessPermissionDto);
 
-        request.collectionPermission = collectionPermission;
+        request.collectionsAccessPermissions = collectionPermission;
 
         var response = given()
                 .auth()
@@ -216,7 +216,7 @@ public class RoleEndpointTest {
                 .extract()
                 .as(InformativeResponse.class);
 
-        assertEquals("permissions list should have at least one entry.", response.message);
+        assertEquals("access_permissions list should have at least one entry.", response.message);
     }
 
     @Test
@@ -225,20 +225,20 @@ public class RoleEndpointTest {
         var request= new RoleRequestDto();
         request.name = "role";
 
-        var collectionPermission = new ArrayList<CollectionPermissionDto>();
-        CollectionPermissionDto collectionPermissionDto = new CollectionPermissionDto();
+        var collectionPermission = new HashSet<CollectionAccessPermissionDto>();
+        CollectionAccessPermissionDto collectionAccessPermissionDto = new CollectionAccessPermissionDto();
 
-        var permissions = new ArrayList<PermissionDto>();
+        var permissions = new HashSet<AccessPermissionDto>();
 
-        var permissionDto = new PermissionDto();
+        var permissionDto = new AccessPermissionDto();
 
         permissions.add(permissionDto);
 
-        collectionPermissionDto.permissions = permissions;
+        collectionAccessPermissionDto.accessPermissions = permissions;
 
-        collectionPermission.add(collectionPermissionDto);
+        collectionPermission.add(collectionAccessPermissionDto);
 
-        request.collectionPermission = collectionPermission;
+        request.collectionsAccessPermissions = collectionPermission;
 
         var response = given()
                 .auth()
@@ -261,21 +261,21 @@ public class RoleEndpointTest {
         var request= new RoleRequestDto();
         request.name = "role";
 
-        var collectionPermission = new ArrayList<CollectionPermissionDto>();
-        CollectionPermissionDto collectionPermissionDto = new CollectionPermissionDto();
+        var collectionPermission = new HashSet<CollectionAccessPermissionDto>();
+        CollectionAccessPermissionDto collectionAccessPermissionDto = new CollectionAccessPermissionDto();
 
-        var permissions = new ArrayList<PermissionDto>();
+        var permissions = new HashSet<AccessPermissionDto>();
 
-        var permissionDto = new PermissionDto();
+        var permissionDto = new AccessPermissionDto();
 
         permissions.add(permissionDto);
 
-        collectionPermissionDto.permissions = permissions;
-        collectionPermissionDto.collection = "Test";
+        collectionAccessPermissionDto.accessPermissions = permissions;
+        collectionAccessPermissionDto.collection = "Test";
 
-        collectionPermission.add(collectionPermissionDto);
+        collectionPermission.add(collectionAccessPermissionDto);
 
-        request.collectionPermission = collectionPermission;
+        request.collectionsAccessPermissions = collectionPermission;
 
         var response = given()
                 .auth()
@@ -298,22 +298,22 @@ public class RoleEndpointTest {
         var request= new RoleRequestDto();
         request.name = "role";
 
-        var collectionPermission = new ArrayList<CollectionPermissionDto>();
-        CollectionPermissionDto collectionPermissionDto = new CollectionPermissionDto();
+        var collectionPermission = new HashSet<CollectionAccessPermissionDto>();
+        CollectionAccessPermissionDto collectionAccessPermissionDto = new CollectionAccessPermissionDto();
 
-        var permissions = new ArrayList<PermissionDto>();
+        var permissions = new HashSet<AccessPermissionDto>();
 
-        var permissionDto = new PermissionDto();
+        var permissionDto = new AccessPermissionDto();
         permissionDto.accessType = "ALWAYS";
 
         permissions.add(permissionDto);
 
-        collectionPermissionDto.permissions = permissions;
-        collectionPermissionDto.collection = "Role";
+        collectionAccessPermissionDto.accessPermissions = permissions;
+        collectionAccessPermissionDto.collection = "Role";
 
-        collectionPermission.add(collectionPermissionDto);
+        collectionPermission.add(collectionAccessPermissionDto);
 
-        request.collectionPermission = collectionPermission;
+        request.collectionsAccessPermissions = collectionPermission;
 
         var response = given()
                 .auth()
@@ -336,23 +336,23 @@ public class RoleEndpointTest {
         var request= new RoleRequestDto();
         request.name = "role";
 
-        var collectionPermission = new ArrayList<CollectionPermissionDto>();
-        CollectionPermissionDto collectionPermissionDto = new CollectionPermissionDto();
+        var collectionPermission = new HashSet<CollectionAccessPermissionDto>();
+        CollectionAccessPermissionDto collectionAccessPermissionDto = new CollectionAccessPermissionDto();
 
-        var permissions = new ArrayList<PermissionDto>();
+        var permissions = new HashSet<AccessPermissionDto>();
 
-        var permissionDto = new PermissionDto();
+        var permissionDto = new AccessPermissionDto();
         permissionDto.operation = "NOT_VALID";
         permissionDto.accessType = "ALWAYS";
 
         permissions.add(permissionDto);
 
-        collectionPermissionDto.permissions = permissions;
-        collectionPermissionDto.collection = "Role";
+        collectionAccessPermissionDto.accessPermissions = permissions;
+        collectionAccessPermissionDto.collection = "Role";
 
-        collectionPermission.add(collectionPermissionDto);
+        collectionPermission.add(collectionAccessPermissionDto);
 
-        request.collectionPermission = collectionPermission;
+        request.collectionsAccessPermissions = collectionPermission;
 
         var response = given()
                 .auth()
@@ -375,22 +375,22 @@ public class RoleEndpointTest {
         var request= new RoleRequestDto();
         request.name = "role";
 
-        var collectionPermission = new ArrayList<CollectionPermissionDto>();
-        CollectionPermissionDto collectionPermissionDto = new CollectionPermissionDto();
+        var collectionPermission = new HashSet<CollectionAccessPermissionDto>();
+        CollectionAccessPermissionDto collectionAccessPermissionDto = new CollectionAccessPermissionDto();
 
-        var permissions = new ArrayList<PermissionDto>();
+        var permissions = new HashSet<AccessPermissionDto>();
 
-        var permissionDto = new PermissionDto();
+        var permissionDto = new AccessPermissionDto();
         permissionDto.operation = "CREATE";
 
         permissions.add(permissionDto);
 
-        collectionPermissionDto.permissions = permissions;
-        collectionPermissionDto.collection = "Role";
+        collectionAccessPermissionDto.accessPermissions = permissions;
+        collectionAccessPermissionDto.collection = "Role";
 
-        collectionPermission.add(collectionPermissionDto);
+        collectionPermission.add(collectionAccessPermissionDto);
 
-        request.collectionPermission = collectionPermission;
+        request.collectionsAccessPermissions = collectionPermission;
 
         var response = given()
                 .auth()
@@ -413,23 +413,23 @@ public class RoleEndpointTest {
         var request= new RoleRequestDto();
         request.name = "role";
 
-        var collectionPermission = new ArrayList<CollectionPermissionDto>();
-        CollectionPermissionDto collectionPermissionDto = new CollectionPermissionDto();
+        var collectionPermission = new HashSet<CollectionAccessPermissionDto>();
+        CollectionAccessPermissionDto collectionAccessPermissionDto = new CollectionAccessPermissionDto();
 
-        var permissions = new ArrayList<PermissionDto>();
+        var permissions = new HashSet<AccessPermissionDto>();
 
-        var permissionDto = new PermissionDto();
+        var permissionDto = new AccessPermissionDto();
         permissionDto.operation = "CREATE";
         permissionDto.accessType = "NOT_VALID";
 
         permissions.add(permissionDto);
 
-        collectionPermissionDto.permissions = permissions;
-        collectionPermissionDto.collection = "Role";
+        collectionAccessPermissionDto.accessPermissions = permissions;
+        collectionAccessPermissionDto.collection = "Role";
 
-        collectionPermission.add(collectionPermissionDto);
+        collectionPermission.add(collectionAccessPermissionDto);
 
-        request.collectionPermission = collectionPermission;
+        request.collectionsAccessPermissions = collectionPermission;
 
         var response = given()
                 .auth()
@@ -452,23 +452,23 @@ public class RoleEndpointTest {
         var request= new RoleRequestDto();
         request.name = "role";
 
-        var collectionPermission = new ArrayList<CollectionPermissionDto>();
-        CollectionPermissionDto collectionPermissionDto = new CollectionPermissionDto();
+        var collectionPermission = new HashSet<CollectionAccessPermissionDto>();
+        CollectionAccessPermissionDto collectionAccessPermissionDto = new CollectionAccessPermissionDto();
 
-        var permissions = new ArrayList<PermissionDto>();
+        var permissions = new HashSet<AccessPermissionDto>();
 
-        var permissionDto = new PermissionDto();
+        var permissionDto = new AccessPermissionDto();
         permissionDto.operation = "CREATE";
         permissionDto.accessType = "ALWAYS";
 
         permissions.add(permissionDto);
 
-        collectionPermissionDto.permissions = permissions;
-        collectionPermissionDto.collection = "Role";
+        collectionAccessPermissionDto.accessPermissions = permissions;
+        collectionAccessPermissionDto.collection = "Role";
 
-        collectionPermission.add(collectionPermissionDto);
+        collectionPermission.add(collectionAccessPermissionDto);
 
-        request.collectionPermission = collectionPermission;
+        request.collectionsAccessPermissions = collectionPermission;
 
         var response = createRole(request, "admin");
 
@@ -483,28 +483,64 @@ public class RoleEndpointTest {
     }
 
     @Test
-    public void createRoleWithExistingName() {
+    public void createRoleNotSupportedOperation() {
 
         var request= new RoleRequestDto();
-        request.name = "similar_role";
+        request.name = "role";
 
-        var collectionPermission = new ArrayList<CollectionPermissionDto>();
-        CollectionPermissionDto collectionPermissionDto = new CollectionPermissionDto();
+        var collectionPermission = new HashSet<CollectionAccessPermissionDto>();
+        CollectionAccessPermissionDto collectionAccessPermissionDto = new CollectionAccessPermissionDto();
 
-        var permissions = new ArrayList<PermissionDto>();
+        var permissions = new HashSet<AccessPermissionDto>();
 
-        var permissionDto = new PermissionDto();
+        var permissionDto = new AccessPermissionDto();
         permissionDto.operation = "CREATE";
         permissionDto.accessType = "ALWAYS";
 
         permissions.add(permissionDto);
 
-        collectionPermissionDto.permissions = permissions;
-        collectionPermissionDto.collection = "Role";
+        collectionAccessPermissionDto.accessPermissions = permissions;
+        collectionAccessPermissionDto.collection = "Client";
 
-        collectionPermission.add(collectionPermissionDto);
+        collectionPermission.add(collectionAccessPermissionDto);
 
-        request.collectionPermission = collectionPermission;
+        request.collectionsAccessPermissions = collectionPermission;
+
+        var response = createRole(request, "admin");
+
+        var informativeResponse = response
+                .then()
+                .assertThat()
+                .statusCode(400)
+                .extract()
+                .as(InformativeResponse.class);
+
+        assertEquals(String.format("The collection Client doesn't support one or more of given operations"), informativeResponse.message);
+    }
+
+    @Test
+    public void createRoleWithExistingName() {
+
+        var request= new RoleRequestDto();
+        request.name = "similar_role";
+
+        var collectionPermission = new HashSet<CollectionAccessPermissionDto>();
+        CollectionAccessPermissionDto collectionAccessPermissionDto = new CollectionAccessPermissionDto();
+
+        var permissions = new HashSet<AccessPermissionDto>();
+
+        var permissionDto = new AccessPermissionDto();
+        permissionDto.operation = "CREATE";
+        permissionDto.accessType = "ALWAYS";
+
+        permissions.add(permissionDto);
+
+        collectionAccessPermissionDto.accessPermissions = permissions;
+        collectionAccessPermissionDto.collection = "Role";
+
+        collectionPermission.add(collectionAccessPermissionDto);
+
+        request.collectionsAccessPermissions = collectionPermission;
 
         var response = createRole(request, "admin");
 
@@ -564,23 +600,23 @@ public class RoleEndpointTest {
         var request= new RoleRequestDto();
         request.name = "role_deleted";
 
-        var collectionPermission = new ArrayList<CollectionPermissionDto>();
-        CollectionPermissionDto collectionPermissionDto = new CollectionPermissionDto();
+        var collectionPermission = new HashSet<CollectionAccessPermissionDto>();
+        CollectionAccessPermissionDto collectionAccessPermissionDto = new CollectionAccessPermissionDto();
 
-        var permissions = new ArrayList<PermissionDto>();
+        var permissions = new HashSet<AccessPermissionDto>();
 
-        var permissionDto = new PermissionDto();
+        var permissionDto = new AccessPermissionDto();
         permissionDto.operation = "CREATE";
         permissionDto.accessType = "ALWAYS";
 
         permissions.add(permissionDto);
 
-        collectionPermissionDto.permissions = permissions;
-        collectionPermissionDto.collection = "Role";
+        collectionAccessPermissionDto.accessPermissions = permissions;
+        collectionAccessPermissionDto.collection = "Role";
 
-        collectionPermission.add(collectionPermissionDto);
+        collectionPermission.add(collectionAccessPermissionDto);
 
-        request.collectionPermission = collectionPermission;
+        request.collectionsAccessPermissions = collectionPermission;
 
         var response = createRole(request, "admin");
 
@@ -654,23 +690,23 @@ public class RoleEndpointTest {
         var request= new RoleRequestDto();
         request.name = "role_retrieved";
 
-        var collectionPermission = new ArrayList<CollectionPermissionDto>();
-        CollectionPermissionDto collectionPermissionDto = new CollectionPermissionDto();
+        var collectionPermission = new HashSet<CollectionAccessPermissionDto>();
+        CollectionAccessPermissionDto collectionAccessPermissionDto = new CollectionAccessPermissionDto();
 
-        var permissions = new ArrayList<PermissionDto>();
+        var permissions = new HashSet<AccessPermissionDto>();
 
-        var permissionDto = new PermissionDto();
+        var permissionDto = new AccessPermissionDto();
         permissionDto.operation = "CREATE";
         permissionDto.accessType = "ALWAYS";
 
         permissions.add(permissionDto);
 
-        collectionPermissionDto.permissions = permissions;
-        collectionPermissionDto.collection = "Role";
+        collectionAccessPermissionDto.accessPermissions = permissions;
+        collectionAccessPermissionDto.collection = "Role";
 
-        collectionPermission.add(collectionPermissionDto);
+        collectionPermission.add(collectionAccessPermissionDto);
 
-        request.collectionPermission = collectionPermission;
+        request.collectionsAccessPermissions = collectionPermission;
 
         var response = createRole(request, "admin");
 
@@ -701,23 +737,23 @@ public class RoleEndpointTest {
         var request= new RoleRequestDto();
         request.name = "role_update_cannot_consume_content_type";
 
-        var collectionPermission = new ArrayList<CollectionPermissionDto>();
-        CollectionPermissionDto collectionPermissionDto = new CollectionPermissionDto();
+        var collectionPermission = new HashSet<CollectionAccessPermissionDto>();
+        CollectionAccessPermissionDto collectionAccessPermissionDto = new CollectionAccessPermissionDto();
 
-        var permissions = new ArrayList<PermissionDto>();
+        var permissions = new HashSet<AccessPermissionDto>();
 
-        var permissionDto = new PermissionDto();
+        var permissionDto = new AccessPermissionDto();
         permissionDto.operation = "CREATE";
         permissionDto.accessType = "ALWAYS";
 
         permissions.add(permissionDto);
 
-        collectionPermissionDto.permissions = permissions;
-        collectionPermissionDto.collection = "Role";
+        collectionAccessPermissionDto.accessPermissions = permissions;
+        collectionAccessPermissionDto.collection = "Role";
 
-        collectionPermission.add(collectionPermissionDto);
+        collectionPermission.add(collectionAccessPermissionDto);
 
-        request.collectionPermission = collectionPermission;
+        request.collectionsAccessPermissions = collectionPermission;
 
         var response = createRole(request, "admin");
 
@@ -779,23 +815,23 @@ public class RoleEndpointTest {
         request.name = "role_update_name";
         request.description = "description";
 
-        var collectionPermission = new ArrayList<CollectionPermissionDto>();
-        CollectionPermissionDto collectionPermissionDto = new CollectionPermissionDto();
+        var collectionPermission = new HashSet<CollectionAccessPermissionDto>();
+        CollectionAccessPermissionDto collectionAccessPermissionDto = new CollectionAccessPermissionDto();
 
-        var permissions = new ArrayList<PermissionDto>();
+        var permissions = new HashSet<AccessPermissionDto>();
 
-        var permissionDto = new PermissionDto();
+        var permissionDto = new AccessPermissionDto();
         permissionDto.operation = "CREATE";
         permissionDto.accessType = "ALWAYS";
 
         permissions.add(permissionDto);
 
-        collectionPermissionDto.permissions = permissions;
-        collectionPermissionDto.collection = "Role";
+        collectionAccessPermissionDto.accessPermissions = permissions;
+        collectionAccessPermissionDto.collection = "Role";
 
-        collectionPermission.add(collectionPermissionDto);
+        collectionPermission.add(collectionAccessPermissionDto);
 
-        request.collectionPermission = collectionPermission;
+        request.collectionsAccessPermissions = collectionPermission;
 
         var response = createRole(request, "admin");
 
@@ -836,23 +872,23 @@ public class RoleEndpointTest {
         request.name = "role_update_collection";
         request.description = "description";
 
-        var collectionPermission = new ArrayList<CollectionPermissionDto>();
-        CollectionPermissionDto collectionPermissionDto = new CollectionPermissionDto();
+        var collectionPermission = new HashSet<CollectionAccessPermissionDto>();
+        CollectionAccessPermissionDto collectionAccessPermissionDto = new CollectionAccessPermissionDto();
 
-        var permissions = new ArrayList<PermissionDto>();
+        var permissions = new HashSet<AccessPermissionDto>();
 
-        var permissionDto = new PermissionDto();
+        var permissionDto = new AccessPermissionDto();
         permissionDto.operation = "CREATE";
         permissionDto.accessType = "ALWAYS";
 
         permissions.add(permissionDto);
 
-        collectionPermissionDto.permissions = permissions;
-        collectionPermissionDto.collection = "Role";
+        collectionAccessPermissionDto.accessPermissions = permissions;
+        collectionAccessPermissionDto.collection = "Role";
 
-        collectionPermission.add(collectionPermissionDto);
+        collectionPermission.add(collectionAccessPermissionDto);
 
-        request.collectionPermission = collectionPermission;
+        request.collectionsAccessPermissions = collectionPermission;
 
         var response = createRole(request, "admin");
 
@@ -865,23 +901,23 @@ public class RoleEndpointTest {
 
         var updateRoleRequestDto = new UpdateRoleRequestDto();
 
-        var updateCollectionPermission = new ArrayList<UpdateCollectionPermissionDto>();
-        UpdateCollectionPermissionDto updateCollectionPermissionDto = new UpdateCollectionPermissionDto();
+        var updateCollectionPermission = new HashSet<UpdateCollectionAccessPermissionDto>();
+        UpdateCollectionAccessPermissionDto updateCollectionAccessPermissionDto = new UpdateCollectionAccessPermissionDto();
 
-        var updatePermissions = new ArrayList<UpdatePermissionDto>();
+        var updatePermissions = new HashSet<UpdateAccessPermissionDto>();
 
-        var updatePermissionDto = new UpdatePermissionDto();
+        var updatePermissionDto = new UpdateAccessPermissionDto();
         updatePermissionDto.operation = "UPDATE";
         updatePermissionDto.accessType = "ALWAYS";
 
         updatePermissions.add(updatePermissionDto);
 
-        updateCollectionPermissionDto.permissions = updatePermissions;
-        updateCollectionPermissionDto.collection = "Metric";
+        updateCollectionAccessPermissionDto.accessPermissions = updatePermissions;
+        updateCollectionAccessPermissionDto.collection = "Metric";
 
-        updateCollectionPermission.add(updateCollectionPermissionDto);
+        updateCollectionPermission.add(updateCollectionAccessPermissionDto);
 
-        updateRoleRequestDto.collectionPermission = updateCollectionPermission;
+        updateRoleRequestDto.collectionsAccessPermissions = updateCollectionPermission;
 
         var updateResponse = given()
                 .auth()
@@ -895,7 +931,7 @@ public class RoleEndpointTest {
                 .extract()
                 .as(RoleResponseDto.class);
 
-        assertEquals("Metric", updateResponse.collectionPermission.get(0).collection);
+        assertEquals("Metric", updateResponse.collectionsAccessPermissions.stream().findAny().get().collection);
     }
 
     @Test
@@ -905,23 +941,23 @@ public class RoleEndpointTest {
         request.name = "role_update_not_valid_collection";
         request.description = "description";
 
-        var collectionPermission = new ArrayList<CollectionPermissionDto>();
-        CollectionPermissionDto collectionPermissionDto = new CollectionPermissionDto();
+        var collectionPermission = new HashSet<CollectionAccessPermissionDto>();
+        CollectionAccessPermissionDto collectionAccessPermissionDto = new CollectionAccessPermissionDto();
 
-        var permissions = new ArrayList<PermissionDto>();
+        var permissions = new HashSet<AccessPermissionDto>();
 
-        var permissionDto = new PermissionDto();
+        var permissionDto = new AccessPermissionDto();
         permissionDto.operation = "CREATE";
         permissionDto.accessType = "ALWAYS";
 
         permissions.add(permissionDto);
 
-        collectionPermissionDto.permissions = permissions;
-        collectionPermissionDto.collection = "Role";
+        collectionAccessPermissionDto.accessPermissions = permissions;
+        collectionAccessPermissionDto.collection = "Role";
 
-        collectionPermission.add(collectionPermissionDto);
+        collectionPermission.add(collectionAccessPermissionDto);
 
-        request.collectionPermission = collectionPermission;
+        request.collectionsAccessPermissions = collectionPermission;
 
         var response = createRole(request, "admin");
 
@@ -934,23 +970,23 @@ public class RoleEndpointTest {
 
         var updateRoleRequestDto = new UpdateRoleRequestDto();
 
-        var updateCollectionPermission = new ArrayList<UpdateCollectionPermissionDto>();
-        UpdateCollectionPermissionDto updateCollectionPermissionDto = new UpdateCollectionPermissionDto();
+        var updateCollectionPermission = new HashSet<UpdateCollectionAccessPermissionDto>();
+        UpdateCollectionAccessPermissionDto updateCollectionAccessPermissionDto = new UpdateCollectionAccessPermissionDto();
 
-        var updatePermissions = new ArrayList<UpdatePermissionDto>();
+        var updatePermissions = new HashSet<UpdateAccessPermissionDto>();
 
-        var updatePermissionDto = new UpdatePermissionDto();
+        var updatePermissionDto = new UpdateAccessPermissionDto();
         updatePermissionDto.operation = "UPDATE";
         updatePermissionDto.accessType = "ALWAYS";
 
         updatePermissions.add(updatePermissionDto);
 
-        updateCollectionPermissionDto.permissions = updatePermissions;
-        updateCollectionPermissionDto.collection = "Test";
+        updateCollectionAccessPermissionDto.accessPermissions = updatePermissions;
+        updateCollectionAccessPermissionDto.collection = "Test";
 
-        updateCollectionPermission.add(updateCollectionPermissionDto);
+        updateCollectionPermission.add(updateCollectionAccessPermissionDto);
 
-        updateRoleRequestDto.collectionPermission = updateCollectionPermission;
+        updateRoleRequestDto.collectionsAccessPermissions = updateCollectionPermission;
 
         var informativeResponse = given()
                 .auth()

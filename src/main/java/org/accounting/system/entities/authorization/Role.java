@@ -2,9 +2,11 @@ package org.accounting.system.entities.authorization;
 
 import lombok.EqualsAndHashCode;
 import org.accounting.system.entities.Entity;
+import org.bson.codecs.pojo.annotations.BsonProperty;
 import org.bson.types.ObjectId;
 
-import java.util.List;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * The Role class represents the Role collection stored in the mongo database.
@@ -17,7 +19,8 @@ public class Role extends Entity {
     private ObjectId id;
     @EqualsAndHashCode.Include
     private String name;
-    private List<CollectionPermission> collectionPermission;
+    @BsonProperty("collections_access_permissions")
+    private Set<CollectionPermission> collectionsAccessPermissions = new HashSet<>();
     private String description;
 
     public String getName() {
@@ -36,12 +39,12 @@ public class Role extends Entity {
         this.description = description;
     }
 
-    public List<CollectionPermission> getCollectionPermission() {
-        return collectionPermission;
+    public Set<CollectionPermission> getCollectionsAccessPermissions() {
+        return collectionsAccessPermissions;
     }
 
-    public void setCollectionPermission(List<CollectionPermission> collectionPermission) {
-        this.collectionPermission = collectionPermission;
+    public void setCollectionsAccessPermissions(Set<CollectionPermission> collectionsAccessPermissions) {
+        this.collectionsAccessPermissions = collectionsAccessPermissions;
     }
 
     public ObjectId getId() {

@@ -1,7 +1,7 @@
 package org.accounting.system.repositories.authorization;
 
 import io.quarkus.mongodb.panache.PanacheMongoRepository;
-import org.accounting.system.entities.authorization.Permission;
+import org.accounting.system.entities.authorization.AccessPermission;
 import org.accounting.system.entities.authorization.Role;
 import org.accounting.system.enums.Collection;
 
@@ -27,18 +27,18 @@ import java.util.stream.Collectors;
 public class RoleRepository extends RoleModulator {
 
     /**
-     * This method returns the permissions of a role upon a specific collection
+     * This method returns the access permissions of a role upon a specific collection
      * @param name  role name
      * @param collection collection name
      */
-    public List<Permission> getRolePermissionsUponACollection(String name, Collection collection){
+    public List<AccessPermission> getRoleAccessPermissionsUponACollection(String name, Collection collection){
 
         return find("name = ?1", name)
                 .stream()
-                .map(Role::getCollectionPermission)
+                .map(Role::getCollectionsAccessPermissions)
                 .flatMap(java.util.Collection::stream)
                 .filter(cp->cp.collection.equals(collection))
-                .map(cp->cp.permissions)
+                .map(cp->cp.accessPermissions)
                 .flatMap(java.util.Collection::stream)
                 .collect(Collectors.toList());
     }

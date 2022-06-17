@@ -3,14 +3,14 @@ package org.accounting.system.services.authorization;
 import com.mongodb.MongoWriteException;
 import io.quarkus.mongodb.panache.PanacheQuery;
 import org.accounting.system.beans.RequestInformation;
-import org.accounting.system.dtos.authorization.RoleRequestDto;
-import org.accounting.system.dtos.authorization.RoleResponseDto;
+import org.accounting.system.dtos.authorization.request.RoleRequestDto;
+import org.accounting.system.dtos.authorization.response.RoleResponseDto;
 import org.accounting.system.dtos.authorization.update.UpdateRoleRequestDto;
 import org.accounting.system.dtos.pagination.PageResource;
 import org.accounting.system.entities.authorization.Role;
 import org.accounting.system.enums.AccessType;
-import org.accounting.system.enums.Collection;
 import org.accounting.system.enums.Operation;
+import org.accounting.system.enums.Collection;
 import org.accounting.system.exceptions.ConflictException;
 import org.accounting.system.mappers.RoleMapper;
 import org.accounting.system.repositories.authorization.RoleRepository;
@@ -62,7 +62,7 @@ public class RoleService {
 
        List<AccessType> accessTypeList = providedRoles
                .stream()
-               .map(role-> roleRepository.getRolePermissionsUponACollection(role, collection))
+               .map(role-> roleRepository.getRoleAccessPermissionsUponACollection(role, collection))
                .flatMap(java.util.Collection::stream)
                .filter(permission -> permission.operation.equals(operation))
                .map(permission -> permission.accessType)

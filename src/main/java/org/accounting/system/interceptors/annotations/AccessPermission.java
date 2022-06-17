@@ -1,7 +1,7 @@
 package org.accounting.system.interceptors.annotations;
 
-import org.accounting.system.enums.Collection;
 import org.accounting.system.enums.Operation;
+import org.accounting.system.enums.Collection;
 
 import javax.enterprise.util.Nonbinding;
 import javax.interceptor.InterceptorBinding;
@@ -15,7 +15,7 @@ import static java.lang.annotation.RetentionPolicy.RUNTIME;
 @InterceptorBinding
 @Target({METHOD, TYPE})
 @Retention(RUNTIME)
-public @interface Permission {
+public @interface AccessPermission {
 
     @Nonbinding Collection collection() default Collection.MetricDefinition;
     @Nonbinding Operation operation() default Operation.CREATE;

@@ -130,7 +130,7 @@ public class HierarchicalRelationService {
      * @param providerIds List of Providers which will be correlated with a specific Provider
      * @throws NotFoundException If a Provider doesn't exist
      */
-    public void createProjectProviderRelationship(String projectId, List<String> providerIds){
+    public void createProjectProviderRelationship(String projectId, Set<String> providerIds){
 
         for(String providerId : providerIds){
             providerRepository.findByIdOptional(providerId).orElseThrow(()->new NotFoundException("There is no Provider with the following id: "+providerId));

@@ -111,24 +111,24 @@
     <!--                bsonType: "string",-->
     <!--                description: "The role description explains the operations a user or a service is expected to perform"-->
     <!--                },-->
-    <!--                collectionPermission: {-->
+    <!--                collections_access_permissions: {-->
     <!--                bsonType: "object",-->
-    <!--                required: ["collection", "permissions"],-->
+    <!--                required: ["collection", "access_permissions"],-->
     <!--                properties: {-->
-    <!--                permissions: {-->
+    <!--                access_permissions: {-->
     <!--                bsonType: "array",-->
-    <!--                description: "The permissions upon a Collection that have been assigned to that role",-->
+    <!--                description: "The access_permissions upon a Collection that have been assigned to that role",-->
     <!--                items: {-->
     <!--                bsonType: "object",-->
-    <!--                required: ["operation", "accessType"],-->
+    <!--                required: ["operation", "access_type"],-->
     <!--                properties: {-->
     <!--                operation: {-->
     <!--                enum: [ "CREATE", "UPDATE", "DELETE", "READ"],-->
     <!--                description: "The operation attribute can only be one of the the available API operations"-->
     <!--                },-->
-    <!--                accessType: {-->
+    <!--                access_type: {-->
     <!--                enum: [ "ALWAYS", "NEVER", "ENTITY"],-->
-    <!--                description: "The accessType attribute can only be one of the the available access types"-->
+    <!--                description: "The access_type attribute can only be one of the the available access types"-->
     <!--                }-->
     <!--                }-->
     <!--                }-->
@@ -167,28 +167,28 @@
                 {
                 name: "metric_definition_admin",
                 description: "metric_definition_admin will always be able to perform any operation in the Metric Definition collection.",
-                collectionPermission: [
+                collections_access_permissions: [
                 {
-                permissions: [
+                access_permissions: [
                 {
                 operation: "CREATE",
-                accessType: "ALWAYS"
+                access_type: "ALWAYS"
                 },
                 {
                 operation: "UPDATE",
-                accessType: "ALWAYS"
+                access_type: "ALWAYS"
                 },
                 {
                 operation: "DELETE",
-                accessType: "ALWAYS"
+                access_type: "ALWAYS"
                 },
                 {
                 operation: "READ",
-                accessType: "ALWAYS"
+                access_type: "ALWAYS"
                 },
                 {
                 operation: "ACL",
-                accessType: "ALWAYS"
+                access_type: "ALWAYS"
                 }
                 ],
                 collection: "MetricDefinition"
@@ -197,23 +197,23 @@
                 {
                 name: "metric_definition_inspector",
                 description: "metric_definition_inspector can read any entity in the Metric Definition collection, but cannot create new ones or update, delete any Metric Definitions.",
-                collectionPermission: [{
-                permissions: [
+                collections_access_permissions: [{
+                access_permissions: [
                 {
                 operation: "CREATE",
-                accessType: "NEVER"
+                access_type: "NEVER"
                 },
                 {
                 operation: "UPDATE",
-                accessType: "NEVER"
+                access_type: "NEVER"
                 },
                 {
                 operation: "DELETE",
-                accessType: "NEVER"
+                access_type: "NEVER"
                 },
                 {
                 operation: "READ",
-                accessType: "ALWAYS"
+                access_type: "ALWAYS"
                 }
                 ],
                 collection: "MetricDefinition"
@@ -222,27 +222,27 @@
                 {
                 name: "metric_definition_editor",
                 description: "metric_definition_editor  can create new Metric Definitions, as well as update, and read any entity in the collection. But cannot delete any entity in the Metric Definition collection.",
-                collectionPermission: [{
-                permissions: [
+                collections_access_permissions: [{
+                access_permissions: [
                 {
                 operation: "CREATE",
-                accessType: "ALWAYS"
+                access_type: "ALWAYS"
                 },
                 {
                 operation: "UPDATE",
-                accessType: "ALWAYS"
+                access_type: "ALWAYS"
                 },
                 {
                 operation: "DELETE",
-                accessType: "NEVER"
+                access_type: "NEVER"
                 },
                 {
                 operation: "READ",
-                accessType: "ALWAYS"
+                access_type: "ALWAYS"
                 },
                 {
                 operation: "ACL",
-                accessType: "ALWAYS"
+                access_type: "ALWAYS"
                 }
                 ],
                 collection: "MetricDefinition"
@@ -251,27 +251,27 @@
                 {
                 name: "metric_definition_creator",
                 description: "metric_definition_creator can create new Metric Definitions, but can update, delete or read only its Metric Definitions.",
-                collectionPermission: [{
-                permissions: [
+                collections_access_permissions: [{
+                access_permissions: [
                 {
                 operation: "CREATE",
-                accessType: "ALWAYS"
+                access_type: "ALWAYS"
                 },
                 {
                 operation: "UPDATE",
-                accessType: "ENTITY"
+                access_type: "ENTITY"
                 },
                 {
                 operation: "DELETE",
-                accessType: "ENTITY"
+                access_type: "ENTITY"
                 },
                 {
                 operation: "READ",
-                accessType: "ENTITY"
+                access_type: "ENTITY"
                 },
                 {
                 operation: "ACL",
-                accessType: "ENTITY"
+                access_type: "ENTITY"
                 }
                 ],
                 collection: "MetricDefinition"
@@ -288,145 +288,145 @@
                 {
                 name: "system_admin",
                 description: "system_admin will always be able to perform any operation in Accounting System API.",
-                collectionPermission: [
+                collections_access_permissions: [
                 {
-                permissions: [
+                access_permissions: [
                 {
                 operation: "CREATE",
-                accessType: "ALWAYS"
+                access_type: "ALWAYS"
                 },
                 {
                 operation: "UPDATE",
-                accessType: "ALWAYS"
+                access_type: "ALWAYS"
                 },
                 {
                 operation: "DELETE",
-                accessType: "ALWAYS"
+                access_type: "ALWAYS"
                 },
                 {
                 operation: "READ",
-                accessType: "ALWAYS"
+                access_type: "ALWAYS"
                 },
                 {
                 operation: "ACL",
-                accessType: "ALWAYS"
+                access_type: "ALWAYS"
                 }
                 ],
                 collection: "MetricDefinition"
                 },
                 {
-                permissions: [
+                access_permissions: [
                 {
                 operation: "CREATE",
-                accessType: "ALWAYS"
+                access_type: "ALWAYS"
                 },
                 {
                 operation: "UPDATE",
-                accessType: "ALWAYS"
+                access_type: "ALWAYS"
                 },
                 {
                 operation: "DELETE",
-                accessType: "ALWAYS"
+                access_type: "ALWAYS"
                 },
                 {
                 operation: "READ",
-                accessType: "ALWAYS"
+                access_type: "ALWAYS"
                 },
                 {
                 operation: "ACL",
-                accessType: "ALWAYS"
+                access_type: "ALWAYS"
                 }
                 ],
                 collection: "Metric"
                 },
                 {
-                permissions: [
+                access_permissions: [
                 {
                 operation: "CREATE",
-                accessType: "ALWAYS"
+                access_type: "ALWAYS"
                 },
                 {
                 operation: "UPDATE",
-                accessType: "ALWAYS"
+                access_type: "ALWAYS"
                 },
                 {
                 operation: "DELETE",
-                accessType: "ALWAYS"
+                access_type: "ALWAYS"
                 },
                 {
                 operation: "READ",
-                accessType: "ALWAYS"
+                access_type: "ALWAYS"
                 },
                 {
                 operation: "ACL",
-                accessType: "ALWAYS"
+                access_type: "ALWAYS"
                 }
                 ],
                 collection: "Role"
                 },
                 {
-                permissions: [
+                access_permissions: [
                 {
                 operation: "CREATE",
-                accessType: "ALWAYS"
+                access_type: "ALWAYS"
                 },
                 {
                 operation: "UPDATE",
-                accessType: "ALWAYS"
+                access_type: "ALWAYS"
                 },
                 {
                 operation: "DELETE",
-                accessType: "ALWAYS"
+                access_type: "ALWAYS"
                 },
                 {
                 operation: "READ",
-                accessType: "ALWAYS"
+                access_type: "ALWAYS"
                 },
                 {
                 operation: "ACL",
-                accessType: "ALWAYS"
+                access_type: "ALWAYS"
                 }
                 ],
                 collection: "Provider"
                 },
                 {
-                permissions: [
+                access_permissions: [
                 {
                 operation: "CREATE",
-                accessType: "ALWAYS"
+                access_type: "ALWAYS"
                 },
                 {
                 operation: "UPDATE",
-                accessType: "ALWAYS"
+                access_type: "ALWAYS"
                 },
                 {
                 operation: "DELETE",
-                accessType: "ALWAYS"
+                access_type: "ALWAYS"
                 },
                 {
                 operation: "READ",
-                accessType: "ALWAYS"
+                access_type: "ALWAYS"
                 },
                 {
                 operation: "ACL",
-                accessType: "ALWAYS"
+                access_type: "ALWAYS"
                 }
                 ],
                 collection: "Installation"
                 },
                 {
-                permissions: [
+                access_permissions: [
                 {
-                operation: "DELETE",
-                accessType: "ALWAYS"
+                operation: "ASSIGN_ROLE",
+                access_type: "ALWAYS"
                 },
                 {
                 operation: "READ",
-                accessType: "ALWAYS"
+                access_type: "ALWAYS"
                 },
                 {
-                operation: "ACL",
-                accessType: "ALWAYS"
+                operation: "DETACH_ROLE",
+                access_type: "ALWAYS"
                 }
                 ],
                 collection: "Client"
@@ -453,28 +453,28 @@
                 {
                 name: "installation_creator",
                 description: "installation_creator can create new Installations, but can update, delete or read only its Installations.",
-                collectionPermission: [
+                collections_access_permissions: [
                 {
-                permissions: [
+                access_permissions: [
                 {
                 operation: "CREATE",
-                accessType: "ALWAYS"
+                access_type: "ALWAYS"
                 },
                 {
                 operation: "UPDATE",
-                accessType: "ENTITY"
+                access_type: "ENTITY"
                 },
                 {
                 operation: "DELETE",
-                accessType: "ENTITY"
+                access_type: "ENTITY"
                 },
                 {
                 operation: "READ",
-                accessType: "ENTITY"
+                access_type: "ENTITY"
                 },
                 {
                 operation: "ACL",
-                accessType: "ENTITY"
+                access_type: "ENTITY"
                 }
                 ],
                 collection: "Installation"

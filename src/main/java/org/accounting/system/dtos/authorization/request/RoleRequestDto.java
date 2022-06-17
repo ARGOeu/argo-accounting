@@ -1,12 +1,14 @@
-package org.accounting.system.dtos.authorization;
+package org.accounting.system.dtos.authorization.request;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import org.accounting.system.dtos.authorization.CollectionAccessPermissionDto;
 import org.eclipse.microprofile.openapi.annotations.enums.SchemaType;
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
 
 import javax.validation.Valid;
 import javax.validation.constraints.NotEmpty;
-import java.util.List;
+import java.util.HashSet;
+import java.util.Set;
 
 @Schema(name="RoleRequest", description="An object represents a request for creating a new Role.")
 public class RoleRequestDto {
@@ -33,12 +35,12 @@ public class RoleRequestDto {
 
     @Schema(
             type = SchemaType.ARRAY,
-            implementation = CollectionPermissionDto.class,
+            implementation = CollectionAccessPermissionDto.class,
             required = true,
-            description = "This list encapsulates the permissions upon the API collections. It should have at least one entry of CollectionPermission.",
-            minItems = 1
+            minItems = 1,
+            description = "This list encapsulates the access permissions upon the API collections. It should have at least one entry of CollectionPermission."
     )
-    @JsonProperty("collection_permission_list")
-    @NotEmpty(message = "collection_permission_list should have at least one entry.")
-    public List<@Valid CollectionPermissionDto> collectionPermission;
+    @JsonProperty("collections_access_permissions")
+    @NotEmpty(message = "collections_access_permissions should have at least one entry.")
+    public Set<@Valid CollectionAccessPermissionDto> collectionsAccessPermissions = new HashSet<>();
 }
