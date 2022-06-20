@@ -25,6 +25,12 @@ public enum Collection {
             return Set.of(Operation.CREATE, Operation.DELETE, Operation.UPDATE, Operation.READ, Operation.ACL);
         }
     },
+    Project{
+        @Override
+        public Set<Operation> availableOperations() {
+            return Set.of(Operation.ACCESS_PROJECT, Operation.ACL);
+        }
+    },
     Provider{
         @Override
         public Set<Operation> availableOperations() {

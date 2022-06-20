@@ -27,8 +27,9 @@ import org.accounting.system.mappers.ProviderMapper;
 import org.accounting.system.repositories.installation.InstallationRepository;
 import org.accounting.system.repositories.metric.MetricRepository;
 import org.accounting.system.repositories.metricdefinition.MetricDefinitionRepository;
+import org.accounting.system.repositories.project.ProjectAccessAlwaysRepository;
+import org.accounting.system.repositories.project.ProjectModulator;
 import org.accounting.system.repositories.provider.ProviderRepository;
-import org.accounting.system.services.ProjectService;
 import org.accounting.system.services.ReadPredefinedTypesService;
 import org.accounting.system.wiremock.ProjectWireMockServer;
 import org.accounting.system.wiremock.ProviderWireMockServer;
@@ -77,12 +78,14 @@ public class MetricEndpointTest {
     MetricRepository metricRepository;
 
     @Inject
-    ProjectService projectService;
+    ProjectAccessAlwaysRepository projectAccessAlwaysRepository;
 
     KeycloakTestClient keycloakClient = new KeycloakTestClient();
 
     @BeforeAll
     public void setup() throws ExecutionException, InterruptedException {
+
+        projectAccessAlwaysRepository.deleteAll();
 
         Total total = providerClient.getTotalNumberOfProviders().toCompletableFuture().get();
 
@@ -91,7 +94,7 @@ public class MetricEndpointTest {
         providerRepository.persistOrUpdate(ProviderMapper.INSTANCE.eoscProvidersToProviders(response.results));
 
         //We are going to register the EOSC-hub project from OpenAire API
-        projectService.getById("777536");
+        projectAccessAlwaysRepository.save("777536", ProjectModulator.given());
     }
 
     @BeforeEach
@@ -99,6 +102,7 @@ public class MetricEndpointTest {
         installationRepository.deleteAll();
         metricDefinitionRepository.deleteAll();
         metricRepository.deleteAll();
+        projectAccessAlwaysRepository.deleteAll();
     }
 
     @Test
@@ -1131,10 +1135,10 @@ public class MetricEndpointTest {
         return given()
                 .auth()
                 .oauth2(getAccessToken(user))
-                .basePath("accounting-system/projects")
+                .basePath("accounting-system/installations")
                 .body(body)
                 .contentType(ContentType.JSON)
-                .post("/{projectId}/providers/{providerId}/installations/{installationId}/metrics", project.id, "grnet", installation.id);
+                .post("/{installationId}/metrics", installation.id);
     }
 
     private InstallationResponseDto createInstallation(InstallationRequestDto request, String user){

@@ -7,22 +7,19 @@ import org.eclipse.microprofile.openapi.annotations.media.Schema;
 import javax.validation.constraints.NotEmpty;
 import java.util.Set;
 
-@Schema(name="CorrelateProjectProviderRequest", description="Correlates a list of Providers with a specific Project.")
-public class CorrelateProjectProviderRequestDto {
+@Schema(name="AssociateProjectProviderRequest", description="Associates a list of Providers with a specific Project.")
+public class AssociateProjectProviderRequestDto {
 
     @Schema(
             type = SchemaType.ARRAY,
             implementation = String.class,
-            description = "This list must contain the Provider Ids to be correlated with a specific Project.",
+            description = "This list must contain the Provider Ids to be associated with a specific Project.",
             minItems = 1,
-            example = "{\n" +
-                    " \"providers\":\n" +
-                    "    [\n" +
-                    "   \"osmooc\",\n" +
-                    "   \"grnet\",\n" +
-                    "   \"sites\"\n" +
-                    "    ]\n" +
-                    "}"
+            example = "[\n" +
+                    "      \"grnet\",\n" +
+                    "      \"osmooc\",\n" +
+                    "      \"sites\"\n" +
+                    "   ]"
     )
     @JsonProperty("providers")
     @NotEmpty(message = "providers should have at least one entry.")

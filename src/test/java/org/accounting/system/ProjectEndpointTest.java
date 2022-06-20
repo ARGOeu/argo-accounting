@@ -19,16 +19,17 @@ import org.accounting.system.dtos.metric.MetricRequestDto;
 import org.accounting.system.dtos.metric.MetricResponseDto;
 import org.accounting.system.dtos.metricdefinition.MetricDefinitionRequestDto;
 import org.accounting.system.dtos.metricdefinition.MetricDefinitionResponseDto;
-import org.accounting.system.dtos.project.ProjectResponseDto;
 import org.accounting.system.endpoints.ProjectEndpoint;
 import org.accounting.system.entities.Project;
 import org.accounting.system.mappers.ProjectMapper;
 import org.accounting.system.mappers.ProviderMapper;
+import org.accounting.system.repositories.acl.AccessControlRepository;
 import org.accounting.system.repositories.installation.InstallationRepository;
 import org.accounting.system.repositories.metricdefinition.MetricDefinitionRepository;
+import org.accounting.system.repositories.project.ProjectAccessAlwaysRepository;
+import org.accounting.system.repositories.project.ProjectModulator;
 import org.accounting.system.repositories.provider.ProviderRepository;
 import org.accounting.system.services.HierarchicalRelationService;
-import org.accounting.system.services.ProjectService;
 import org.accounting.system.services.ReadPredefinedTypesService;
 import org.accounting.system.wiremock.ProjectWireMockServer;
 import org.accounting.system.wiremock.ProviderWireMockServer;
@@ -81,12 +82,17 @@ public class ProjectEndpointTest {
     HierarchicalRelationService hierarchicalRelationService;
 
     @Inject
-    ProjectService projectService;
+    ProjectAccessAlwaysRepository projectAccessAlwaysRepository;
+
+    @Inject
+    AccessControlRepository accessControlRepository;
 
     KeycloakTestClient keycloakClient = new KeycloakTestClient();
 
     @BeforeAll
     public void setup() throws ExecutionException, InterruptedException {
+
+        projectAccessAlwaysRepository.deleteAll();
 
         Total total = providerClient.getTotalNumberOfProviders().toCompletableFuture().get();
 
@@ -95,16 +101,17 @@ public class ProjectEndpointTest {
         providerRepository.persistOrUpdate(ProviderMapper.INSTANCE.eoscProvidersToProviders(response.results));
 
         //Registering a project
+        projectAccessAlwaysRepository.save("777536", ProjectModulator.given());
 
-        projectService.getById("777536");
-
-        hierarchicalRelationService.createProjectProviderRelationship("777536", Set.of("grnet"));
+        projectAccessAlwaysRepository.associateProjectWithProviders("777536", Set.of("grnet"));
     }
 
     @BeforeEach
     public void before() {
+
         installationRepository.deleteAll();
         metricDefinitionRepository.deleteAll();
+        accessControlRepository.deleteAll();
     }
 
     @Test
@@ -138,7 +145,7 @@ public class ProjectEndpointTest {
     }
 
     @Test
-    public void fetchProjectNotAuthenticated() {
+    public void saveProjectNotAuthenticated() {
 
         var notAuthenticatedResponse = given()
                 .auth()
@@ -150,28 +157,7 @@ public class ProjectEndpointTest {
     }
 
     @Test
-    public void fetchProjectById(){
-
-        var project = given()
-                .auth()
-                .oauth2(getAccessToken("admin"))
-                .post("/{id}", "777536")
-                .then()
-                .assertThat()
-                .statusCode(200)
-                .extract()
-                .as(ProjectResponseDto.class);
-
-        assertEquals(project.id, "777536");
-        assertEquals(project.acronym, "EOSC-hub");
-        assertEquals(project.title, "Integrating and managing services for the European Open Science Cloud");
-        assertEquals(project.startDate, "2018-01-01");
-        assertEquals(project.endDate, "2021-03-31");
-        assertEquals(project.callIdentifier, "H2020-EINFRA-2017");
-    }
-
-    @Test
-    public void fetchProjectByIdNotFound(){
+    public void saveProjectByIdNotFound(){
 
         var response = given()
                 .auth()
@@ -221,9 +207,10 @@ public class ProjectEndpointTest {
         var assignedMetric = given()
                 .auth()
                 .oauth2(getAccessToken("admin"))
+                .basePath("accounting-system/installations")
                 .body(metric)
                 .contentType(ContentType.JSON)
-                .post("/{projectId}/providers/{providerId}/installations/{installationId}/metrics", "777536", "grnet", installation.id)
+                .post("/{installationId}/metrics", installation.id)
                 .then()
                 .assertThat()
                 .statusCode(201)
@@ -270,9 +257,10 @@ public class ProjectEndpointTest {
         given()
                 .auth()
                 .oauth2(getAccessToken("admin"))
+                .basePath("accounting-system/installations")
                 .body(metric)
                 .contentType(ContentType.JSON)
-                .post("/{projectId}/providers/{providerId}/installations/{installationId}/metrics", "777536", "grnet", installation.id)
+                .post("/{installationId}/metrics", installation.id)
                 .then()
                 .assertThat()
                 .statusCode(201)
@@ -283,9 +271,10 @@ public class ProjectEndpointTest {
         var conflict = given()
                 .auth()
                 .oauth2(getAccessToken("admin"))
+                .basePath("accounting-system/installations")
                 .body(metric)
                 .contentType(ContentType.JSON)
-                .post("/{projectId}/providers/{providerId}/installations/{installationId}/metrics", "777536", "grnet", installation.id)
+                .post("/{installationId}/metrics", installation.id)
                 .then()
                 .assertThat()
                 .statusCode(409)
@@ -295,64 +284,6 @@ public class ProjectEndpointTest {
         assertEquals(String.format("There is a Metric at {%s, %s, %s} with the following attributes : {%s, %s, %s, %s}",
                 "EOSC-hub", "grnet", installation.installation,
                 metric.metricDefinitionId, metric.start, metric.end, metric.value), conflict.message);
-    }
-
-    @Test
-    public void assignMetricInstallationNotBelongToProvider(){
-
-        //Registering a project
-        var project = given()
-                .auth()
-                .oauth2(getAccessToken("admin"))
-                .post("/{id}", "777536")
-                .then()
-                .assertThat()
-                .statusCode(200)
-                .extract()
-                .as(ProjectResponseDto.class);
-
-        //Registering an installation
-        Mockito.when(readPredefinedTypesService.searchForUnitType(any())).thenReturn(Optional.of("SECOND"));
-        Mockito.when(readPredefinedTypesService.searchForMetricType(any())).thenReturn(Optional.of("Aggregated"));
-        var requestForMetricDefinition = new MetricDefinitionRequestDto();
-
-        requestForMetricDefinition.metricName = "metric";
-        requestForMetricDefinition.metricDescription = "description";
-        requestForMetricDefinition.unitType = "SECOND";
-        requestForMetricDefinition.metricType = "Aggregated";
-
-        var metricDefinitionResponse = createMetricDefinition(requestForMetricDefinition, "admin");
-
-        var request= new InstallationRequestDto();
-
-        request.project = "777536";
-        request.organisation = "grnet";
-        request.infrastructure = "okeanos-knossos";
-        request.installation = "SECOND";
-        request.unitOfAccess = metricDefinitionResponse.id;
-
-        var installation = createInstallation(request, "admin");
-
-        var metric = new MetricRequestDto();
-        metric.start = "2022-01-05T09:13:07Z";
-        metric.end = "2022-01-05T09:14:07Z";
-        metric.value = 10.8;
-        metric.metricDefinitionId = metricDefinitionResponse.id;
-
-        // Bad request
-        var conflict = given()
-                .auth()
-                .oauth2(getAccessToken("admin"))
-                .body(metric)
-                .contentType(ContentType.JSON)
-                .post("/{projectId}/providers/{providerId}/installations/{installationId}/metrics", project.id, "sites", installation.id)
-                .then()
-                .assertThat()
-                .statusCode(400)
-                .extract()
-                .as(InformativeResponse.class);
-
-        assertEquals(String.format(String.format("There is no relationship among {%s, %s, %s}", project.id, "sites", installation.id)), conflict.message);
     }
 
     private InstallationResponseDto createInstallation(InstallationRequestDto request, String user){

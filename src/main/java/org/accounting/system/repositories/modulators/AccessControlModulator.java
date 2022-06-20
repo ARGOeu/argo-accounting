@@ -98,7 +98,7 @@ public abstract class AccessControlModulator<E extends Entity, I> extends Access
         return super.getPermission(entity, who);
     }
 
-    private <ID> Optional<AccessControl> getAccessControl(ID id, AccessControlPermission permission){
+    public <ID> Optional<AccessControl> getAccessControl(ID id, AccessControlPermission permission){
 
         return getAccessControlRepository().findByWhoAndCollectionAndEntityAndPermission(getRequestInformation().getSubjectOfToken(), collection(), id.toString(), permission);
     }

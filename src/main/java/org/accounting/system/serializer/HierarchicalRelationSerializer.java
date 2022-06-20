@@ -1,4 +1,4 @@
-package org.accounting.system;
+package org.accounting.system.serializer;
 
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.SerializerProvider;

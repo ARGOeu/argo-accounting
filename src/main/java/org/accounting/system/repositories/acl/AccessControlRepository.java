@@ -21,13 +21,13 @@ import java.util.Optional;
 public class AccessControlRepository implements PanacheMongoRepository<AccessControl> {
 
     /**
-     * Returns a specific Collection entity to which a service/user may has {permission} access.
+     * Returns a specific Collection entity to which a client may has {permission} access.
      *
      * @param who The one to whom the permission may be granted
      * @param collection The name of the Collection
      * @param entity The entity id
      * @param permission Access control permission
-     * @return |The Access Control that may grant access to a service/user in a particular entity
+     * @return |The Access Control that may grant access to a client in a particular entity
      */
     public Optional<AccessControl> findByWhoAndCollectionAndEntityAndPermission(String who, Collection collection, String entity, AccessControlPermission permission){
 
@@ -35,11 +35,11 @@ public class AccessControlRepository implements PanacheMongoRepository<AccessCon
     }
 
     /**
-     * Returns all Collection entities to which a service/user has {permission} access
+     * Returns all Collection entities to which a client has {permission} access
      * @param who The one to whom the permissions have been granted
      * @param collection The name of the Collection
      * @param permission Access control permission
-     * @return The available access controls that grant access to a service/user in a Collection
+     * @return The available access controls that grant access to a client in a Collection
      */
     public List<AccessControl> findAllByWhoAndCollection(String who, Collection collection, AccessControlPermission permission){
 
@@ -47,12 +47,12 @@ public class AccessControlRepository implements PanacheMongoRepository<AccessCon
     }
 
     /**
-     * Returns a specific Collection entity to which a service/user may has access.
+     * Returns a specific Collection entity to which a client may has access.
      *
      * @param who the one to whom the permission may be granted
      * @param collection The name of the Collection
      * @param entity The entity id
-     * @return the Access Control that may grant access to a service/user in a particular entity
+     * @return the Access Control that may grant access to a client in a particular entity
      */
     public AccessControl findByWhoAndCollectionAndEntity(String who, Collection collection, String entity){
 
@@ -64,7 +64,7 @@ public class AccessControlRepository implements PanacheMongoRepository<AccessCon
     /**
      * Returns all Access Controls that have been created for given collection
      * @param collection The name of the Collection
-     * @return The available access controls that grant access to a service/user in a Collection
+     * @return The available access controls that grant access to a client in a Collection
      */
     public List<AccessControl> findAllByCollection(Collection collection){
 
@@ -75,7 +75,7 @@ public class AccessControlRepository implements PanacheMongoRepository<AccessCon
      * Returns all Access Controls that have been created for given collection and created by given creatorId
      * @param collection The name of the Collection
      * @param creatorId  The creator id
-     * @return The available access controls that grant access to a service/user in a Collection
+     * @return The available access controls that grant access to a client in a Collection
      */
     public List<AccessControl> findAllByCollectionAndCreatorId(Collection collection, String creatorId){
 

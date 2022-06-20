@@ -1,11 +1,54 @@
 package org.accounting.system.repositories.installation;
 
+import com.mongodb.client.model.Collation;
+import com.mongodb.client.model.CollationStrength;
+import org.accounting.system.dtos.installation.InstallationRequestDto;
+import org.accounting.system.entities.HierarchicalRelation;
 import org.accounting.system.entities.installation.Installation;
+import org.accounting.system.enums.RelationType;
+import org.accounting.system.exceptions.ConflictException;
+import org.accounting.system.mappers.InstallationMapper;
+import org.accounting.system.repositories.HierarchicalRelationRepository;
 import org.accounting.system.repositories.modulators.AccessAlwaysModulator;
 import org.bson.types.ObjectId;
 
 import javax.enterprise.context.ApplicationScoped;
+import javax.inject.Inject;
 
 @ApplicationScoped
 public class InstallationAccessAlwaysRepository extends AccessAlwaysModulator<Installation, ObjectId> {
+
+
+    @Inject
+    HierarchicalRelationRepository hierarchicalRelationRepository;
+
+    public void exist(String infrastructure, String installation){
+
+        var optional = find("infrastructure = ?1 and installation = ?2", infrastructure, installation)
+                .withCollation(Collation.builder().locale("en")
+                        .collationStrength(CollationStrength.SECONDARY).build())
+                .stream()
+                .findAny();
+
+        optional.ifPresent(storedInstallation -> {throw new ConflictException("There is an Installation with infrastructure "+infrastructure+" and installation "+installation+". Its id is "+storedInstallation.getId().toString());});
+    }
+
+    public Installation save(InstallationRequestDto request) {
+
+        var installationToBeStored = InstallationMapper.INSTANCE.requestToInstallation(request);
+
+        persist(installationToBeStored);
+
+        HierarchicalRelation project = new HierarchicalRelation(request.project, RelationType.PROJECT);
+
+        HierarchicalRelation provider = new HierarchicalRelation(request.organisation, project, RelationType.PROVIDER);
+
+        HierarchicalRelation installation = new HierarchicalRelation(installationToBeStored.getId().toString(), provider, RelationType.INSTALLATION);
+
+        hierarchicalRelationRepository.save(project, null);
+        hierarchicalRelationRepository.save(provider, null);
+        hierarchicalRelationRepository.save(installation, null);
+
+        return installationToBeStored;
+    }
 }

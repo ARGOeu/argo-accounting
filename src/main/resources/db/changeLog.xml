@@ -392,31 +392,6 @@
                 {
                 access_permissions: [
                 {
-                operation: "CREATE",
-                access_type: "ALWAYS"
-                },
-                {
-                operation: "UPDATE",
-                access_type: "ALWAYS"
-                },
-                {
-                operation: "DELETE",
-                access_type: "ALWAYS"
-                },
-                {
-                operation: "READ",
-                access_type: "ALWAYS"
-                },
-                {
-                operation: "ACL",
-                access_type: "ALWAYS"
-                }
-                ],
-                collection: "Installation"
-                },
-                {
-                access_permissions: [
-                {
                 operation: "ASSIGN_ROLE",
                 access_type: "ALWAYS"
                 },
@@ -430,6 +405,19 @@
                 }
                 ],
                 collection: "Client"
+                },
+                {
+                access_permissions: [
+                {
+                operation: "ACCESS_PROJECT",
+                access_type: "ALWAYS"
+                },
+                {
+                operation: "ACL",
+                access_type: "ALWAYS"
+                }
+                ],
+                collection: "Project"
                 }]
                 }
             </ext:document>
@@ -504,5 +492,69 @@
                 {unique: true, name: "unique_installation_entry"}
             </ext:options>
         </ext:createIndex>
+    </changeSet>
+
+    <changeSet id="12" author="accounting-system">
+        <ext:insertOne collectionName="Role">
+            <ext:document>
+                {
+                name: "project_admin",
+                description: "project_admin has rights to manage a specific Project.",
+                collections_access_permissions: [
+                {
+                access_permissions: [
+                {
+                operation: "ACCESS_PROJECT",
+                access_type: "ENTITY"
+                }
+                ],
+                collection: "Project"
+                },
+                {
+                access_permissions: [
+                {
+                operation: "READ",
+                access_type: "ALWAYS"
+                },
+                {
+                operation: "CREATE",
+                access_type: "ALWAYS"
+                },
+                {
+                operation: "UPDATE",
+                access_type: "ENTITY"
+                },
+                {
+                operation: "DELETE",
+                access_type: "ENTITY"
+                }
+                ],
+                collection: "Provider"
+                },
+                {
+                access_permissions: [
+                {
+                operation: "CREATE",
+                access_type: "ALWAYS"
+                },
+                {
+                operation: "UPDATE",
+                access_type: "ENTITY"
+                },
+                {
+                operation: "DELETE",
+                access_type: "ENTITY"
+                },
+                {
+                operation: "READ",
+                access_type: "ALWAYS"
+                }
+                ],
+                collection: "MetricDefinition"
+                }
+                ]
+                }
+            </ext:document>
+        </ext:insertOne>
     </changeSet>
 </databaseChangeLog>

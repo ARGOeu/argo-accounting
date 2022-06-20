@@ -2,9 +2,6 @@ package org.accounting.system.services;
 
 import com.mongodb.MongoWriteException;
 import io.quarkus.mongodb.panache.PanacheQuery;
-import org.accounting.system.dtos.acl.AccessControlRequestDto;
-import org.accounting.system.dtos.acl.AccessControlResponseDto;
-import org.accounting.system.dtos.acl.AccessControlUpdateDto;
 import org.accounting.system.dtos.metric.MetricResponseDto;
 import org.accounting.system.dtos.metricdefinition.MetricDefinitionRequestDto;
 import org.accounting.system.dtos.metricdefinition.MetricDefinitionResponseDto;
@@ -13,18 +10,17 @@ import org.accounting.system.dtos.pagination.PageResource;
 import org.accounting.system.endpoints.MetricDefinitionEndpoint;
 import org.accounting.system.entities.Metric;
 import org.accounting.system.entities.MetricDefinition;
-import org.accounting.system.enums.Collection;
 import org.accounting.system.exceptions.ConflictException;
-import org.accounting.system.mappers.AccessControlMapper;
 import org.accounting.system.mappers.MetricDefinitionMapper;
 import org.accounting.system.mappers.MetricMapper;
-import org.accounting.system.repositories.metric.MetricRepository;
 import org.accounting.system.repositories.acl.AccessControlRepository;
+import org.accounting.system.repositories.metric.MetricRepository;
 import org.accounting.system.repositories.metricdefinition.MetricDefinitionRepository;
 import org.accounting.system.util.QueryParser;
 import org.bson.conversions.Bson;
 import org.bson.types.ObjectId;
 import org.json.simple.parser.ParseException;
+
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 import javax.ws.rs.core.UriInfo;
@@ -189,79 +185,6 @@ public class MetricDefinitionService {
         return new PageResource<>(panacheQuery, MetricMapper.INSTANCE.metricsToResponse(panacheQuery.list()), uriInfo);
     }
 
-    /**
-     * Converts the request for {@link AccessControlRequestDto permissions} to {@link org.accounting.system.entities.acl.AccessControl} and stores it in the database.
-     *
-     * @param metricDefinitionId The metric definition to which permissions will be assigned.
-     * @param who To whom the permissions will be granted.
-     * @param request The permissions
-     */
-    public void grantPermission(String metricDefinitionId, String who, AccessControlRequestDto request){
-
-        var accessControl = AccessControlMapper.INSTANCE.requestToAccessControl(request);
-
-        accessControl.setEntity(metricDefinitionId);
-
-        accessControl.setWho(who);
-
-        accessControl.setCollection(Collection.MetricDefinition);
-
-        metricDefinitionRepository.grantPermission(accessControl);
-    }
-
-    /**
-     * Modifies permissions and stores them in the database.
-     *
-     * @param metricDefinitionId For which Metric Definition will the permissions be modified.
-     * @param who To whom belongs the permissions which will be modified.
-     * @param updateDto The permissions which will be modified.
-     */
-    public AccessControlResponseDto modifyPermission(String metricDefinitionId, String who, AccessControlUpdateDto updateDto){
-
-        var accessControl = accessControlRepository.findByWhoAndCollectionAndEntity(who, Collection.MetricDefinition, metricDefinitionId);
-
-        AccessControlMapper.INSTANCE.updateAccessControlFromDto(updateDto, accessControl);
-
-        metricDefinitionRepository.modifyPermission(accessControl);
-
-        return AccessControlMapper.INSTANCE.accessControlToResponse(accessControl);
-    }
-
-    /**
-     * Deletes specific privileges from the database.
-     *
-     * @param metricDefinitionId The Metric Definition for which permissions will be deleted.
-     * @param who The service/user id for which the permissions will be deleted.
-     */
-    public void deletePermission(String metricDefinitionId, String who){
-
-        var accessControl = accessControlRepository.findByWhoAndCollectionAndEntity(who, Collection.MetricDefinition, metricDefinitionId);
-
-        metricDefinitionRepository.deletePermission(accessControl);
-    }
-
-    /**
-     * Fetches the Access Control that has been created for given metricDefinitionId and who
-     *
-     * @param metricDefinitionId The Metric Definition for which permissions will be deleted.
-     * @param who The service/user id for which the permissions will be deleted.
-     */
-    public AccessControlResponseDto fetchPermission(String metricDefinitionId, String who){
-
-        var accessControl = metricDefinitionRepository.getPermission(metricDefinitionId, who);
-
-        return AccessControlMapper.INSTANCE.accessControlToResponse(accessControl);
-    }
-
-    /**
-     * Fetches all Access Control that have been created for Metric Definition collection
-     **/
-    public List<AccessControlResponseDto> fetchAllPermissions(){
-
-        var accessControl = metricDefinitionRepository.getAllPermissions();
-
-        return AccessControlMapper.INSTANCE.accessControlsToResponse(accessControl);
-    }
     public List<MetricDefinitionResponseDto> searchMetricDefinition( String json, boolean isAlwaysPermission) throws ParseException, NoSuchFieldException {
 
         List<String> entityIds=new ArrayList<>();

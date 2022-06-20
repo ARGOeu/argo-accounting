@@ -1,19 +1,22 @@
 package org.accounting.system.services;
 
 import com.mongodb.MongoWriteException;
+import org.accounting.system.beans.RequestInformation;
 import org.accounting.system.dtos.metric.MetricRequestDto;
-import org.accounting.system.dtos.metric.MetricResponseDto;
 import org.accounting.system.dtos.pagination.PageResource;
 import org.accounting.system.entities.HierarchicalRelation;
+import org.accounting.system.entities.Metric;
 import org.accounting.system.entities.projections.HierarchicalRelationProjection;
 import org.accounting.system.entities.projections.MetricProjection;
+import org.accounting.system.entities.projections.ProjectionQuery;
 import org.accounting.system.enums.RelationType;
 import org.accounting.system.exceptions.ConflictException;
+import org.accounting.system.interceptors.annotations.AccessPermissionsUtil;
 import org.accounting.system.mappers.MetricMapper;
 import org.accounting.system.repositories.HierarchicalRelationRepository;
-import org.accounting.system.repositories.ProjectRepository;
 import org.accounting.system.repositories.installation.InstallationRepository;
 import org.accounting.system.repositories.metric.MetricRepository;
+import org.accounting.system.repositories.project.ProjectRepository;
 import org.accounting.system.repositories.provider.ProviderRepository;
 import org.bson.Document;
 import org.bson.types.ObjectId;
@@ -21,9 +24,9 @@ import org.bson.types.ObjectId;
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 import javax.ws.rs.BadRequestException;
+import javax.ws.rs.ForbiddenException;
 import javax.ws.rs.NotFoundException;
 import javax.ws.rs.core.UriInfo;
-import java.util.List;
 import java.util.Set;
 
 @ApplicationScoped
@@ -44,24 +47,16 @@ public class HierarchicalRelationService {
     @Inject
     MetricRepository metricRepository;
 
-    /**
-     * This method is responsible for creating a hierarchical structure which consists of :
-     * - Root -> Project
-     * - Intermediate Level -> Provider
-     * - Leaf -> Installation
-     * The Metric is assigned to the given installation (leaf)
-     *
-     * @param projectId Root of structure
-     * @param providerId Intermediate level of structure
-     * @param installationId Leaf of structure
-     * @param request Metric to be created and assigned to the given installation
-     * @return The assigned Metric
-     */
-    public MetricResponseDto assign(String projectId, String providerId, String installationId, MetricRequestDto request) {
+    @Inject
+    RequestInformation requestInformation;
 
-        HierarchicalRelation project = new HierarchicalRelation(projectId, RelationType.PROJECT);
+    public Metric assignMetric(String installationId, MetricRequestDto request) {
 
-        HierarchicalRelation provider = new HierarchicalRelation(providerId, project, RelationType.PROVIDER);
+        var storedInstallation = installationRepository.findById(new ObjectId(installationId));
+
+        HierarchicalRelation project = new HierarchicalRelation(storedInstallation.getProject(), RelationType.PROJECT);
+
+        HierarchicalRelation provider = new HierarchicalRelation(storedInstallation.getOrganisation(), project, RelationType.PROVIDER);
 
         HierarchicalRelation installation = new HierarchicalRelation(installationId, provider, RelationType.INSTALLATION);
 
@@ -69,11 +64,11 @@ public class HierarchicalRelationService {
 
         metric.setResourceId(installation.id);
 
-        metric.setProject(projectRepository.findById(projectId).getAcronym());
+        metric.setProject(projectRepository.findById(storedInstallation.getProject()).getAcronym());
 
-        metric.setProvider(providerRepository.findById(providerId).getId());
+        metric.setProvider(providerRepository.findById(storedInstallation.getOrganisation()).getId());
 
-        metric.setInstallation(installationRepository.findById(new ObjectId(installationId)).getInstallation());
+        metric.setInstallation(storedInstallation.getInstallation());
 
         try{
             metricRepository.persist(metric);
@@ -87,7 +82,7 @@ public class HierarchicalRelationService {
         hierarchicalRelationRepository.save(provider, null);
         hierarchicalRelationRepository.save(installation, metric.getId());
 
-        return MetricMapper.INSTANCE.metricToResponse(metric);
+        return metric;
     }
 
     /**
@@ -122,33 +117,79 @@ public class HierarchicalRelationService {
         }
     }
 
-    /**
-     * This method correlates the given Providers with a specific Project and creates an hierarchical structure with root
-     * the given Project and children the given Providers.
-     *
-     * @param projectId The Project id with which the Providers are to be correlated.
-     * @param providerIds List of Providers which will be correlated with a specific Provider
-     * @throws NotFoundException If a Provider doesn't exist
-     */
-    public void createProjectProviderRelationship(String projectId, Set<String> providerIds){
+    public PageResource<MetricProjection, MetricProjection> fetchAllMetricsByProjectId(String id, int page, int size, UriInfo uriInfo){
 
-        for(String providerId : providerIds){
-            providerRepository.findByIdOptional(providerId).orElseThrow(()->new NotFoundException("There is no Provider with the following id: "+providerId));
-        }
+        ProjectionQuery<MetricProjection> projection = projectRepository.fetchAllMetricsByProjectId(id, page, size);
 
-        for(String providerId : providerIds){
-
-            HierarchicalRelation project = new HierarchicalRelation(projectId, RelationType.PROJECT);
-            HierarchicalRelation provider = new HierarchicalRelation(providerId, project, RelationType.PROVIDER);
-
-            hierarchicalRelationRepository.save(project, null);
-            hierarchicalRelationRepository.save(provider, null);
-        }
+        return new PageResource<>(projection, projection.list, uriInfo);
     }
 
-    public List<HierarchicalRelationProjection> hierarchicalStructure(final String externalId) {
+    public PageResource<MetricProjection, MetricProjection> fetchAllMetricsUnderAProvider(String projectId, String providerId, int page, int size, UriInfo uriInfo){
 
-        return hierarchicalRelationRepository.hierarchicalStructure(externalId);
+        ProjectionQuery<MetricProjection> projection = null;
+
+        int count = 0;
+
+        for(AccessPermissionsUtil util: requestInformation.getAccessPermissions()) {
+
+            requestInformation.setAccessType(util.getAccessType());
+
+            try{
+                switch (util.getCollection()){
+                    case Project:
+                        projection = projectRepository.fetchAllMetricsUnderAProvider(projectId, providerId, page, size);
+                        break;
+                    default:
+                        throw new ForbiddenException("The authenticated client is not permitted to perform the requested operation.");
+                }
+            } catch (ForbiddenException e){
+                count++;
+            }
+
+            if(projection != null){
+                break;
+            }
+        }
+
+        if(count == requestInformation.getAccessPermissions().size()){
+            throw new ForbiddenException("The authenticated client is not permitted to perform the requested operation.");
+        }
+
+        return new PageResource<>(projection, projection.list, uriInfo);
+    }
+
+    public PageResource<MetricProjection, MetricProjection> fetchAllMetricsUnderAnInstallation(String installationId, int page, int size, UriInfo uriInfo){
+
+        ProjectionQuery<MetricProjection> projection = null;
+
+        int count = 0;
+
+        for(AccessPermissionsUtil util: requestInformation.getAccessPermissions()) {
+
+            requestInformation.setAccessType(util.getAccessType());
+
+            try{
+                switch (util.getCollection()){
+                    case Project:
+                        projection = projectRepository.fetchAllMetricsUnderAnInstallation(installationId, page, size);
+                        break;
+                    default:
+                        throw new ForbiddenException("The authenticated client is not permitted to perform the requested operation.");
+                }
+            } catch (ForbiddenException e){
+                count++;
+            }
+
+            if(projection != null){
+                break;
+            }
+        }
+
+        if(count == requestInformation.getAccessPermissions().size()){
+            throw new ForbiddenException("The authenticated client is not permitted to perform the requested operation.");
+        }
+
+        return new PageResource<>(projection, projection.list, uriInfo);
     }
 
     public PageResource<MetricProjection, MetricProjection> fetchAllMetrics(String id, int page, int size, UriInfo uriInfo){
@@ -161,7 +202,6 @@ public class HierarchicalRelationService {
 
         return new PageResource<>(projection, projection.list, uriInfo);
     }
-
 
     public void recursion(HierarchicalRelationProjection relation, Set<Document> metrics){
 
