@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.module.SimpleModule;
 import io.quarkus.security.Authenticated;
+import org.accounting.system.beans.RequestInformation;
 import org.accounting.system.constraints.AccessProject;
 import org.accounting.system.constraints.AccessProvider;
 import org.accounting.system.constraints.NotFoundEntity;
@@ -33,8 +34,10 @@ import org.eclipse.microprofile.openapi.annotations.enums.SchemaType;
 import org.eclipse.microprofile.openapi.annotations.enums.SecuritySchemeIn;
 import org.eclipse.microprofile.openapi.annotations.enums.SecuritySchemeType;
 import org.eclipse.microprofile.openapi.annotations.media.Content;
+import org.eclipse.microprofile.openapi.annotations.media.ExampleObject;
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
 import org.eclipse.microprofile.openapi.annotations.parameters.Parameter;
+import org.eclipse.microprofile.openapi.annotations.parameters.RequestBody;
 import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
 import org.eclipse.microprofile.openapi.annotations.security.SecurityRequirement;
 import org.eclipse.microprofile.openapi.annotations.security.SecurityScheme;
@@ -43,28 +46,18 @@ import org.eclipse.microprofile.openapi.annotations.tags.Tag;
 import javax.inject.Inject;
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
-import javax.ws.rs.BadRequestException;
-import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
-import javax.ws.rs.DefaultValue;
-import javax.ws.rs.GET;
-import javax.ws.rs.NotFoundException;
-import javax.ws.rs.PATCH;
-import javax.ws.rs.POST;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
-import javax.ws.rs.QueryParam;
+import javax.ws.rs.*;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
+import java.text.ParseException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Collectors;
 
-import static org.accounting.system.enums.Operation.ACL;
-import static org.accounting.system.enums.Operation.ASSOCIATE;
-import static org.accounting.system.enums.Operation.DISSOCIATE;
-import static org.accounting.system.enums.Operation.READ;
-import static org.accounting.system.enums.Operation.REGISTER;
+import static org.accounting.system.enums.Operation.*;
 import static org.eclipse.microprofile.openapi.annotations.enums.ParameterIn.QUERY;
 
 @Path("/projects")
@@ -102,6 +95,10 @@ public class ProjectEndpoint {
     @Inject
     RoleService roleService;
 
+    @Inject
+    RequestInformation requestInformation;
+    @Inject
+    ClientRepository clientRepository;
     @Tag(name = "Project")
     @Operation(
             summary = "Registration of a Project in the Accounting System API.",
@@ -588,9 +585,6 @@ public class ProjectEndpoint {
                                                 example = "fbdb4e4a-6e93-4b08-a1e7-0b7bd08520a6",
                                                 schema = @Schema(type = SchemaType.STRING))
                                         @PathParam("who") @Valid @NotFoundEntity(repository = ClientRepository.class, id = String.class, message = "There is no registered Client with the following id:") String who) {
-
-
-
         for(String name : roleAccessControlRequestDto.roles){
             roleService.checkIfRoleExists(name);
         }
@@ -730,7 +724,6 @@ public class ProjectEndpoint {
                                                 example = "fbdb4e4a-6e93-4b08-a1e7-0b7bd08520a6",
                                                 schema = @Schema(type = SchemaType.STRING))
                                         @PathParam("who") @Valid @NotFoundEntity(repository = ClientRepository.class, id = String.class, message = "There is no registered Client with the following id:") String who) {
-
 
         for(String name : roleAccessControlUpdateDto.roles){
             roleService.checkIfRoleExists(name);
@@ -1289,5 +1282,81 @@ public class ProjectEndpoint {
         var response = accessControlService.fetchPermission(projectId + HierarchicalRelation.PATH_SEPARATOR + providerId, who, Collection.Provider);
 
         return Response.ok().entity(response).build();
+    }
+
+    @Tag(name = "Search")
+    @Operation(
+            summary = "Search",
+            description = "Search")
+    @APIResponse(
+            responseCode = "200",
+            description = "The corresponding Projects.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.ARRAY,
+                    implementation = ProjectResponseDto.class)))
+    @APIResponse(
+            responseCode = "401",
+            description = "Client has not been authenticated.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "403",
+            description = "The authenticated client is not permitted to perform the requested operation.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "500",
+            description = "Internal Server Errors.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @SecurityRequirement(name = "Authentication")
+
+    @POST
+    @Path("/search")
+    @Produces(value = MediaType.APPLICATION_JSON)
+    @Consumes(value = MediaType.APPLICATION_JSON)
+
+    public Response search(
+
+            @Valid @NotNull(message = "The request body is empty.") @RequestBody(  content = @Content(
+                    schema = @Schema(implementation = String.class),
+                    mediaType = MediaType.APPLICATION_JSON,
+                    examples = {
+                            @ExampleObject(
+                                    name = "An example request of a search on metrics",
+                                    value ="",
+                                    summary = "A complex search on Metrics ") })
+            ) String json) throws ParseException, NoSuchFieldException, org.json.simple.parser.ParseException, JsonProcessingException {
+
+       var ids=  projectService.searchProject(json).stream().map(ProjectResponseDto::getId).collect(Collectors.toList());
+        List response = new ArrayList();
+        for (String pid : ids) {
+            response.add(projectService.hierarchicalStructure(pid));
+        }
+
+        if (response.isEmpty()) {
+            return Response.ok().entity(ids).build();
+        } else {
+            StringBuilder sb = new  StringBuilder("");
+
+            SimpleModule module = new SimpleModule();
+            module.addSerializer(new HierarchicalRelationSerializer(HierarchicalRelationProjection.class));
+            objectMapper.registerModule(module);
+              response.forEach(resp -> {
+
+                  try {
+                      sb.append(objectMapper.writeValueAsString(response.get(0)));
+                  } catch (JsonProcessingException e) {
+
+
+                  }
+
+              });
+              return Response.ok().entity(sb.toString()).build();
+        }
+
     }
 }

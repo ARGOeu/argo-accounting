@@ -159,7 +159,6 @@ public class InstallationAuthorizationTest {
         //the third installation has been created by provider_admin
 
         var acl = new RoleAccessControlRequestDto();
-
         acl.roles = Set.of("provider_admin");
 
         given()

@@ -6,6 +6,7 @@ import org.accounting.system.entities.acl.RoleAccessControl;
 import org.accounting.system.enums.Collection;
 
 import javax.enterprise.context.ApplicationScoped;
+import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
@@ -14,7 +15,6 @@ import java.util.Set;
  * {@link AccessControl} data stored in the mongo database. More specifically, it encapsulates the queries
  * that can be performed on the {@link AccessControl} collection. It is also responsible for mapping
  * the data from the storage format to the {@link AccessControl}.
- *
  */
 @ApplicationScoped
 public class AccessControlRepository implements PanacheMongoRepository<RoleAccessControl> {
@@ -45,12 +45,13 @@ public class AccessControlRepository implements PanacheMongoRepository<RoleAcces
 //        return list("who = ?1 and collection = ?2 and permissions in ?3", who, collection, permission);
 //    }
 
+
+
     /**
      * Returns a specific Collection entity to which a client may has access.
      *
-     * @param who the one to whom the permission may be granted
+     * @param who        the one to whom the permission may be granted
      * @param collection The name of the Collection
-     * @param entity The entity id
      * @return the Access Control that may grant access to a client in a particular entity
      */
     public Optional<RoleAccessControl> findByWhoAndCollectionAndEntity(String who, Collection collection, String entity){
@@ -60,20 +61,24 @@ public class AccessControlRepository implements PanacheMongoRepository<RoleAcces
         return optional;
     }
 
-    public void accessListOfProjects(Set<String> projects, String clientId){
+    public List<RoleAccessControl> findByWhoAndCollection(String who, Collection collection) {
 
-        projects.stream().forEach(project->{
+        return find("who = ?1 and collection = ?2 ", who, collection).list();
+    }
+
+    public void accessListOfProjects(Set<String> projects, String clientId) {
+
+        projects.stream().forEach(project -> {
 
             try {
                 RoleAccessControl accessControl = new RoleAccessControl();
-                accessControl.setRoles(Set.of("project_admin"));
+                accessControl.setRoles(Set.of("project_director"));
                 accessControl.setCollection(Collection.Project);
                 accessControl.setEntity(project);
                 accessControl.setWho(clientId);
 
                 persist(accessControl);
             } catch (Exception e){
-                //acl already exists, so try to insert other projects
             }
         });
     }

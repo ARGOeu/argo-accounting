@@ -170,11 +170,11 @@ public class QueryParser {
     public Bson accessFilter(Bson filter, List<String> ids) {
 
         List<ObjectId> objectIds=new ArrayList<>();
-        for(String stId: ids){
-
-            objectIds.add(new ObjectId(stId));
-        }
-        Bson accessFilter = Filters.in("_id", objectIds);
+//        for(String stId: ids){
+//
+//            objectIds.add(new ObjectId(stId));
+//        }
+        Bson accessFilter = Filters.in("_id", ids);
 
         Bson query = Filters.and(accessFilter, filter);
         return query;

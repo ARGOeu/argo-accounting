@@ -1,5 +1,6 @@
 package org.accounting.system.services;
 
+import io.quarkus.oidc.TokenIntrospection;
 import org.accounting.system.dtos.installation.InstallationResponseDto;
 import org.accounting.system.dtos.pagination.PageResource;
 import org.accounting.system.dtos.project.ProjectResponseDto;
@@ -7,10 +8,17 @@ import org.accounting.system.entities.projections.HierarchicalRelationProjection
 import org.accounting.system.entities.projections.InstallationProjection;
 import org.accounting.system.entities.projections.MetricProjection;
 import org.accounting.system.entities.projections.ProjectionQuery;
+import org.accounting.system.enums.Collection;
+import org.accounting.system.enums.Operation;
 import org.accounting.system.mappers.InstallationMapper;
 import org.accounting.system.mappers.ProjectMapper;
 import org.accounting.system.repositories.HierarchicalRelationRepository;
+import org.accounting.system.repositories.acl.AccessControlRepository;
 import org.accounting.system.repositories.project.ProjectRepository;
+import org.accounting.system.services.authorization.RoleService;
+import org.accounting.system.util.QueryParser;
+import org.bson.conversions.Bson;
+import org.eclipse.microprofile.config.inject.ConfigProperty;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
@@ -18,6 +26,7 @@ import javax.ws.rs.NotFoundException;
 import javax.ws.rs.core.UriInfo;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 @ApplicationScoped
 public class ProjectService {
@@ -28,6 +37,18 @@ public class ProjectService {
     @Inject
     HierarchicalRelationRepository hierarchicalRelationRepository;
 
+    @Inject
+    AccessControlRepository accessControlRepository;
+
+    @Inject
+    TokenIntrospection tokenIntrospection;
+
+    @Inject
+    RoleService roleService;
+    @Inject
+    QueryParser queryParser;
+    @ConfigProperty(name = "key.to.retrieve.id.from.access.token")
+    String id;
     /**
      * An http call is made to Open Aire to retrieve the corresponding Project.
      * It is then stored in the database, converted into a response body and returned.
@@ -89,5 +110,14 @@ public class ProjectService {
         ProjectionQuery<InstallationProjection> projectionQuery = hierarchicalRelationRepository.findInstallationsByProject(projectId, "MetricDefinition", "unit_of_access", "_id", "unit_of_access", page, size, InstallationProjection.class);
 
         return new PageResource<>(projectionQuery, InstallationMapper.INSTANCE.installationProjectionsToResponse(projectionQuery.list), uriInfo);
+    }
+
+   public List<ProjectResponseDto> searchProject(String json) throws  NoSuchFieldException, org.json.simple.parser.ParseException {
+
+        var ids=accessControlRepository.findByWhoAndCollection(tokenIntrospection.getJsonObject().getString(id),Collection.Project).stream().filter(projects ->
+               roleService.hasRoleAccess(projects.getRoles(), Collection.Project, Operation.READ)).map(projects -> projects.getEntity()).collect(Collectors.toList());
+       Bson query=queryParser.parseFile(json, false, ids);
+
+       return  ProjectMapper.INSTANCE.projectsToDto( projectRepository.search(query));
     }
 }

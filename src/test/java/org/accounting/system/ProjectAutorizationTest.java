@@ -544,7 +544,6 @@ public class ProjectAutorizationTest {
     private void grantProviderAccess(String project, String provider, String user, String who){
 
         var acl = new RoleAccessControlRequestDto();
-
         acl.roles = Set.of("provider_admin");
 
         given()
@@ -564,7 +563,6 @@ public class ProjectAutorizationTest {
     private void grantInstallationAccess(String installation, String who){
 
         var acl = new RoleAccessControlRequestDto();
-
         acl.roles = Set.of("installation_admin");
 
         given()
