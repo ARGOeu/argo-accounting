@@ -9,7 +9,7 @@ import org.bson.types.ObjectId;
 import java.util.Set;
 
 /**
- * An access control (AC) is a list of rules that specifies which services/users are granted access to particular entities.
+ * An access control (AC) is a list of rules that specifies which clients are granted access to particular entities.
  * The combination of {@link #getWho() who}, {@link #getCollection() collection}, {@link #getEntity() entity should be unique.
  */
 

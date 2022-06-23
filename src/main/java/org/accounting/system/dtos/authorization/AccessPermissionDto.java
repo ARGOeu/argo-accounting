@@ -24,6 +24,7 @@ public class AccessPermissionDto {
     @JsonProperty("operation")
     @NotEmpty(message = "operation may not be empty.")
     @StringEnumeration(enumClass = Operation.class, message = "operation")
+    @EqualsAndHashCode.Include
     public String operation;
 
     @Schema(
@@ -37,5 +38,6 @@ public class AccessPermissionDto {
     @JsonProperty("access_type")
     @NotEmpty(message = "access_type may not be empty.")
     @StringEnumeration(enumClass = AccessType.class, message = "access_type")
+    @EqualsAndHashCode.Include
     public String accessType;
 }

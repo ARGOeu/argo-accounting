@@ -78,7 +78,7 @@ public abstract class AccessModulator<E extends Entity, I> implements PanacheMon
      * @return An object represents the paginated results
      */
     public PanacheQuery<E> findAllPageable(int page, int size){
-        throw new ForbiddenException("You have no access to this operations.");
+        throw new ForbiddenException("You have no access to this operation.");
     }
 
     /**
@@ -142,6 +142,10 @@ public abstract class AccessModulator<E extends Entity, I> implements PanacheMon
 
     public MongoCollection<Document> getMongoCollection(){
         return mongoClient.getDatabase(database).getCollection(clazz.getSimpleName());
+    }
+
+    public MongoCollection<Document> getMongoCollection(String collection){
+        return mongoClient.getDatabase(database).getCollection(collection);
     }
 
     public RequestInformation getRequestInformation() {

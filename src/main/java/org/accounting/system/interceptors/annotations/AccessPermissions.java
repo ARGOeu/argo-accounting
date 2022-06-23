@@ -1,11 +1,8 @@
 package org.accounting.system.interceptors.annotations;
 
-import org.accounting.system.enums.Collection;
-import org.accounting.system.enums.Operation;
-
 import javax.enterprise.util.Nonbinding;
 import javax.interceptor.InterceptorBinding;
-import java.lang.annotation.Repeatable;
+import java.lang.annotation.Inherited;
 import java.lang.annotation.Retention;
 import java.lang.annotation.Target;
 
@@ -13,13 +10,11 @@ import static java.lang.annotation.ElementType.METHOD;
 import static java.lang.annotation.ElementType.TYPE;
 import static java.lang.annotation.RetentionPolicy.RUNTIME;
 
+@Inherited
 @InterceptorBinding
 @Target({METHOD, TYPE})
 @Retention(RUNTIME)
-@Repeatable(AccessPermissions.class)
-public @interface AccessPermission {
-
-    @Nonbinding Collection collection() default Collection.MetricDefinition;
-    @Nonbinding Operation operation() default Operation.CREATE;
-    @Nonbinding int precedence() default 1;
+public @interface AccessPermissions {
+    @Nonbinding
+    AccessPermission[] value() default {};
 }

@@ -21,5 +21,9 @@ public enum AccessControlPermission {
     /**
      * Permission to grant acl to particular entity.
      */
-    ACL;
+    ACL,
+    /**
+     * Permission to grant access to particular Project.
+     */
+    ACCESS_PROJECT;
 }

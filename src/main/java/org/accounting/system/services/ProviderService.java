@@ -134,4 +134,20 @@ public class ProviderService {
         return ProviderMapper.INSTANCE.providerToResponse(provider);
     }
 
+    /**
+     * This method check whether the given Provider derived from EOSC-Portal or not.
+     *
+     * @param id The Provider ID.
+     * @throws ForbiddenException If provider derives from EOSC-Portal
+     */
+    public void derivesFromEoscPortal(String id){
+
+        Provider entity = providerRepository.findById(id);
+
+        // if Provider's creator id is null then it derives from EOSC-Portal
+        if(Objects.isNull(entity.getCreatorId())){
+            throw new ForbiddenException("You cannot access a Provider which derives from EOSC-Portal.");
+        }
+    }
+
 }

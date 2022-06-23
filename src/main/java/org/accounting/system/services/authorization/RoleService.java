@@ -9,9 +9,10 @@ import org.accounting.system.dtos.authorization.update.UpdateRoleRequestDto;
 import org.accounting.system.dtos.pagination.PageResource;
 import org.accounting.system.entities.authorization.Role;
 import org.accounting.system.enums.AccessType;
-import org.accounting.system.enums.Operation;
 import org.accounting.system.enums.Collection;
+import org.accounting.system.enums.Operation;
 import org.accounting.system.exceptions.ConflictException;
+import org.accounting.system.interceptors.annotations.AccessPermissionsUtil;
 import org.accounting.system.mappers.RoleMapper;
 import org.accounting.system.repositories.authorization.RoleRepository;
 import org.bson.types.ObjectId;
@@ -72,6 +73,43 @@ public class RoleService {
        requestInformation.setAccessType(precedence);
 
        return precedence.access;
+    }
+
+    /**
+     * It examines whether the role has access to execute an operation to a collection.
+     * {@link AccessType#NEVER} always takes precedence over any other access type.
+     * @param providedRoles The roles that have been provided by OIDC server
+     * @return true or false
+     */
+    public void hasAccess(List<String> providedRoles, Collection collection, Operation operation, int permissionPrecedence, List<AccessPermissionsUtil> accessPermissionsUtilList){
+
+
+        var accessPermissionList = providedRoles
+                .stream()
+                .map(role-> roleRepository.getRoleAccessPermissionsUponACollection(role, collection))
+                .flatMap(java.util.Collection::stream)
+                .collect(Collectors.toList());
+
+        if(!accessPermissionList.isEmpty()){
+
+            var accessTypeList = accessPermissionList
+                    .stream()
+                    .filter(permission -> permission.operation.equals(operation))
+                    .map(permission -> permission.accessType)
+                    .collect(Collectors.toList());
+
+            AccessType precedence = AccessType.higherPrecedence(accessTypeList);
+
+            if(!precedence.equals(AccessType.NEVER)){
+                var accessPermissionsUtil =new AccessPermissionsUtil();
+
+                accessPermissionsUtil.setCollection(collection);
+                accessPermissionsUtil.setAccessType(precedence);
+                accessPermissionsUtil.setPermissionPrecedence(permissionPrecedence);
+
+                accessPermissionsUtilList.add(accessPermissionsUtil);
+            }
+        }
     }
 
     /**

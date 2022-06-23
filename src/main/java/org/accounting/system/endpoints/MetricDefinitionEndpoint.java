@@ -19,6 +19,7 @@ import org.accounting.system.interceptors.annotations.AccessPermission;
 import org.accounting.system.repositories.metricdefinition.MetricDefinitionRepository;
 import org.accounting.system.services.MetricDefinitionService;
 import org.accounting.system.services.ReadPredefinedTypesService;
+import org.accounting.system.services.acl.AccessControlService;
 import org.accounting.system.util.QueryParser;
 import org.accounting.system.util.Utility;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
@@ -72,7 +73,14 @@ public class MetricDefinitionEndpoint {
     ReadPredefinedTypesService readPredefinedTypesService;
 
     @Inject
+    AccessControlService accessControlService;
+
+    @Inject
     Utility utility;
+
+    @Inject
+    MetricDefinitionRepository metricDefinitionRepository;
+
     @Inject
     QueryParser queryParser;
 
@@ -585,8 +593,8 @@ public class MetricDefinitionEndpoint {
     @org.eclipse.microprofile.openapi.annotations.Operation(
             summary = "Generates a new Access Control Entry.",
             description = "This endpoint is responsible for generating a new Access Control Entry. " +
-                    "Access Control Entry rules specify which services/users are granted or denied access to particular Metric Definition entities. " +
-                    "It should be noted that the combination {who, collection, entity} is unique. Therefore, only one Access Control entry can be created for each service/user and each entity.")
+                    "Access Control Entry rules specify which clients are granted or denied access to particular Metric Definition entities. " +
+                    "It should be noted that the combination {who, collection, entity} is unique. Therefore, only one Access Control entry can be created for each client and each entity.")
     @APIResponse(
             responseCode = "200",
             description = "Access Control entry has been created successfully.",
@@ -659,11 +667,7 @@ public class MetricDefinitionEndpoint {
                                         @PathParam("who") String who) {
 
 
-        metricDefinitionService.grantPermission(metricDefinitionId, who, accessControlRequestDto);
-
-        var informativeResponse = new InformativeResponse();
-        informativeResponse.message = "Access Control entry has been created successfully";
-        informativeResponse.code = 200;
+        var informativeResponse = accessControlService.grantPermission(metricDefinitionId, who, accessControlRequestDto, Collection.MetricDefinition, metricDefinitionRepository);
 
         return Response.ok().entity(informativeResponse).build();
     }
@@ -672,7 +676,7 @@ public class MetricDefinitionEndpoint {
     @org.eclipse.microprofile.openapi.annotations.Operation(
             summary = "Modify an existing Access Control Entry.",
             description = "This endpoint is responsible for updating an existing Access Control Entry. It will modify a specific Access Control Entry " +
-                    "which has granted permissions on a Metric Definition to a specific service/user." +
+                    "which has granted permissions on a Metric Definition to a specific client." +
                     "You can update a part or all attributes of the Access Control entity.")
     @APIResponse(
             responseCode = "200",
@@ -739,14 +743,14 @@ public class MetricDefinitionEndpoint {
                                         @Valid
                                         @NotFoundEntity(repository = MetricDefinitionRepository.class, message = "There is no Metric Definition with the following id:") String metricDefinitionId,
                                         @Parameter(
-                                                description = "who is the service/user to whom the permissions have been granted.",
+                                                description = "who is the client to whom the permissions have been granted.",
                                                 required = true,
                                                 example = "fbdb4e4a-6e93-4b08-a1e7-0b7bd08520a6",
                                                 schema = @Schema(type = SchemaType.STRING))
                                             @PathParam("who") String who) {
 
 
-        var response = metricDefinitionService.modifyPermission(metricDefinitionId, who, accessControlUpdateDto);
+        var response = accessControlService.modifyPermission(metricDefinitionId, who, accessControlUpdateDto, Collection.MetricDefinition, metricDefinitionRepository);
 
         return Response.ok().entity(response).build();
     }
@@ -754,7 +758,7 @@ public class MetricDefinitionEndpoint {
     @Tag(name = "Metric Definition")
     @org.eclipse.microprofile.openapi.annotations.Operation(
             summary = "Deletes an existing Access Control entry.",
-            description = "You can delete the permissions that a service/user can access to manage a specific Metric Definition.")
+            description = "You can delete the permissions that a client can access to manage a specific Metric Definition.")
     @APIResponse(
             responseCode = "200",
             description = "Access Control entry has been deleted successfully.",
@@ -800,19 +804,14 @@ public class MetricDefinitionEndpoint {
                                             @Valid
                                             @NotFoundEntity(repository = MetricDefinitionRepository.class, message = "There is no Metric Definition with the following id:") String metricDefinitionId,
                                         @Parameter(
-                                                description = "who is the service/user to whom the permissions have been granted.",
+                                                description = "who is the client to whom the permissions have been granted.",
                                                 required = true,
                                                 example = "fbdb4e4a-6e93-4b08-a1e7-0b7bd08520a6",
                                                 schema = @Schema(type = SchemaType.STRING))
                                             @PathParam("who") String who) {
 
 
-        metricDefinitionService.deletePermission(metricDefinitionId, who);
-
-        var successResponse = new InformativeResponse();
-
-        successResponse.code = 200;
-        successResponse.message = "Access Control entry has been deleted successfully.";
+        var successResponse = accessControlService.deletePermission(metricDefinitionId, who, Collection.MetricDefinition, metricDefinitionRepository);
 
         return Response.ok().entity(successResponse).build();
     }
@@ -820,7 +819,7 @@ public class MetricDefinitionEndpoint {
     @Tag(name = "Metric Definition")
     @org.eclipse.microprofile.openapi.annotations.Operation(
             summary = "Returns an existing Access Control entry.",
-            description = "This operation returns the Access Control entry created for a service/user upon a Metric Definition entity.")
+            description = "This operation returns the Access Control entry created for a client upon a Metric Definition entity.")
     @APIResponse(
             responseCode = "200",
             description = "The corresponding Access Control entry.",
@@ -867,13 +866,13 @@ public class MetricDefinitionEndpoint {
             @Valid
             @NotFoundEntity(repository = MetricDefinitionRepository.class, message = "There is no Metric Definition with the following id:") String metricDefinitionId,
             @Parameter(
-                    description = "who is the service/user to whom the permissions have been granted.",
+                    description = "who is the client to whom the permissions have been granted.",
                     required = true,
                     example = "fbdb4e4a-6e93-4b08-a1e7-0b7bd08520a6",
                     schema = @Schema(type = SchemaType.STRING))
             @PathParam("who") String who){
 
-        var response = metricDefinitionService.fetchPermission(metricDefinitionId, who);
+        var response = accessControlService.fetchPermission(metricDefinitionId, who, metricDefinitionRepository);
 
         return Response.ok().entity(response).build();
     }
@@ -901,12 +900,6 @@ public class MetricDefinitionEndpoint {
                     type = SchemaType.OBJECT,
                     implementation = InformativeResponse.class)))
     @APIResponse(
-            responseCode = "404",
-            description = "Metric Definition has not been found.",
-            content = @Content(schema = @Schema(
-                    type = SchemaType.OBJECT,
-                    implementation = InformativeResponse.class)))
-    @APIResponse(
             responseCode = "500",
             description = "Internal Server Errors.",
             content = @Content(schema = @Schema(
@@ -920,7 +913,7 @@ public class MetricDefinitionEndpoint {
     @AccessPermission(collection = Collection.MetricDefinition, operation = Operation.ACL)
     public Response getAllAccessControl(){
 
-        var response = metricDefinitionService.fetchAllPermissions();
+        var response = accessControlService.fetchAllPermissions(metricDefinitionRepository);
 
         return Response.ok().entity(response).build();
     }

@@ -19,9 +19,9 @@ import org.accounting.system.endpoints.InstallationEndpoint;
 import org.accounting.system.mappers.ProviderMapper;
 import org.accounting.system.repositories.installation.InstallationRepository;
 import org.accounting.system.repositories.metricdefinition.MetricDefinitionRepository;
+import org.accounting.system.repositories.project.ProjectAccessAlwaysRepository;
+import org.accounting.system.repositories.project.ProjectModulator;
 import org.accounting.system.repositories.provider.ProviderRepository;
-import org.accounting.system.services.HierarchicalRelationService;
-import org.accounting.system.services.ProjectService;
 import org.accounting.system.services.ReadPredefinedTypesService;
 import org.accounting.system.wiremock.ProjectWireMockServer;
 import org.accounting.system.wiremock.ProviderWireMockServer;
@@ -58,14 +58,11 @@ public class InstallationEndpointTest {
     @Inject
     ProviderRepository providerRepository;
 
-    @Inject
-    ProjectService projectService;
-
-    @Inject
-    HierarchicalRelationService hierarchicalRelationService;
-
     @InjectMock
     ReadPredefinedTypesService readPredefinedTypesService;
+
+    @Inject
+    ProjectAccessAlwaysRepository projectAccessAlwaysRepository;
 
     @Inject
     @RestClient
@@ -76,6 +73,8 @@ public class InstallationEndpointTest {
     @BeforeAll
     public void setup() throws ExecutionException, InterruptedException {
 
+        projectAccessAlwaysRepository.deleteAll();
+
         Total total = providerClient.getTotalNumberOfProviders().toCompletableFuture().get();
 
         Response response = providerClient.getAll(total.total).toCompletableFuture().get();
@@ -83,12 +82,12 @@ public class InstallationEndpointTest {
         providerRepository.persistOrUpdate(ProviderMapper.INSTANCE.eoscProvidersToProviders(response.results));
 
         //We are going to register the EOSC-hub project from OpenAire API
-        projectService.getById("777536");
+        projectAccessAlwaysRepository.save("777536", ProjectModulator.given());
 
         //We are going to register the EGI-ACE project from OpenAire API
-        projectService.getById("101017567");
+        projectAccessAlwaysRepository.save("101017567", ProjectModulator.given());
 
-        hierarchicalRelationService.createProjectProviderRelationship("777536", Set.of("grnet"));
+        projectAccessAlwaysRepository.associateProjectWithProviders("777536", Set.of("grnet"));
     }
 
     @BeforeEach

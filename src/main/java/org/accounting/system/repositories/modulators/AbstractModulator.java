@@ -7,6 +7,7 @@ import org.accounting.system.entities.acl.AccessControl;
 import org.accounting.system.entities.projections.ProjectionQuery;
 import org.accounting.system.exceptions.ConflictException;
 
+import javax.ws.rs.ForbiddenException;
 import java.util.List;
 
 /**
@@ -93,7 +94,7 @@ public abstract class AbstractModulator<E extends Entity, I> extends AccessModul
             case ENTITY:
                 return entity();
             default:
-                return always();
+                throw new ForbiddenException("The authenticated client is not permitted to perform the requested operation.");
         }
     }
 

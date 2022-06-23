@@ -20,9 +20,10 @@ import org.accounting.system.endpoints.InstallationEndpoint;
 import org.accounting.system.mappers.ProviderMapper;
 import org.accounting.system.repositories.installation.InstallationRepository;
 import org.accounting.system.repositories.metricdefinition.MetricDefinitionRepository;
+import org.accounting.system.repositories.project.ProjectAccessAlwaysRepository;
+import org.accounting.system.repositories.project.ProjectModulator;
 import org.accounting.system.repositories.provider.ProviderRepository;
 import org.accounting.system.services.HierarchicalRelationService;
-import org.accounting.system.services.ProjectService;
 import org.accounting.system.services.ReadPredefinedTypesService;
 import org.accounting.system.wiremock.ProjectWireMockServer;
 import org.accounting.system.wiremock.ProviderWireMockServer;
@@ -63,7 +64,7 @@ public class InstallationAuthorizationTest {
     ReadPredefinedTypesService readPredefinedTypesService;
 
     @Inject
-    ProjectService projectService;
+    ProjectAccessAlwaysRepository projectAccessAlwaysRepository;
 
     @Inject
     HierarchicalRelationService hierarchicalRelationService;
@@ -84,9 +85,9 @@ public class InstallationAuthorizationTest {
         providerRepository.persistOrUpdate(ProviderMapper.INSTANCE.eoscProvidersToProviders(response.results));
 
         //We are going to register the EOSC-hub project from OpenAire API
-        projectService.getById("777536");
+        projectAccessAlwaysRepository.save("777536", ProjectModulator.given());
 
-        hierarchicalRelationService.createProjectProviderRelationship("777536", Set.of("grnet", "sites"));
+        projectAccessAlwaysRepository.associateProjectWithProviders("777536", Set.of("grnet", "sites"));
     }
 
     @BeforeEach
@@ -224,7 +225,7 @@ public class InstallationAuthorizationTest {
                 .extract()
                 .as(InformativeResponse.class);
 
-        assertEquals("You have no access to this entity : "+installation.id, informativeResponse.message);
+        assertEquals("The authenticated client is not permitted to perform the requested operation.", informativeResponse.message);
     }
 
     private InstallationResponseDto createInstallation(InstallationRequestDto request, String user){

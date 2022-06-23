@@ -1,10 +1,8 @@
 package org.accounting.system.repositories.installation;
 
-import com.mongodb.client.model.Collation;
-import com.mongodb.client.model.CollationStrength;
+import org.accounting.system.dtos.installation.InstallationRequestDto;
 import org.accounting.system.dtos.installation.UpdateInstallationRequestDto;
 import org.accounting.system.entities.installation.Installation;
-import org.accounting.system.exceptions.ConflictException;
 import org.accounting.system.mappers.InstallationMapper;
 import org.accounting.system.repositories.modulators.AbstractModulator;
 import org.apache.commons.lang3.StringUtils;
@@ -36,21 +34,24 @@ public class InstallationModulator extends AbstractModulator<Installation, Objec
         InstallationMapper.INSTANCE.updateInstallationFromDto(request, entity);
 
         if(!StringUtils.isAllBlank(request.installation, request.infrastructure)){
-            exist(entity.getInfrastructure(), entity.getInstallation());
+            installationAccessAlwaysRepository.exist(entity.getInfrastructure(), entity.getInstallation());
         }
 
         return super.updateEntity(entity, new ObjectId(id));
     }
 
-    public void exist(String infrastructure, String installation){
+    public Installation save(InstallationRequestDto request) {
 
-        var optional = find("infrastructure = ?1 and installation = ?2", infrastructure, installation)
-                .withCollation(Collation.builder().locale("en")
-                        .collationStrength(CollationStrength.SECONDARY).build())
-                .stream()
-                .findAny();
+        installationAccessAlwaysRepository.exist(request.infrastructure, request.installation);
 
-        optional.ifPresent(storedInstallation -> {throw new ConflictException("There is an Installation with infrastructure "+infrastructure+" and installation "+installation+". Its id is "+storedInstallation.getId().toString());});
+        switch (getRequestInformation().getAccessType()){
+            case ALWAYS:
+                return installationAccessAlwaysRepository.save(request);
+            case ENTITY:
+                return installationAccessEntityRepository.save(request);
+            default:
+                return installationAccessAlwaysRepository.save(request);
+        }
     }
 
     @Override
