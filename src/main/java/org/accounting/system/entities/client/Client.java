@@ -14,6 +14,8 @@ public class Client extends Entity {
 
     private String email;
 
+    private boolean systemAdmin;
+
     private Set<String> roles;
 
     public String getId() {
@@ -46,5 +48,13 @@ public class Client extends Entity {
 
     public void setRoles(Set<String> roles) {
         this.roles = roles;
+    }
+
+    public boolean isSystemAdmin() {
+        return systemAdmin;
+    }
+
+    public void setSystemAdmin(boolean systemAdmin) {
+        this.systemAdmin = systemAdmin;
     }
 }

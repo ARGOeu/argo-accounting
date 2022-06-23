@@ -13,7 +13,6 @@ import org.accounting.system.entities.MetricDefinition;
 import org.accounting.system.exceptions.ConflictException;
 import org.accounting.system.mappers.MetricDefinitionMapper;
 import org.accounting.system.mappers.MetricMapper;
-import org.accounting.system.repositories.acl.AccessControlRepository;
 import org.accounting.system.repositories.metric.MetricRepository;
 import org.accounting.system.repositories.metricdefinition.MetricDefinitionRepository;
 import org.accounting.system.util.QueryParser;
@@ -46,16 +45,12 @@ public class MetricDefinitionService {
     MetricRepository metricRepository;
 
     @Inject
-
-    AccessControlRepository accessControlRepository;
-    @Inject
     QueryParser queryParser;
 
-    public MetricDefinitionService(MetricDefinitionRepository metricDefinitionRepository, MetricService metricService, MetricRepository metricRepository, AccessControlRepository accessControlRepository) {
+    public MetricDefinitionService(MetricDefinitionRepository metricDefinitionRepository, MetricService metricService, MetricRepository metricRepository) {
         this.metricDefinitionRepository = metricDefinitionRepository;
         this.metricService = metricService;
         this.metricRepository = metricRepository;
-        this.accessControlRepository = accessControlRepository;
     }
 
     /**
@@ -69,7 +64,7 @@ public class MetricDefinitionService {
 
         var metricDefinition = MetricDefinitionMapper.INSTANCE.requestToMetricDefinition(request);
 
-        metricDefinitionRepository.persist(metricDefinition);
+        metricDefinitionRepository.save(metricDefinition);
 
         return MetricDefinitionMapper.INSTANCE.metricDefinitionToResponse(metricDefinition);
     }

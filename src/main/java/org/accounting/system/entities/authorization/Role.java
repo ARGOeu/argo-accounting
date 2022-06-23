@@ -22,6 +22,7 @@ public class Role extends Entity {
     @BsonProperty("collections_access_permissions")
     private Set<CollectionPermission> collectionsAccessPermissions = new HashSet<>();
     private String description;
+    private boolean system;
 
     public String getName() {
         return name;
@@ -53,5 +54,13 @@ public class Role extends Entity {
 
     public void setId(ObjectId id) {
         this.id = id;
+    }
+
+    public boolean isSystem() {
+        return system;
+    }
+
+    public void setSystem(boolean system) {
+        this.system = system;
     }
 }

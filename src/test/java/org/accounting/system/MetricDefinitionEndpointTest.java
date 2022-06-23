@@ -14,16 +14,22 @@ import org.accounting.system.dtos.pagination.PageResource;
 import org.accounting.system.endpoints.MetricDefinitionEndpoint;
 import org.accounting.system.entities.MetricDefinition;
 import org.accounting.system.mappers.MetricDefinitionMapper;
+import org.accounting.system.repositories.client.ClientAccessAlwaysRepository;
 import org.accounting.system.repositories.metricdefinition.MetricDefinitionRepository;
 import org.accounting.system.services.ReadPredefinedTypesService;
+import org.accounting.system.services.client.ClientService;
 import org.accounting.system.util.Utility;
 import org.bson.types.ObjectId;
+import org.json.simple.parser.ParseException;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInstance;
 import org.mockito.Mockito;
 
 import javax.inject.Inject;
 import java.util.Optional;
+import java.util.Set;
 
 import static io.restassured.RestAssured.given;
 import static org.hamcrest.Matchers.is;
@@ -33,6 +39,7 @@ import static org.mockito.ArgumentMatchers.any;
 @QuarkusTest
 @TestProfile(AccountingSystemTestProfile.class)
 @TestHTTPEndpoint(MetricDefinitionEndpoint.class)
+@TestInstance(TestInstance.Lifecycle.PER_CLASS)
 public class MetricDefinitionEndpointTest {
 
     @Inject
@@ -44,10 +51,25 @@ public class MetricDefinitionEndpointTest {
     @InjectMock
     ReadPredefinedTypesService readPredefinedTypesService;
 
+    @Inject
+    ClientService clientService;
+
+    @Inject
+    ClientAccessAlwaysRepository clientAccessAlwaysRepository;
+
+
     KeycloakTestClient keycloakClient = new KeycloakTestClient();
 
+    @BeforeAll
+    public void setup() throws ParseException {
+
+        clientService.register(utility.getIdFromToken(keycloakClient.getAccessToken("admin").split("\\.")[1]), "admin", "admin@email.com");
+
+        clientAccessAlwaysRepository.assignRolesToRegisteredClient(utility.getIdFromToken(keycloakClient.getAccessToken("admin").split("\\.")[1]), Set.of("collection_owner"));
+    }
+
     @BeforeEach
-    public void setup() {
+    public void each() throws ParseException {
         metricDefinitionRepository.deleteAll();
     }
 
@@ -689,96 +711,6 @@ public class MetricDefinitionEndpointTest {
                 .as(MetricDefinitionResponseDto.class);
 
         assertEquals(metricDefinition.id, storedMetricDefinition.id);
-    }
-
-    @Test
-    public void fetchMetricDefinitionPaginationNotAcceptableSize() {
-
-        Mockito.when(readPredefinedTypesService.searchForUnitType(any())).thenReturn(Optional.of("SECOND"));
-        Mockito.when(readPredefinedTypesService.searchForMetricType(any())).thenReturn(Optional.of("Aggregated"));
-        var request= new MetricDefinitionRequestDto();
-
-        request.metricName = "metric";
-        request.metricDescription = "description";
-        request.unitType = "SECOND";
-        request.metricType = "Aggregated";
-
-        var metricDefinition = createMetricDefinition(request);
-
-        var response = given()
-                .auth()
-                .oauth2(getAccessToken("admin"))
-                .queryParam("size", 110)
-                .get("/{metricDefinitionId}/metrics", metricDefinition.id)
-                .then()
-                .assertThat()
-                .statusCode(422)
-                .extract()
-                .as(InformativeResponse.class);
-
-        assertEquals("You cannot request more than 100 items.",response.message);
-    }
-
-    @Test
-    public void fetchMetricDefinitionPaginationNotAcceptablePageIndex() {
-
-        Mockito.when(readPredefinedTypesService.searchForUnitType(any())).thenReturn(Optional.of("SECOND"));
-        Mockito.when(readPredefinedTypesService.searchForMetricType(any())).thenReturn(Optional.of("Aggregated"));
-        var request= new MetricDefinitionRequestDto();
-
-        request.metricName = "metric";
-        request.metricDescription = "description";
-        request.unitType = "SECOND";
-        request.metricType = "Aggregated";
-
-        var metricDefinition = createMetricDefinition(request);
-
-        var response = given()
-                .auth()
-                .oauth2(getAccessToken("admin"))
-                .queryParam("page", 0)
-                .get("/{metricDefinitionId}/metrics", metricDefinition.id)
-                .then()
-                .assertThat()
-                .statusCode(400)
-                .extract()
-                .as(InformativeResponse.class);
-
-        assertEquals("Page number must be >= 1.",response.message);
-    }
-
-    @Test
-    public void fetchMetricDefinitionPaginationNoMetricDefinition() {
-
-        var response = given()
-                .auth()
-                .oauth2(getAccessToken("admin"))
-                .queryParam("page", 0)
-                .get("/{metricDefinitionId}/metrics", "507f1f77bcf86cd799439011")
-                .then()
-                .assertThat()
-                .statusCode(404)
-                .extract()
-                .as(InformativeResponse.class);
-
-        assertEquals("There is no Metric Definition with the following id: 507f1f77bcf86cd799439011", response.message);
-    }
-
-    @Test
-    public void fetchMetricDefinitionPaginationNonHexId() {
-
-        var response = given()
-                .auth()
-                .oauth2(getAccessToken("admin"))
-                .queryParam("page", 0)
-                .get("/{metricDefinitionId}/metrics", "ijidij3d333")
-                .then()
-                .assertThat()
-                .statusCode(404)
-                .extract()
-                .as(InformativeResponse.class);
-
-        assertEquals("There is no Metric Definition with the following id: ijidij3d333", response.message);
     }
 
     @Test

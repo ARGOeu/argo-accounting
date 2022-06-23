@@ -24,16 +24,19 @@ import org.accounting.system.entities.Project;
 import org.accounting.system.mappers.ProjectMapper;
 import org.accounting.system.mappers.ProviderMapper;
 import org.accounting.system.repositories.acl.AccessControlRepository;
+import org.accounting.system.repositories.client.ClientAccessAlwaysRepository;
 import org.accounting.system.repositories.installation.InstallationRepository;
 import org.accounting.system.repositories.metricdefinition.MetricDefinitionRepository;
 import org.accounting.system.repositories.project.ProjectAccessAlwaysRepository;
 import org.accounting.system.repositories.project.ProjectModulator;
 import org.accounting.system.repositories.provider.ProviderRepository;
-import org.accounting.system.services.HierarchicalRelationService;
 import org.accounting.system.services.ReadPredefinedTypesService;
+import org.accounting.system.services.client.ClientService;
+import org.accounting.system.util.Utility;
 import org.accounting.system.wiremock.ProjectWireMockServer;
 import org.accounting.system.wiremock.ProviderWireMockServer;
 import org.eclipse.microprofile.rest.client.inject.RestClient;
+import org.json.simple.parser.ParseException;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -79,20 +82,24 @@ public class ProjectEndpointTest {
     MetricDefinitionRepository metricDefinitionRepository;
 
     @Inject
-    HierarchicalRelationService hierarchicalRelationService;
-
-    @Inject
     ProjectAccessAlwaysRepository projectAccessAlwaysRepository;
 
     @Inject
     AccessControlRepository accessControlRepository;
 
+    @Inject
+    Utility utility;
+
+    @Inject
+    ClientService clientService;
+
+    @Inject
+    ClientAccessAlwaysRepository clientAccessAlwaysRepository;
+
     KeycloakTestClient keycloakClient = new KeycloakTestClient();
 
     @BeforeAll
-    public void setup() throws ExecutionException, InterruptedException {
-
-        projectAccessAlwaysRepository.deleteAll();
+    public void setup() throws ExecutionException, InterruptedException, ParseException {
 
         Total total = providerClient.getTotalNumberOfProviders().toCompletableFuture().get();
 
@@ -100,18 +107,27 @@ public class ProjectEndpointTest {
 
         providerRepository.persistOrUpdate(ProviderMapper.INSTANCE.eoscProvidersToProviders(response.results));
 
-        //Registering a project
-        projectAccessAlwaysRepository.save("777536", ProjectModulator.given());
+        clientService.register(utility.getIdFromToken(keycloakClient.getAccessToken("admin").split("\\.")[1]), "admin", "admin@email.com");
 
-        projectAccessAlwaysRepository.associateProjectWithProviders("777536", Set.of("grnet"));
+        clientAccessAlwaysRepository.assignRolesToRegisteredClient(utility.getIdFromToken(keycloakClient.getAccessToken("admin").split("\\.")[1]), Set.of("collection_owner"));
     }
 
     @BeforeEach
-    public void before() {
+    public void before() throws ParseException {
 
         installationRepository.deleteAll();
         metricDefinitionRepository.deleteAll();
         accessControlRepository.deleteAll();
+        projectAccessAlwaysRepository.deleteAll();
+
+        String sub = utility.getIdFromToken(keycloakClient.getAccessToken("admin").split("\\.")[1]);
+
+        accessControlRepository.accessListOfProjects(Set.of("777536", "101017567"), sub);
+
+        //Registering a project
+        projectAccessAlwaysRepository.save("777536", ProjectModulator.openAire());
+
+        projectAccessAlwaysRepository.associateProjectWithProviders("777536", Set.of("grnet"));
     }
 
     @Test
@@ -154,22 +170,6 @@ public class ProjectEndpointTest {
                 .thenReturn();
 
         assertEquals(401, notAuthenticatedResponse.statusCode());
-    }
-
-    @Test
-    public void saveProjectByIdNotFound(){
-
-        var response = given()
-                .auth()
-                .oauth2(getAccessToken("admin"))
-                .post("/{id}", "lalala")
-                .then()
-                .assertThat()
-                .statusCode(404)
-                .extract()
-                .as(InformativeResponse.class);
-
-        assertEquals(response.message, "Project with id {lalala} not found.");
     }
 
     @Test
@@ -281,9 +281,9 @@ public class ProjectEndpointTest {
                 .extract()
                 .as(InformativeResponse.class);
 
-        assertEquals(String.format("There is a Metric at {%s, %s, %s} with the following attributes : {%s, %s, %s, %s}",
+        assertEquals(String.format("There is a Metric at {%s, %s, %s} with the following attributes : {%s, %s, %s}",
                 "EOSC-hub", "grnet", installation.installation,
-                metric.metricDefinitionId, metric.start, metric.end, metric.value), conflict.message);
+                metric.metricDefinitionId, metric.start, metric.end), conflict.message);
     }
 
     private InstallationResponseDto createInstallation(InstallationRequestDto request, String user){

@@ -12,10 +12,8 @@ public class InstallationProjection {
 
     private ObjectId id;
 
-    @EqualsAndHashCode.Include
     private String project;
 
-    @EqualsAndHashCode.Include
     private String organisation;
 
     @EqualsAndHashCode.Include

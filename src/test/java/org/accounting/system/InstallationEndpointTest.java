@@ -17,15 +17,20 @@ import org.accounting.system.dtos.metricdefinition.MetricDefinitionRequestDto;
 import org.accounting.system.dtos.metricdefinition.MetricDefinitionResponseDto;
 import org.accounting.system.endpoints.InstallationEndpoint;
 import org.accounting.system.mappers.ProviderMapper;
+import org.accounting.system.repositories.acl.AccessControlRepository;
+import org.accounting.system.repositories.client.ClientAccessAlwaysRepository;
 import org.accounting.system.repositories.installation.InstallationRepository;
 import org.accounting.system.repositories.metricdefinition.MetricDefinitionRepository;
 import org.accounting.system.repositories.project.ProjectAccessAlwaysRepository;
 import org.accounting.system.repositories.project.ProjectModulator;
 import org.accounting.system.repositories.provider.ProviderRepository;
 import org.accounting.system.services.ReadPredefinedTypesService;
+import org.accounting.system.services.client.ClientService;
+import org.accounting.system.util.Utility;
 import org.accounting.system.wiremock.ProjectWireMockServer;
 import org.accounting.system.wiremock.ProviderWireMockServer;
 import org.eclipse.microprofile.rest.client.inject.RestClient;
+import org.json.simple.parser.ParseException;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -65,15 +70,25 @@ public class InstallationEndpointTest {
     ProjectAccessAlwaysRepository projectAccessAlwaysRepository;
 
     @Inject
+    AccessControlRepository accessControlRepository;
+
+    @Inject
     @RestClient
     ProviderClient providerClient;
+
+    @Inject
+    Utility utility;
+
+    @Inject
+    ClientService clientService;
+
+    @Inject
+    ClientAccessAlwaysRepository clientAccessAlwaysRepository;
 
     KeycloakTestClient keycloakClient = new KeycloakTestClient();
 
     @BeforeAll
-    public void setup() throws ExecutionException, InterruptedException {
-
-        projectAccessAlwaysRepository.deleteAll();
+    public void setup() throws ExecutionException, InterruptedException, ParseException {
 
         Total total = providerClient.getTotalNumberOfProviders().toCompletableFuture().get();
 
@@ -81,19 +96,30 @@ public class InstallationEndpointTest {
 
         providerRepository.persistOrUpdate(ProviderMapper.INSTANCE.eoscProvidersToProviders(response.results));
 
-        //We are going to register the EOSC-hub project from OpenAire API
-        projectAccessAlwaysRepository.save("777536", ProjectModulator.given());
+        clientService.register(utility.getIdFromToken(keycloakClient.getAccessToken("admin").split("\\.")[1]), "admin", "admin@email.com");
 
-        //We are going to register the EGI-ACE project from OpenAire API
-        projectAccessAlwaysRepository.save("101017567", ProjectModulator.given());
-
-        projectAccessAlwaysRepository.associateProjectWithProviders("777536", Set.of("grnet"));
+        clientAccessAlwaysRepository.assignRolesToRegisteredClient(utility.getIdFromToken(keycloakClient.getAccessToken("admin").split("\\.")[1]), Set.of("collection_owner"));
     }
 
     @BeforeEach
-    public void before() {
+    public void before() throws ParseException {
+
         installationRepository.deleteAll();
         metricDefinitionRepository.deleteAll();
+        accessControlRepository.deleteAll();
+        projectAccessAlwaysRepository.deleteAll();
+
+        //We are going to register the EOSC-hub project from OpenAire API
+        projectAccessAlwaysRepository.save("777536", ProjectModulator.openAire());
+
+        //We are going to register the EGI-ACE project from OpenAire API
+        projectAccessAlwaysRepository.save("101017567", ProjectModulator.openAire());
+
+        projectAccessAlwaysRepository.associateProjectWithProviders("777536", Set.of("grnet"));
+
+        String sub = utility.getIdFromToken(keycloakClient.getAccessToken("admin").split("\\.")[1]);
+
+        accessControlRepository.accessListOfProjects(Set.of("777536", "101017567"), sub);
     }
 
     @Test

@@ -1,12 +1,12 @@
 package org.accounting.system.repositories.installation;
 
-import com.mongodb.client.model.Collation;
-import com.mongodb.client.model.CollationStrength;
 import org.accounting.system.dtos.installation.InstallationRequestDto;
 import org.accounting.system.entities.HierarchicalRelation;
+import org.accounting.system.entities.acl.RoleAccessControl;
 import org.accounting.system.entities.installation.Installation;
+import org.accounting.system.entities.projections.MetricProjection;
+import org.accounting.system.entities.projections.ProjectionQuery;
 import org.accounting.system.enums.RelationType;
-import org.accounting.system.exceptions.ConflictException;
 import org.accounting.system.mappers.InstallationMapper;
 import org.accounting.system.repositories.HierarchicalRelationRepository;
 import org.accounting.system.repositories.modulators.AccessAlwaysModulator;
@@ -16,22 +16,11 @@ import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 
 @ApplicationScoped
-public class InstallationAccessAlwaysRepository extends AccessAlwaysModulator<Installation, ObjectId> {
+public class InstallationAccessAlwaysRepository extends AccessAlwaysModulator<Installation, ObjectId, RoleAccessControl> {
 
 
     @Inject
     HierarchicalRelationRepository hierarchicalRelationRepository;
-
-    public void exist(String infrastructure, String installation){
-
-        var optional = find("infrastructure = ?1 and installation = ?2", infrastructure, installation)
-                .withCollation(Collation.builder().locale("en")
-                        .collationStrength(CollationStrength.SECONDARY).build())
-                .stream()
-                .findAny();
-
-        optional.ifPresent(storedInstallation -> {throw new ConflictException("There is an Installation with infrastructure "+infrastructure+" and installation "+installation+". Its id is "+storedInstallation.getId().toString());});
-    }
 
     public Installation save(InstallationRequestDto request) {
 
@@ -50,5 +39,17 @@ public class InstallationAccessAlwaysRepository extends AccessAlwaysModulator<In
         hierarchicalRelationRepository.save(installation, null);
 
         return installationToBeStored;
+    }
+
+    public ProjectionQuery<MetricProjection> fetchAllMetrics(String id, int page, int size){
+
+        var projection = hierarchicalRelationRepository.findByExternalId(id, page, size);
+
+        return projection;
+    }
+
+    public boolean accessibility(String project, String provider, String installation){
+
+        return true;
     }
 }

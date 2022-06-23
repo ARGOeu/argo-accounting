@@ -2,6 +2,7 @@ package org.accounting.system.repositories.metric;
 
 import org.accounting.system.dtos.metric.UpdateMetricRequestDto;
 import org.accounting.system.entities.Metric;
+import org.accounting.system.entities.acl.PermissionAccessControl;
 import org.accounting.system.mappers.MetricMapper;
 import org.accounting.system.repositories.modulators.AbstractModulator;
 import org.bson.types.ObjectId;
@@ -9,7 +10,7 @@ import org.bson.types.ObjectId;
 import javax.inject.Inject;
 
 
-public class MetricModulator extends AbstractModulator<Metric, ObjectId> {
+public class MetricModulator extends AbstractModulator<Metric, ObjectId, PermissionAccessControl> {
 
 
     @Inject
@@ -31,7 +32,9 @@ public class MetricModulator extends AbstractModulator<Metric, ObjectId> {
 
         MetricMapper.INSTANCE.updateMetricFromDto(request, entity);
 
-        return super.updateEntity(entity, id);
+        super.update(entity);
+
+        return entity;
     }
 
     @Override

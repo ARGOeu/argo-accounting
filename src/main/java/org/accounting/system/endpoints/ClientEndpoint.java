@@ -1,5 +1,7 @@
 package org.accounting.system.endpoints;
 
+import io.quarkus.oidc.TokenIntrospection;
+import io.quarkus.oidc.UserInfo;
 import io.quarkus.security.Authenticated;
 import org.accounting.system.constraints.NotFoundEntity;
 import org.accounting.system.dtos.InformativeResponse;
@@ -11,6 +13,8 @@ import org.accounting.system.enums.Collection;
 import org.accounting.system.interceptors.annotations.AccessPermission;
 import org.accounting.system.repositories.client.ClientRepository;
 import org.accounting.system.services.client.ClientService;
+import org.apache.commons.lang3.StringUtils;
+import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.eclipse.microprofile.openapi.annotations.enums.SchemaType;
 import org.eclipse.microprofile.openapi.annotations.enums.SecuritySchemeIn;
 import org.eclipse.microprofile.openapi.annotations.enums.SecuritySchemeType;
@@ -39,6 +43,8 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 
+import java.util.Objects;
+
 import static org.eclipse.microprofile.openapi.annotations.enums.ParameterIn.QUERY;
 
 @Path("/clients")
@@ -55,10 +61,18 @@ public class ClientEndpoint {
     @Inject
     ClientService clientService;
 
+    @Inject
+    TokenIntrospection tokenIntrospection;
+
+    @Inject
+    UserInfo userInfo;
+
+    @ConfigProperty(name = "key.to.retrieve.id.from.access.token")
+    String key;
+
 
     @Tag(name = "Client")
     @org.eclipse.microprofile.openapi.annotations.Operation(
-            hidden = true,
             summary = "Registers a client into the Accounting System.",
             description = "Passing the acquired access token to this operation, any client can register itself into the Accounting System.")
     @APIResponse(
@@ -91,14 +105,21 @@ public class ClientEndpoint {
     @Produces(value = MediaType.APPLICATION_JSON)
     public Response clientRegistration() {
 
-        var response = clientService.register();
+        String name = StringUtils.EMPTY;
+        String email = StringUtils.EMPTY;
+
+        if(userInfo !=null && userInfo.getJsonObject() != null){
+            name = Objects.isNull(userInfo.getJsonObject().get("name")) ? "": userInfo.getJsonObject().getString("name");
+            email = Objects.isNull(userInfo.getJsonObject().get("email")) ? "": userInfo.getJsonObject().getString("email");
+        }
+
+        var response = clientService.register(tokenIntrospection.getJsonObject().getString(key), name, email);
 
         return Response.ok().entity(response).build();
     }
 
     @Tag(name = "Client")
     @org.eclipse.microprofile.openapi.annotations.Operation(
-            hidden = true,
             summary = "Returns the available clients.",
             description = "This operation fetches the registered Accounting System clients. By default, the first page of 10 Clients will be returned. " +
                     "You can tune the default values by using the query parameters page and size.")
@@ -192,7 +213,7 @@ public class ClientEndpoint {
                                        schema = @Schema(type = SchemaType.STRING))
                                @PathParam("client_id")
                                @Valid
-                               @NotFoundEntity(repository = ClientRepository.class, id = String.class, message = "There is no Client with the following id:") String clientId){
+                               @NotFoundEntity(repository = ClientRepository.class, id = String.class, message = "There is no registered Client with the following id:") String clientId){
 
         var response = clientService.assignRolesToRegisteredClient(clientId, assignRoleRequestDto.roles);
 
@@ -261,7 +282,7 @@ public class ClientEndpoint {
                                        schema = @Schema(type = SchemaType.STRING))
                                @PathParam("client_id")
                                @Valid
-                               @NotFoundEntity(repository = ClientRepository.class, id = String.class, message = "There is no Client with the following id:") String clientId){
+                               @NotFoundEntity(repository = ClientRepository.class, id = String.class, message = "There is no registered Client with the following id:") String clientId){
 
         var response = clientService.detachRolesFromRegisteredClient(clientId, detachRoleRequestDto.roles);
 

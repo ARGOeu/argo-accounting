@@ -1,4 +1,4 @@
-package org.accounting.system.dtos.acl;
+package org.accounting.system.dtos.acl.permission;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import org.accounting.system.enums.Collection;
@@ -8,8 +8,8 @@ import org.eclipse.microprofile.openapi.annotations.media.Schema;
 
 import java.util.Set;
 
-@Schema(name="AccessControlResponse", description="An object represents the stored Access Control Entry.")
-public class AccessControlResponseDto {
+@Schema(name="PermissionAccessControlResponse", description="An object represents the stored Access Control Entry.")
+public class PermissionAccessControlResponseDto {
 
     @Schema(
             type = SchemaType.STRING,

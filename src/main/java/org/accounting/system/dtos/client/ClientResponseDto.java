@@ -4,8 +4,6 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import org.eclipse.microprofile.openapi.annotations.enums.SchemaType;
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
 
-import java.util.Set;
-
 @Schema(name="ClientResponse", description="An object represents the registered Client.")
 public class ClientResponseDto {
 
@@ -36,18 +34,18 @@ public class ClientResponseDto {
     @JsonProperty("email")
     public String email;
 
-    @Schema(
-            type = SchemaType.ARRAY,
-            implementation = String.class,
-            description = "This list contains the name of roles.",
-            example = "{\n" +
-                    "   \"roles\":[\n" +
-                    "      \"role_admin\",\n" +
-                    "      \"metric_definition_creator\",\n" +
-                    "      \"metric_inspector\"\n" +
-                    "   ]\n" +
-                    "}\n"
-    )
-    @JsonProperty("roles")
-    public Set<String> roles;
+//    @Schema(
+//            type = SchemaType.ARRAY,
+//            implementation = String.class,
+//            description = "This list contains the name of roles.",
+//            example = "{\n" +
+//                    "   \"roles\":[\n" +
+//                    "      \"role_admin\",\n" +
+//                    "      \"metric_definition_creator\",\n" +
+//                    "      \"metric_inspector\"\n" +
+//                    "   ]\n" +
+//                    "}\n"
+//    )
+//    @JsonProperty("roles")
+//    public Set<String> roles;
 }

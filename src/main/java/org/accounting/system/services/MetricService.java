@@ -62,7 +62,7 @@ public class MetricService {
      */
     public MetricResponseDto fetchMetric(String metricId){
 
-        var metric = metricRepository.fetchEntityById(new ObjectId(metricId));
+        var metric = metricRepository.findById(new ObjectId(metricId));
 
         return MetricMapper.INSTANCE.metricToResponse(metric);
     }
@@ -75,7 +75,7 @@ public class MetricService {
      */
     public boolean delete(String metricId){
 
-        return metricRepository.deleteEntityById(new ObjectId(metricId));
+        return metricRepository.deleteById(new ObjectId(metricId));
     }
 
     /**

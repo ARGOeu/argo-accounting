@@ -28,7 +28,6 @@ public class Metric extends Entity {
     @EqualsAndHashCode.Include
     @BsonProperty("time_period_end")
     private Instant end;
-    @EqualsAndHashCode.Include
     @BsonProperty("value")
     private double value;
 
@@ -37,6 +36,8 @@ public class Metric extends Entity {
     private String provider;
 
     private String installation;
+
+    private String infrastructure;
 
     public String getResourceId() {
         return resourceId;
@@ -108,5 +109,13 @@ public class Metric extends Entity {
 
     public void setInstallation(String installation) {
         this.installation = installation;
+    }
+
+    public String getInfrastructure() {
+        return infrastructure;
+    }
+
+    public void setInfrastructure(String infrastructure) {
+        this.infrastructure = infrastructure;
     }
 }

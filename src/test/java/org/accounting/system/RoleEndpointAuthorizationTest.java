@@ -12,9 +12,18 @@ import org.accounting.system.dtos.authorization.CollectionAccessPermissionDto;
 import org.accounting.system.dtos.authorization.request.RoleRequestDto;
 import org.accounting.system.dtos.authorization.response.RoleResponseDto;
 import org.accounting.system.endpoints.RoleEndpoint;
+import org.accounting.system.repositories.client.ClientAccessAlwaysRepository;
+import org.accounting.system.services.client.ClientService;
+import org.accounting.system.util.Utility;
+import org.json.simple.parser.ParseException;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInstance;
 
+import javax.inject.Inject;
 import java.util.HashSet;
+import java.util.Set;
+import java.util.concurrent.ExecutionException;
 
 import static io.restassured.RestAssured.given;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -22,9 +31,27 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 @QuarkusTest
 @TestProfile(AccountingSystemTestProfile.class)
 @TestHTTPEndpoint(RoleEndpoint.class)
+@TestInstance(TestInstance.Lifecycle.PER_CLASS)
 public class RoleEndpointAuthorizationTest {
 
+    @Inject
+    Utility utility;
+
+    @Inject
+    ClientService clientService;
+
+    @Inject
+    ClientAccessAlwaysRepository clientAccessAlwaysRepository;
+
     KeycloakTestClient keycloakClient = new KeycloakTestClient();
+
+    @BeforeAll
+    public void setup() throws ExecutionException, InterruptedException, ParseException {
+
+        clientService.register(utility.getIdFromToken(keycloakClient.getAccessToken("admin").split("\\.")[1]), "admin", "admin@email.com");
+
+        clientAccessAlwaysRepository.assignRolesToRegisteredClient(utility.getIdFromToken(keycloakClient.getAccessToken("creator").split("\\.")[1]), Set.of("collection_owner"));
+    }
 
     @Test
     public void createRoleInspectorForbidden(){
@@ -32,23 +59,6 @@ public class RoleEndpointAuthorizationTest {
         var request= new RoleRequestDto();
 
         var roleResponse = createRole(request, "inspector");
-
-        var informativeResponse = roleResponse
-                .then()
-                .assertThat()
-                .statusCode(403)
-                .extract()
-                .as(InformativeResponse.class);
-
-        assertEquals("The authenticated client is not permitted to perform the requested operation.", informativeResponse.message);
-    }
-
-    @Test
-    public void createRoleNoRelevantRoleForbidden(){
-
-        var request= new RoleRequestDto();
-
-        var roleResponse = createRole(request, "alice");
 
         var informativeResponse = roleResponse
                 .then()

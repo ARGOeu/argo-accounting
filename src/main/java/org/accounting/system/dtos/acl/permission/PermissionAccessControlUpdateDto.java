@@ -1,4 +1,4 @@
-package org.accounting.system.dtos.acl;
+package org.accounting.system.dtos.acl.permission;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import org.accounting.system.constraints.StringEnumeration;
@@ -10,14 +10,14 @@ import javax.validation.Valid;
 import javax.validation.constraints.NotEmpty;
 import java.util.Set;
 
-@Schema(name="AccessControlRequest", description="An object represents a request for creating an Access Control Entry.")
-public class AccessControlRequestDto {
+@Schema(name="PermissionAccessControlUpdate", description="An object represents a request for updating an Access Control Entry.")
+public class PermissionAccessControlUpdateDto {
 
     @Schema(
             type = SchemaType.ARRAY,
             implementation = AccessControlPermission.class,
             required = true,
-            description = "This component is a set of permissions.",
+            description = "The set of permissions to be updated.",
             minItems = 1
     )
     @JsonProperty("permissions")

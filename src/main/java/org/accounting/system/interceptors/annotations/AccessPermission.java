@@ -5,7 +5,6 @@ import org.accounting.system.enums.Operation;
 
 import javax.enterprise.util.Nonbinding;
 import javax.interceptor.InterceptorBinding;
-import java.lang.annotation.Repeatable;
 import java.lang.annotation.Retention;
 import java.lang.annotation.Target;
 
@@ -16,10 +15,8 @@ import static java.lang.annotation.RetentionPolicy.RUNTIME;
 @InterceptorBinding
 @Target({METHOD, TYPE})
 @Retention(RUNTIME)
-@Repeatable(AccessPermissions.class)
 public @interface AccessPermission {
 
     @Nonbinding Collection collection() default Collection.MetricDefinition;
     @Nonbinding Operation operation() default Operation.CREATE;
-    @Nonbinding int precedence() default 1;
 }

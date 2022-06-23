@@ -2,6 +2,7 @@ package org.accounting.system.services.authorization;
 
 import com.mongodb.MongoWriteException;
 import io.quarkus.mongodb.panache.PanacheQuery;
+import io.quarkus.panache.common.Page;
 import org.accounting.system.beans.RequestInformation;
 import org.accounting.system.dtos.authorization.request.RoleRequestDto;
 import org.accounting.system.dtos.authorization.response.RoleResponseDto;
@@ -12,7 +13,6 @@ import org.accounting.system.enums.AccessType;
 import org.accounting.system.enums.Collection;
 import org.accounting.system.enums.Operation;
 import org.accounting.system.exceptions.ConflictException;
-import org.accounting.system.interceptors.annotations.AccessPermissionsUtil;
 import org.accounting.system.mappers.RoleMapper;
 import org.accounting.system.repositories.authorization.RoleRepository;
 import org.bson.types.ObjectId;
@@ -22,6 +22,7 @@ import javax.inject.Inject;
 import javax.ws.rs.NotFoundException;
 import javax.ws.rs.core.UriInfo;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @ApplicationScoped
@@ -45,7 +46,7 @@ public class RoleService {
         var role = RoleMapper.INSTANCE.requestToRole(request);
 
         try{
-            roleRepository.persist(role);
+            roleRepository.save(role);
         } catch (MongoWriteException e) {
             throw new ConflictException("There is already a role with this name : " + request.name);
         }
@@ -59,7 +60,7 @@ public class RoleService {
      * @param providedRoles The roles that have been provided by OIDC server
      * @return true or false
      */
-    public boolean hasAccess(List<String> providedRoles, Collection collection, Operation operation){
+    public boolean hasAccess(Set<String> providedRoles, Collection collection, Operation operation){
 
        List<AccessType> accessTypeList = providedRoles
                .stream()
@@ -77,39 +78,41 @@ public class RoleService {
 
     /**
      * It examines whether the role has access to execute an operation to a collection.
-     * {@link AccessType#NEVER} always takes precedence over any other access type.
      * @param providedRoles The roles that have been provided by OIDC server
      * @return true or false
      */
-    public void hasAccess(List<String> providedRoles, Collection collection, Operation operation, int permissionPrecedence, List<AccessPermissionsUtil> accessPermissionsUtilList){
+    public boolean hasRoleAccess(Set<String> providedRoles, Collection collection, Operation operation){
 
-
-        var accessPermissionList = providedRoles
+        return providedRoles
                 .stream()
                 .map(role-> roleRepository.getRoleAccessPermissionsUponACollection(role, collection))
                 .flatMap(java.util.Collection::stream)
+                .anyMatch(permission -> permission.operation.equals(operation));
+    }
+
+    /**
+     * Returns the Access Type of a specific Operation
+     * @param providedRoles The roles that have been provided by OIDC server
+     * @return the Access Type
+     */
+    public AccessType getAccessType(List<String> providedRoles, Collection collection, Operation operation){
+
+        List<AccessType> accessTypeList = providedRoles
+                .stream()
+                .map(role-> roleRepository.getRoleAccessPermissionsUponACollection(role, collection))
+                .flatMap(java.util.Collection::stream)
+                .filter(permission -> permission.operation.equals(operation))
+                .map(permission -> permission.accessType)
                 .collect(Collectors.toList());
 
-        if(!accessPermissionList.isEmpty()){
+        AccessType precedence = AccessType.higherAccessPrecedence(accessTypeList);
 
-            var accessTypeList = accessPermissionList
-                    .stream()
-                    .filter(permission -> permission.operation.equals(operation))
-                    .map(permission -> permission.accessType)
-                    .collect(Collectors.toList());
+        return precedence;
+    }
 
-            AccessType precedence = AccessType.higherPrecedence(accessTypeList);
+    public void checkIfRoleExists(String roleName){
 
-            if(!precedence.equals(AccessType.NEVER)){
-                var accessPermissionsUtil =new AccessPermissionsUtil();
-
-                accessPermissionsUtil.setCollection(collection);
-                accessPermissionsUtil.setAccessType(precedence);
-                accessPermissionsUtil.setPermissionPrecedence(permissionPrecedence);
-
-                accessPermissionsUtilList.add(accessPermissionsUtil);
-            }
-        }
+        roleRepository.getRoleByName(roleName).orElseThrow(()->new NotFoundException("There is no Role with name : "+roleName));
     }
 
     /**
@@ -135,7 +138,7 @@ public class RoleService {
      */
     public PageResource<Role, RoleResponseDto> findAllRolesPageable(int page, int size, UriInfo uriInfo){
 
-        PanacheQuery<Role> panacheQuery = roleRepository.findAllPageable(page, size);
+        PanacheQuery<Role> panacheQuery = roleRepository.find("system = ?1", false).page(Page.of(page, size));
 
         return new PageResource<>(panacheQuery, RoleMapper.INSTANCE.rolesToResponse(panacheQuery.list()), uriInfo);
     }

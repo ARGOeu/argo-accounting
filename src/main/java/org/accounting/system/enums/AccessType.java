@@ -42,6 +42,17 @@ public enum AccessType {
         return valueOfPrecedence(precedence);
     }
 
+    public static AccessType higherAccessPrecedence(List<AccessType> accessTypeList){
+
+        int precedence = accessTypeList
+                .stream()
+                .mapToInt(at->at.precedence)
+                .min()
+                .orElse(2);
+
+        return valueOfPrecedence(precedence);
+    }
+
     private static AccessType valueOfPrecedence(int precedence) {
 
         return Arrays
@@ -50,5 +61,4 @@ public enum AccessType {
                 .findFirst()
                 .get();
     }
-
 }

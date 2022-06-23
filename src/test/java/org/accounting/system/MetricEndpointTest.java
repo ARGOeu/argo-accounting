@@ -24,6 +24,8 @@ import org.accounting.system.dtos.metricdefinition.MetricDefinitionResponseDto;
 import org.accounting.system.dtos.project.ProjectResponseDto;
 import org.accounting.system.endpoints.MetricEndpoint;
 import org.accounting.system.mappers.ProviderMapper;
+import org.accounting.system.repositories.acl.AccessControlRepository;
+import org.accounting.system.repositories.client.ClientAccessAlwaysRepository;
 import org.accounting.system.repositories.installation.InstallationRepository;
 import org.accounting.system.repositories.metric.MetricRepository;
 import org.accounting.system.repositories.metricdefinition.MetricDefinitionRepository;
@@ -31,9 +33,12 @@ import org.accounting.system.repositories.project.ProjectAccessAlwaysRepository;
 import org.accounting.system.repositories.project.ProjectModulator;
 import org.accounting.system.repositories.provider.ProviderRepository;
 import org.accounting.system.services.ReadPredefinedTypesService;
+import org.accounting.system.services.client.ClientService;
+import org.accounting.system.util.Utility;
 import org.accounting.system.wiremock.ProjectWireMockServer;
 import org.accounting.system.wiremock.ProviderWireMockServer;
 import org.eclipse.microprofile.rest.client.inject.RestClient;
+import org.json.simple.parser.ParseException;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -41,7 +46,10 @@ import org.junit.jupiter.api.TestInstance;
 import org.mockito.Mockito;
 
 import javax.inject.Inject;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.ExecutionException;
 
 import static io.restassured.RestAssured.given;
@@ -80,12 +88,22 @@ public class MetricEndpointTest {
     @Inject
     ProjectAccessAlwaysRepository projectAccessAlwaysRepository;
 
+    @Inject
+    AccessControlRepository accessControlRepository;
+
+    @Inject
+    Utility utility;
+
+    @Inject
+    ClientService clientService;
+
+    @Inject
+    ClientAccessAlwaysRepository clientAccessAlwaysRepository;
+
     KeycloakTestClient keycloakClient = new KeycloakTestClient();
 
     @BeforeAll
-    public void setup() throws ExecutionException, InterruptedException {
-
-        projectAccessAlwaysRepository.deleteAll();
+    public void setup() throws ExecutionException, InterruptedException, ParseException {
 
         Total total = providerClient.getTotalNumberOfProviders().toCompletableFuture().get();
 
@@ -93,16 +111,23 @@ public class MetricEndpointTest {
 
         providerRepository.persistOrUpdate(ProviderMapper.INSTANCE.eoscProvidersToProviders(response.results));
 
-        //We are going to register the EOSC-hub project from OpenAire API
-        projectAccessAlwaysRepository.save("777536", ProjectModulator.given());
+        clientService.register(utility.getIdFromToken(keycloakClient.getAccessToken("admin").split("\\.")[1]), "admin", "admin@email.com");
+
+        clientAccessAlwaysRepository.assignRolesToRegisteredClient(utility.getIdFromToken(keycloakClient.getAccessToken("admin").split("\\.")[1]), Set.of("collection_owner"));
     }
 
     @BeforeEach
-    public void before() {
+    public void before() throws ParseException {
+
         installationRepository.deleteAll();
         metricDefinitionRepository.deleteAll();
         metricRepository.deleteAll();
         projectAccessAlwaysRepository.deleteAll();
+
+        accessControlRepository.deleteAll();
+
+        String sub = utility.getIdFromToken(keycloakClient.getAccessToken("admin").split("\\.")[1]);
+        accessControlRepository.accessListOfProjects(Set.of("777536"), sub);
     }
 
     @Test
@@ -117,7 +142,6 @@ public class MetricEndpointTest {
         assertEquals(401, notAuthenticatedResponse.statusCode());
     }
 
-
     @Test
     public void createMetricNoMetricDefinition() {
 
@@ -127,7 +151,7 @@ public class MetricEndpointTest {
         request.metricDefinitionId = "507f1f77bcf86cd799439011";
         request.value = 10.3;
 
-        var response = assignMetric("admin", request);
+        var response = assignMetric("admin", request, new ArrayList<>());
 
         var informativeResponse = response
                 .then()
@@ -147,7 +171,7 @@ public class MetricEndpointTest {
         request.end = "2022-01-05T09:14:07Z";
         request.value = 10.3;
 
-        var response = assignMetric("admin", request);
+        var response = assignMetric("admin", request, new ArrayList<>());
 
         var informativeResponse = response
                 .then()
@@ -179,7 +203,7 @@ public class MetricEndpointTest {
         request.end = "2022-01-05T09:14:07Z";
         request.value = 10.3;
 
-        var response = assignMetric("admin", request);
+        var response = assignMetric("admin", request, new ArrayList<>());
 
         var informativeResponse = response
                 .then()
@@ -210,7 +234,7 @@ public class MetricEndpointTest {
         request.end = "2022-01-05T09:13:07Z";
         request.value = 10.3;
 
-        var response = assignMetric("admin", request);
+        var response = assignMetric("admin", request, new ArrayList<>());
 
         var informativeResponse = response
                 .then()
@@ -221,7 +245,6 @@ public class MetricEndpointTest {
 
         assertEquals("time_period_start may not be empty.", informativeResponse.message);
     }
-
 
     @Test
     public void createMetricStartIsAfterEnd() {
@@ -247,7 +270,7 @@ public class MetricEndpointTest {
         requestForMetric.value = 10.8;
         requestForMetric.metricDefinitionId = metricDefinitionResponse.id;
 
-        var response = assignMetric("admin", requestForMetric);
+        var response = assignMetric("admin", requestForMetric, new ArrayList<>());
 
         var informativeResponse = response
                 .then()
@@ -283,7 +306,7 @@ public class MetricEndpointTest {
         requestForMetric.value = 10.8;
         requestForMetric.metricDefinitionId = metricDefinitionResponse.id;
 
-        var response = assignMetric("admin", requestForMetric);
+        var response = assignMetric("admin", requestForMetric, new ArrayList<>());
 
         var informativeResponse = response
                 .then()
@@ -310,10 +333,35 @@ public class MetricEndpointTest {
     @Test
     public void fetchMetricNotFound() {
 
+        Mockito.when(readPredefinedTypesService.searchForUnitType(any())).thenReturn(Optional.of("KG"));
+        Mockito.when(readPredefinedTypesService.searchForMetricType(any())).thenReturn(Optional.of("Aggregated"));
+        var requestForMetricDefinition = new MetricDefinitionRequestDto();
+
+        requestForMetricDefinition.metricName = "metric";
+        requestForMetricDefinition.metricDescription = "description";
+        requestForMetricDefinition.unitType = "KG";
+        requestForMetricDefinition.metricType = "Aggregated";
+
+        var metricDefinitionResponse = createMetricDefinition(requestForMetricDefinition, "admin");
+
+        var request= new InstallationRequestDto();
+
+        request.project = "777536";
+        request.organisation = "grnet";
+        request.infrastructure = "okeanos-knossos";
+        request.installation = "SECOND";
+        request.unitOfAccess = metricDefinitionResponse.id;
+
+        projectAccessAlwaysRepository.save("777536", ProjectModulator.openAire());
+        projectAccessAlwaysRepository.associateProjectWithProviders("777536", Set.of("grnet"));
+
+        var installation = createInstallation(request, "admin");
+
         var notFoundResponse = given()
+                .basePath("accounting-system/installations")
                 .auth()
                 .oauth2(getAccessToken("admin"))
-                .get("/{metricId}", "507f1f77bcf86cd799439011")
+                .get("/{installation_id}/metrics/{metricId}", installation.id, "507f1f77bcf86cd799439011")
                 .then()
                 .assertThat()
                 .statusCode(404)
@@ -343,7 +391,9 @@ public class MetricEndpointTest {
         requestForMetric.value = 10.8;
         requestForMetric.metricDefinitionId = metricDefinitionResponse.id;
 
-        var response = assignMetric("admin", requestForMetric);
+        List<String> installationId = new ArrayList();
+
+        var response = assignMetric("admin", requestForMetric, installationId);
 
         var metric = response
                 .then()
@@ -353,9 +403,10 @@ public class MetricEndpointTest {
                 .as(MetricResponseDto.class);
 
         var getMetric = given()
+                .basePath("accounting-system/installations")
                 .auth()
                 .oauth2(getAccessToken("admin"))
-                .get("/{metricId}", metric.id)
+                .get("/{installation_id}/metrics/{metricId}", installationId.get(0), metric.id)
                 .then()
                 .assertThat()
                 .statusCode(200)
@@ -378,22 +429,6 @@ public class MetricEndpointTest {
     }
 
     @Test
-    public void deleteMetricNotFound() {
-
-        var response = given()
-                .auth()
-                .oauth2(getAccessToken("admin"))
-                .delete("/{metricId}", "507f1f77bcf86cd799439011")
-                .then()
-                .assertThat()
-                .statusCode(404)
-                .extract()
-                .as(InformativeResponse.class);
-
-        assertEquals("There is no Metric with the following id: 507f1f77bcf86cd799439011", response.message);
-    }
-
-    @Test
     public void deleteMetric() {
 
         Mockito.when(readPredefinedTypesService.searchForUnitType(any())).thenReturn(Optional.of("SECOND"));
@@ -413,7 +448,9 @@ public class MetricEndpointTest {
         requestForMetric.value = 10.8;
         requestForMetric.metricDefinitionId = metricDefinitionResponse.id;
 
-        var response = assignMetric("admin", requestForMetric);
+        List<String> installationId = new ArrayList();
+
+        var response = assignMetric("admin", requestForMetric, installationId);
 
         var metric = response
                 .then()
@@ -423,9 +460,10 @@ public class MetricEndpointTest {
                 .as(MetricResponseDto.class);
 
         var deleteResponse = given()
+                .basePath("accounting-system/installations")
                 .auth()
                 .oauth2(getAccessToken("admin"))
-                .delete("/{metricId}", metric.id)
+                .delete("/{installation_id}/metrics/{metricId}", installationId.get(0), metric.id)
                 .then()
                 .assertThat()
                 .statusCode(200)
@@ -456,7 +494,9 @@ public class MetricEndpointTest {
         requestForMetric.value = 10.8;
         requestForMetric.metricDefinitionId = createdMetricDefinition.id;
 
-        var response = assignMetric("admin", requestForMetric);
+        List<String> installationId = new ArrayList();
+
+        var response = assignMetric("admin", requestForMetric, installationId);
 
         var metric = response
                 .then()
@@ -466,10 +506,11 @@ public class MetricEndpointTest {
                 .as(MetricResponseDto.class);
 
         var informativeResponse = given()
+                .basePath("accounting-system/installations")
                 .auth()
                 .oauth2(getAccessToken("admin"))
                 .contentType(ContentType.JSON)
-                .patch("/{id}", metric.id)
+                .patch("{installation_id}/metrics/{id}", installationId.get(0), metric.id)
                 .then()
                 .assertThat()
                 .statusCode(400)
@@ -489,39 +530,6 @@ public class MetricEndpointTest {
                 .thenReturn();
 
         assertEquals(401, notAuthenticatedResponse.statusCode());
-    }
-
-    @Test
-    public void updateMetricCannotConsumeContentType() {
-
-        var response = given()
-                .auth()
-                .oauth2(getAccessToken("admin"))
-                .patch("/{id}", "507f1f77bcf86cd799439011")
-                .then()
-                .assertThat()
-                .statusCode(415)
-                .extract()
-                .as(InformativeResponse.class);
-
-        assertEquals("Cannot consume content type.", response.message);
-    }
-
-    @Test
-    public void updateMetricNotFound() {
-
-        var response = given()
-                .auth()
-                .oauth2(getAccessToken("admin"))
-                .contentType(ContentType.JSON)
-                .patch("/{id}", "jnejenjdfn")
-                .then()
-                .assertThat()
-                .statusCode(404)
-                .extract()
-                .as(InformativeResponse.class);
-
-        assertEquals("There is no Metric with the following id: jnejenjdfn", response.message);
     }
 
     @Test
@@ -545,7 +553,9 @@ public class MetricEndpointTest {
         requestForMetric.value = 10.8;
         requestForMetric.metricDefinitionId = createdMetricDefinition.id;
 
-        var response = assignMetric("admin", requestForMetric);
+        List<String> installationId = new ArrayList();
+
+        var response = assignMetric("admin", requestForMetric, installationId);
 
         var metric = response
                 .then()
@@ -560,11 +570,12 @@ public class MetricEndpointTest {
         updateMetricRequest.start = "2023-01-0509:13:07";
 
         var informativeResponse = given()
+                .basePath("accounting-system/installations")
                 .auth()
                 .oauth2(getAccessToken("admin"))
                 .body(updateMetricRequest)
                 .contentType(ContentType.JSON)
-                .patch("/{id}", metric.id)
+                .patch("/{installation_id}/metrics/{id}", installationId.get(0), metric.id)
                 .then()
                 .assertThat()
                 .statusCode(400)
@@ -595,7 +606,9 @@ public class MetricEndpointTest {
         requestForMetric.value = 10.8;
         requestForMetric.metricDefinitionId = createdMetricDefinition.id;
 
-        var response = assignMetric("admin", requestForMetric);
+        List<String> installationId = new ArrayList();
+
+        var response = assignMetric("admin", requestForMetric, installationId);
 
         var metric = response
                 .then()
@@ -613,11 +626,12 @@ public class MetricEndpointTest {
         updateMetricRequest.metricDefinitionId = "507f1f77bcf86cd799439011";
 
         var informativeResponse = given()
+                .basePath("accounting-system/installations")
                 .auth()
                 .oauth2(getAccessToken("admin"))
                 .body(updateMetricRequest)
                 .contentType(ContentType.JSON)
-                .patch("/{id}", metric.id)
+                .patch("/{installation_id}/metrics/{id}", installationId.get(0), metric.id)
                 .then()
                 .assertThat()
                 .statusCode(404)
@@ -625,31 +639,6 @@ public class MetricEndpointTest {
                 .as(InformativeResponse.class);
 
         assertEquals("There is no Metric Definition with the following id: 507f1f77bcf86cd799439011", informativeResponse.message);
-    }
-
-    @Test
-    public void updateMetricMetricNotFound() {
-
-        var updateMetricRequest = new UpdateMetricRequestDto();
-
-        updateMetricRequest.start = "2023-01-05T09:13:07Z";
-        updateMetricRequest.end = "2024-01-05T09:14:07Z";
-        updateMetricRequest.value = 15.8;
-        updateMetricRequest.metricDefinitionId = "507f1f77bcf86cd799439011";
-
-        var response = given()
-                .auth()
-                .oauth2(getAccessToken("admin"))
-                .body(updateMetricRequest)
-                .contentType(ContentType.JSON)
-                .patch("/{id}", "507f1f77bcf86cd799439011")
-                .then()
-                .assertThat()
-                .statusCode(404)
-                .extract()
-                .as(InformativeResponse.class);
-
-        assertEquals("There is no Metric with the following id: 507f1f77bcf86cd799439011", response.message);
     }
 
     @Test
@@ -674,7 +663,9 @@ public class MetricEndpointTest {
         requestForMetric.value = 10.8;
         requestForMetric.metricDefinitionId = createdMetricDefinition.id;
 
-        var response = assignMetric("admin", requestForMetric);
+        List<String> installationId = new ArrayList();
+
+        var response = assignMetric("admin", requestForMetric, installationId);
 
         var metric = response
                 .then()
@@ -688,13 +679,13 @@ public class MetricEndpointTest {
 
         updateMetricRequest.start = "2023-01-05T09:13:07Z";
 
-
         var informativeResponse = given()
+                .basePath("accounting-system/installations")
                 .auth()
                 .oauth2(getAccessToken("admin"))
                 .body(updateMetricRequest)
                 .contentType(ContentType.JSON)
-                .patch("/{id}", metric.id)
+                .patch("/{installation_id}/metrics/{id}", installationId.get(0), metric.id)
                 .then()
                 .assertThat()
                 .statusCode(400)
@@ -726,7 +717,9 @@ public class MetricEndpointTest {
         requestForMetric.value = 10.8;
         requestForMetric.metricDefinitionId = createdMetricDefinition.id;
 
-        var response = assignMetric("admin", requestForMetric);
+        List<String> installationId = new ArrayList();
+
+        var response = assignMetric("admin", requestForMetric, installationId);
 
         var metric = response
                 .then()
@@ -742,11 +735,12 @@ public class MetricEndpointTest {
         updateMetricRequest.end = "2024-01-05T09:13:07Z";
 
         var informativeResponse = given()
+                .basePath("accounting-system/installations")
                 .auth()
                 .oauth2(getAccessToken("admin"))
                 .body(updateMetricRequest)
                 .contentType(ContentType.JSON)
-                .patch("/{id}", metric.id)
+                .patch("/{installation_id}/metrics/{id}", installationId.get(0), metric.id)
                 .then()
                 .assertThat()
                 .statusCode(400)
@@ -778,7 +772,9 @@ public class MetricEndpointTest {
         requestForMetric.value = 10.8;
         requestForMetric.metricDefinitionId = createdMetricDefinition.id;
 
-        var response = assignMetric("admin", requestForMetric);
+        List<String> installationId = new ArrayList();
+
+        var response = assignMetric("admin", requestForMetric, installationId);
 
         var metric = response
                 .then()
@@ -793,11 +789,12 @@ public class MetricEndpointTest {
         updateMetricRequest.end = "2020-01-05T09:13:07Z";
 
         var informativeResponse = given()
+                .basePath("accounting-system/installations")
                 .auth()
                 .oauth2(getAccessToken("admin"))
                 .body(updateMetricRequest)
                 .contentType(ContentType.JSON)
-                .patch("/{id}", metric.id)
+                .patch("/{installation_id}/metrics/{id}", installationId.get(0), metric.id)
                 .then()
                 .assertThat()
                 .statusCode(400)
@@ -829,7 +826,9 @@ public class MetricEndpointTest {
         requestForMetric.value = 10.8;
         requestForMetric.metricDefinitionId = createdMetricDefinition.id;
 
-        var response = assignMetric("admin", requestForMetric);
+        List<String> installationId = new ArrayList();
+
+        var response = assignMetric("admin", requestForMetric, installationId);
 
         var metric = response
                 .then()
@@ -846,11 +845,12 @@ public class MetricEndpointTest {
 
 
         var informativeResponse = given()
+                .basePath("accounting-system/installations")
                 .auth()
                 .oauth2(getAccessToken("admin"))
                 .body(updateMetricRequest)
                 .contentType(ContentType.JSON)
-                .patch("/{id}", metric.id)
+                .patch("/{installation_id}/metrics/{id}", installationId.get(0), metric.id)
                 .then()
                 .assertThat()
                 .statusCode(400)
@@ -882,7 +882,9 @@ public class MetricEndpointTest {
         requestForMetric.value = 10.8;
         requestForMetric.metricDefinitionId = createdMetricDefinition.id;
 
-        var response = assignMetric("admin", requestForMetric);
+        List<String> installationId = new ArrayList();
+
+        var response = assignMetric("admin", requestForMetric, installationId);
 
         var metric = response
                 .then()
@@ -897,11 +899,12 @@ public class MetricEndpointTest {
         updateMetricRequest.start = "2022-01-05T09:14:07Z";
 
         var informativeResponse = given()
+                .basePath("accounting-system/installations")
                 .auth()
                 .oauth2(getAccessToken("admin"))
                 .body(updateMetricRequest)
                 .contentType(ContentType.JSON)
-                .patch("/{id}", metric.id)
+                .patch("/{installation_id}/metrics/{id}", installationId.get(0), metric.id)
                 .then()
                 .assertThat()
                 .statusCode(400)
@@ -933,7 +936,9 @@ public class MetricEndpointTest {
         requestForMetric.value = 10.8;
         requestForMetric.metricDefinitionId = createdMetricDefinition.id;
 
-        var response = assignMetric("admin", requestForMetric);
+        List<String> installationId = new ArrayList();
+
+        var response = assignMetric("admin", requestForMetric, installationId);
 
         var metric = response
                 .then()
@@ -948,11 +953,12 @@ public class MetricEndpointTest {
         updateMetricRequest.end = "2021-01-05T09:13:07Z";
 
         var informativeResponse = given()
+                .basePath("accounting-system/installations")
                 .auth()
                 .oauth2(getAccessToken("admin"))
                 .body(updateMetricRequest)
                 .contentType(ContentType.JSON)
-                .patch("/{id}", metric.id)
+                .patch("/{installation_id}/metrics/{id}", installationId.get(0), metric.id)
                 .then()
                 .assertThat()
                 .statusCode(400)
@@ -997,7 +1003,9 @@ public class MetricEndpointTest {
         requestForMetric.value = 10.8;
         requestForMetric.metricDefinitionId = createdMetricDefinition.id;
 
-        var response = assignMetric("admin", requestForMetric);
+        List<String> installationId = new ArrayList();
+
+        var response = assignMetric("admin", requestForMetric, installationId);
 
         var metric = response
                 .then()
@@ -1015,6 +1023,7 @@ public class MetricEndpointTest {
         updateMetricRequest.metricDefinitionId = createdMetricDefinition1.id;
 
         var updateResponse = given()
+                .basePath("accounting-system/installations")
                 .auth()
                 .oauth2(getAccessToken("admin"))
                 .config(RestAssured.config()
@@ -1022,7 +1031,7 @@ public class MetricEndpointTest {
                                 .numberReturnType(JsonPathConfig.NumberReturnType.DOUBLE)))
                 .body(updateMetricRequest)
                 .contentType(ContentType.JSON)
-                .patch("/{id}", metric.id)
+                .patch("/{installation_id}/metrics/{id}", installationId.get(0), metric.id)
                 .then()
                 .assertThat()
                 .statusCode(200)
@@ -1059,7 +1068,9 @@ public class MetricEndpointTest {
         requestForMetric.value = 10.8;
         requestForMetric.metricDefinitionId = createdMetricDefinition.id;
 
-        var response = assignMetric("admin", requestForMetric);
+        List<String> installationId = new ArrayList();
+
+        var response = assignMetric("admin", requestForMetric, installationId);
 
         var metric = response
                 .then()
@@ -1074,6 +1085,7 @@ public class MetricEndpointTest {
         updateMetricRequest.value = 12.0;
 
         var updateResponse = given()
+                .basePath("accounting-system/installations")
                 .auth()
                 .oauth2(getAccessToken("admin"))
                 .config(RestAssured.config()
@@ -1081,7 +1093,7 @@ public class MetricEndpointTest {
                                 .numberReturnType(JsonPathConfig.NumberReturnType.DOUBLE)))
                 .body(updateMetricRequest)
                 .contentType(ContentType.JSON)
-                .patch("/{id}", metric.id)
+                .patch("/{installation_id}/metrics/{id}", installationId.get(0), metric.id)
                 .then()
                 .assertThat()
                 .statusCode(200)
@@ -1096,7 +1108,7 @@ public class MetricEndpointTest {
         assertEquals(requestForMetric.metricDefinitionId, updateResponse.metricDefinitionId);
     }
 
-    private io.restassured.response.Response assignMetric(String user, MetricRequestDto body){
+    private io.restassured.response.Response assignMetric(String user, MetricRequestDto body, List<String> installationId){
 
         //Registering a project
         var project = given()
@@ -1109,6 +1121,8 @@ public class MetricEndpointTest {
                 .statusCode(200)
                 .extract()
                 .as(ProjectResponseDto.class);
+
+        projectAccessAlwaysRepository.associateProjectWithProviders("777536", Set.of("grnet"));
 
         //Registering an installation
         Mockito.when(readPredefinedTypesService.searchForUnitType(any())).thenReturn(Optional.of("KG"));
@@ -1131,6 +1145,8 @@ public class MetricEndpointTest {
         request.unitOfAccess = metricDefinitionResponse.id;
 
         var installation = createInstallation(request, "admin");
+
+        installationId.add(installation.id);
 
         return given()
                 .auth()

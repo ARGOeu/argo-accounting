@@ -1,18 +1,26 @@
 package org.accounting.system.util;
 
 
+import io.quarkus.oidc.TokenIntrospection;
+import org.accounting.system.beans.RequestInformation;
 import org.accounting.system.dtos.authorization.request.RoleRequestDto;
 import org.accounting.system.dtos.metricdefinition.MetricDefinitionRequestDto;
 import org.accounting.system.enums.Collection;
 import org.accounting.system.enums.Operation;
+import org.accounting.system.repositories.client.ClientRepository;
 import org.accounting.system.services.MetricDefinitionService;
 import org.bson.types.ObjectId;
+import org.eclipse.microprofile.config.inject.ConfigProperty;
+import org.json.simple.JSONObject;
+import org.json.simple.parser.JSONParser;
+import org.json.simple.parser.ParseException;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 import javax.ws.rs.BadRequestException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Base64;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -24,6 +32,21 @@ public class Utility {
 
     @Inject
     MetricDefinitionService metricDefinitionService;
+
+    @Inject
+    RequestInformation requestInformation;
+
+    @Inject
+    TokenIntrospection tokenIntrospection;
+
+    @ConfigProperty(name = "key.to.retrieve.roles.from.access.token")
+    String key;
+
+    @ConfigProperty(name = "key.to.retrieve.id.from.access.token")
+    String id;
+
+    @Inject
+    ClientRepository clientRepository;
 
     public void collectionHasTheAppropriatePermissions(RoleRequestDto request) {
 
@@ -91,5 +114,53 @@ public class Utility {
         }
         Set<String> mySet = new HashSet<String>(Arrays.asList(names));
         return mySet;
+    }
+
+    public Set<String> getRoles(){
+
+//        List<String> providedRoles = null;
+//
+//        Object object = tokenIntrospection.getJsonObject().get(key);
+//
+//        Object scope = tokenIntrospection.getJsonObject().get("scope");
+//
+//        if(object == null){
+//            providedRoles = Arrays.asList(scope.toString().replace("\"", "").split(" ").clone());
+////        }else if(object instanceof JsonString){
+////            providedRoles = List.of(tokenIntrospection.getString(key));
+//        } else {
+//            JsonArray jsonArray = tokenIntrospection.getArray(key);
+//            providedRoles = jsonArray
+//                    .stream()
+//                    .map(jsonValue -> ((JsonString) jsonValue).getString())
+//                    .collect(Collectors.toList());
+//        }
+
+        String vopersonId = tokenIntrospection.getJsonObject().getString(id);
+
+        // sub -> Usually a machine-readable identifier of the resource owner who authorized this token
+        requestInformation.setSubjectOfToken(tokenIntrospection.getJsonObject().getString(id));
+
+        return clientRepository.getClientRoles(vopersonId);
+    }
+
+    public void setAccessToken(){
+
+        // sub -> Usually a machine-readable identifier of the resource owner who authorized this token
+        requestInformation.setSubjectOfToken(tokenIntrospection.getJsonObject().getString(id));
+    }
+
+    public String getIdFromToken(String chunk) throws ParseException {
+
+
+        Base64.Decoder decoder = Base64.getUrlDecoder();
+
+        String payload = new String(decoder.decode(chunk));
+
+        JSONParser parser = new JSONParser();
+
+        JSONObject json = (JSONObject) parser.parse(payload);
+
+        return (String) json.get("sub");
     }
 }

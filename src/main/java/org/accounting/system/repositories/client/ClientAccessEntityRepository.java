@@ -1,5 +1,6 @@
 package org.accounting.system.repositories.client;
 
+import org.accounting.system.entities.acl.PermissionAccessControl;
 import org.accounting.system.entities.client.Client;
 import org.accounting.system.repositories.modulators.AccessControlModulator;
 import org.accounting.system.repositories.modulators.AccessEntityModulator;
@@ -10,7 +11,7 @@ import javax.ws.rs.ForbiddenException;
 import java.util.Set;
 
 @ApplicationScoped
-public class ClientAccessEntityRepository extends AccessEntityModulator<Client, String> {
+public class ClientAccessEntityRepository extends AccessEntityModulator<Client, String, PermissionAccessControl> {
 
     @Inject
     ClientAccessControlRepository clientAccessControlRepository;
@@ -40,7 +41,7 @@ public class ClientAccessEntityRepository extends AccessEntityModulator<Client, 
     }
 
     @Override
-    public AccessControlModulator<Client, String> accessControlModulator() {
+    public AccessControlModulator<Client, String, PermissionAccessControl> accessControlModulator() {
         return clientAccessControlRepository;
     }
 }

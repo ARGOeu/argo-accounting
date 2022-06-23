@@ -1,6 +1,7 @@
 package org.accounting.system.repositories.client;
 
 import com.mongodb.client.model.Filters;
+import org.accounting.system.entities.acl.PermissionAccessControl;
 import org.accounting.system.entities.client.Client;
 import org.accounting.system.repositories.modulators.AccessAlwaysModulator;
 import org.bson.Document;
@@ -10,12 +11,14 @@ import javax.enterprise.context.ApplicationScoped;
 import java.util.Set;
 
 @ApplicationScoped
-public class ClientAccessAlwaysRepository extends AccessAlwaysModulator<Client, String> {
+public class ClientAccessAlwaysRepository extends AccessAlwaysModulator<Client, String, PermissionAccessControl> {
 
     public Client assignRolesToRegisteredClient (String clientId, Set<String> roles){
 
         Client client = findById(clientId);
-        client.setRoles(roles);
+
+        client.getRoles().addAll(roles);
+
         persistOrUpdate(client);
 
         return client;

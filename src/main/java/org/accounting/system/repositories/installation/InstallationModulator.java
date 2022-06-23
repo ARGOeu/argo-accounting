@@ -1,17 +1,19 @@
 package org.accounting.system.repositories.installation;
 
 import org.accounting.system.dtos.installation.InstallationRequestDto;
-import org.accounting.system.dtos.installation.UpdateInstallationRequestDto;
+import org.accounting.system.entities.acl.RoleAccessControl;
 import org.accounting.system.entities.installation.Installation;
-import org.accounting.system.mappers.InstallationMapper;
+import org.accounting.system.entities.projections.MetricProjection;
+import org.accounting.system.entities.projections.ProjectionQuery;
+import org.accounting.system.enums.Collection;
+import org.accounting.system.enums.Operation;
 import org.accounting.system.repositories.modulators.AbstractModulator;
-import org.apache.commons.lang3.StringUtils;
 import org.bson.types.ObjectId;
 
 import javax.inject.Inject;
 
 
-public class InstallationModulator extends AbstractModulator<Installation, ObjectId> {
+public class InstallationModulator extends AbstractModulator<Installation, ObjectId, RoleAccessControl> {
 
 
     @Inject
@@ -20,39 +22,41 @@ public class InstallationModulator extends AbstractModulator<Installation, Objec
     @Inject
     InstallationAccessAlwaysRepository installationAccessAlwaysRepository;
 
-    /**
-     * This method is responsible for updating a part or all attributes of existing Installation.
-     *
-     * @param id The Installation to be updated.
-     * @param request The Installation attributes to be updated.
-     * @return The updated Installation.
-     */
-    public Installation updateEntity(String id, UpdateInstallationRequestDto request) {
-
-        Installation entity = findById(new ObjectId(id));
-
-        InstallationMapper.INSTANCE.updateInstallationFromDto(request, entity);
-
-        if(!StringUtils.isAllBlank(request.installation, request.infrastructure)){
-            installationAccessAlwaysRepository.exist(entity.getInfrastructure(), entity.getInstallation());
-        }
-
-        return super.updateEntity(entity, new ObjectId(id));
-    }
-
     public Installation save(InstallationRequestDto request) {
 
-        installationAccessAlwaysRepository.exist(request.infrastructure, request.installation);
+        return installationAccessAlwaysRepository.save(request);
 
-        switch (getRequestInformation().getAccessType()){
-            case ALWAYS:
-                return installationAccessAlwaysRepository.save(request);
-            case ENTITY:
-                return installationAccessEntityRepository.save(request);
-            default:
-                return installationAccessAlwaysRepository.save(request);
-        }
+//
+//        switch (getRequestInformation().getAccessType()){
+//            case ALWAYS:
+//                return installationAccessAlwaysRepository.save(request);
+//            case ENTITY:
+//                return installationAccessEntityRepository.save(request);
+//            default:
+//                throw new ForbiddenException("The authenticated client is not permitted to perform the requested operation.");
+//        }
     }
+
+    public boolean accessibility(String project, String provider, String installation, Collection collection, Operation operation){
+
+        return installationAccessEntityRepository.accessibility(project, provider, installation, collection, operation);
+    }
+
+    public ProjectionQuery<MetricProjection> fetchAllMetrics(String id, int page, int size){
+
+        return installationAccessAlwaysRepository.fetchAllMetrics(id, page, size);
+
+
+//        switch (getRequestInformation().getAccessType()){
+//            case ALWAYS:
+//                return installationAccessAlwaysRepository.fetchAllMetrics(id, page, size);
+//            case ENTITY:
+//                return installationAccessEntityRepository.fetchAllMetrics(id, page, size);
+//            default:
+//                throw new ForbiddenException("The authenticated client is not permitted to perform the requested operation.");
+//        }
+    }
+
 
     @Override
     public InstallationAccessAlwaysRepository always() {

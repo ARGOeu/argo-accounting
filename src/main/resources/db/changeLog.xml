@@ -165,8 +165,9 @@
             <ext:documents>
                 [
                 {
-                name: "metric_definition_admin",
-                description: "metric_definition_admin will always be able to perform any operation in the Metric Definition collection.",
+                system: true,
+                name: "collection_owner",
+                description: "collection_owner will always be able to perform any operation in MetricDefinition, Role, Provider and Client collection.",
                 collections_access_permissions: [
                 {
                 access_permissions: [
@@ -185,44 +186,11 @@
                 {
                 operation: "READ",
                 access_type: "ALWAYS"
-                },
-                {
-                operation: "ACL",
-                access_type: "ALWAYS"
                 }
                 ],
                 collection: "MetricDefinition"
-                }]
                 },
                 {
-                name: "metric_definition_inspector",
-                description: "metric_definition_inspector can read any entity in the Metric Definition collection, but cannot create new ones or update, delete any Metric Definitions.",
-                collections_access_permissions: [{
-                access_permissions: [
-                {
-                operation: "CREATE",
-                access_type: "NEVER"
-                },
-                {
-                operation: "UPDATE",
-                access_type: "NEVER"
-                },
-                {
-                operation: "DELETE",
-                access_type: "NEVER"
-                },
-                {
-                operation: "READ",
-                access_type: "ALWAYS"
-                }
-                ],
-                collection: "MetricDefinition"
-                }]
-                },
-                {
-                name: "metric_definition_editor",
-                description: "metric_definition_editor  can create new Metric Definitions, as well as update, and read any entity in the collection. But cannot delete any entity in the Metric Definition collection.",
-                collections_access_permissions: [{
                 access_permissions: [
                 {
                 operation: "CREATE",
@@ -234,24 +202,33 @@
                 },
                 {
                 operation: "DELETE",
-                access_type: "NEVER"
+                access_type: "ALWAYS"
                 },
+                {
+                operation: "READ",
+                access_type: "ALWAYS"
+                }
+                ],
+                collection: "Role"
+                },
+                {
+                access_permissions: [
                 {
                 operation: "READ",
                 access_type: "ALWAYS"
                 },
                 {
-                operation: "ACL",
+                operation: "ASSIGN_ROLE",
+                access_type: "ALWAYS"
+                },
+                {
+                operation: "DETACH_ROLE",
                 access_type: "ALWAYS"
                 }
                 ],
-                collection: "MetricDefinition"
-                }]
+                collection: "Client"
                 },
                 {
-                name: "metric_definition_creator",
-                description: "metric_definition_creator can create new Metric Definitions, but can update, delete or read only its Metric Definitions.",
-                collections_access_permissions: [{
                 access_permissions: [
                 {
                 operation: "CREATE",
@@ -259,22 +236,18 @@
                 },
                 {
                 operation: "UPDATE",
-                access_type: "ENTITY"
+                access_type: "ALWAYS"
                 },
                 {
                 operation: "DELETE",
-                access_type: "ENTITY"
+                access_type: "ALWAYS"
                 },
                 {
                 operation: "READ",
-                access_type: "ENTITY"
-                },
-                {
-                operation: "ACL",
-                access_type: "ENTITY"
+                access_type: "ALWAYS"
                 }
                 ],
-                collection: "MetricDefinition"
+                collection: "Provider"
                 }]
                 }
                 ]
@@ -283,11 +256,13 @@
     </changeSet>
 
     <changeSet id="7" author="accounting-system">
-        <ext:insertOne collectionName="Role">
-            <ext:document>
+        <ext:insertMany collectionName="Role">
+            <ext:documents>
+                [
                 {
-                name: "system_admin",
-                description: "system_admin will always be able to perform any operation in Accounting System API.",
+                system: true,
+                name: "collection_creator",
+                description: "collection_creator in MetricDefinition, Role and Provider collection can create new entities, read all entities but can update, delete only its entities. Can also read all registered clients.",
                 collections_access_permissions: [
                 {
                 access_permissions: [
@@ -297,10 +272,108 @@
                 },
                 {
                 operation: "UPDATE",
-                access_type: "ALWAYS"
+                access_type: "ENTITY"
                 },
                 {
                 operation: "DELETE",
+                access_type: "ENTITY"
+                },
+                {
+                operation: "READ",
+                access_type: "ALWAYS"
+                }
+                ],
+                collection: "MetricDefinition"
+                },
+                {
+                access_permissions: [
+                {
+                operation: "READ",
+                access_type: "ALWAYS"
+                }
+                ],
+                collection: "Client"
+                },
+                {
+                access_permissions: [
+                {
+                operation: "CREATE",
+                access_type: "ALWAYS"
+                },
+                {
+                operation: "UPDATE",
+                access_type: "ENTITY"
+                },
+                {
+                operation: "DELETE",
+                access_type: "ENTITY"
+                },
+                {
+                operation: "READ",
+                access_type: "ALWAYS"
+                }
+                ],
+                collection: "Provider"
+                }]
+                }
+                ]
+            </ext:documents>
+        </ext:insertMany>
+    </changeSet>
+
+    <changeSet id="8" author="accounting-system">
+        <ext:createIndex collectionName="AccessControl">
+            <ext:keys>
+                { who: 1, collection: 1, entity: 1}
+            </ext:keys>
+            <ext:options>
+                {unique: true, name: "unique_access_control_entry"}
+            </ext:options>
+        </ext:createIndex>
+    </changeSet>
+
+    <changeSet id="10" author="accounting-system">
+        <ext:createIndex collectionName="Installation">
+            <ext:keys>
+                { infrastructure: 1, installation: 1}
+            </ext:keys>
+            <ext:options>
+                {unique: true, name: "unique_infrastructure_installation_entry", collation: { locale: "en" }}
+            </ext:options>
+        </ext:createIndex>
+    </changeSet>
+
+    <changeSet id="11" author="accounting-system">
+        <ext:createIndex collectionName="Metric">
+            <ext:keys>
+                { resource_id: 1, metric_definition_id: 1, time_period_start: 1, time_period_end: 1}
+            </ext:keys>
+            <ext:options>
+                {unique: true, name: "unique_metric_entry"}
+            </ext:options>
+        </ext:createIndex>
+    </changeSet>
+
+    <changeSet id="12" author="accounting-system">
+        <ext:insertOne collectionName="Role">
+            <ext:document>
+                {
+                system: false,
+                name: "project_admin",
+                description: "project_admin can perform any operation on a specific Project.",
+                collections_access_permissions: [
+                {
+                access_permissions: [
+                {
+                operation: "REGISTER",
+                access_type: "ALWAYS"
+                },
+                {
+                operation: "ASSOCIATE",
+                access_type: "ALWAYS"
+                },
+                {
+                operation: "DISSOCIATE",
                 access_type: "ALWAYS"
                 },
                 {
@@ -312,7 +385,7 @@
                 access_type: "ALWAYS"
                 }
                 ],
-                collection: "MetricDefinition"
+                collection: "Project"
                 },
                 {
                 access_permissions: [
@@ -330,10 +403,6 @@
                 },
                 {
                 operation: "READ",
-                access_type: "ALWAYS"
-                },
-                {
-                operation: "ACL",
                 access_type: "ALWAYS"
                 }
                 ],
@@ -362,85 +431,29 @@
                 access_type: "ALWAYS"
                 }
                 ],
-                collection: "Role"
+                collection: "Installation"
                 },
                 {
                 access_permissions: [
-                {
-                operation: "CREATE",
-                access_type: "ALWAYS"
-                },
-                {
-                operation: "UPDATE",
-                access_type: "ALWAYS"
-                },
-                {
-                operation: "DELETE",
-                access_type: "ALWAYS"
-                },
-                {
-                operation: "READ",
-                access_type: "ALWAYS"
-                },
                 {
                 operation: "ACL",
                 access_type: "ALWAYS"
                 }
                 ],
                 collection: "Provider"
-                },
-                {
-                access_permissions: [
-                {
-                operation: "ASSIGN_ROLE",
-                access_type: "ALWAYS"
-                },
-                {
-                operation: "READ",
-                access_type: "ALWAYS"
-                },
-                {
-                operation: "DETACH_ROLE",
-                access_type: "ALWAYS"
-                }
-                ],
-                collection: "Client"
-                },
-                {
-                access_permissions: [
-                {
-                operation: "ACCESS_PROJECT",
-                access_type: "ALWAYS"
-                },
-                {
-                operation: "ACL",
-                access_type: "ALWAYS"
-                }
-                ],
-                collection: "Project"
                 }]
                 }
             </ext:document>
         </ext:insertOne>
     </changeSet>
 
-    <changeSet id="8" author="accounting-system">
-        <ext:createIndex collectionName="AccessControl">
-            <ext:keys>
-                { who: 1, collection: 1, entity: 1}
-            </ext:keys>
-            <ext:options>
-                {unique: true, name: "unique_access_control_entry"}
-            </ext:options>
-        </ext:createIndex>
-    </changeSet>
-
-    <changeSet id="9" author="accounting-system">
+    <changeSet id="13" author="accounting-system">
         <ext:insertOne collectionName="Role">
             <ext:document>
                 {
-                name: "installation_creator",
-                description: "installation_creator can create new Installations, but can update, delete or read only its Installations.",
+                system: false,
+                name: "provider_admin",
+                description: "provider_admin can perform any operation on a specific Provider.",
                 collections_access_permissions: [
                 {
                 access_permissions: [
@@ -450,86 +463,88 @@
                 },
                 {
                 operation: "UPDATE",
-                access_type: "ENTITY"
+                access_type: "ALWAYS"
                 },
                 {
                 operation: "DELETE",
-                access_type: "ENTITY"
+                access_type: "ALWAYS"
                 },
                 {
                 operation: "READ",
-                access_type: "ENTITY"
+                access_type: "ALWAYS"
+                }
+                ],
+                collection: "Metric"
+                },
+                {
+                access_permissions: [
+                {
+                operation: "CREATE",
+                access_type: "ALWAYS"
+                },
+                {
+                operation: "UPDATE",
+                access_type: "ALWAYS"
+                },
+                {
+                operation: "DELETE",
+                access_type: "ALWAYS"
+                },
+                {
+                operation: "READ",
+                access_type: "ALWAYS"
                 },
                 {
                 operation: "ACL",
-                access_type: "ENTITY"
+                access_type: "ALWAYS"
                 }
                 ],
                 collection: "Installation"
+                },
+                {
+                access_permissions: [
+                {
+                operation: "ACL",
+                access_type: "ALWAYS"
+                }
+                ],
+                collection: "Provider"
                 }]
                 }
             </ext:document>
         </ext:insertOne>
     </changeSet>
 
-    <changeSet id="10" author="accounting-system">
-        <ext:createIndex collectionName="Installation">
-            <ext:keys>
-                { infrastructure: 1, installation: 1}
-            </ext:keys>
-            <ext:options>
-                {unique: true, name: "unique_infrastructure_installation_entry", collation: { locale: "en" }}
-            </ext:options>
-        </ext:createIndex>
-    </changeSet>
 
-    <changeSet id="11" author="accounting-system">
-        <ext:createIndex collectionName="Metric">
-            <ext:keys>
-                { resource_id: 1, metric_definition_id: 1, time_period_start: 1, time_period_end: 1, value: 1}
-            </ext:keys>
-            <ext:options>
-                {unique: true, name: "unique_installation_entry"}
-            </ext:options>
-        </ext:createIndex>
-    </changeSet>
-
-    <changeSet id="12" author="accounting-system">
-        <ext:insertOne collectionName="Role">
-            <ext:document>
+    <changeSet id="14" author="accounting-system">
+        <ext:insertMany collectionName="Role">
+            <ext:documents>
+                [
                 {
-                name: "project_admin",
-                description: "project_admin has rights to manage a specific Project.",
+                system: false,
+                name: "installation_admin",
+                description: "installation_admin can perform any operation on a specific Installation.",
                 collections_access_permissions: [
                 {
                 access_permissions: [
                 {
-                operation: "ACCESS_PROJECT",
-                access_type: "ENTITY"
-                }
-                ],
-                collection: "Project"
+                operation: "UPDATE",
+                access_type: "ALWAYS"
                 },
                 {
-                access_permissions: [
+                operation: "DELETE",
+                access_type: "ALWAYS"
+                },
                 {
                 operation: "READ",
                 access_type: "ALWAYS"
                 },
                 {
-                operation: "CREATE",
+                operation: "ACL",
                 access_type: "ALWAYS"
-                },
-                {
-                operation: "UPDATE",
-                access_type: "ENTITY"
-                },
-                {
-                operation: "DELETE",
-                access_type: "ENTITY"
                 }
                 ],
-                collection: "Provider"
+                collection: "Installation"
                 },
                 {
                 access_permissions: [
@@ -539,22 +554,22 @@
                 },
                 {
                 operation: "UPDATE",
-                access_type: "ENTITY"
+                access_type: "ALWAYS"
                 },
                 {
                 operation: "DELETE",
-                access_type: "ENTITY"
+                access_type: "ALWAYS"
                 },
                 {
                 operation: "READ",
                 access_type: "ALWAYS"
                 }
                 ],
-                collection: "MetricDefinition"
+                collection: "Metric"
+                }]
                 }
                 ]
-                }
-            </ext:document>
-        </ext:insertOne>
+            </ext:documents>
+        </ext:insertMany>
     </changeSet>
 </databaseChangeLog>

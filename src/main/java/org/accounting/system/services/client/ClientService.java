@@ -1,8 +1,6 @@
 package org.accounting.system.services.client;
 
 import io.quarkus.mongodb.panache.PanacheQuery;
-import io.quarkus.oidc.TokenIntrospection;
-import io.quarkus.oidc.UserInfo;
 import org.accounting.system.dtos.client.ClientResponseDto;
 import org.accounting.system.dtos.pagination.PageResource;
 import org.accounting.system.entities.client.Client;
@@ -10,15 +8,12 @@ import org.accounting.system.mappers.ClientMapper;
 import org.accounting.system.repositories.authorization.RoleRepository;
 import org.accounting.system.repositories.client.ClientRepository;
 import org.apache.commons.lang3.StringUtils;
-import org.eclipse.microprofile.config.inject.ConfigProperty;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 import javax.ws.rs.ForbiddenException;
 import javax.ws.rs.NotFoundException;
 import javax.ws.rs.core.UriInfo;
-import java.util.Collections;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 
@@ -29,18 +24,7 @@ public class ClientService {
     ClientRepository clientRepository;
 
     @Inject
-    TokenIntrospection tokenIntrospection;
-
-    @Inject
-    UserInfo userInfo;
-
-    @Inject
     RoleRepository roleRepository;
-
-    @ConfigProperty(name = "key.to.retrieve.id.from.access.token")
-    String key;
-
-
 
     /**
      * This method extracts specific information regarding the client from access token and stores it into the
@@ -48,16 +32,11 @@ public class ClientService {
      *
      * @return The registered client has been turned into a response body.
      */
-    public ClientResponseDto register(){
-
-        String id = tokenIntrospection.getJsonObject().getString(key);
+    public ClientResponseDto register(String id, String name, String email){
 
         if(StringUtils.isEmpty(id)){
             throw new ForbiddenException("voperson_id is empty. The client cannot be registered without voperson_id.");
         }
-
-        String name = Objects.isNull(userInfo.getJsonObject().get("name")) ? "": userInfo.getJsonObject().getString("name");
-        String email = Objects.isNull(userInfo.getJsonObject().get("email")) ? "": userInfo.getJsonObject().getString("email");
 
         Optional<Client> optionalClient = clientRepository.findByIdOptional(id);
 
@@ -68,7 +47,6 @@ public class ClientService {
             client = optionalClient.get();
             client.setEmail(email);
             client.setName(name);
-
         } else {
             client = new Client();
 
@@ -76,7 +54,7 @@ public class ClientService {
             client.setName(name);
             client.setEmail(email);
             client.setCreatorId(id);
-            client.setRoles(Collections.EMPTY_SET);
+            client.setRoles(Set.of("collection_creator"));
         }
 
         clientRepository.persistOrUpdate(client);
