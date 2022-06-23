@@ -1,6 +1,8 @@
 package org.accounting.system.repositories.provider;
 
 import org.accounting.system.dtos.provider.UpdateProviderRequestDto;
+import org.accounting.system.entities.projections.InstallationProjection;
+import org.accounting.system.entities.projections.ProjectionQuery;
 import org.accounting.system.entities.provider.Provider;
 import org.accounting.system.mappers.ProviderMapper;
 import org.accounting.system.repositories.modulators.AbstractModulator;
@@ -39,6 +41,21 @@ public class ProviderModulator extends AbstractModulator<Provider, String> {
         ProviderMapper.INSTANCE.updateProviderFromDto(request, entity);
 
         return super.updateEntity(entity, id);
+    }
+
+    public ProjectionQuery<InstallationProjection> lookupInstallations(String from, String localField, String foreignField, String as, int page, int size, Class<InstallationProjection> projection) {
+
+        throw new ForbiddenException("This operation has not been implemented yet.");
+    }
+
+    public boolean accessibility(String projectId, String providerId){
+
+        switch (getRequestInformation().getAccessType()){
+            case ENTITY:
+                return providerAccessEntityRepository.accessibility(projectId, providerId);
+            default:
+                throw new ForbiddenException("The authenticated client is not permitted to perform the requested operation.");
+        }
     }
 
     @Override

@@ -13,7 +13,6 @@ import org.accounting.system.dtos.metric.MetricRequestDto;
 import org.accounting.system.dtos.metric.MetricResponseDto;
 import org.accounting.system.entities.projections.MetricProjection;
 import org.accounting.system.enums.Collection;
-import org.accounting.system.enums.Operation;
 import org.accounting.system.interceptors.annotations.AccessPermission;
 import org.accounting.system.interceptors.annotations.AccessPermissions;
 import org.accounting.system.repositories.installation.InstallationRepository;
@@ -53,6 +52,7 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 
 import static org.accounting.system.enums.Operation.ACCESS_PROJECT;
+import static org.accounting.system.enums.Operation.ACCESS_PROVIDER;
 import static org.accounting.system.enums.Operation.ACL;
 import static org.eclipse.microprofile.openapi.annotations.enums.ParameterIn.QUERY;
 
@@ -138,8 +138,8 @@ public class InstallationEndpoint {
     @Produces(value = MediaType.APPLICATION_JSON)
     @Consumes(value = MediaType.APPLICATION_JSON)
     @AccessPermissions({
-            @AccessPermission(collection = Collection.Installation, operation = Operation.CREATE, precedence = 1),
-            @AccessPermission(collection = Collection.Project, operation = ACCESS_PROJECT, precedence = 2)
+            @AccessPermission(collection = Collection.Project, operation = ACCESS_PROJECT, precedence = 1),
+            @AccessPermission(collection = Collection.Provider, operation = ACCESS_PROVIDER, precedence = 2)
     })
     public Response save(@Valid @NotNull(message = "The request body is empty.") InstallationRequestDto installationRequestDto, @Context UriInfo uriInfo) {
 
@@ -191,8 +191,8 @@ public class InstallationEndpoint {
     @GET
     @Produces(value = MediaType.APPLICATION_JSON)
     @AccessPermissions({
-            @AccessPermission(collection = Collection.Installation, operation = Operation.READ, precedence = 1),
-            @AccessPermission(collection = Collection.Project, operation = ACCESS_PROJECT, precedence = 2)
+            @AccessPermission(collection = Collection.Project, operation = ACCESS_PROJECT, precedence = 1),
+            @AccessPermission(collection = Collection.Provider, operation = ACCESS_PROVIDER, precedence = 2)
     })    public Response getAllPagination(@Parameter(name = "page", in = QUERY,
             description = "Indicates the page number. Page number must be >= 1.") @DefaultValue("1") @QueryParam("page") int page,
                            @Parameter(name = "size", in = QUERY,
@@ -246,8 +246,8 @@ public class InstallationEndpoint {
     @Path("/{id}")
     @Produces(value = MediaType.APPLICATION_JSON)
     @AccessPermissions({
-            @AccessPermission(collection = Collection.Installation, operation = Operation.DELETE, precedence = 1),
-            @AccessPermission(collection = Collection.Project, operation = ACCESS_PROJECT, precedence = 2)
+            @AccessPermission(collection = Collection.Project, operation = ACCESS_PROJECT, precedence = 1),
+            @AccessPermission(collection = Collection.Provider, operation = ACCESS_PROVIDER, precedence = 2)
     })
     public Response delete(@Parameter(
             description = "The Installation to be deleted.",
@@ -310,8 +310,8 @@ public class InstallationEndpoint {
     @Path("/{id}")
     @Produces(value = MediaType.APPLICATION_JSON)
     @AccessPermissions({
-            @AccessPermission(collection = Collection.Installation, operation = Operation.READ, precedence = 1),
-            @AccessPermission(collection = Collection.Project, operation = ACCESS_PROJECT, precedence = 2)
+            @AccessPermission(collection = Collection.Project, operation = ACCESS_PROJECT, precedence = 1),
+            @AccessPermission(collection = Collection.Provider, operation = ACCESS_PROVIDER, precedence = 2)
     })
     public Response get(
             @Parameter(
@@ -386,8 +386,8 @@ public class InstallationEndpoint {
     @Produces(value = MediaType.APPLICATION_JSON)
     @Consumes(value = MediaType.APPLICATION_JSON)
     @AccessPermissions({
-            @AccessPermission(collection = Collection.Installation, operation = Operation.UPDATE, precedence = 1),
-            @AccessPermission(collection = Collection.Project, operation = ACCESS_PROJECT, precedence = 2)
+            @AccessPermission(collection = Collection.Project, operation = ACCESS_PROJECT, precedence = 1),
+            @AccessPermission(collection = Collection.Provider, operation = ACCESS_PROVIDER, precedence = 2)
     })    public Response update(
             @Parameter(
                     description = "The Installation to be updated.",
@@ -779,7 +779,8 @@ public class InstallationEndpoint {
     @Produces(value = MediaType.APPLICATION_JSON)
     @Consumes(value = MediaType.APPLICATION_JSON)
     @AccessPermissions({
-            @AccessPermission(collection = Collection.Project, operation = ACCESS_PROJECT, precedence = 1)
+            @AccessPermission(collection = Collection.Project, operation = ACCESS_PROJECT, precedence = 1),
+            @AccessPermission(collection = Collection.Provider, operation = ACCESS_PROVIDER, precedence = 2)
     })
     public Response save(
             @Parameter(
@@ -833,7 +834,8 @@ public class InstallationEndpoint {
     @Path("/{installationId}/metrics")
     @Produces(value = MediaType.APPLICATION_JSON)
     @AccessPermissions({
-            @AccessPermission(collection = Collection.Project, operation = ACCESS_PROJECT, precedence = 1)
+            @AccessPermission(collection = Collection.Project, operation = ACCESS_PROJECT, precedence = 1),
+            @AccessPermission(collection = Collection.Provider, operation = ACCESS_PROVIDER, precedence = 2)
     })
     public Response getAllMetricsUnderAnInstallation(
             @Parameter(

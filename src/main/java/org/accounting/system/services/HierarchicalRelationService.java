@@ -14,6 +14,7 @@ import org.accounting.system.exceptions.ConflictException;
 import org.accounting.system.interceptors.annotations.AccessPermissionsUtil;
 import org.accounting.system.mappers.MetricMapper;
 import org.accounting.system.repositories.HierarchicalRelationRepository;
+import org.accounting.system.repositories.installation.InstallationAccessAlwaysRepository;
 import org.accounting.system.repositories.installation.InstallationRepository;
 import org.accounting.system.repositories.metric.MetricRepository;
 import org.accounting.system.repositories.project.ProjectRepository;
@@ -49,6 +50,9 @@ public class HierarchicalRelationService {
 
     @Inject
     RequestInformation requestInformation;
+
+    @Inject
+    InstallationAccessAlwaysRepository installationAccessAlwaysRepository;
 
     public Metric assignMetric(String installationId, MetricRequestDto request) {
 
@@ -126,33 +130,12 @@ public class HierarchicalRelationService {
 
     public PageResource<MetricProjection, MetricProjection> fetchAllMetricsUnderAProvider(String projectId, String providerId, int page, int size, UriInfo uriInfo){
 
-        ProjectionQuery<MetricProjection> projection = null;
+        accessibilityOfProjectAndProvider(projectId, providerId);
 
-        int count = 0;
+        var projection = hierarchicalRelationRepository.findByExternalId(projectId + HierarchicalRelation.PATH_SEPARATOR + providerId, page, size);
 
-        for(AccessPermissionsUtil util: requestInformation.getAccessPermissions()) {
-
-            requestInformation.setAccessType(util.getAccessType());
-
-            try{
-                switch (util.getCollection()){
-                    case Project:
-                        projection = projectRepository.fetchAllMetricsUnderAProvider(projectId, providerId, page, size);
-                        break;
-                    default:
-                        throw new ForbiddenException("The authenticated client is not permitted to perform the requested operation.");
-                }
-            } catch (ForbiddenException e){
-                count++;
-            }
-
-            if(projection != null){
-                break;
-            }
-        }
-
-        if(count == requestInformation.getAccessPermissions().size()){
-            throw new ForbiddenException("The authenticated client is not permitted to perform the requested operation.");
+        if(projection.count == 0){
+            throw new NotFoundException("No metrics added.");
         }
 
         return new PageResource<>(projection, projection.list, uriInfo);
@@ -160,7 +143,22 @@ public class HierarchicalRelationService {
 
     public PageResource<MetricProjection, MetricProjection> fetchAllMetricsUnderAnInstallation(String installationId, int page, int size, UriInfo uriInfo){
 
-        ProjectionQuery<MetricProjection> projection = null;
+        var installation = installationAccessAlwaysRepository.findById(new ObjectId(installationId));
+
+        accessibilityOfProjectAndProvider(installation.getProject(), installation.getOrganisation());
+
+        var projection = hierarchicalRelationRepository.findByExternalId(installation.getProject() + HierarchicalRelation.PATH_SEPARATOR + installation.getOrganisation() + HierarchicalRelation.PATH_SEPARATOR + installationId, page, size);
+
+        if(projection.count == 0){
+            throw new NotFoundException("No metrics added.");
+        }
+
+        return new PageResource<>(projection, projection.list, uriInfo);
+    }
+
+    private void accessibilityOfProjectAndProvider(String project, String provider){
+
+        Boolean accessibility = null;
 
         int count = 0;
 
@@ -169,9 +167,12 @@ public class HierarchicalRelationService {
             requestInformation.setAccessType(util.getAccessType());
 
             try{
-                switch (util.getCollection()){
+                switch (util.getCollection()) {
                     case Project:
-                        projection = projectRepository.fetchAllMetricsUnderAnInstallation(installationId, page, size);
+                        accessibility = projectRepository.accessibility(project);
+                        break;
+                    case Provider:
+                        accessibility = providerRepository.accessibility(project, provider);
                         break;
                     default:
                         throw new ForbiddenException("The authenticated client is not permitted to perform the requested operation.");
@@ -180,7 +181,7 @@ public class HierarchicalRelationService {
                 count++;
             }
 
-            if(projection != null){
+            if(accessibility != null){
                 break;
             }
         }
@@ -188,8 +189,6 @@ public class HierarchicalRelationService {
         if(count == requestInformation.getAccessPermissions().size()){
             throw new ForbiddenException("The authenticated client is not permitted to perform the requested operation.");
         }
-
-        return new PageResource<>(projection, projection.list, uriInfo);
     }
 
     public PageResource<MetricProjection, MetricProjection> fetchAllMetrics(String id, int page, int size, UriInfo uriInfo){

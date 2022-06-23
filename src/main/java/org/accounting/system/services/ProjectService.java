@@ -1,13 +1,17 @@
 package org.accounting.system.services;
 
-import org.accounting.system.clients.ProjectClient;
+import org.accounting.system.dtos.InformativeResponse;
+import org.accounting.system.dtos.acl.AccessControlRequestDto;
+import org.accounting.system.dtos.acl.AccessControlResponseDto;
+import org.accounting.system.dtos.acl.AccessControlUpdateDto;
 import org.accounting.system.dtos.project.ProjectResponseDto;
+import org.accounting.system.entities.HierarchicalRelation;
 import org.accounting.system.entities.projections.HierarchicalRelationProjection;
+import org.accounting.system.enums.Collection;
+import org.accounting.system.mappers.AccessControlMapper;
 import org.accounting.system.mappers.ProjectMapper;
-import org.accounting.system.repositories.installation.InstallationRepository;
+import org.accounting.system.repositories.acl.AccessControlRepository;
 import org.accounting.system.repositories.project.ProjectRepository;
-import org.accounting.system.repositories.provider.ProviderRepository;
-import org.eclipse.microprofile.rest.client.inject.RestClient;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
@@ -19,17 +23,10 @@ import java.util.Set;
 public class ProjectService {
 
     @Inject
-    @RestClient
-    ProjectClient projectClient;
-
-    @Inject
     ProjectRepository projectRepository;
 
     @Inject
-    ProviderRepository providerRepository;
-
-    @Inject
-    InstallationRepository installationRepository;
+    AccessControlRepository accessControlRepository;
 
     /**
      * An http call is made to Open Aire to retrieve the corresponding Project.
@@ -72,5 +69,63 @@ public class ProjectService {
     public List<HierarchicalRelationProjection> hierarchicalStructure(final String externalId) {
 
         return projectRepository.hierarchicalStructure(externalId);
+    }
+
+    public InformativeResponse grantPermissionToProvider(String projectId, String providerId, String who, AccessControlRequestDto request, Collection collection){
+
+        projectRepository.accessibility(projectId);
+
+        var accessControl = AccessControlMapper.INSTANCE.requestToAccessControl(request);
+
+        accessControl.setEntity(projectId + HierarchicalRelation.PATH_SEPARATOR + providerId);
+
+        accessControl.setWho(who);
+
+        accessControl.setCollection(collection);
+
+        accessControlRepository.persist(accessControl);
+
+        var informativeResponse = new InformativeResponse();
+        informativeResponse.message = "Access Control entry has been created successfully";
+        informativeResponse.code = 200;
+
+        return informativeResponse;
+    }
+
+    public AccessControlResponseDto modifyProviderPermission(String projectId, String providerId, String who, AccessControlUpdateDto updateDto, Collection collection){
+
+        projectRepository.accessibility(projectId);
+
+        var accessControl = accessControlRepository.findByWhoAndCollectionAndEntity(who, collection, projectId + HierarchicalRelation.PATH_SEPARATOR + providerId);
+
+        AccessControlMapper.INSTANCE.updateAccessControlFromDto(updateDto, accessControl);
+
+        accessControlRepository.update(accessControl);
+
+        return AccessControlMapper.INSTANCE.accessControlToResponse(accessControl);
+    }
+
+    public InformativeResponse deleteProviderPermission(String projectId, String providerId, String who, Collection collection){
+
+        projectRepository.accessibility(projectId);
+
+        var accessControl = accessControlRepository.findByWhoAndCollectionAndEntity(who, collection, projectId + HierarchicalRelation.PATH_SEPARATOR + providerId);
+
+        accessControlRepository.delete(accessControl);
+
+        var successResponse = new InformativeResponse();
+        successResponse.code = 200;
+        successResponse.message = "Access Control entry has been deleted successfully.";
+
+        return successResponse;
+    }
+
+    public AccessControlResponseDto fetchProviderPermission(String projectId, String providerId, String who){
+
+        projectRepository.accessibility(projectId);
+
+        var accessControl = accessControlRepository.findByWhoAndCollectionAndEntity(projectId + HierarchicalRelation.PATH_SEPARATOR + providerId, Collection.Provider, who);
+
+        return AccessControlMapper.INSTANCE.accessControlToResponse(accessControl);
     }
 }

@@ -4,13 +4,11 @@ import com.mongodb.client.model.Aggregates;
 import com.mongodb.client.model.Filters;
 import com.pivovarit.function.ThrowingBiFunction;
 import org.accounting.system.clients.ProjectClient;
-import org.accounting.system.dtos.installation.InstallationRequestDto;
 import org.accounting.system.dtos.metric.MetricRequestDto;
 import org.accounting.system.entities.HierarchicalRelation;
 import org.accounting.system.entities.Metric;
 import org.accounting.system.entities.Project;
 import org.accounting.system.entities.acl.AccessControl;
-import org.accounting.system.entities.installation.Installation;
 import org.accounting.system.entities.projections.HierarchicalRelationProjection;
 import org.accounting.system.entities.projections.InstallationProjection;
 import org.accounting.system.entities.projections.MetricProjection;
@@ -23,7 +21,6 @@ import org.accounting.system.repositories.installation.InstallationAccessAlwaysR
 import org.accounting.system.repositories.modulators.AccessControlModulator;
 import org.accounting.system.repositories.provider.ProviderRepository;
 import org.accounting.system.services.HierarchicalRelationService;
-import org.apache.commons.lang3.StringUtils;
 import org.bson.conversions.Bson;
 import org.bson.types.ObjectId;
 import org.eclipse.microprofile.rest.client.inject.RestClient;
@@ -110,59 +107,6 @@ public class ProjectAccessControlRepository extends AccessControlModulator<Proje
         }
     }
 
-    public Installation saveInstallation(InstallationRequestDto request) {
-
-        var optional = getAccessControl(request.project, AccessControlPermission.ACCESS_PROJECT);
-
-        if(optional.isPresent()){
-
-            installationAccessAlwaysRepository.exist(request.infrastructure, request.installation);
-            return installationAccessAlwaysRepository.save(request);
-        } else {
-            throw new ForbiddenException("The authenticated client is not permitted to perform the requested operation.");
-        }
-    }
-
-    public boolean deleteInstallationById(String id){
-
-        var installation = installationAccessAlwaysRepository.findById(new ObjectId(id));
-
-        var optional = getAccessControl(installation.getProject(), AccessControlPermission.ACCESS_PROJECT);
-
-        if(optional.isPresent()){
-            return installationAccessAlwaysRepository.deleteEntityById(new ObjectId(id));
-        } else {
-            throw new ForbiddenException("The authenticated client is not permitted to perform the requested operation.");
-        }
-    }
-
-    public InstallationProjection lookupInstallationById(String id){
-
-        var installation = installationAccessAlwaysRepository.findById(new ObjectId(id));
-
-        var optional = getAccessControl(installation.getProject(), AccessControlPermission.ACCESS_PROJECT);
-
-        if(optional.isPresent()){
-            return installationAccessAlwaysRepository.lookUpEntityById("MetricDefinition", "unit_of_access", "_id", "unit_of_access", InstallationProjection.class, new ObjectId(id));
-        } else {
-            throw new ForbiddenException("The authenticated client is not permitted to perform the requested operation.");
-        }
-    }
-
-    public Installation updateInstallation(Installation entity, ObjectId id) {
-
-        var optional = getAccessControl(entity.getProject(), AccessControlPermission.ACCESS_PROJECT);
-
-        if(optional.isPresent()){
-
-            if(!StringUtils.isAllBlank(entity.getInstallation(), entity.getInfrastructure())){
-                installationAccessAlwaysRepository.exist(entity.getInfrastructure(), entity.getInstallation());
-            }
-            return installationAccessAlwaysRepository.updateEntity(entity, id);
-        } else {
-            throw new ForbiddenException("The authenticated client is not permitted to perform the requested operation.");
-        }
-    }
 
     public ProjectionQuery<InstallationProjection> lookupInstallations(String from, String localField, String foreignField, String as, int page, int size, Class<InstallationProjection> projection) {
 
@@ -229,40 +173,12 @@ public class ProjectAccessControlRepository extends AccessControlModulator<Proje
         }
     }
 
-    public ProjectionQuery<MetricProjection> fetchAllMetricsUnderAProvider(String projectId, String providerId, int page, int size){
+    public boolean accessibility(String projectId){
 
         var optional = getAccessControl(projectId, AccessControlPermission.ACCESS_PROJECT);
 
         if(optional.isPresent()){
-
-            var projection = hierarchicalRelationRepository.findByExternalId(projectId + HierarchicalRelation.PATH_SEPARATOR + providerId, page, size);
-
-        if(projection.count == 0){
-            throw new NotFoundException("No metrics added.");
-        }
-
-        return projection;
-
-        } else {
-            throw new ForbiddenException("The authenticated client is not permitted to perform the requested operation.");
-        }
-    }
-
-    public ProjectionQuery<MetricProjection> fetchAllMetricsUnderAnInstallation(String installationId, int page, int size){
-
-        var installation = installationAccessAlwaysRepository.findById(new ObjectId(installationId));
-
-        var optional = getAccessControl(installation.getProject(), AccessControlPermission.ACCESS_PROJECT);
-
-        if(optional.isPresent()){
-
-        var projection = hierarchicalRelationRepository.findByExternalId(installation.getProject() + HierarchicalRelation.PATH_SEPARATOR + installation.getOrganisation() + HierarchicalRelation.PATH_SEPARATOR + installationId, page, size);
-
-        if(projection.count == 0){
-            throw new NotFoundException("No metrics added.");
-        }
-
-        return projection;
+            return true;
         } else {
             throw new ForbiddenException("The authenticated client is not permitted to perform the requested operation.");
         }

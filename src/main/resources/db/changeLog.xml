@@ -527,6 +527,70 @@
                 {
                 operation: "DELETE",
                 access_type: "ENTITY"
+                },
+                ],
+                collection: "Provider"
+                },
+                {
+                access_permissions: [
+                {
+                operation: "CREATE",
+                access_type: "ALWAYS"
+                },
+                {
+                operation: "UPDATE",
+                access_type: "ENTITY"
+                },
+                {
+                operation: "DELETE",
+                access_type: "ENTITY"
+                },
+                {
+                operation: "READ",
+                access_type: "ALWAYS"
+                }
+                ],
+                collection: "MetricDefinition"
+                }
+                ]
+                }
+            </ext:document>
+        </ext:insertOne>
+    </changeSet>
+
+    <changeSet id="13" author="accounting-system">
+        <ext:insertOne collectionName="Role">
+            <ext:document>
+                {
+                name: "provider_admin",
+                description: "provider_admin has rights to manage a specific Provider.",
+                collections_access_permissions: [
+                {
+                access_permissions: [
+                {
+                operation: "ACCESS_PROVIDER",
+                access_type: "ENTITY"
+                }
+                ],
+                collection: "Provider"
+                },
+                {
+                access_permissions: [
+                {
+                operation: "READ",
+                access_type: "ALWAYS"
+                },
+                {
+                operation: "CREATE",
+                access_type: "ALWAYS"
+                },
+                {
+                operation: "UPDATE",
+                access_type: "ENTITY"
+                },
+                {
+                operation: "DELETE",
+                access_type: "ENTITY"
                 }
                 ],
                 collection: "Provider"

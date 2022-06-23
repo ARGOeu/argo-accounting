@@ -13,6 +13,11 @@ public class ProviderAccessEntityRepository extends AccessEntityModulator<Provid
     @Inject
     ProviderAccessControlRepository providerAccessControlRepository;
 
+    public boolean accessibility(String projectId, String providerId){
+
+        return providerAccessControlRepository.accessibility(projectId, providerId);
+    }
+
     @Override
     public AccessControlModulator<Provider, String> accessControlModulator() {
         return providerAccessControlRepository;

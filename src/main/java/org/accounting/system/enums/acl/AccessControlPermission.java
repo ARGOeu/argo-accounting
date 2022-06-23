@@ -25,5 +25,9 @@ public enum AccessControlPermission {
     /**
      * Permission to grant access to particular Project.
      */
-    ACCESS_PROJECT;
+    ACCESS_PROJECT,
+    /**
+     * Permission to grant access to particular Provider.
+     */
+    ACCESS_PROVIDER;
 }

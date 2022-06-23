@@ -6,17 +6,23 @@ import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.test.junit.TestProfile;
 import io.quarkus.test.junit.mockito.InjectMock;
 import io.quarkus.test.keycloak.client.KeycloakTestClient;
+import io.quarkus.test.security.TestSecurity;
+import io.quarkus.test.security.oidc.OidcSecurity;
+import io.quarkus.test.security.oidc.TokenIntrospection;
+import io.quarkus.test.security.oidc.UserInfo;
 import io.restassured.http.ContentType;
 import org.accounting.system.clients.ProviderClient;
 import org.accounting.system.clients.responses.eoscportal.Response;
 import org.accounting.system.clients.responses.eoscportal.Total;
 import org.accounting.system.dtos.InformativeResponse;
+import org.accounting.system.dtos.acl.AccessControlRequestDto;
 import org.accounting.system.dtos.installation.InstallationRequestDto;
 import org.accounting.system.dtos.installation.InstallationResponseDto;
 import org.accounting.system.dtos.metricdefinition.MetricDefinitionRequestDto;
 import org.accounting.system.dtos.metricdefinition.MetricDefinitionResponseDto;
 import org.accounting.system.dtos.pagination.PageResource;
 import org.accounting.system.endpoints.InstallationEndpoint;
+import org.accounting.system.enums.acl.AccessControlPermission;
 import org.accounting.system.mappers.ProviderMapper;
 import org.accounting.system.repositories.installation.InstallationRepository;
 import org.accounting.system.repositories.metricdefinition.MetricDefinitionRepository;
@@ -97,7 +103,19 @@ public class InstallationAuthorizationTest {
     }
 
     @Test
-    public void getAllInstallations(){
+    @TestSecurity(user = "provider_admin", roles = {"provider_admin"})
+    @OidcSecurity(introspectionRequired = true,
+            introspection = {
+                    @TokenIntrospection(key = "voperson_id", value = "provider_admin@example.org"),
+                    @TokenIntrospection(key = "sub", value = "provider_admin@example.org"),
+                    @TokenIntrospection(key = "groups", value = "provider_admin")
+            },
+            userinfo = {
+                    @UserInfo(key = "name", value = "provider_admin"),
+                    @UserInfo(key = "email", value = "provider_admin@example.org")
+            }
+    )
+    public void clientGrantAccessToOtherClientToManageAProvider(){
 
         // admin user will submit two installations
 
@@ -136,7 +154,24 @@ public class InstallationAuthorizationTest {
 
         createInstallation(request1, "admin");
 
-        //the third installation has been created by installationcreator
+        //the third installation has been created by provider_admin
+
+        var acl = new AccessControlRequestDto();
+
+        acl.permissions = Set.of(AccessControlPermission.ACCESS_PROVIDER.toString());
+
+        given()
+                .auth()
+                .oauth2(getAccessToken("admin"))
+                .basePath("accounting-system/projects")
+                .contentType(ContentType.JSON)
+                .body(acl)
+                .post("/{project_id}/providers/{provider_id}/acl/{who}", "777536", "sites", "provider_admin@example.org")
+                .then()
+                .assertThat()
+                .statusCode(200)
+                .extract()
+                .as(InformativeResponse.class);
 
         var request2= new InstallationRequestDto();
 
@@ -146,7 +181,15 @@ public class InstallationAuthorizationTest {
         request2.installation = "okeanos";
         request2.unitOfAccess = metricDefinitionResponse.id;
 
-        createInstallation(request2, "installationcreator");
+        given()
+                .body(request2)
+                .contentType(ContentType.JSON)
+                .post()
+                .then()
+                .assertThat()
+                .statusCode(201)
+                .extract()
+                .as(InstallationResponseDto.class);
 
         //because admin can access all installations the size of list should be 3
 
@@ -154,11 +197,11 @@ public class InstallationAuthorizationTest {
 
         assertEquals(3, pageResourceAdmin.totalElements);
 
-        //because creator can access only its Installations the size of list should be 1
-
-        PageResource pageResourceCreator =  fetchAllInstallations("installationcreator");
-
-        assertEquals(1, pageResourceCreator.totalElements);
+//        //because creator can access only its Installations the size of list should be 1
+//
+//        PageResource pageResourceCreator =  fetchAllInstallations("installationcreator");
+//
+//        assertEquals(1, pageResourceCreator.totalElements);
     }
 
     @Test

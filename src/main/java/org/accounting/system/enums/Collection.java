@@ -34,13 +34,13 @@ public enum Collection {
     Provider{
         @Override
         public Set<Operation> availableOperations() {
-            return Set.of(Operation.CREATE, Operation.DELETE, Operation.UPDATE, Operation.READ, Operation.ACL);
+            return Set.of(Operation.CREATE, Operation.DELETE, Operation.UPDATE, Operation.READ, Operation.ACL, Operation.ACCESS_PROVIDER);
         }
     },
     Installation{
         @Override
         public Set<Operation> availableOperations() {
-            return Set.of(Operation.CREATE, Operation.DELETE, Operation.UPDATE, Operation.READ, Operation.ACL);
+            return Set.of(Operation.ACL);
         }
     },
     Client{

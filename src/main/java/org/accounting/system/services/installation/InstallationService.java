@@ -8,16 +8,18 @@ import org.accounting.system.dtos.metric.MetricRequestDto;
 import org.accounting.system.dtos.metric.MetricResponseDto;
 import org.accounting.system.dtos.pagination.PageResource;
 import org.accounting.system.endpoints.InstallationEndpoint;
-import org.accounting.system.entities.Metric;
 import org.accounting.system.entities.installation.Installation;
 import org.accounting.system.entities.projections.InstallationProjection;
 import org.accounting.system.entities.projections.ProjectionQuery;
 import org.accounting.system.interceptors.annotations.AccessPermissionsUtil;
 import org.accounting.system.mappers.InstallationMapper;
 import org.accounting.system.mappers.MetricMapper;
+import org.accounting.system.repositories.installation.InstallationAccessAlwaysRepository;
 import org.accounting.system.repositories.installation.InstallationRepository;
 import org.accounting.system.repositories.project.ProjectRepository;
 import org.accounting.system.repositories.provider.ProviderRepository;
+import org.accounting.system.services.HierarchicalRelationService;
+import org.apache.commons.lang3.StringUtils;
 import org.bson.types.ObjectId;
 
 import javax.enterprise.context.ApplicationScoped;
@@ -43,6 +45,15 @@ public class InstallationService {
     @Inject
     ProjectRepository projectRepository;
 
+    @Inject
+    ProviderRepository providerRepository;
+
+    @Inject
+    InstallationAccessAlwaysRepository installationAccessAlwaysRepository;
+
+    @Inject
+    HierarchicalRelationService hierarchicalRelationService;
+
     /**
      * Maps the {@link InstallationRequestDto} to {@link Installation}.
      * Then the {@link Installation} is stored in the mongo database.
@@ -52,37 +63,11 @@ public class InstallationService {
      */
     public InstallationResponseDto save(InstallationRequestDto request) {
 
-        Installation installation = null;
+        accessibilityOfProjectAndProvider(request.project, request.organisation);
 
-        int count = 0;
+        installationAccessAlwaysRepository.exist(request.infrastructure, request.installation);
 
-        for(AccessPermissionsUtil util: requestInformation.getAccessPermissions()) {
-
-            requestInformation.setAccessType(util.getAccessType());
-
-            try{
-                switch (util.getCollection()) {
-                    case Installation:
-                        installation = installationRepository.save(request);
-                        break;
-                    case Project:
-                        installation = projectRepository.saveInstallation(request);
-                        break;
-                    default:
-                        throw new ForbiddenException("The authenticated client is not permitted to perform the requested operation.");
-                }
-            } catch (ForbiddenException e){
-                count++;
-            }
-
-            if(installation != null){
-                break;
-            }
-        }
-
-        if(count == requestInformation.getAccessPermissions().size()){
-            throw new ForbiddenException("The authenticated client is not permitted to perform the requested operation.");
-        }
+        var installation = installationAccessAlwaysRepository.save(request);
 
         return fetchInstallation(installation.getId().toString());
     }
@@ -94,40 +79,11 @@ public class InstallationService {
      */
     public boolean delete(String installationId){
 
-        Boolean deleted = null;
+        var installation = installationAccessAlwaysRepository.findById(new ObjectId(installationId));
 
-        int count = 0;
+        accessibilityOfProjectAndProvider(installation.getProject(), installation.getOrganisation());
 
-        for(AccessPermissionsUtil util: requestInformation.getAccessPermissions()) {
-
-            requestInformation.setAccessType(util.getAccessType());
-
-            try{
-                switch (util.getCollection()){
-                    case Installation:
-                        deleted = installationRepository.deleteEntityById(new ObjectId(installationId));
-                        break;
-                    case Project:
-                        deleted = projectRepository.deleteInstallationById(installationId);
-                        break;
-                    default:
-                        throw new ForbiddenException("The authenticated client is not permitted to perform the requested operation.");
-                }
-
-            } catch (ForbiddenException e){
-                count++;
-            }
-
-            if(deleted != null){
-                break;
-            }
-        }
-
-        if(count == requestInformation.getAccessPermissions().size()){
-            throw new ForbiddenException("The authenticated client is not permitted to perform the requested operation.");
-        }
-
-        return deleted;
+        return installationAccessAlwaysRepository.deleteEntityById(new ObjectId(installationId));
     }
 
     /**
@@ -138,37 +94,11 @@ public class InstallationService {
      */
     public InstallationResponseDto fetchInstallation(String id){
 
-        InstallationProjection projection = null;
+        var installation = installationAccessAlwaysRepository.findById(new ObjectId(id));
 
-        int count = 0;
+        accessibilityOfProjectAndProvider(installation.getProject(), installation.getOrganisation());
 
-        for(AccessPermissionsUtil util: requestInformation.getAccessPermissions()) {
-
-            requestInformation.setAccessType(util.getAccessType());
-
-            try{
-                switch (util.getCollection()){
-                    case Installation:
-                        projection = installationRepository.lookUpEntityById("MetricDefinition", "unit_of_access", "_id", "unit_of_access", InstallationProjection.class, new ObjectId(id));
-                        break;
-                    case Project:
-                        projection = projectRepository.lookupInstallationById(id);
-                        break;
-                    default:
-                        throw new ForbiddenException("The authenticated client is not permitted to perform the requested operation.");
-                }
-            } catch (ForbiddenException e){
-                count++;
-            }
-
-            if(projection != null){
-                break;
-            }
-        }
-
-        if(count == requestInformation.getAccessPermissions().size()){
-            throw new ForbiddenException("The authenticated client is not permitted to perform the requested operation.");
-        }
+        var projection = installationRepository.lookUpEntityById("MetricDefinition", "unit_of_access", "_id", "unit_of_access", InstallationProjection.class, new ObjectId(id));
 
         return InstallationMapper.INSTANCE.installationProjectionToResponse(projection);
     }
@@ -183,37 +113,17 @@ public class InstallationService {
      */
     public InstallationResponseDto update(String id, UpdateInstallationRequestDto request){
 
-        Installation installation = null;
+        Installation installation = installationAccessAlwaysRepository.findById(new ObjectId(id));
 
-        int count = 0;
+        accessibilityOfProjectAndProvider(installation.getProject(), installation.getOrganisation());
 
-        for(AccessPermissionsUtil util: requestInformation.getAccessPermissions()) {
+        InstallationMapper.INSTANCE.updateInstallationFromDto(request, installation);
 
-            requestInformation.setAccessType(util.getAccessType());
-
-            try{
-                switch (util.getCollection()){
-                    case Installation:
-                        installation = installationRepository.updateEntity(id, request);
-                        break;
-                    case Project:
-                        installation = projectRepository.updateInstallation(id, request);
-                        break;
-                    default:
-                        throw new ForbiddenException("The authenticated client is not permitted to perform the requested operation.");
-                }
-            } catch (ForbiddenException e){
-                count++;
-            }
-
-            if(installation != null){
-                break;
-            }
+        if(!StringUtils.isAllBlank(installation.getInstallation(), installation.getInfrastructure())){
+            installationAccessAlwaysRepository.exist(installation.getInfrastructure(), installation.getInstallation());
         }
 
-        if(count == requestInformation.getAccessPermissions().size()){
-            throw new ForbiddenException("The authenticated client is not permitted to perform the requested operation.");
-        }
+        installationAccessAlwaysRepository.updateEntity(installation, new ObjectId(id));
 
         return fetchInstallation(id);
     }
@@ -238,11 +148,11 @@ public class InstallationService {
 
             try{
                 switch (util.getCollection()){
-                    case Installation:
-                        projectionQuery = installationRepository.lookup("MetricDefinition", "unit_of_access", "_id", "unit_of_access", page, size, InstallationProjection.class);
-                        break;
                     case Project:
                         projectionQuery = projectRepository.lookupInstallations("MetricDefinition", "unit_of_access", "_id", "unit_of_access", page, size, InstallationProjection.class);
+                        break;
+                    case Provider:
+                        projectionQuery = providerRepository.lookupInstallations("MetricDefinition", "unit_of_access", "_id", "unit_of_access", page, size, InstallationProjection.class);
                         break;
                     default:
                         throw new ForbiddenException("The authenticated client is not permitted to perform the requested operation.");
@@ -292,7 +202,18 @@ public class InstallationService {
      */
     public MetricResponseDto assignMetric(String installationId, MetricRequestDto request) {
 
-        Metric metric = null;
+        var installation = installationAccessAlwaysRepository.findById(new ObjectId(installationId));
+
+        accessibilityOfProjectAndProvider(installation.getProject(), installation.getOrganisation());
+
+        var metric = hierarchicalRelationService.assignMetric(installationId, request);
+
+        return MetricMapper.INSTANCE.metricToResponse(metric);
+    }
+
+    private void accessibilityOfProjectAndProvider(String project, String provider){
+
+        Boolean accessibility = null;
 
         int count = 0;
 
@@ -301,9 +222,12 @@ public class InstallationService {
             requestInformation.setAccessType(util.getAccessType());
 
             try{
-                switch (util.getCollection()){
+                switch (util.getCollection()) {
                     case Project:
-                        metric = projectRepository.assignMetric(installationId, request);
+                        accessibility = projectRepository.accessibility(project);
+                        break;
+                    case Provider:
+                        accessibility = providerRepository.accessibility(project, provider);
                         break;
                     default:
                         throw new ForbiddenException("The authenticated client is not permitted to perform the requested operation.");
@@ -312,7 +236,7 @@ public class InstallationService {
                 count++;
             }
 
-            if(metric != null){
+            if(accessibility != null){
                 break;
             }
         }
@@ -320,7 +244,5 @@ public class InstallationService {
         if(count == requestInformation.getAccessPermissions().size()){
             throw new ForbiddenException("The authenticated client is not permitted to perform the requested operation.");
         }
-
-        return MetricMapper.INSTANCE.metricToResponse(metric);
     }
 }
