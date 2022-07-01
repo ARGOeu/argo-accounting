@@ -15,14 +15,19 @@ import org.accounting.system.dtos.provider.ProviderResponseDto;
 import org.accounting.system.dtos.provider.UpdateProviderRequestDto;
 import org.accounting.system.endpoints.ProviderEndpoint;
 import org.accounting.system.mappers.ProviderMapper;
+import org.accounting.system.repositories.client.ClientAccessAlwaysRepository;
 import org.accounting.system.repositories.provider.ProviderRepository;
+import org.accounting.system.services.client.ClientService;
+import org.accounting.system.util.Utility;
 import org.accounting.system.wiremock.ProviderWireMockServer;
 import org.eclipse.microprofile.rest.client.inject.RestClient;
+import org.json.simple.parser.ParseException;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 
 import javax.inject.Inject;
+import java.util.Set;
 import java.util.concurrent.ExecutionException;
 
 import static io.restassured.RestAssured.given;
@@ -43,16 +48,30 @@ public class ProviderEndpointTest {
     @RestClient
     ProviderClient providerClient;
 
+    @Inject
+    Utility utility;
+
+    @Inject
+    ClientService clientService;
+
+    @Inject
+    ClientAccessAlwaysRepository clientAccessAlwaysRepository;
+
+
     KeycloakTestClient keycloakClient = new KeycloakTestClient();
 
     @BeforeAll
-    public void setup() throws ExecutionException, InterruptedException {
+    public void setup() throws ExecutionException, InterruptedException, ParseException {
 
         Total total = providerClient.getTotalNumberOfProviders().toCompletableFuture().get();
 
         Response response = providerClient.getAll(total.total).toCompletableFuture().get();
 
         providerRepository.persistOrUpdate(ProviderMapper.INSTANCE.eoscProvidersToProviders(response.results));
+
+        clientService.register(utility.getIdFromToken(keycloakClient.getAccessToken("admin").split("\\.")[1]), "admin", "admin@email.com");
+
+        clientAccessAlwaysRepository.assignRolesToRegisteredClient(utility.getIdFromToken(keycloakClient.getAccessToken("creator").split("\\.")[1]), Set.of("collection_owner"));
     }
 
     @Test

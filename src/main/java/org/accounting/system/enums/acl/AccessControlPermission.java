@@ -23,7 +23,15 @@ public enum AccessControlPermission {
      */
     ACL,
     /**
-     * Permission to grant access to particular Project.
+     * Permission to associate Providers with a specific Project.
      */
-    ACCESS_PROJECT;
+    ASSOCIATE,
+    /**
+     * Permission to dissociate Providers from a specific Project.
+     */
+    DISSOCIATE,
+    /**
+     * Permission to register a Project from OpenAire.
+     */
+    REGISTER;
 }

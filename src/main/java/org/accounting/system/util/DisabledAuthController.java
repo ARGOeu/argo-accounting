@@ -6,6 +6,7 @@ import javax.enterprise.context.ApplicationScoped;
 
 @ApplicationScoped
 public class DisabledAuthController {
+
     @ConfigProperty(name = "disable.authorization", defaultValue = "false")
     boolean disableAuthorization;
 

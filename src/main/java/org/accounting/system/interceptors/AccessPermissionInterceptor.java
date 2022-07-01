@@ -7,21 +7,17 @@ import org.accounting.system.enums.AccessType;
 import org.accounting.system.interceptors.annotations.AccessPermission;
 import org.accounting.system.services.authorization.RoleService;
 import org.accounting.system.util.DisabledAuthController;
-import org.eclipse.microprofile.config.inject.ConfigProperty;
+import org.accounting.system.util.Utility;
 
 import javax.annotation.Priority;
 import javax.inject.Inject;
 import javax.interceptor.AroundInvoke;
 import javax.interceptor.Interceptor;
 import javax.interceptor.InvocationContext;
-import javax.json.JsonArray;
-import javax.json.JsonString;
 import javax.ws.rs.ForbiddenException;
 import java.lang.annotation.Annotation;
-import java.util.List;
 import java.util.Objects;
 import java.util.Set;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 @AccessPermission
@@ -36,9 +32,6 @@ import java.util.stream.Stream;
 public class AccessPermissionInterceptor {
 
     @Inject
-    TokenIntrospection tokenIntrospection;
-
-    @Inject
     RoleService roleService;
 
     @Inject
@@ -47,8 +40,8 @@ public class AccessPermissionInterceptor {
     @Inject
     RequestInformation requestInformation;
 
-    @ConfigProperty(name = "key.to.retrieve.roles.from.access.token")
-    String key;
+    @Inject
+    Utility utility;
 
     @AroundInvoke
     Object check(InvocationContext context) throws Exception {
@@ -73,26 +66,12 @@ public class AccessPermissionInterceptor {
                 .findFirst()
                 .get();
 
-        List<String> providedRoles = null;
+        Set<String> providedRoles = utility.getRoles();
 
-        Object object = tokenIntrospection.getJsonObject().get(key);
-
-        if(object instanceof JsonString){
-            providedRoles = List.of(tokenIntrospection.getString(key));
-        } else {
-            JsonArray jsonArray = tokenIntrospection.getArray(key);
-            providedRoles = jsonArray
-                    .stream()
-                    .map(jsonValue -> ((JsonString) jsonValue).getString())
-                    .collect(Collectors.toList());
-        }
 
         if(Objects.isNull(providedRoles)){
             throw new ForbiddenException("The authenticated client is not permitted to perform the requested operation.");
         }
-
-        // sub -> Usually a machine-readable identifier of the resource owner who authorized this token
-        requestInformation.setSubjectOfToken(tokenIntrospection.getJsonObject().getString("sub"));
 
         var access = roleService.hasAccess(providedRoles, accessPermission.collection(), accessPermission.operation());
 

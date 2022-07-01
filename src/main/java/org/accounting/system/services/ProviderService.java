@@ -1,19 +1,27 @@
 package org.accounting.system.services;
 
 import io.quarkus.mongodb.panache.PanacheQuery;
+import org.accounting.system.dtos.installation.InstallationResponseDto;
 import org.accounting.system.dtos.pagination.PageResource;
 import org.accounting.system.dtos.provider.ProviderRequestDto;
 import org.accounting.system.dtos.provider.ProviderResponseDto;
 import org.accounting.system.dtos.provider.UpdateProviderRequestDto;
+import org.accounting.system.entities.HierarchicalRelation;
+import org.accounting.system.entities.projections.InstallationProjection;
+import org.accounting.system.entities.projections.MetricProjection;
+import org.accounting.system.entities.projections.ProjectionQuery;
 import org.accounting.system.entities.provider.Provider;
 import org.accounting.system.exceptions.ConflictException;
+import org.accounting.system.mappers.InstallationMapper;
 import org.accounting.system.mappers.ProviderMapper;
+import org.accounting.system.repositories.HierarchicalRelationRepository;
 import org.accounting.system.repositories.provider.ProviderRepository;
 import org.apache.commons.lang3.StringUtils;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 import javax.ws.rs.ForbiddenException;
+import javax.ws.rs.NotFoundException;
 import javax.ws.rs.core.UriInfo;
 import java.util.Objects;
 
@@ -22,6 +30,9 @@ public class ProviderService {
 
     @Inject
     ProviderRepository providerRepository;
+
+    @Inject
+    HierarchicalRelationRepository hierarchicalRelationRepository;
 
 
     /**
@@ -50,7 +61,7 @@ public class ProviderService {
 
         var provider = ProviderMapper.INSTANCE.requestToProvider(request);
 
-        providerRepository.persist(provider);
+        providerRepository.save(provider);
 
         return ProviderMapper.INSTANCE.providerToResponse(provider);
     }
@@ -148,6 +159,24 @@ public class ProviderService {
         if(Objects.isNull(entity.getCreatorId())){
             throw new ForbiddenException("You cannot access a Provider which derives from EOSC-Portal.");
         }
+    }
+
+    public PageResource<MetricProjection, MetricProjection> fetchAllMetrics(String projectId, String providerId, int page, int size, UriInfo uriInfo){
+
+        var projection = providerRepository.fetchAllMetrics(projectId + HierarchicalRelation.PATH_SEPARATOR + providerId, page, size);
+
+        if(projection.count == 0){
+            throw new NotFoundException("No metrics added.");
+        }
+
+        return new PageResource<>(projection, projection.list, uriInfo);
+    }
+
+    public PageResource<InstallationProjection, InstallationResponseDto> findInstallationsByProvider(String projectId, String providerId, int page, int size, UriInfo uriInfo){
+
+        ProjectionQuery<InstallationProjection> projectionQuery = hierarchicalRelationRepository.findInstallationsByProvider(projectId, providerId, "MetricDefinition", "unit_of_access", "_id", "unit_of_access", page, size, InstallationProjection.class);
+
+        return new PageResource<>(projectionQuery, InstallationMapper.INSTANCE.installationProjectionsToResponse(projectionQuery.list), uriInfo);
     }
 
 }

@@ -10,25 +10,25 @@ public enum Collection {
     MetricDefinition{
         @Override
         public Set<Operation> availableOperations() {
-            return Set.of(Operation.CREATE, Operation.DELETE, Operation.UPDATE, Operation.READ, Operation.ACL);
+            return Set.of(Operation.CREATE, Operation.DELETE, Operation.UPDATE, Operation.READ);
         }
     },
     Metric{
         @Override
         public Set<Operation> availableOperations() {
-            return Set.of(Operation.CREATE, Operation.DELETE, Operation.UPDATE, Operation.READ, Operation.ACL);
+            return Set.of(Operation.CREATE, Operation.DELETE, Operation.UPDATE, Operation.READ);
         }
     },
     Role{
         @Override
         public Set<Operation> availableOperations() {
-            return Set.of(Operation.CREATE, Operation.DELETE, Operation.UPDATE, Operation.READ, Operation.ACL);
+            return Set.of(Operation.CREATE, Operation.DELETE, Operation.UPDATE, Operation.READ);
         }
     },
     Project{
         @Override
         public Set<Operation> availableOperations() {
-            return Set.of(Operation.ACCESS_PROJECT, Operation.ACL);
+            return Set.of(Operation.ASSOCIATE, Operation.DISSOCIATE, Operation.REGISTER, Operation.READ, Operation.ACL);
         }
     },
     Provider{

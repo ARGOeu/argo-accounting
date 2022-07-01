@@ -87,6 +87,15 @@ public class MetricProjection {
     @JsonProperty("installation")
     private String installation;
 
+    @Schema(
+            type = SchemaType.STRING,
+            implementation = String.class,
+            description = "Infrastructure name.",
+            example = "Okeanos-knossos"
+    )
+    @JsonProperty("infrastructure")
+    private String infrastructure;
+
     public ObjectId getId() {
         return id;
     }
@@ -149,5 +158,13 @@ public class MetricProjection {
 
     public void setInstallation(String installation) {
         this.installation = installation;
+    }
+
+    public String getInfrastructure() {
+        return infrastructure;
+    }
+
+    public void setInfrastructure(String infrastructure) {
+        this.infrastructure = infrastructure;
     }
 }

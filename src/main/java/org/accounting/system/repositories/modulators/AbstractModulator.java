@@ -16,7 +16,12 @@ import java.util.List;
  *
  * @param <E> Generic class that represents a mongo collection.
  */
-public abstract class AbstractModulator<E extends Entity, I> extends AccessModulator<E, I>{
+public abstract class AbstractModulator<E extends Entity, I, A extends AccessControl> extends AccessModulator<E, I, A>{
+
+    @Override
+    public void save(E entity) {
+        get().save(entity);
+    }
 
     @Override
     public  E fetchEntityById(I id){
@@ -44,7 +49,7 @@ public abstract class AbstractModulator<E extends Entity, I> extends AccessModul
     }
 
     @Override
-    public void grantPermission(AccessControl accessControl){
+    public void grantPermission(A accessControl){
         try{
             get().grantPermission(accessControl);
         } catch (MongoWriteException e){
@@ -53,22 +58,22 @@ public abstract class AbstractModulator<E extends Entity, I> extends AccessModul
     }
 
     @Override
-    public void modifyPermission(AccessControl accessControl) {
+    public void modifyPermission(A accessControl) {
         get().modifyPermission(accessControl);
     }
 
     @Override
-    public void deletePermission(AccessControl accessControl) {
+    public void deletePermission(A accessControl) {
         get().deletePermission(accessControl);
     }
 
     @Override
-    public AccessControl getPermission(String entity, String who) {
+    public A getPermission(String entity, String who) {
         return get().getPermission(entity, who);
     }
 
     @Override
-    public List<AccessControl> getAllPermissions() {
+    public List<A> getAllPermissions() {
         return get().getAllPermissions();
     }
 
@@ -82,11 +87,11 @@ public abstract class AbstractModulator<E extends Entity, I> extends AccessModul
         return get().lookUpEntityById(from, localField, foreignField, as, projection, id);
     }
 
-    public abstract AccessAlwaysModulator<E, I> always();
+    public abstract AccessAlwaysModulator<E, I, A> always();
 
-    public abstract AccessEntityModulator<E, I> entity();
+    public abstract AccessEntityModulator<E, I, A> entity();
 
-    public AccessModulator<E, I> get(){
+    public AccessModulator<E, I, A> get(){
 
         switch (getRequestInformation().getAccessType()){
             case ALWAYS:

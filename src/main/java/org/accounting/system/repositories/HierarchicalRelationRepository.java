@@ -9,8 +9,10 @@ import io.quarkus.mongodb.panache.PanacheMongoRepositoryBase;
 import liquibase.repackaged.org.apache.commons.collections4.CollectionUtils;
 import org.accounting.system.entities.HierarchicalRelation;
 import org.accounting.system.entities.projections.HierarchicalRelationProjection;
+import org.accounting.system.entities.projections.InstallationProjection;
 import org.accounting.system.entities.projections.MetricProjection;
 import org.accounting.system.entities.projections.ProjectionQuery;
+import org.accounting.system.repositories.installation.InstallationRepository;
 import org.accounting.system.repositories.metric.MetricRepository;
 import org.bson.Document;
 import org.bson.conversions.Bson;
@@ -34,6 +36,9 @@ public class HierarchicalRelationRepository implements PanacheMongoRepositoryBas
 
     @Inject
     MetricRepository metricRepository;
+
+    @Inject
+    InstallationRepository installationRepository;
 
     public void save(HierarchicalRelation hierarchicalRelation, ObjectId metric){
 
@@ -66,10 +71,6 @@ public class HierarchicalRelationRepository implements PanacheMongoRepositoryBas
         return count != null && Long.parseLong(count.get("count").toString()) > 0L;
     }
 
-    public List<HierarchicalRelation> findAllByExternalId(String id){
-        return find("externalId = ?1", id).stream().collect(Collectors.toList());
-    }
-
     public HierarchicalRelation findByPath(final String id){
 
         var document = findById(id);
@@ -79,6 +80,87 @@ public class HierarchicalRelationRepository implements PanacheMongoRepositoryBas
         }
 
         return build(document, find(Document.parse(Filters.regex("_id", id + "[.\\s]").toBsonDocument().toJson())).list());
+    }
+
+    public ProjectionQuery<InstallationProjection> findInstallationsByProjectId(String project, String from, String localField, String foreignField, String as, int page, int size, Class<InstallationProjection> projection){
+
+        Bson eq = Aggregates.match(Filters.regex("project", project));
+
+        Bson lookup = Aggregates.lookup(from, localField, foreignField, as);
+
+
+        List<InstallationProjection> projections = installationRepository
+                .getMongoCollection()
+                .aggregate(List
+                        .of(lookup, eq,  Aggregates.skip(size * (page)), Aggregates.limit(size)), InstallationProjection.class).into(new ArrayList<>());
+
+        var projectionQuery = new ProjectionQuery<InstallationProjection>();
+
+        Document count = installationRepository
+                .getMongoCollection()
+                .aggregate(List
+                        .of(eq, Aggregates.count())).first();
+
+        projectionQuery.list = projections;
+        projectionQuery.index = page;
+        projectionQuery.size = size;
+        projectionQuery.count = count == null ? 0L : Long.parseLong(count.get("count").toString());
+
+        return projectionQuery;
+    }
+
+    public ProjectionQuery<InstallationProjection> findInstallationsByProject(String project, String from, String localField, String foreignField, String as, int page, int size, Class<InstallationProjection> projection){
+
+        Bson eq = Aggregates.match(Filters.eq("project", project));
+
+        Bson lookup = Aggregates.lookup(from, localField, foreignField, as);
+
+
+        List<InstallationProjection> projections = installationRepository
+                .getMongoCollection()
+                .aggregate(List
+                        .of(lookup, eq,  Aggregates.skip(size * (page)), Aggregates.limit(size)), InstallationProjection.class).into(new ArrayList<>());
+
+        var projectionQuery = new ProjectionQuery<InstallationProjection>();
+
+        Document count = installationRepository
+                .getMongoCollection()
+                .aggregate(List
+                        .of(eq, Aggregates.count())).first();
+
+        projectionQuery.list = projections;
+        projectionQuery.index = page;
+        projectionQuery.size = size;
+        projectionQuery.count = count == null ? 0L : Long.parseLong(count.get("count").toString());
+
+        return projectionQuery;
+    }
+
+    public ProjectionQuery<InstallationProjection> findInstallationsByProvider(String project, String provider, String from, String localField, String foreignField, String as, int page, int size, Class<InstallationProjection> projection){
+
+        Bson eq = Aggregates.match(Filters.and(Filters.eq("project", project), Filters.eq("organisation", provider)));
+
+        Bson lookup = Aggregates.lookup(from, localField, foreignField, as);
+
+
+        List<InstallationProjection> projections = installationRepository
+                .getMongoCollection()
+                .aggregate(List
+                        .of(lookup, eq,  Aggregates.skip(size * (page)), Aggregates.limit(size)), InstallationProjection.class).into(new ArrayList<>());
+
+        var projectionQuery = new ProjectionQuery<InstallationProjection>();
+
+        Document count = installationRepository
+                .getMongoCollection()
+                .aggregate(List
+                        .of(eq, Aggregates.count())).first();
+
+        projectionQuery.list = projections;
+        projectionQuery.index = page;
+        projectionQuery.size = size;
+        projectionQuery.count = count == null ? 0L : Long.parseLong(count.get("count").toString());
+
+        return projectionQuery;
     }
 
     public ProjectionQuery<MetricProjection> findByExternalId(final String externalId, int page, int size) {
@@ -104,6 +186,40 @@ public class HierarchicalRelationRepository implements PanacheMongoRepositoryBas
 
         return projectionQuery;
     }
+
+//    public ProjectionQuery<MetricProjection> findByExternalId(final String externalId, int page, int size) {
+//        //Bson regex = Aggregates.match(Filters.regex("resource_id", externalId + "[.\\s]"));
+//        //Bson regex = Aggregates.match(Filters.regex("resource_id", externalId));
+//
+//        List<AccessControl> accessControlList = accessControlRepository.findAllByWhoAndCollection(requestInformation.getSubjectOfToken(), org.accounting.system.enums.Collection.Metric, AccessControlPermission.READ);
+//
+//        List<String> entities = accessControlList
+//                .stream()
+//                .map(AccessControl::getEntity)
+//                .collect(Collectors.toList());
+//
+//
+//        Bson match = Filters.and(Filters.regex("resource_id", externalId), Filters.or(Filters.eq("creatorId", requestInformation.getSubjectOfToken()), Filters.in("_id", entities)));
+//
+//        List<MetricProjection> projections = metricRepository
+//                .getMongoCollection()
+//                .aggregate(List
+//                        .of(match,  Aggregates.skip(size * (page)) , Aggregates.limit(size)), MetricProjection.class).into(new ArrayList<>());
+//
+//        Document count = metricRepository
+//                .getMongoCollection()
+//                .aggregate(List
+//                        .of(match, Aggregates.count())).first();
+//
+//        var projectionQuery = new ProjectionQuery<MetricProjection>();
+//
+//        projectionQuery.list = projections;
+//        projectionQuery.index = page;
+//        projectionQuery.size = size;
+//        projectionQuery.count = count == null ? 0L : Long.parseLong(count.get("count").toString());
+//
+//        return projectionQuery;
+//    }
 
 //    public List<HierarchicalRelationProjection> findByExternalId(final String externalId) {
 //

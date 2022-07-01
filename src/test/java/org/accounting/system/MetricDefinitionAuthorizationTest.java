@@ -11,19 +11,23 @@ import org.accounting.system.dtos.metricdefinition.MetricDefinitionRequestDto;
 import org.accounting.system.dtos.metricdefinition.MetricDefinitionResponseDto;
 import org.accounting.system.dtos.metricdefinition.UpdateMetricDefinitionRequestDto;
 import org.accounting.system.dtos.pagination.PageResource;
-import org.accounting.system.enums.AccessType;
-import org.accounting.system.enums.Operation;
-import org.accounting.system.enums.Collection;
 import org.accounting.system.repositories.authorization.RoleRepository;
+import org.accounting.system.repositories.client.ClientAccessAlwaysRepository;
+import org.accounting.system.repositories.client.ClientRepository;
 import org.accounting.system.repositories.metricdefinition.MetricDefinitionRepository;
 import org.accounting.system.services.ReadPredefinedTypesService;
+import org.accounting.system.services.client.ClientService;
+import org.accounting.system.util.Utility;
+import org.json.simple.parser.ParseException;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInstance;
 import org.mockito.Mockito;
 
 import javax.inject.Inject;
 import java.util.Optional;
-import java.util.stream.Collectors;
+import java.util.Set;
 
 import static io.restassured.RestAssured.given;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -32,6 +36,7 @@ import static org.mockito.ArgumentMatchers.any;
 
 @QuarkusTest
 @TestProfile(AccountingSystemTestProfile.class)
+@TestInstance(TestInstance.Lifecycle.PER_CLASS)
 public class MetricDefinitionAuthorizationTest {
 
     @InjectMock
@@ -43,11 +48,36 @@ public class MetricDefinitionAuthorizationTest {
     @Inject
     MetricDefinitionRepository metricDefinitionRepository;
 
+    @Inject
+    Utility utility;
+
+    @Inject
+    ClientRepository clientRepository;
+
+    @Inject
+    ClientService clientService;
+
+    @Inject
+    ClientAccessAlwaysRepository clientAccessAlwaysRepository;
+
 
     KeycloakTestClient keycloakClient = new KeycloakTestClient();
 
+    @BeforeAll
+    public void setup() throws ParseException {
+
+        clientService.register(utility.getIdFromToken(keycloakClient.getAccessToken("admin").split("\\.")[1]), "admin", "admin@email.com");
+
+        clientAccessAlwaysRepository.assignRolesToRegisteredClient(utility.getIdFromToken(keycloakClient.getAccessToken("admin").split("\\.")[1]), Set.of("collection_owner"));
+
+        clientService.register(utility.getIdFromToken(keycloakClient.getAccessToken("creator").split("\\.")[1]), "creator", "creator@email.com");
+
+        clientAccessAlwaysRepository.assignRolesToRegisteredClient(utility.getIdFromToken(keycloakClient.getAccessToken("creator").split("\\.")[1]), Set.of("collection_creator"));
+    }
+
     @BeforeEach
-    public void setup() {
+    public void each() {
+
         metricDefinitionRepository.deleteAll();
     }
 
@@ -111,33 +141,13 @@ public class MetricDefinitionAuthorizationTest {
         request.unitType = "SECOND";
         request.metricType = "Aggregated";
 
-        var metricDefinitionResponse = updateMetricDefinition(request, "inspector");
+        var response = createMetricDefinition(request, "admin");
 
-        var informativeResponse = metricDefinitionResponse
-                .then()
-                .assertThat()
-                .statusCode(403)
-                .extract()
-                .as(InformativeResponse.class);
+        var metricDefinitionResponse = response.then().extract().as(MetricDefinitionResponseDto.class);
 
-        assertEquals("The authenticated client is not permitted to perform the requested operation.", informativeResponse.message);
-    }
+        var error = updateMetricDefinition(request, "inspector", metricDefinitionResponse.id);
 
-    @Test
-    public void updateMetricDefinitionNoRelevantRoleForbidden(){
-
-        Mockito.when(readPredefinedTypesService.searchForUnitType(any())).thenReturn(Optional.of("SECOND"));
-        Mockito.when(readPredefinedTypesService.searchForMetricType(any())).thenReturn(Optional.of("Aggregated"));
-        MetricDefinitionRequestDto request= new MetricDefinitionRequestDto();
-
-        request.metricName = "metric";
-        request.metricDescription = "description";
-        request.unitType = "SECOND";
-        request.metricType = "Aggregated";
-
-        var metricDefinitionResponse = updateMetricDefinition(request, "alice");
-
-        var informativeResponse = metricDefinitionResponse
+        var informativeResponse = error
                 .then()
                 .assertThat()
                 .statusCode(403)
@@ -181,7 +191,7 @@ public class MetricDefinitionAuthorizationTest {
                 .extract()
                 .as(InformativeResponse.class);
 
-        assertEquals("You have no access to this entity : "+metricDefinitionResponseDto.id, informativeResponse.message);
+        assertEquals("The authenticated client is not permitted to perform the requested operation.", informativeResponse.message);
 
         //creator user is creating a Metric Definition
         Mockito.when(readPredefinedTypesService.searchForUnitType(any())).thenReturn(Optional.of("SECOND"));
@@ -221,9 +231,29 @@ public class MetricDefinitionAuthorizationTest {
     @Test
     public void deleteMetricDefinitionInspectorForbidden(){
 
-        var metricDefinitionResponse = deleteMetricDefinition("inspector");
+        // first admin user is creating a Metric Definition
+        Mockito.when(readPredefinedTypesService.searchForUnitType(any())).thenReturn(Optional.of("SECOND"));
+        Mockito.when(readPredefinedTypesService.searchForMetricType(any())).thenReturn(Optional.of("Aggregated"));
+        MetricDefinitionRequestDto request= new MetricDefinitionRequestDto();
 
-        var informativeResponse = metricDefinitionResponse
+        request.metricName = "metric";
+        request.metricDescription = "description";
+        request.unitType = "SECOND";
+        request.metricType = "Aggregated";
+
+        var metricDefinitionResponse = createMetricDefinition(request, "admin");
+
+        var response = metricDefinitionResponse
+                .then()
+                .assertThat()
+                .statusCode(201)
+                .extract()
+                .as(MetricDefinitionResponseDto.class);
+
+
+        var error = deleteMetricDefinition("inspector", response.id);
+
+        var informativeResponse = error
                 .then()
                 .assertThat()
                 .statusCode(403)
@@ -236,9 +266,28 @@ public class MetricDefinitionAuthorizationTest {
     @Test
     public void deleteMetricDefinitionNoRelevantRoleForbidden() {
 
-        var metricDefinitionResponse = deleteMetricDefinition("alice");
+        // first admin user is creating a Metric Definition
+        Mockito.when(readPredefinedTypesService.searchForUnitType(any())).thenReturn(Optional.of("SECOND"));
+        Mockito.when(readPredefinedTypesService.searchForMetricType(any())).thenReturn(Optional.of("Aggregated"));
+        MetricDefinitionRequestDto request= new MetricDefinitionRequestDto();
 
-        var informativeResponse = metricDefinitionResponse
+        request.metricName = "metric";
+        request.metricDescription = "description";
+        request.unitType = "SECOND";
+        request.metricType = "Aggregated";
+
+        var metricDefinitionResponse = createMetricDefinition(request, "admin");
+
+        var response = metricDefinitionResponse
+                .then()
+                .assertThat()
+                .statusCode(201)
+                .extract()
+                .as(MetricDefinitionResponseDto.class);
+
+        var error = deleteMetricDefinition("alice", response.id);
+
+        var informativeResponse = error
                 .then()
                 .assertThat()
                 .statusCode(403)
@@ -280,7 +329,7 @@ public class MetricDefinitionAuthorizationTest {
                 .extract()
                 .as(InformativeResponse.class);
 
-        assertEquals("You have no access to this entity : "+metricDefinitionResponseDto.id, informativeResponse.message);
+        assertEquals("The authenticated client is not permitted to perform the requested operation.", informativeResponse.message);
 
         // creator user is creating a Metric Definition
         Mockito.when(readPredefinedTypesService.searchForUnitType(any())).thenReturn(Optional.of("SECOND"));
@@ -312,82 +361,6 @@ public class MetricDefinitionAuthorizationTest {
                 .as(InformativeResponse.class);
 
         assertEquals("Metric Definition has been deleted successfully.", informativeResponse1.message);
-    }
-
-    @Test
-    public void metricDefinitionAdminCollectionPermissions(){
-
-        var metricDefinitionRole = roleRepository.getRoleByName("metric_definition_admin").stream().findAny().get();
-
-        var permissions = metricDefinitionRole
-                .getCollectionsAccessPermissions()
-                .stream()
-                .filter(collectionPermission -> collectionPermission.collection.equals(Collection.MetricDefinition))
-                .flatMap(md->md.accessPermissions.stream())
-                .collect(Collectors.toList());
-
-        assertEquals(AccessType.ALWAYS, permissions
-                .stream()
-                .filter(permission -> permission.operation.equals(Operation.CREATE))
-                .findAny()
-                .get().accessType
-        );
-        assertEquals(AccessType.ALWAYS, permissions
-                .stream()
-                .filter(permission -> permission.operation.equals(Operation.UPDATE))
-                .findAny()
-                .get().accessType
-        );
-        assertEquals(AccessType.ALWAYS, permissions
-                .stream()
-                .filter(permission -> permission.operation.equals(Operation.DELETE))
-                .findAny()
-                .get().accessType
-        );
-        assertEquals(AccessType.ALWAYS, permissions
-                .stream()
-                .filter(permission -> permission.operation.equals(Operation.READ))
-                .findAny()
-                .get().accessType
-        );
-    }
-
-    @Test
-    public void metricDefinitionInspectorCollectionPermissions(){
-
-        var metricDefinitionRole = roleRepository.getRoleByName("metric_definition_inspector").stream().findAny().get();
-
-        var permissions = metricDefinitionRole
-                .getCollectionsAccessPermissions()
-                .stream()
-                .filter(collectionPermission -> collectionPermission.collection.equals(Collection.MetricDefinition))
-                .flatMap(md->md.accessPermissions.stream())
-                .collect(Collectors.toList());
-
-        assertEquals(AccessType.NEVER, permissions
-                .stream()
-                .filter(permission -> permission.operation.equals(Operation.CREATE))
-                .findAny()
-                .get().accessType
-        );
-        assertEquals(AccessType.NEVER, permissions
-                .stream()
-                .filter(permission -> permission.operation.equals(Operation.UPDATE))
-                .findAny()
-                .get().accessType
-        );
-        assertEquals(AccessType.NEVER, permissions
-                .stream()
-                .filter(permission -> permission.operation.equals(Operation.DELETE))
-                .findAny()
-                .get().accessType
-        );
-        assertEquals(AccessType.ALWAYS, permissions
-                .stream()
-                .filter(permission -> permission.operation.equals(Operation.READ))
-                .findAny()
-                .get().accessType
-        );
     }
 
     @Test
@@ -463,7 +436,7 @@ public class MetricDefinitionAuthorizationTest {
         var fetchCreatorMetricDefinitionsResponseBody = fetchCreatorMetricDefinitions.body().as(PageResource.class);
 
         //because creator can access only its Metric Definitions the size of list should be 1
-        assertEquals(1, fetchCreatorMetricDefinitionsResponseBody.totalElements);
+        assertEquals(3, fetchCreatorMetricDefinitionsResponseBody.totalElements);
     }
 
     private Response createMetricDefinition(MetricDefinitionRequestDto request, String user){
@@ -477,7 +450,7 @@ public class MetricDefinitionAuthorizationTest {
                 .post();
     }
 
-    private Response updateMetricDefinition(MetricDefinitionRequestDto request, String user){
+    private Response updateMetricDefinition(MetricDefinitionRequestDto request, String user, String id){
 
         return given()
                 .auth()
@@ -485,7 +458,7 @@ public class MetricDefinitionAuthorizationTest {
                 .basePath("accounting-system/metric-definition")
                 .body(request)
                 .contentType(ContentType.JSON)
-                .patch("/{id}", "507f1f77bcf86cd799439011");
+                .patch("/{id}", id);
     }
 
     private Response updateMetricDefinitionById(UpdateMetricDefinitionRequestDto request, String user, String id){
@@ -499,14 +472,14 @@ public class MetricDefinitionAuthorizationTest {
                 .patch("/{id}", id);
     }
 
-    private Response deleteMetricDefinition(String user){
+    private Response deleteMetricDefinition(String user, String metricDefinitionId){
 
         return given()
                 .auth()
                 .oauth2(getAccessToken(user))
                 .basePath("accounting-system/metric-definition")
                 .contentType(ContentType.JSON)
-                .delete("/{id}", "507f1f77bcf86cd799439011");
+                .delete("/{id}", metricDefinitionId);
     }
 
     private Response deleteMetricDefinitionById(String user, String id){
@@ -517,15 +490,6 @@ public class MetricDefinitionAuthorizationTest {
                 .basePath("accounting-system/metric-definition")
                 .contentType(ContentType.JSON)
                 .delete("/{id}", id);
-    }
-
-    private Response fetchMetricDefinition(String user, String id){
-
-        return given()
-                .auth()
-                .oauth2(getAccessToken(user))
-                .basePath("accounting-system/metric-definition")
-                .get("/{id}", id);
     }
 
     private Response fetchAllMetricDefinitions(String user){

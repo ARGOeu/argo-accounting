@@ -1,14 +1,8 @@
 package org.accounting.system.dtos.installation;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import org.accounting.system.constraints.NotFoundEntity;
-import org.accounting.system.repositories.project.ProjectRepository;
-import org.accounting.system.repositories.metricdefinition.MetricDefinitionRepository;
-import org.accounting.system.repositories.provider.ProviderRepository;
 import org.eclipse.microprofile.openapi.annotations.enums.SchemaType;
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
-
-import javax.validation.constraints.NotEmpty;
 
 @Schema(name="InstallationRequest", description="An object represents a request for creating a new Installation.")
 public class
@@ -22,8 +16,6 @@ InstallationRequestDto {
             required = true
     )
     @JsonProperty("project")
-    @NotEmpty(message = "project may not be empty.")
-    @NotFoundEntity(repository = ProjectRepository.class, id = String.class, message = "There is no Project with the following id:")
     public String project;
 
     @Schema(
@@ -34,8 +26,6 @@ InstallationRequestDto {
             required = true
     )
     @JsonProperty("organisation")
-    @NotEmpty(message = "organisation may not be empty.")
-    @NotFoundEntity(repository = ProviderRepository.class, id = String.class, message = "There is no Provider with the following id:")
     public String organisation;
 
     @Schema(
@@ -46,7 +36,6 @@ InstallationRequestDto {
             required = true
     )
     @JsonProperty("infrastructure")
-    @NotEmpty(message = "infrastructure may not be empty.")
     public String infrastructure;
 
     @Schema(
@@ -57,7 +46,6 @@ InstallationRequestDto {
             required = true
     )
     @JsonProperty("installation")
-    @NotEmpty(message = "installation may not be empty.")
     public String installation;
 
     @Schema(
@@ -69,7 +57,5 @@ InstallationRequestDto {
             required = true
     )
     @JsonProperty("unit_of_access")
-    @NotEmpty(message = "unit_of_access may not be empty.")
-    @NotFoundEntity(repository = MetricDefinitionRepository.class, message = "There is no Metric Definition with the following id:")
     public String unitOfAccess;
 }

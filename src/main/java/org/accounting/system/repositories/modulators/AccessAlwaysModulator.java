@@ -18,8 +18,12 @@ import java.util.List;
  *
  * @param <E> Generic class that represents a mongo collection.
  */
-public abstract class AccessAlwaysModulator<E extends Entity, I> extends AccessModulator<E, I> {
+public abstract class AccessAlwaysModulator<E extends Entity, I, A extends AccessControl> extends AccessModulator<E, I, A> {
 
+    @Override
+    public void save(E entity) {
+        persist(entity);
+    }
 
     @Override
     public E fetchEntityById(I id) {
@@ -74,28 +78,28 @@ public abstract class AccessAlwaysModulator<E extends Entity, I> extends AccessM
         return projections.get(0);
     }
 
-    @Override
-    public void grantPermission(AccessControl accessControl) {
-        getAccessControlRepository().persist(accessControl);
-    }
-
-    @Override
-    public void modifyPermission(AccessControl accessControl) {
-        getAccessControlRepository().update(accessControl);
-    }
-
-    @Override
-    public void deletePermission(AccessControl accessControl) {
-        getAccessControlRepository().delete(accessControl);
-    }
-
-    @Override
-    public AccessControl getPermission(String entity, String who) {
-        return getAccessControlRepository().findByWhoAndCollectionAndEntity(who, collection(), entity);
-    }
-
-    @Override
-    public List<AccessControl> getAllPermissions() {
-        return getAccessControlRepository().findAllByCollection(collection());
-    }
+//    @Override
+//    public void grantPermission(A accessControl) {
+//        getAccessControlRepository().persist(accessControl);
+//    }
+//
+//    @Override
+//    public void modifyPermission(A accessControl) {
+//        getAccessControlRepository().update(accessControl);
+//    }
+//
+//    @Override
+//    public void deletePermission(A accessControl) {
+//        getAccessControlRepository().delete(accessControl);
+//    }
+//
+//    @Override
+//    public A getPermission(String entity, String who) {
+//        return getAccessControlRepository().findByWhoAndCollectionAndEntity(who, collection(), entity);
+//    }
+//
+//    @Override
+//    public List<A> getAllPermissions() {
+//        return getAccessControlRepository().findAllByCollection(collection());
+//    }
 }

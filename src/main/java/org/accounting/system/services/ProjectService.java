@@ -1,17 +1,21 @@
 package org.accounting.system.services;
 
-import org.accounting.system.clients.ProjectClient;
+import org.accounting.system.dtos.installation.InstallationResponseDto;
+import org.accounting.system.dtos.pagination.PageResource;
 import org.accounting.system.dtos.project.ProjectResponseDto;
 import org.accounting.system.entities.projections.HierarchicalRelationProjection;
+import org.accounting.system.entities.projections.InstallationProjection;
+import org.accounting.system.entities.projections.MetricProjection;
+import org.accounting.system.entities.projections.ProjectionQuery;
+import org.accounting.system.mappers.InstallationMapper;
 import org.accounting.system.mappers.ProjectMapper;
-import org.accounting.system.repositories.installation.InstallationRepository;
+import org.accounting.system.repositories.HierarchicalRelationRepository;
 import org.accounting.system.repositories.project.ProjectRepository;
-import org.accounting.system.repositories.provider.ProviderRepository;
-import org.eclipse.microprofile.rest.client.inject.RestClient;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 import javax.ws.rs.NotFoundException;
+import javax.ws.rs.core.UriInfo;
 import java.util.List;
 import java.util.Set;
 
@@ -19,17 +23,10 @@ import java.util.Set;
 public class ProjectService {
 
     @Inject
-    @RestClient
-    ProjectClient projectClient;
-
-    @Inject
     ProjectRepository projectRepository;
 
     @Inject
-    ProviderRepository providerRepository;
-
-    @Inject
-    InstallationRepository installationRepository;
+    HierarchicalRelationRepository hierarchicalRelationRepository;
 
     /**
      * An http call is made to Open Aire to retrieve the corresponding Project.
@@ -39,6 +36,8 @@ public class ProjectService {
      * @return The Project as it is stored in the Accounting system database.
      */
     public ProjectResponseDto save(String id){
+
+        //var project = projectRepository.save(id);
 
         var project = projectRepository.save(id);
 
@@ -58,6 +57,17 @@ public class ProjectService {
         projectRepository.associateProjectWithProviders(projectId, providerIds);
     }
 
+    public PageResource<MetricProjection, MetricProjection> fetchAllMetrics(String id, int page, int size, UriInfo uriInfo){
+
+        var projection = projectRepository.fetchAllMetrics(id, page, size);
+
+        if(projection.count == 0){
+            throw new NotFoundException("No metrics added.");
+        }
+
+        return new PageResource<>(projection, projection.list, uriInfo);
+    }
+
     /**
      * This method dissociated Providers from a specific Project.
      *
@@ -72,5 +82,12 @@ public class ProjectService {
     public List<HierarchicalRelationProjection> hierarchicalStructure(final String externalId) {
 
         return projectRepository.hierarchicalStructure(externalId);
+    }
+
+    public PageResource<InstallationProjection, InstallationResponseDto> findInstallationsByProject(String projectId, int page, int size, UriInfo uriInfo){
+
+        ProjectionQuery<InstallationProjection> projectionQuery = hierarchicalRelationRepository.findInstallationsByProject(projectId, "MetricDefinition", "unit_of_access", "_id", "unit_of_access", page, size, InstallationProjection.class);
+
+        return new PageResource<>(projectionQuery, InstallationMapper.INSTANCE.installationProjectionsToResponse(projectionQuery.list), uriInfo);
     }
 }

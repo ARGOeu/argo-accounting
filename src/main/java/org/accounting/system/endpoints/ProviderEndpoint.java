@@ -3,15 +3,12 @@ package org.accounting.system.endpoints;
 import io.quarkus.security.Authenticated;
 import org.accounting.system.constraints.NotFoundEntity;
 import org.accounting.system.dtos.InformativeResponse;
-import org.accounting.system.dtos.acl.AccessControlRequestDto;
-import org.accounting.system.dtos.acl.AccessControlResponseDto;
-import org.accounting.system.dtos.acl.AccessControlUpdateDto;
 import org.accounting.system.dtos.pagination.PageResource;
 import org.accounting.system.dtos.provider.ProviderRequestDto;
 import org.accounting.system.dtos.provider.ProviderResponseDto;
 import org.accounting.system.dtos.provider.UpdateProviderRequestDto;
-import org.accounting.system.enums.Operation;
 import org.accounting.system.enums.Collection;
+import org.accounting.system.enums.Operation;
 import org.accounting.system.interceptors.annotations.AccessPermission;
 import org.accounting.system.repositories.provider.ProviderRepository;
 import org.accounting.system.services.ProviderService;
@@ -48,7 +45,6 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 
-import static org.accounting.system.enums.Operation.ACL;
 import static org.eclipse.microprofile.openapi.annotations.enums.ParameterIn.QUERY;
 
 @Path("/providers")
@@ -392,333 +388,44 @@ public class ProviderEndpoint {
         return Response.ok().entity(response).build();
     }
 
-    @Tag(name = "Provider")
-    @org.eclipse.microprofile.openapi.annotations.Operation(
-            summary = "Generates a new Access Control Entry.",
-            description = "This endpoint is responsible for generating a new Access Control Entry. " +
-                    "Access Control Entry rules specify which clients are granted or denied access to particular Provider entities registered through the [Accounting System API](#/Provider/register-a-new-provider). " +
-                    "It should be noted that the combination {who, collection, entity} is unique. Therefore, only one Access Control entry can be created for each client and each entity.")
-    @APIResponse(
-            responseCode = "200",
-            description = "Access Control entry has been created successfully.",
-            content = @Content(schema = @Schema(
-                    type = SchemaType.OBJECT,
-                    implementation = InformativeResponse.class)))
-    @APIResponse(
-            responseCode = "400",
-            description = "Bad Request.",
-            content = @Content(schema = @Schema(
-                    type = SchemaType.OBJECT,
-                    implementation = InformativeResponse.class)))
-    @APIResponse(
-            responseCode = "401",
-            description = "Client has not been authenticated.",
-            content = @Content(schema = @Schema(
-                    type = SchemaType.OBJECT,
-                    implementation = InformativeResponse.class)))
-    @APIResponse(
-            responseCode = "403",
-            description = "The authenticated client is not permitted to perform the requested operation.",
-            content = @Content(schema = @Schema(
-                    type = SchemaType.OBJECT,
-                    implementation = InformativeResponse.class)))
-    @APIResponse(
-            responseCode = "404",
-            description = "Provider has not been found.",
-            content = @Content(schema = @Schema(
-                    type = SchemaType.OBJECT,
-                    implementation = InformativeResponse.class)))
-    @APIResponse(
-            responseCode = "409",
-            description = "There is an Access Control Entry with this {who, collection, entity}.",
-            content = @Content(schema = @Schema(
-                    type = SchemaType.OBJECT,
-                    implementation = InformativeResponse.class)))
-    @APIResponse(
-            responseCode = "415",
-            description = "Cannot consume content type.",
-            content = @Content(schema = @Schema(
-                    type = SchemaType.OBJECT,
-                    implementation = InformativeResponse.class)))
-    @APIResponse(
-            responseCode = "500",
-            description = "Internal Server Errors.",
-            content = @Content(schema = @Schema(
-                    type = SchemaType.OBJECT,
-                    implementation = InformativeResponse.class)))
-    @SecurityRequirement(name = "Authentication")
-
-    @POST
-    @Path("/{provider_id}/acl/{who}")
-    @Produces(value = MediaType.APPLICATION_JSON)
-    @Consumes(value = MediaType.APPLICATION_JSON)
-    @AccessPermission(collection = Collection.Provider, operation = ACL)
-    public Response createAccessControl(@Valid @NotNull(message = "The request body is empty.") AccessControlRequestDto accessControlRequestDto,
-                                        @Parameter(
-                                                description = "provider_id is the id of the entity to which the permissions apply.",
-                                                required = true,
-                                                example = "sites",
-                                                schema = @Schema(type = SchemaType.STRING))
-                                        @PathParam("provider_id")
-                                        @Valid
-                                        @NotFoundEntity(repository = ProviderRepository.class, id = String.class, message = "There is no Provider with the following id:") String id,
-                                        @Parameter(
-                                                description = "who is the id of a Client that the Access Control grants access.",
-                                                required = true,
-                                                example = "fbdb4e4a-6e93-4b08-a1e7-0b7bd08520a6",
-                                                schema = @Schema(type = SchemaType.STRING))
-                                        @PathParam("who") String who) {
-
-        providerService.derivesFromEoscPortal(id);
-
-        var informativeResponse = accessControlService.grantPermission(id, who, accessControlRequestDto, Collection.Provider, providerRepository);
-
-        return Response.ok().entity(informativeResponse).build();
-    }
-
-    @Tag(name = "Provider")
-    @org.eclipse.microprofile.openapi.annotations.Operation(
-            summary = "Modify an existing Access Control Entry.",
-            description = "This endpoint is responsible for updating an existing Access Control Entry. It will modify a specific Access Control Entry " +
-                    "which has granted permissions on a Role to a specific client." +
-                    "You can update a part or all attributes of the Access Control entity.")
-    @APIResponse(
-            responseCode = "200",
-            description = "Access Control entry has been updated successfully.",
-            content = @Content(schema = @Schema(
-                    type = SchemaType.OBJECT,
-                    implementation = InformativeResponse.class)))
-    @APIResponse(
-            responseCode = "400",
-            description = "Bad Request.",
-            content = @Content(schema = @Schema(
-                    type = SchemaType.OBJECT,
-                    implementation = InformativeResponse.class)))
-    @APIResponse(
-            responseCode = "401",
-            description = "Client has not been authenticated.",
-            content = @Content(schema = @Schema(
-                    type = SchemaType.OBJECT,
-                    implementation = InformativeResponse.class)))
-    @APIResponse(
-            responseCode = "403",
-            description = "The authenticated client is not permitted to perform the requested operation.",
-            content = @Content(schema = @Schema(
-                    type = SchemaType.OBJECT,
-                    implementation = InformativeResponse.class)))
-    @APIResponse(
-            responseCode = "404",
-            description = "Provider has not been found.",
-            content = @Content(schema = @Schema(
-                    type = SchemaType.OBJECT,
-                    implementation = InformativeResponse.class)))
-    @APIResponse(
-            responseCode = "409",
-            description = "There is an Access Control Entry with this {who, collection, entity}.",
-            content = @Content(schema = @Schema(
-                    type = SchemaType.OBJECT,
-                    implementation = InformativeResponse.class)))
-    @APIResponse(
-            responseCode = "415",
-            description = "Cannot consume content type.",
-            content = @Content(schema = @Schema(
-                    type = SchemaType.OBJECT,
-                    implementation = InformativeResponse.class)))
-    @APIResponse(
-            responseCode = "500",
-            description = "Internal Server Errors.",
-            content = @Content(schema = @Schema(
-                    type = SchemaType.OBJECT,
-                    implementation = InformativeResponse.class)))
-    @SecurityRequirement(name = "Authentication")
-
-    @PATCH
-    @Path("/{provider_id}/acl/{who}")
-    @Produces(value = MediaType.APPLICATION_JSON)
-    @Consumes(value = MediaType.APPLICATION_JSON)
-    @AccessPermission(collection = Collection.Provider, operation = ACL)
-    public Response modifyAccessControl(@Valid @NotNull(message = "The request body is empty.") AccessControlUpdateDto accessControlUpdateDto,
-                                        @Parameter(
-                                                description = "provider_id in which permissions have been granted.",
-                                                required = true,
-                                                example = "sites",
-                                                schema = @Schema(type = SchemaType.STRING))
-                                        @PathParam("provider_id")
-                                        @Valid
-                                        @NotFoundEntity(repository = ProviderRepository.class, id = String.class, message = "There is no Provider with the following id:") String id,
-                                        @Parameter(
-                                                description = "who is the client to whom the permissions have been granted.",
-                                                required = true,
-                                                example = "fbdb4e4a-6e93-4b08-a1e7-0b7bd08520a6",
-                                                schema = @Schema(type = SchemaType.STRING))
-                                        @PathParam("who") String who) {
-
-
-        var response = accessControlService.modifyPermission(id, who, accessControlUpdateDto, Collection.Provider, providerRepository);
-
-        return Response.ok().entity(response).build();
-    }
-
-    @Tag(name = "Provider")
-    @org.eclipse.microprofile.openapi.annotations.Operation(
-            summary = "Deletes an existing Access Control entry.",
-            description = "You can delete the permissions that a client can access to manage a specific Provider.")
-    @APIResponse(
-            responseCode = "200",
-            description = "Access Control entry has been deleted successfully.",
-            content = @Content(schema = @Schema(
-                    type = SchemaType.OBJECT,
-                    implementation = InformativeResponse.class)))
-    @APIResponse(
-            responseCode = "401",
-            description = "Client has not been authenticated.",
-            content = @Content(schema = @Schema(
-                    type = SchemaType.OBJECT,
-                    implementation = InformativeResponse.class)))
-    @APIResponse(
-            responseCode = "403",
-            description = "The authenticated client is not permitted to perform the requested operation.",
-            content = @Content(schema = @Schema(
-                    type = SchemaType.OBJECT,
-                    implementation = InformativeResponse.class)))
-    @APIResponse(
-            responseCode = "404",
-            description = "Provider has not been found.",
-            content = @Content(schema = @Schema(
-                    type = SchemaType.ARRAY,
-                    implementation = InformativeResponse.class)))
-    @APIResponse(
-            responseCode = "500",
-            description = "Internal Server Errors.",
-            content = @Content(schema = @Schema(
-                    type = SchemaType.OBJECT,
-                    implementation = InformativeResponse.class)))
-    @SecurityRequirement(name = "Authentication")
-
-    @DELETE()
-    @Path("/{provider_id}/acl/{who}")
-    @Produces(value = MediaType.APPLICATION_JSON)
-    @AccessPermission(collection = Collection.Provider, operation = ACL)
-    public Response deleteAccessControl(@Parameter(
-            description = "provider_id in which permissions have been granted.",
-            required = true,
-            example = "sites",
-            schema = @Schema(type = SchemaType.STRING))
-                                        @PathParam("provider_id")
-                                        @Valid
-                                        @NotFoundEntity(repository = ProviderRepository.class, id = String.class, message = "There is no Provider with the following id:") String id,
-                                        @Parameter(
-                                                description = "who is the client to whom the permissions have been granted.",
-                                                required = true,
-                                                example = "fbdb4e4a-6e93-4b08-a1e7-0b7bd08520a6",
-                                                schema = @Schema(type = SchemaType.STRING))
-                                        @PathParam("who") String who) {
-
-
-        var successResponse = accessControlService.deletePermission(id, who, Collection.Provider, providerRepository);
-
-        return Response.ok().entity(successResponse).build();
-    }
-
-    @Tag(name = "Provider")
-    @org.eclipse.microprofile.openapi.annotations.Operation(
-            summary = "Returns an existing Access Control entry.",
-            description = "This operation returns the Access Control entry created for a client upon a Provider entity.")
-    @APIResponse(
-            responseCode = "200",
-            description = "The corresponding Access Control entry.",
-            content = @Content(schema = @Schema(
-                    type = SchemaType.OBJECT,
-                    implementation = AccessControlResponseDto.class)))
-    @APIResponse(
-            responseCode = "401",
-            description = "Client has not been authenticated.",
-            content = @Content(schema = @Schema(
-                    type = SchemaType.OBJECT,
-                    implementation = InformativeResponse.class)))
-    @APIResponse(
-            responseCode = "403",
-            description = "The authenticated client is not permitted to perform the requested operation.",
-            content = @Content(schema = @Schema(
-                    type = SchemaType.OBJECT,
-                    implementation = InformativeResponse.class)))
-    @APIResponse(
-            responseCode = "404",
-            description = "Access Control entry has not been found.",
-            content = @Content(schema = @Schema(
-                    type = SchemaType.OBJECT,
-                    implementation = InformativeResponse.class)))
-    @APIResponse(
-            responseCode = "500",
-            description = "Internal Server Errors.",
-            content = @Content(schema = @Schema(
-                    type = SchemaType.OBJECT,
-                    implementation = InformativeResponse.class)))
-    @SecurityRequirement(name = "Authentication")
-
-    @GET
-    @Path("/{provider_id}/acl/{who}")
-    @Produces(value = MediaType.APPLICATION_JSON)
-    @AccessPermission(collection = Collection.Provider, operation = ACL)
-    public Response getAccessControl(
-            @Parameter(
-                    description = "provider_id in which permissions have been granted.",
-                    required = true,
-                    example = "sites",
-                    schema = @Schema(type = SchemaType.STRING))
-            @PathParam("role_id")
-            @Valid
-            @NotFoundEntity(repository = ProviderRepository.class, id = String.class, message = "There is no Provider with the following id:") String id,
-            @Parameter(
-                    description = "who is the client to whom the permissions have been granted.",
-                    required = true,
-                    example = "fbdb4e4a-6e93-4b08-a1e7-0b7bd08520a6",
-                    schema = @Schema(type = SchemaType.STRING))
-            @PathParam("who") String who){
-
-        var response = accessControlService.fetchPermission(id, who, providerRepository);
-
-        return Response.ok().entity(response).build();
-    }
-
-    @Tag(name = "Provider")
-    @org.eclipse.microprofile.openapi.annotations.Operation(
-            summary = "Returns all Access Control entries that have been created for Provider collection.",
-            description = "Returns all Access Control entries that have been created for Provider collection.")
-    @APIResponse(
-            responseCode = "200",
-            description = "The corresponding Access Control entries.",
-            content = @Content(schema = @Schema(
-                    type = SchemaType.ARRAY,
-                    implementation = AccessControlResponseDto.class)))
-    @APIResponse(
-            responseCode = "401",
-            description = "Client has not been authenticated.",
-            content = @Content(schema = @Schema(
-                    type = SchemaType.OBJECT,
-                    implementation = InformativeResponse.class)))
-    @APIResponse(
-            responseCode = "403",
-            description = "The authenticated client is not permitted to perform the requested operation.",
-            content = @Content(schema = @Schema(
-                    type = SchemaType.OBJECT,
-                    implementation = InformativeResponse.class)))
-    @APIResponse(
-            responseCode = "500",
-            description = "Internal Server Errors.",
-            content = @Content(schema = @Schema(
-                    type = SchemaType.OBJECT,
-                    implementation = InformativeResponse.class)))
-    @SecurityRequirement(name = "Authentication")
-
-    @GET
-    @Path("/acl")
-    @Produces(value = MediaType.APPLICATION_JSON)
-    @AccessPermission(collection = Collection.Provider, operation = ACL)
-    public Response getAllAccessControl(){
-
-        var response = accessControlService.fetchAllPermissions(providerRepository);
-
-        return Response.ok().entity(response).build();
-    }
+//    @Tag(name = "Provider")
+//    @org.eclipse.microprofile.openapi.annotations.Operation(
+//            summary = "Returns all Access Control entries that have been created for Provider collection.",
+//            description = "Returns all Access Control entries that have been created for Provider collection.")
+//    @APIResponse(
+//            responseCode = "200",
+//            description = "The corresponding Access Control entries.",
+//            content = @Content(schema = @Schema(
+//                    type = SchemaType.ARRAY,
+//                    implementation = PermissionAccessControlResponseDto.class)))
+//    @APIResponse(
+//            responseCode = "401",
+//            description = "Client has not been authenticated.",
+//            content = @Content(schema = @Schema(
+//                    type = SchemaType.OBJECT,
+//                    implementation = InformativeResponse.class)))
+//    @APIResponse(
+//            responseCode = "403",
+//            description = "The authenticated client is not permitted to perform the requested operation.",
+//            content = @Content(schema = @Schema(
+//                    type = SchemaType.OBJECT,
+//                    implementation = InformativeResponse.class)))
+//    @APIResponse(
+//            responseCode = "500",
+//            description = "Internal Server Errors.",
+//            content = @Content(schema = @Schema(
+//                    type = SchemaType.OBJECT,
+//                    implementation = InformativeResponse.class)))
+//    @SecurityRequirement(name = "Authentication")
+//
+//    @GET
+//    @Path("/acl")
+//    @Produces(value = MediaType.APPLICATION_JSON)
+//    @AccessPermission(collection = Collection.Provider, operation = ACL)
+//    public Response getAllAccessControl(){
+//
+//        var response = accessControlService.fetchAllPermissions(providerRepository);
+//
+//        return Response.ok().entity(response).build();
+//    }
 }

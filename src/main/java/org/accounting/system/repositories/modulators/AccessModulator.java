@@ -11,14 +11,17 @@ import org.accounting.system.entities.Entity;
 import org.accounting.system.entities.acl.AccessControl;
 import org.accounting.system.entities.projections.ProjectionQuery;
 import org.accounting.system.enums.Collection;
-import org.accounting.system.repositories.acl.AccessControlRepository;
 import org.bson.Document;
 import org.bson.conversions.Bson;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 
 import javax.inject.Inject;
 import javax.ws.rs.ForbiddenException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
@@ -29,13 +32,10 @@ import java.util.stream.Collectors;
  *
  * @param <E> Generic class that represents a mongo collection.
  */
-public abstract class AccessModulator<E extends Entity, I> implements PanacheMongoRepositoryBase<E, I> {
+public abstract class AccessModulator<E extends Entity, I, A extends AccessControl> implements PanacheMongoRepositoryBase<E, I> {
 
     @Inject
     RequestInformation requestInformation;
-
-    @Inject
-    AccessControlRepository accessControlRepository;
 
     @Inject
     MongoClient mongoClient;
@@ -53,16 +53,20 @@ public abstract class AccessModulator<E extends Entity, I> implements PanacheMon
         this.identity = (Class<I>) typeArguments[1];
     }
 
+    public void save(E entity){
+        throw new ForbiddenException("The authenticated client is not permitted to perform the requested operation.");
+    }
+
     public  E fetchEntityById(I id){
-        throw new ForbiddenException("You have no access to this entity : " + id.toString());
+        throw new ForbiddenException("The authenticated client is not permitted to perform the requested operation.");
     }
 
     public boolean deleteEntityById(I id){
-        throw new ForbiddenException("You have no access to this entity : " + id.toString());
+        throw new ForbiddenException("The authenticated client is not permitted to perform the requested operation.");
     }
 
     public E updateEntity(E entity, I id){
-        throw new ForbiddenException("You have no access to this entity : " + id.toString());
+        throw new ForbiddenException("The authenticated client is not permitted to perform the requested operation.");
     }
 
     public List<E> getAllEntities(){
@@ -78,31 +82,31 @@ public abstract class AccessModulator<E extends Entity, I> implements PanacheMon
      * @return An object represents the paginated results
      */
     public PanacheQuery<E> findAllPageable(int page, int size){
-        throw new ForbiddenException("You have no access to this operation.");
+        throw new ForbiddenException("The authenticated client is not permitted to perform the requested operation.");
     }
 
     /**
      * This method is responsible fοr granting permissions to specific entity within a generic collection.
      * @param accessControl It essentially expresses the permissions that will be granted.
      */
-    public void grantPermission(AccessControl accessControl){
-        throw new ForbiddenException("You have no access to this entity : " + accessControl.getEntity());
+    public void grantPermission(A accessControl){
+        throw new ForbiddenException("The authenticated client is not permitted to perform the requested operation.");
     }
 
     /**
      * This method is responsible fοr updating existing permissions which have already been granted to a specific entity.
      * @param accessControl It essentially expresses the permissions that will be modified.
      */
-    public void modifyPermission(AccessControl accessControl){
-        throw new ForbiddenException("You have no access to modify this permission.");
+    public void modifyPermission(A accessControl){
+        throw new ForbiddenException("The authenticated client is not permitted to perform the requested operation.");
     }
 
     /**
      * This method is responsible fοr deleting existing permissions which have already been granted to a specific entity.
      * @param accessControl It essentially expresses the permissions that will be deleted.
      */
-    public void deletePermission(AccessControl accessControl){
-        throw new ForbiddenException("You have no access to delete this permission.");
+    public void deletePermission(A accessControl){
+        throw new ForbiddenException("The authenticated client is not permitted to perform the requested operation.");
     }
 
     /**
@@ -110,23 +114,23 @@ public abstract class AccessModulator<E extends Entity, I> implements PanacheMon
      * @param entity The entity id to which permissions have been assigned.
      * @param who To whom the permissions have been assigned.
      */
-    public AccessControl getPermission(String entity, String who){
-        throw new ForbiddenException("You have no access to read this permission.");
+    public A getPermission(String entity, String who){
+        throw new ForbiddenException("The authenticated client is not permitted to perform the requested operation.");
     }
 
     /**
      * This method is responsible for returning all permissions granted in a Collection.
      */
-    public List<AccessControl> getAllPermissions(){
+    public List<A> getAllPermissions(){
         return Collections.emptyList();
     }
 
     public <T> ProjectionQuery<T> lookup(String from, String localField, String foreignField, String as, int page, int size, Class<T> projection){
-        throw new ForbiddenException("You have no access to this operation.");
+        throw new ForbiddenException("The authenticated client is not permitted to perform the requested operation.");
     }
 
     public <T> T lookUpEntityById(String from, String localField, String foreignField, String as, Class<T> projection, I id){
-        throw new ForbiddenException("You have no access to this entity : " + id.toString());
+        throw new ForbiddenException("The authenticated client is not permitted to perform the requested operation.");
     }
 
     public List<E> combineTwoLists(List<E> a, List<E> b){
@@ -150,10 +154,6 @@ public abstract class AccessModulator<E extends Entity, I> implements PanacheMon
 
     public RequestInformation getRequestInformation() {
         return requestInformation;
-    }
-
-    public AccessControlRepository getAccessControlRepository() {
-        return accessControlRepository;
     }
 
     public Collection collection() {
