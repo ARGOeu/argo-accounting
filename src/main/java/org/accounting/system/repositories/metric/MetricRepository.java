@@ -5,8 +5,6 @@ import io.quarkus.mongodb.panache.PanacheQuery;
 import io.quarkus.panache.common.Page;
 import io.quarkus.panache.common.Sort;
 import org.accounting.system.entities.Metric;
-import org.bson.Document;
-import org.bson.conversions.Bson;
 import org.bson.types.ObjectId;
 
 import javax.enterprise.context.ApplicationScoped;
@@ -70,7 +68,7 @@ public class MetricRepository extends MetricModulator {
         return find("metricDefinitionId", Sort.by("metricDefinitionId"), metricDefinitionId).page(Page.of(page, size));
     }
 
-    public List<Metric> search(Bson query) {
-        return find(Document.parse(query.toBsonDocument().toJson())).stream().collect(Collectors.toList());
-    }
+//    public List<Metric> search(Bson query) {
+//        return find(Document.parse(query.toBsonDocument().toJson())).stream().collect(Collectors.toList());
+//    }
 }
