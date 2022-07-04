@@ -180,14 +180,16 @@ public class MetricDefinitionService {
         return new PageResource<>(panacheQuery, MetricMapper.INSTANCE.metricsToResponse(panacheQuery.list()), uriInfo);
     }
 
-    public List<MetricDefinitionResponseDto> searchMetricDefinition( String json, boolean isAlwaysPermission) throws ParseException, NoSuchFieldException {
+    public PageResource<MetricDefinition, MetricDefinitionResponseDto> searchMetricDefinition( String json, boolean isAlwaysPermission, int page, int size,UriInfo uriInfo) throws ParseException, NoSuchFieldException {
 
         List<String> entityIds=new ArrayList<>();
         if(!isAlwaysPermission){
             entityIds= fetchAllMetricDefinitions().stream().map(MetricDefinitionResponseDto::getId).collect(Collectors.toList());
         }
         Bson query=queryParser.parseFile(json, isAlwaysPermission, entityIds);
-        return  MetricDefinitionMapper.INSTANCE.metricDefinitionsToResponse( metricDefinitionRepository.search(query));
+        PanacheQuery<MetricDefinition> projectionQuery = metricDefinitionRepository.search(query,page,size);
+        return new PageResource<>(projectionQuery, MetricDefinitionMapper.INSTANCE.metricDefinitionsToResponse(projectionQuery.list()), uriInfo);
+
     }
 
 }

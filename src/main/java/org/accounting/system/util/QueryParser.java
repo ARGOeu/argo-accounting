@@ -4,7 +4,6 @@ import com.mongodb.client.model.Filters;
 import org.accounting.system.enums.Operand;
 import org.accounting.system.enums.Operator;
 import org.bson.conversions.Bson;
-import org.bson.types.ObjectId;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
@@ -169,12 +168,12 @@ public class QueryParser {
 
     public Bson accessFilter(Bson filter, List<String> ids) {
 
-        List<ObjectId> objectIds=new ArrayList<>();
-        for(String stId: ids){
-
-            objectIds.add(new ObjectId(stId));
-        }
-        Bson accessFilter = Filters.in("_id", objectIds);
+     //   List<ObjectId> objectIds=new ArrayList<>();
+//        for(String stId: ids){
+//
+//            objectIds.add(new ObjectId(stId));
+//        }
+        Bson accessFilter = Filters.in("_id", ids);
 
         Bson query = Filters.and(accessFilter, filter);
         return query;

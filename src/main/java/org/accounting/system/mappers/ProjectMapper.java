@@ -8,6 +8,7 @@ import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.factory.Mappers;
 
+import java.util.List;
 import java.util.Objects;
 
 /**
@@ -27,4 +28,6 @@ public interface ProjectMapper {
     Project openAireResponseToProject(OpenAireProject project);
 
     ProjectResponseDto projectToDto(Project project);
+
+    List<ProjectResponseDto> projectsToDto(List<Project> project);
 }
