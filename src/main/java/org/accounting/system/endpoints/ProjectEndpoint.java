@@ -17,7 +17,6 @@ import org.accounting.system.dtos.project.AssociateProjectProviderRequestDto;
 import org.accounting.system.dtos.project.DissociateProjectProviderRequestDto;
 import org.accounting.system.dtos.project.ProjectResponseDto;
 import org.accounting.system.entities.HierarchicalRelation;
-import org.accounting.system.entities.Project;
 import org.accounting.system.entities.projections.HierarchicalRelationProjection;
 import org.accounting.system.entities.projections.MetricProjection;
 import org.accounting.system.enums.Collection;
@@ -27,6 +26,7 @@ import org.accounting.system.repositories.client.ClientRepository;
 import org.accounting.system.repositories.project.ProjectRepository;
 import org.accounting.system.repositories.provider.ProviderRepository;
 import org.accounting.system.serializer.HierarchicalRelationSerializer;
+import org.accounting.system.serializer.PageResourceMixIn;
 import org.accounting.system.services.HierarchicalRelationService;
 import org.accounting.system.services.ProjectService;
 import org.accounting.system.services.ProviderService;
@@ -57,8 +57,6 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 import java.text.ParseException;
-import java.util.List;
-import java.util.stream.Collectors;
 
 import static org.accounting.system.enums.Operation.*;
 import static org.eclipse.microprofile.openapi.annotations.enums.ParameterIn.QUERY;
@@ -1390,18 +1388,83 @@ public class ProjectEndpoint {
         }
         var results=projectService.searchProject(json, page - 1, size, uriInfo);
 
-        var  response =results.content.stream().map(ProjectResponseDto::getId).collect(Collectors.toList()).stream().map(projectService::hierarchicalStructure).collect(Collectors.toList());
+        ObjectMapper objectMapper = new ObjectMapper();
+
+        objectMapper = objectMapper.addMixIn(PageResource.class, PageResourceMixIn.class);
+
+        return Response.ok().entity(objectMapper.writeValueAsString(results)).build();
+
+    }
 
 
-        PageResource<Project,List<HierarchicalRelationProjection>> pageResource=new PageResource<>();
-        pageResource.content=response;
-        pageResource.sizeOfPage=results.sizeOfPage;
-        pageResource.numberOfPage=results.numberOfPage;
-        pageResource.totalPages=results.totalPages;
-        pageResource.links=results.links;
-        pageResource.totalElements=results.totalElements;
 
-        return Response.ok().entity(pageResource).build();
+    @Tag(name = "Project")
+    @Operation(
+            operationId = "get-all-projects",
+            summary = "Get all projects",
+            description = "Get all Projects" )
 
+    @APIResponse(
+            responseCode = "200",
+            description = "The corresponding Projects.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.STRING,
+                    implementation = ProjectResponseDto.class)))
+    @APIResponse(
+            responseCode = "400",
+            description = "Bad Request.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "401",
+            description = "Client has not been authenticated.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "403",
+            description = "The authenticated client is not permitted to perform the requested operation.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "415",
+            description = "Cannot consume content type.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "500",
+            description = "Internal Server Errors.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @SecurityRequirement(name = "Authentication")
+
+    @GET
+    @Produces(value = MediaType.APPLICATION_JSON)
+    @Consumes(value = MediaType.APPLICATION_JSON)
+
+    public Response getAll(
+
+            @Parameter(name = "page", in = QUERY,
+                    description = "Indicates the page number. Page number must be >= 1.") @DefaultValue("1") @QueryParam("page") int page,
+            @Parameter(name = "size", in = QUERY,
+                    description = "The page size.") @DefaultValue("10") @QueryParam("size") int size,
+            @Context UriInfo uriInfo
+    ) throws ParseException, NoSuchFieldException, org.json.simple.parser.ParseException, JsonProcessingException {
+
+        if (page < 1) {
+            throw new BadRequestException("Page number must be >= 1.");
+        }
+
+        var results= projectService.getAll( page - 1, size, uriInfo);
+
+        ObjectMapper objectMapper = new ObjectMapper();
+
+        objectMapper = objectMapper.addMixIn(PageResource.class, PageResourceMixIn.class);
+
+        return Response.ok().entity(objectMapper.writeValueAsString(results)).build();
     }
 }
