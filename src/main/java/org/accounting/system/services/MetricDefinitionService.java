@@ -179,7 +179,6 @@ public class MetricDefinitionService {
 
         return new PageResource<>(panacheQuery, MetricMapper.INSTANCE.metricsToResponse(panacheQuery.list()), uriInfo);
     }
-
     public PageResource<MetricDefinitionResponseDto> searchMetricDefinition( String json, boolean isAlwaysPermission, int page, int size,UriInfo uriInfo) throws ParseException, NoSuchFieldException {
 
         List<String> entityIds=new ArrayList<>();
@@ -191,4 +190,6 @@ public class MetricDefinitionService {
         return new PageResource<>(projectionQuery, MetricDefinitionMapper.INSTANCE.metricDefinitionsToResponse(projectionQuery.list()), uriInfo);
 
     }
+
+
 }
