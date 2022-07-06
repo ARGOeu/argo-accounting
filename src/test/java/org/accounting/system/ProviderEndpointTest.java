@@ -15,8 +15,10 @@ import org.accounting.system.dtos.provider.ProviderResponseDto;
 import org.accounting.system.dtos.provider.UpdateProviderRequestDto;
 import org.accounting.system.endpoints.ProviderEndpoint;
 import org.accounting.system.mappers.ProviderMapper;
+import org.accounting.system.repositories.acl.AccessControlRepository;
 import org.accounting.system.repositories.client.ClientAccessAlwaysRepository;
 import org.accounting.system.repositories.provider.ProviderRepository;
+import org.accounting.system.services.ProjectService;
 import org.accounting.system.services.client.ClientService;
 import org.accounting.system.util.Utility;
 import org.accounting.system.wiremock.ProviderWireMockServer;
@@ -53,6 +55,12 @@ public class ProviderEndpointTest {
 
     @Inject
     ClientService clientService;
+
+    @Inject
+    ProjectService projectService;
+
+    @Inject
+    AccessControlRepository accessControlRepository;
 
     @Inject
     ClientAccessAlwaysRepository clientAccessAlwaysRepository;
@@ -292,6 +300,37 @@ public class ProviderEndpointTest {
                 .as(InformativeResponse.class);
 
         assertEquals("You cannot delete a Provider which derives from EOSC-Portal.", errorResponse.message);
+    }
+
+    @Test
+    public void deleteProviderBelongsToProjectProhibited() throws ParseException {
+
+        var request= new ProviderRequestDto();
+        request.id = "delete-provider-id-prohibited";
+        request.name = "delete-provider-name-prohibited";
+        request.abbreviation = "delete-provider-abbreviation-prohibited";
+        request.logo = "delete-provider-logo-prohibited";
+        request.website = "delete-provider-website-prohibited";
+
+        createProvider(request, "admin");
+
+        String sub = utility.getIdFromToken(keycloakClient.getAccessToken("admin").split("\\.")[1]);
+
+        accessControlRepository.accessListOfProjects(Set.of("777536"), sub);
+
+        projectService.associateProjectWithProviders("777536", Set.of("delete-provider-id-prohibited"));
+
+        var response = given()
+                .auth()
+                .oauth2(getAccessToken("admin"))
+                .delete("/{providerId}", request.id)
+                .then()
+                .assertThat()
+                .statusCode(403)
+                .extract()
+                .as(InformativeResponse.class);
+
+        assertEquals("You cannot delete a Provider which belongs to a Project.", response.message);
     }
 
     @Test
