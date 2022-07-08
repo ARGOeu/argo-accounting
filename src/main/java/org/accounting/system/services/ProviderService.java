@@ -34,6 +34,9 @@ public class ProviderService {
     @Inject
     HierarchicalRelationRepository hierarchicalRelationRepository;
 
+    @Inject
+    HierarchicalRelationService hierarchicalRelationService;
+
 
     /**
      * Returns the N Providers from the given page.
@@ -103,6 +106,10 @@ public class ProviderService {
         // if Provider's creator id is null then it derives from EOSC-Portal
         if(Objects.isNull(provider.getCreatorId())){
             throw new ForbiddenException("You cannot delete a Provider which derives from EOSC-Portal.");
+        }
+
+        if(hierarchicalRelationService.providerBelongsToAnyProject(providerId)){
+            throw new ForbiddenException("You cannot delete a Provider which belongs to a Project.");
         }
 
         return providerRepository.deleteEntityById(providerId);

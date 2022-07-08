@@ -60,9 +60,9 @@ public class HierarchicalRelationRepository implements PanacheMongoRepositoryBas
      * @param path Hierarchical relationship path
      * @return if the given path exists.
      */
-    public boolean hierarchicalRelationshipExists(String path){
+    public boolean exist(String path){
 
-        Bson regex = Aggregates.match(Filters.regex("_id", path));
+        Bson regex = Aggregates.match(Filters.regex("_id","\\b" + path + "\\b"+"(?![-])"));
 
         Document count = getMongoCollection()
                 .aggregate(List
@@ -70,6 +70,7 @@ public class HierarchicalRelationRepository implements PanacheMongoRepositoryBas
 
         return count != null && Long.parseLong(count.get("count").toString()) > 0L;
     }
+
 
     public HierarchicalRelation findByPath(final String id){
 
@@ -165,7 +166,7 @@ public class HierarchicalRelationRepository implements PanacheMongoRepositoryBas
 
     public ProjectionQuery<MetricProjection> findByExternalId(final String externalId, int page, int size) {
         //Bson regex = Aggregates.match(Filters.regex("resource_id", externalId + "[.\\s]"));
-        Bson regex = Aggregates.match(Filters.regex("resource_id", externalId));
+        Bson regex = Aggregates.match(Filters.regex("resource_id", "\\b" + externalId + "\\b"+"(?![-])"));
 
         List<MetricProjection> projections = metricRepository
                 .getMongoCollection()

@@ -86,8 +86,21 @@ public class HierarchicalRelationService {
      */
     public boolean providerBelongsToProject(String projectId, String providerId){
 
-        return hierarchicalRelationRepository.hierarchicalRelationshipExists(projectId + HierarchicalRelation.PATH_SEPARATOR + providerId);
+        return hierarchicalRelationRepository.exist(projectId + HierarchicalRelation.PATH_SEPARATOR + providerId);
     }
+
+
+    /**
+     * This method delegates to {@link HierarchicalRelationRepository hierarchicalRelationRepository} to check if the given Provider belongs to any Project
+     **
+     * @param providerId The Provider ID.
+     * @return if provider belongs to any project.
+     */
+    public boolean providerBelongsToAnyProject(String providerId){
+
+        return hierarchicalRelationRepository.exist(providerId);
+    }
+
 
     public void recursion(HierarchicalRelationProjection relation, Set<Document> metrics){
 
