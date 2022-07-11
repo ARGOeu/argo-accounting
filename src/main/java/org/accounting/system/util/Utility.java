@@ -39,9 +39,6 @@ public class Utility {
     @Inject
     TokenIntrospection tokenIntrospection;
 
-    @ConfigProperty(name = "key.to.retrieve.roles.from.access.token")
-    String key;
-
     @ConfigProperty(name = "key.to.retrieve.id.from.access.token")
     String id;
 
@@ -117,24 +114,6 @@ public class Utility {
     }
 
     public Set<String> getRoles(){
-
-//        List<String> providedRoles = null;
-//
-//        Object object = tokenIntrospection.getJsonObject().get(key);
-//
-//        Object scope = tokenIntrospection.getJsonObject().get("scope");
-//
-//        if(object == null){
-//            providedRoles = Arrays.asList(scope.toString().replace("\"", "").split(" ").clone());
-////        }else if(object instanceof JsonString){
-////            providedRoles = List.of(tokenIntrospection.getString(key));
-//        } else {
-//            JsonArray jsonArray = tokenIntrospection.getArray(key);
-//            providedRoles = jsonArray
-//                    .stream()
-//                    .map(jsonValue -> ((JsonString) jsonValue).getString())
-//                    .collect(Collectors.toList());
-//        }
 
         String vopersonId = tokenIntrospection.getJsonObject().getString(id);
 

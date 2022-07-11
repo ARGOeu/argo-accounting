@@ -54,7 +54,7 @@ import javax.ws.rs.core.UriInfo;
 
 import static org.eclipse.microprofile.openapi.annotations.enums.ParameterIn.QUERY;
 
-@Path("/metric-definition")
+@Path("/metric-definitions")
 @Authenticated
 @SecurityScheme(securitySchemeName = "Authentication",
         description = "JWT token",

@@ -922,7 +922,7 @@ public class InstallationEndpointTest {
         return given()
                 .auth()
                 .oauth2(getAccessToken(user))
-                .basePath("accounting-system/metric-definition")
+                .basePath("accounting-system/metric-definitions")
                 .body(request)
                 .contentType(ContentType.JSON)
                 .post()

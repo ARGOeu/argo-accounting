@@ -12,7 +12,7 @@ public class PageLink {
             type = SchemaType.STRING,
             implementation = String.class,
             description = "Uri to paginated entities.",
-            example = "http://localhost:8080/accounting-system/metric-definition/61eeab7bb3b68f5c3f8c4c24/metrics?page=1&size=10"
+            example = "http://localhost:8080/accounting-system/metric-definitions/61eeab7bb3b68f5c3f8c4c24/metrics?page=1&size=10"
     )
     public String href;
 
