@@ -89,7 +89,7 @@ Once you log in to your preferable Identity Provider, you obtain an access token
 When passing in the access token in an HTTP header, you should make a request like the following:
 
 ```bash
-curl http://localhost:8080/accounting-system/metric-definition
+curl http://localhost:8080/accounting-system/metric-definitions
    -H "Authorization: Bearer {token}"
 ```
 

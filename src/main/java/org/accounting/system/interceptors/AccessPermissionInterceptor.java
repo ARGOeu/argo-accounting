@@ -2,11 +2,8 @@ package org.accounting.system.interceptors;
 
 import io.quarkus.arc.ArcInvocationContext;
 import io.quarkus.oidc.TokenIntrospection;
-import org.accounting.system.beans.RequestInformation;
-import org.accounting.system.enums.AccessType;
 import org.accounting.system.interceptors.annotations.AccessPermission;
 import org.accounting.system.services.authorization.RoleService;
-import org.accounting.system.util.DisabledAuthController;
 import org.accounting.system.util.Utility;
 
 import javax.annotation.Priority;
@@ -35,27 +32,15 @@ public class AccessPermissionInterceptor {
     RoleService roleService;
 
     @Inject
-    DisabledAuthController authorizationController;
-
-    @Inject
-    RequestInformation requestInformation;
-
-    @Inject
     Utility utility;
 
     @AroundInvoke
     Object check(InvocationContext context) throws Exception {
 
-        if(!authorizationController.isAuthorizationEnabled()){
-            requestInformation.setAccessType(AccessType.ALWAYS);
-            return context.proceed();
-        } else {
-            return hasAccess(context);
-        }
+        return hasAccess(context);
     }
 
     private Object hasAccess(InvocationContext context) throws Exception {
-
 
         AccessPermission accessPermission = Stream
                 .of(context.getContextData().get(ArcInvocationContext.KEY_INTERCEPTOR_BINDINGS))
@@ -67,7 +52,6 @@ public class AccessPermissionInterceptor {
                 .get();
 
         Set<String> providedRoles = utility.getRoles();
-
 
         if(Objects.isNull(providedRoles)){
             throw new ForbiddenException("The authenticated client is not permitted to perform the requested operation.");
