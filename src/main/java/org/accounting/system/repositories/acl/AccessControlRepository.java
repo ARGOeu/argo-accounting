@@ -6,8 +6,10 @@ import org.accounting.system.entities.acl.RoleAccessControl;
 import org.accounting.system.enums.Collection;
 
 import javax.enterprise.context.ApplicationScoped;
+import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * This repository {@link AccessControlRepository} encapsulates the logic required to access
@@ -59,7 +61,18 @@ public class AccessControlRepository implements PanacheMongoRepository<RoleAcces
 
         return optional;
     }
+    /**
+     * Returns a specific Collection entity to which a client may has access.
+     *
+     * @param who the one to whom the permission may be granted
+     * @param collection The name of the Collection
+     * @return a list of Access Controls that may grant access to a client in a particular entity
+     */
+    public List<RoleAccessControl> findByWhoAndCollection(String who, Collection collection){
 
+        return find("who = ?1 and collection = ?2 ", who, collection).stream().collect(Collectors.toList());
+
+    }
     public void accessListOfProjects(Set<String> projects, String clientId){
 
         projects.stream().forEach(project->{

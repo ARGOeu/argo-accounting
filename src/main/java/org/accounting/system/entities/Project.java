@@ -2,6 +2,7 @@ package org.accounting.system.entities;
 
 import lombok.EqualsAndHashCode;
 import org.bson.codecs.pojo.annotations.BsonId;
+import org.bson.codecs.pojo.annotations.BsonProperty;
 
 @EqualsAndHashCode(onlyExplicitlyIncluded = true, callSuper = true)
 public class Project extends Entity{
@@ -9,10 +10,19 @@ public class Project extends Entity{
     @BsonId
     @EqualsAndHashCode.Include
     private String id;
+    @BsonProperty("acronym")
     private String acronym;
+
+    @BsonProperty("title")
     private String title;
+
+    @BsonProperty("start_date")
     private String startDate;
+
+    @BsonProperty("end_date")
     private String endDate;
+
+    @BsonProperty("call_identifier")
     private String callIdentifier;
 
     public String getId() {

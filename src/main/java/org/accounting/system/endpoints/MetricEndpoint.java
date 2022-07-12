@@ -146,8 +146,6 @@ public class MetricEndpoint {
                             summary = "A complex search on Metrics ") })
     ) String json) throws  NoSuchFieldException, ParseException {
 
-
-
         var list=metricService.searchMetric(json);
         return Response.ok().entity(list).build();
 

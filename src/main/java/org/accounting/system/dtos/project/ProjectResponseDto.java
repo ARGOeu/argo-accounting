@@ -60,4 +60,8 @@ public class ProjectResponseDto {
     )
     @JsonProperty("call_identifier")
     public String callIdentifier;
+
+    public String getId() {
+        return id;
+    }
 }
