@@ -331,7 +331,7 @@ public class ProjectAutorizationTest {
 
         var paged = metrics.body().as(PageResource.class);
 
-        assertEquals(1, paged.totalElements);
+        assertEquals(1, paged.getTotalElements());
 
         var informativeResponse = given()
                 .get("/{project_id}/metrics", "777536")
@@ -393,7 +393,7 @@ public class ProjectAutorizationTest {
 
         var projectAdminMetricsPagination = projectAdminMetrics.body().as(PageResource.class);
 
-        assertEquals(1, projectAdminMetricsPagination.totalElements);
+        assertEquals(1, projectAdminMetricsPagination.getTotalElements());
 
         var informativeResponse = given()
                 .get("/{project_id}/providers/{provider_id}/metrics", "777536", "grnet")
@@ -412,7 +412,7 @@ public class ProjectAutorizationTest {
 
         var providerAdminMetricsPagination = providerAdminMetrics.body().as(PageResource.class);
 
-        assertEquals(1, providerAdminMetricsPagination.totalElements);
+        assertEquals(1, providerAdminMetricsPagination.getTotalElements());
     }
 
     @Test
@@ -471,7 +471,7 @@ public class ProjectAutorizationTest {
 
         var providerAdminMetricsPagination = providerAdminMetrics.body().as(PageResource.class);
 
-        assertEquals(1, providerAdminMetricsPagination.totalElements);
+        assertEquals(1, providerAdminMetricsPagination.getTotalElements());
 
         // installationadmin cannot be able to read the Provider Metrics
         var informativeResponse = given()
@@ -524,7 +524,7 @@ public class ProjectAutorizationTest {
 
         var installationAdminMetricsPagination = installationAdminMetrics.body().as(PageResource.class);
 
-        assertEquals(1, installationAdminMetricsPagination.totalElements);
+        assertEquals(1, installationAdminMetricsPagination.getTotalElements());
     }
 
     private void registerProjectAuth(String project, String user){

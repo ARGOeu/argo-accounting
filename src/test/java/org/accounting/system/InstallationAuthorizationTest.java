@@ -197,7 +197,7 @@ public class InstallationAuthorizationTest {
                 .body()
                 .as(PageResource.class);
 
-        assertEquals(3, pageResourceAdmin.totalElements);
+        assertEquals(3, pageResourceAdmin.getTotalElements());
 
         given()
                 .basePath("accounting-system/projects")
@@ -216,7 +216,7 @@ public class InstallationAuthorizationTest {
                 .as(PageResource.class);
 
 
-        assertEquals(1, pageResourceProviderAdmin.totalElements);
+        assertEquals(1, pageResourceProviderAdmin.getTotalElements());
     }
 
     @Test

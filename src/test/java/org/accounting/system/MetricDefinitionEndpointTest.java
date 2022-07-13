@@ -743,7 +743,7 @@ public class MetricDefinitionEndpointTest {
                 .thenReturn();
 
         assertEquals(200, fetchResponse.statusCode());
-        assertEquals(2, fetchResponse.body().as(PageResource.class).totalElements);
+        assertEquals(2, fetchResponse.body().as(PageResource.class).getTotalElements());
     }
 
     @Test

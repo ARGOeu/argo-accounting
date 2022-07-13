@@ -425,7 +425,7 @@ public class MetricDefinitionAuthorizationTest {
         var fetchAdminMetricDefinitionsResponseBody = fetchAdminMetricDefinitions.body().as(PageResource.class);
 
         //because admin can access all metric definitions the size of list should be 3
-        assertEquals(3, fetchAdminMetricDefinitionsResponseBody.totalElements);
+        assertEquals(3, fetchAdminMetricDefinitionsResponseBody.getTotalElements());
 
         var fetchCreatorMetricDefinitions = fetchAllMetricDefinitions("creator");
 
@@ -436,7 +436,7 @@ public class MetricDefinitionAuthorizationTest {
         var fetchCreatorMetricDefinitionsResponseBody = fetchCreatorMetricDefinitions.body().as(PageResource.class);
 
         //because creator can access only its Metric Definitions the size of list should be 1
-        assertEquals(3, fetchCreatorMetricDefinitionsResponseBody.totalElements);
+        assertEquals(3, fetchCreatorMetricDefinitionsResponseBody.getTotalElements());
     }
 
     private Response createMetricDefinition(MetricDefinitionRequestDto request, String user){

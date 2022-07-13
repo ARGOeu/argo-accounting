@@ -2,6 +2,7 @@ package org.accounting.system.repositories.modulators;
 
 import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoCollection;
+import com.mongodb.client.model.Filters;
 import io.quarkus.mongodb.panache.PanacheMongoRepository;
 import io.quarkus.mongodb.panache.PanacheMongoRepositoryBase;
 import io.quarkus.mongodb.panache.PanacheQuery;
@@ -162,6 +163,12 @@ public abstract class AccessModulator<E extends Entity, I, A extends AccessContr
 
     public PanacheQuery<E> search(Bson query, int page, int size) {
         return find(Document.parse(query.toBsonDocument().toJson())).page(Page.of(page, size));
+    }
+
+    public PanacheQuery<E> fetchAll(List<String> ids, int page, int size) {
+
+        Bson bson = Filters.in("_id", ids);
+        return find(Document.parse(bson.toBsonDocument().toJson())).page(Page.of(page, size));
     }
 
     public Class<I> getIdentity() {

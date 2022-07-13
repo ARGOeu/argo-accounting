@@ -20,7 +20,7 @@ public class PageResource<T, R> {
             example = "10"
     )
     @JsonProperty("size_of_page")
-    public int sizeOfPage;
+    private int sizeOfPage;
 
     @Schema(
             type = SchemaType.NUMBER,
@@ -29,7 +29,7 @@ public class PageResource<T, R> {
             example = "1"
     )
     @JsonProperty("number_of_page")
-    public int numberOfPage;
+    private int numberOfPage;
 
     @Schema(
             type = SchemaType.NUMBER,
@@ -38,7 +38,7 @@ public class PageResource<T, R> {
             example = "15"
     )
     @JsonProperty("total_elements")
-    public long totalElements;
+    private long totalElements;
 
     @Schema(
             type = SchemaType.NUMBER,
@@ -47,7 +47,7 @@ public class PageResource<T, R> {
             example = "2"
     )
     @JsonProperty("total_pages")
-    public int totalPages;
+    private int totalPages;
 
     @Schema(
             type = SchemaType.ARRAY,
@@ -55,7 +55,7 @@ public class PageResource<T, R> {
             description = "Paginated entities."
     )
     @JsonProperty("content")
-    public List<R> content;
+    private List<R> content;
 
     @Schema(
             type = SchemaType.ARRAY,
@@ -63,7 +63,7 @@ public class PageResource<T, R> {
             description = "Link to paginated entities."
     )
     @JsonProperty("links")
-    public  List<PageLink> links;
+    private  List<PageLink> links;
 
     public PageResource() {
     }
@@ -126,5 +126,53 @@ public class PageResource<T, R> {
                  .href(uriInfo.getRequestUriBuilder().replaceQueryParam("page", page).replaceQueryParam("size", size).build().toString())
                  .rel(rel)
                  .build();
+    }
+
+    public int getSizeOfPage() {
+        return sizeOfPage;
+    }
+
+    public void setSizeOfPage(int sizeOfPage) {
+        this.sizeOfPage = sizeOfPage;
+    }
+
+    public int getNumberOfPage() {
+        return numberOfPage;
+    }
+
+    public void setNumberOfPage(int numberOfPage) {
+        this.numberOfPage = numberOfPage;
+    }
+
+    public long getTotalElements() {
+        return totalElements;
+    }
+
+    public void setTotalElements(long totalElements) {
+        this.totalElements = totalElements;
+    }
+
+    public int getTotalPages() {
+        return totalPages;
+    }
+
+    public void setTotalPages(int totalPages) {
+        this.totalPages = totalPages;
+    }
+
+    public List<R> getContent() {
+        return content;
+    }
+
+    public void setContent(List<R> content) {
+        this.content = content;
+    }
+
+    public List<PageLink> getLinks() {
+        return links;
+    }
+
+    public void setLinks(List<PageLink> links) {
+        this.links = links;
     }
 }
