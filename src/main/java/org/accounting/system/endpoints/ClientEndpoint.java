@@ -8,8 +8,9 @@ import org.accounting.system.dtos.InformativeResponse;
 import org.accounting.system.dtos.authorization.request.AssignRoleRequestDto;
 import org.accounting.system.dtos.authorization.request.DetachRoleRequestDto;
 import org.accounting.system.dtos.client.ClientResponseDto;
-import org.accounting.system.enums.Operation;
+import org.accounting.system.dtos.pagination.PageResource;
 import org.accounting.system.enums.Collection;
+import org.accounting.system.enums.Operation;
 import org.accounting.system.interceptors.annotations.AccessPermission;
 import org.accounting.system.repositories.client.ClientRepository;
 import org.accounting.system.services.client.ClientService;
@@ -42,7 +43,7 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
-
+import java.util.List;
 import java.util.Objects;
 
 import static org.eclipse.microprofile.openapi.annotations.enums.ParameterIn.QUERY;
@@ -127,8 +128,8 @@ public class ClientEndpoint {
             responseCode = "200",
             description = "Array of available clients.",
             content = @Content(schema = @Schema(
-                    type = SchemaType.ARRAY,
-                    implementation = ClientResponseDto.class)))
+                    type = SchemaType.OBJECT,
+                    implementation = PageableClientResponseDto.class)))
     @APIResponse(
             responseCode = "500",
             description = "Internal Server Errors.",
@@ -287,5 +288,20 @@ public class ClientEndpoint {
         var response = clientService.detachRolesFromRegisteredClient(clientId, detachRoleRequestDto.roles);
 
         return Response.ok().entity(response).build();
+    }
+
+    public static class PageableClientResponseDto extends PageResource<ClientResponseDto> {
+
+        private List<ClientResponseDto> content;
+
+        @Override
+        public List<ClientResponseDto> getContent() {
+            return content;
+        }
+
+        @Override
+        public void setContent(List<ClientResponseDto> content) {
+            this.content = content;
+        }
     }
 }

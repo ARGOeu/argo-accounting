@@ -99,7 +99,7 @@ public class MetricDefinitionService {
      * @param uriInfo The current uri.
      * @return An object represents the paginated results.
      */
-    public PageResource<MetricDefinition, MetricDefinitionResponseDto> findAllMetricDefinitionsPageable(int page, int size, UriInfo uriInfo){
+    public PageResource<MetricDefinitionResponseDto> findAllMetricDefinitionsPageable(int page, int size, UriInfo uriInfo){
 
         PanacheQuery<MetricDefinition> panacheQuery = metricDefinitionRepository.findAllPageable(page, size);
 
@@ -171,7 +171,7 @@ public class MetricDefinitionService {
      * @param uriInfo The current uri.
      * @return An object represents the paginated results.
      */
-    public PageResource<Metric, MetricResponseDto>  findMetricsByMetricDefinitionIdPageable(String metricDefinitionId, int page, int size, UriInfo uriInfo){
+    public PageResource<MetricResponseDto>  findMetricsByMetricDefinitionIdPageable(String metricDefinitionId, int page, int size, UriInfo uriInfo){
 
         metricDefinitionRepository.fetchEntityById(new ObjectId(metricDefinitionId));
 
@@ -180,7 +180,7 @@ public class MetricDefinitionService {
         return new PageResource<>(panacheQuery, MetricMapper.INSTANCE.metricsToResponse(panacheQuery.list()), uriInfo);
     }
 
-    public PageResource<MetricDefinition, MetricDefinitionResponseDto> searchMetricDefinition( String json, boolean isAlwaysPermission, int page, int size,UriInfo uriInfo) throws ParseException, NoSuchFieldException {
+    public PageResource<MetricDefinitionResponseDto> searchMetricDefinition( String json, boolean isAlwaysPermission, int page, int size,UriInfo uriInfo) throws ParseException, NoSuchFieldException {
 
         List<String> entityIds=new ArrayList<>();
         if(!isAlwaysPermission){
@@ -191,5 +191,4 @@ public class MetricDefinitionService {
         return new PageResource<>(projectionQuery, MetricDefinitionMapper.INSTANCE.metricDefinitionsToResponse(projectionQuery.list()), uriInfo);
 
     }
-
 }

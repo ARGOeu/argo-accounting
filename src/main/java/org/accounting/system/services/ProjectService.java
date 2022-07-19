@@ -89,7 +89,7 @@ public class ProjectService {
         projectRepository.associateProjectWithProviders(projectId, providerIds);
     }
 
-    public PageResource<MetricProjection, MetricProjection> fetchAllMetrics(String id, int page, int size, UriInfo uriInfo){
+    public PageResource<MetricProjection> fetchAllMetrics(String id, int page, int size, UriInfo uriInfo){
 
         var projection = projectRepository.fetchAllMetrics(id, page, size);
 
@@ -116,13 +116,13 @@ public class ProjectService {
         return projectRepository.hierarchicalStructure(externalId);
     }
 
-    public PageResource<InstallationProjection, InstallationResponseDto> findInstallationsByProject(String projectId, int page, int size, UriInfo uriInfo){
+    public PageResource<InstallationResponseDto> findInstallationsByProject(String projectId, int page, int size, UriInfo uriInfo){
 
         ProjectionQuery<InstallationProjection> projectionQuery = hierarchicalRelationRepository.findInstallationsByProject(projectId, "MetricDefinition", "unit_of_access", "_id", "unit_of_access", page, size, InstallationProjection.class);
 
         return new PageResource<>(projectionQuery, InstallationMapper.INSTANCE.installationProjectionsToResponse(projectionQuery.list), uriInfo);
     }
-    public  PageResource<Project, String> searchProject(String json, int page, int size, UriInfo uriInfo) throws  NoSuchFieldException, org.json.simple.parser.ParseException {
+    public  PageResource<String> searchProject(String json, int page, int size, UriInfo uriInfo) throws  NoSuchFieldException, org.json.simple.parser.ParseException {
 
         var ids=accessControlRepository.findByWhoAndCollection(tokenIntrospection.getJsonObject().getString(id),Collection.Project).stream().filter(projects ->
                 roleService.hasRoleAccess(projects.getRoles(), Collection.Project, Operation.READ)).map(projects -> projects.getEntity()).collect(Collectors.toList());
@@ -133,7 +133,7 @@ public class ProjectService {
 
     }
 
-    public PageResource<Project, String> getAll( int page, int size, UriInfo uriInfo) throws NoSuchFieldException, org.json.simple.parser.ParseException, JsonProcessingException {
+    public PageResource<String> getAll( int page, int size, UriInfo uriInfo) throws NoSuchFieldException, org.json.simple.parser.ParseException, JsonProcessingException {
 
         var ids= accessControlRepository.findByWhoAndCollection(tokenIntrospection.getJsonObject().getString(id),Collection.Project).stream().filter(projects ->
                 roleService.hasRoleAccess(projects.getRoles(), Collection.Project, Operation.READ)).map(AccessControl::getEntity).collect(Collectors.toList());

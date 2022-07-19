@@ -44,6 +44,7 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
+import java.util.List;
 
 import static org.eclipse.microprofile.openapi.annotations.enums.ParameterIn.QUERY;
 
@@ -86,7 +87,7 @@ public class ProviderEndpoint {
             description = "Success operation.",
             content = @Content(schema = @Schema(
                     type = SchemaType.OBJECT,
-                    implementation = PageResource.class)))
+                    implementation = PageableProviderResponseDto.class)))
     @APIResponse(
             responseCode = "400",
             description = "Bad Request.",
@@ -226,7 +227,7 @@ public class ProviderEndpoint {
             responseCode = "404",
             description = "Provider has not been found.",
             content = @Content(schema = @Schema(
-                    type = SchemaType.ARRAY,
+                    type = SchemaType.OBJECT,
                     implementation = InformativeResponse.class)))
     @APIResponse(
             responseCode = "500",
@@ -428,4 +429,19 @@ public class ProviderEndpoint {
 //
 //        return Response.ok().entity(response).build();
 //    }
+
+    public static class PageableProviderResponseDto extends PageResource<ProviderResponseDto> {
+
+        private List<ProviderResponseDto> content;
+
+        @Override
+        public List<ProviderResponseDto> getContent() {
+            return content;
+        }
+
+        @Override
+        public void setContent(List<ProviderResponseDto> content) {
+            this.content = content;
+        }
+    }
 }

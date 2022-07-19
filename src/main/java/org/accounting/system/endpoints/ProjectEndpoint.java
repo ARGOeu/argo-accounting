@@ -57,6 +57,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 import java.text.ParseException;
+import java.util.List;
 
 import static org.accounting.system.enums.Operation.*;
 import static org.eclipse.microprofile.openapi.annotations.enums.ParameterIn.QUERY;
@@ -166,8 +167,8 @@ public class ProjectEndpoint {
             responseCode = "200",
             description = "All Metrics.",
             content = @Content(schema = @Schema(
-                    type = SchemaType.ARRAY,
-                    implementation = MetricProjection.class)))
+                    type = SchemaType.OBJECT,
+                    implementation = PageableMetricProjection.class)))
     @APIResponse(
             responseCode = "401",
             description = "Client has not been authenticated.",
@@ -225,8 +226,8 @@ public class ProjectEndpoint {
             responseCode = "200",
             description = "All Metrics.",
             content = @Content(schema = @Schema(
-                    type = SchemaType.ARRAY,
-                    implementation = MetricProjection.class)))
+                    type = SchemaType.OBJECT,
+                    implementation = PageableMetricProjection.class)))
     @APIResponse(
             responseCode = "401",
             description = "Client has not been authenticated.",
@@ -606,8 +607,8 @@ public class ProjectEndpoint {
             responseCode = "200",
             description = "Array of Installations.",
             content = @Content(schema = @Schema(
-                    type = SchemaType.ARRAY,
-                    implementation = InstallationResponseDto.class)))
+                    type = SchemaType.OBJECT,
+                    implementation = PageableInstallationResponseDto.class)))
     @APIResponse(
             responseCode = "401",
             description = "Client has not been authenticated.",
@@ -764,7 +765,7 @@ public class ProjectEndpoint {
             responseCode = "404",
             description = "Project has not been found.",
             content = @Content(schema = @Schema(
-                    type = SchemaType.ARRAY,
+                    type = SchemaType.OBJECT,
                     implementation = InformativeResponse.class)))
     @APIResponse(
             responseCode = "500",
@@ -1000,8 +1001,8 @@ public class ProjectEndpoint {
             responseCode = "200",
             description = "Array of Installations.",
             content = @Content(schema = @Schema(
-                    type = SchemaType.ARRAY,
-                    implementation = InstallationResponseDto.class)))
+                    type = SchemaType.OBJECT,
+                    implementation = PageableInstallationResponseDto.class)))
     @APIResponse(
             responseCode = "401",
             description = "Client has not been authenticated.",
@@ -1169,7 +1170,7 @@ public class ProjectEndpoint {
             responseCode = "404",
             description = "Provider has not been found.",
             content = @Content(schema = @Schema(
-                    type = SchemaType.ARRAY,
+                    type = SchemaType.OBJECT,
                     implementation = InformativeResponse.class)))
     @APIResponse(
             responseCode = "500",
@@ -1299,8 +1300,8 @@ public class ProjectEndpoint {
             responseCode = "200",
             description = "The corresponding Projects.",
             content = @Content(schema = @Schema(
-                    type = SchemaType.STRING,
-                    implementation = ProjectResponseDto.class)))
+                    type = SchemaType.OBJECT,
+                    implementation = PageableHierarchicalProject.class)))
     @APIResponse(
             responseCode = "400",
             description = "Bad Request.",
@@ -1408,8 +1409,8 @@ public class ProjectEndpoint {
             responseCode = "200",
             description = "The corresponding Projects.",
             content = @Content(schema = @Schema(
-                    type = SchemaType.STRING,
-                    implementation = ProjectResponseDto.class)))
+                    type = SchemaType.OBJECT,
+                    implementation = PageableHierarchicalProject.class)))
     @APIResponse(
             responseCode = "400",
             description = "Bad Request.",
@@ -1466,5 +1467,50 @@ public class ProjectEndpoint {
         objectMapper = objectMapper.addMixIn(PageResource.class, PageResourceMixIn.class);
 
         return Response.ok().entity(objectMapper.writeValueAsString(results)).build();
+    }
+
+    public static class PageableMetricProjection extends PageResource<MetricProjection> {
+
+        private List<MetricProjection> content;
+
+        @Override
+        public List<MetricProjection> getContent() {
+            return content;
+        }
+
+        @Override
+        public void setContent(List<MetricProjection> content) {
+            this.content = content;
+        }
+    }
+
+    public static class PageableInstallationResponseDto extends PageResource<InstallationResponseDto> {
+
+        private List<InstallationResponseDto> content;
+
+        @Override
+        public List<InstallationResponseDto> getContent() {
+            return content;
+        }
+
+        @Override
+        public void setContent(List<InstallationResponseDto> content) {
+            this.content = content;
+        }
+    }
+
+    public static class PageableHierarchicalProject extends PageResource<String> {
+
+        private List<String> content;
+
+        @Override
+        public List<String> getContent() {
+            return content;
+        }
+
+        @Override
+        public void setContent(List<String> content) {
+            this.content = content;
+        }
     }
 }

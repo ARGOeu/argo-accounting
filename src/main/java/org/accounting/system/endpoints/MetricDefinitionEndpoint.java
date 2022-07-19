@@ -7,6 +7,7 @@ import org.accounting.system.dtos.InformativeResponse;
 import org.accounting.system.dtos.metricdefinition.MetricDefinitionRequestDto;
 import org.accounting.system.dtos.metricdefinition.MetricDefinitionResponseDto;
 import org.accounting.system.dtos.metricdefinition.UpdateMetricDefinitionRequestDto;
+import org.accounting.system.dtos.pagination.PageResource;
 import org.accounting.system.enums.AccessType;
 import org.accounting.system.enums.Collection;
 import org.accounting.system.enums.Operation;
@@ -36,11 +37,22 @@ import org.json.simple.parser.ParseException;
 import javax.inject.Inject;
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
-import javax.ws.rs.*;
+import javax.ws.rs.BadRequestException;
+import javax.ws.rs.Consumes;
+import javax.ws.rs.DELETE;
+import javax.ws.rs.DefaultValue;
+import javax.ws.rs.GET;
+import javax.ws.rs.PATCH;
+import javax.ws.rs.POST;
+import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
+import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
+import java.util.List;
 
 import static org.eclipse.microprofile.openapi.annotations.enums.ParameterIn.QUERY;
 
@@ -177,8 +189,8 @@ public class MetricDefinitionEndpoint {
             responseCode = "200",
             description = "Array of Metric Definitions.",
             content = @Content(schema = @Schema(
-                    type = SchemaType.ARRAY,
-                    implementation = MetricDefinitionResponseDto.class)))
+                    type = SchemaType.OBJECT,
+                    implementation = PageableMetricDefinitionResponseDto.class)))
     @APIResponse(
             responseCode = "401",
             description = "Client has not been authenticated.",
@@ -206,13 +218,13 @@ public class MetricDefinitionEndpoint {
             description = "Indicates the page number. Page number must be >= 1.") @DefaultValue("1") @QueryParam("page") int page,
                            @Parameter(name = "size", in = QUERY,
                                    description = "The page size.") @DefaultValue("10") @QueryParam("size") int size,
-                           @Context UriInfo uriInfo){
+                           @Context UriInfo uriInfo) {
 
-        if(page <1){
+        if (page < 1) {
             throw new BadRequestException("Page number must be >= 1.");
         }
 
-        return Response.ok().entity(metricDefinitionService.findAllMetricDefinitionsPageable(page-1, size, uriInfo)).build();
+        return Response.ok().entity(metricDefinitionService.findAllMetricDefinitionsPageable(page - 1, size, uriInfo)).build();
     }
 
     @Tag(name = "Metric Definition")
@@ -261,7 +273,7 @@ public class MetricDefinitionEndpoint {
                     required = true,
                     example = "507f1f77bcf86cd799439011",
                     schema = @Schema(type = SchemaType.STRING))
-            @PathParam("id") @Valid @NotFoundEntity(repository = MetricDefinitionRepository.class, message = "There is no Metric Definition with the following id:") String id){
+            @PathParam("id") @Valid @NotFoundEntity(repository = MetricDefinitionRepository.class, message = "There is no Metric Definition with the following id:") String id) {
 
         var response = metricDefinitionService.fetchMetricDefinition(id);
 
@@ -334,7 +346,7 @@ public class MetricDefinitionEndpoint {
                     required = true,
                     example = "507f1f77bcf86cd799439011",
                     schema = @Schema(type = SchemaType.STRING))
-            @PathParam("id") @Valid @NotFoundEntity(repository = MetricDefinitionRepository.class, message = "There is no Metric Definition with the following id:") String id, @Valid @NotNull(message = "The request body is empty.") UpdateMetricDefinitionRequestDto updateMetricDefinitionRequest){
+            @PathParam("id") @Valid @NotFoundEntity(repository = MetricDefinitionRepository.class, message = "There is no Metric Definition with the following id:") String id, @Valid @NotNull(message = "The request body is empty.") UpdateMetricDefinitionRequestDto updateMetricDefinitionRequest) {
 
         var response = metricDefinitionService.update(id, updateMetricDefinitionRequest);
 
@@ -367,7 +379,7 @@ public class MetricDefinitionEndpoint {
             responseCode = "404",
             description = "Metric Definition has not been found.",
             content = @Content(schema = @Schema(
-                    type = SchemaType.ARRAY,
+                    type = SchemaType.OBJECT,
                     implementation = InformativeResponse.class)))
     @APIResponse(
             responseCode = "500",
@@ -386,7 +398,7 @@ public class MetricDefinitionEndpoint {
             required = true,
             example = "507f1f77bcf86cd799439011",
             schema = @Schema(type = SchemaType.STRING))
-            @PathParam("id") @Valid @NotFoundEntity(repository = MetricDefinitionRepository.class, message = "There is no Metric Definition with the following id:") String id) {
+                               @PathParam("id") @Valid @NotFoundEntity(repository = MetricDefinitionRepository.class, message = "There is no Metric Definition with the following id:") String id) {
 
         metricDefinitionService.hasChildren(id);
 
@@ -394,7 +406,7 @@ public class MetricDefinitionEndpoint {
 
         var successResponse = new InformativeResponse();
 
-        if(success){
+        if (success) {
             successResponse.code = 200;
             successResponse.message = "Metric Definition has been deleted successfully.";
         } else {
@@ -416,24 +428,24 @@ public class MetricDefinitionEndpoint {
             content = @Content(schema = @Schema(
                     type = SchemaType.OBJECT,
                     implementation = String.class,
-            example = "{\n" +
-                    "    \"weight\": [\n" +
-                    "        {\n" +
-                    "            \"name\": \"kg\",\n" +
-                    "            \"description\": \"kilogram\"\n" +
-                    "        },\n" +
-                    "        {\n" +
-                    "            \"name\": \"gr\",\n" +
-                    "            \"description\": \"gram\"\n" +
-                    "        }\n" +
-                    "    ],\n" +
-                    "    \"time\": [\n" +
-                    "        {\n" +
-                    "            \"name\": \"s\",\n" +
-                    "            \"description\": \"second\"\n" +
-                    "        }\n" +
-                    "    ]\n" +
-                    "}")))
+                    example = "{\n" +
+                            "    \"weight\": [\n" +
+                            "        {\n" +
+                            "            \"name\": \"kg\",\n" +
+                            "            \"description\": \"kilogram\"\n" +
+                            "        },\n" +
+                            "        {\n" +
+                            "            \"name\": \"gr\",\n" +
+                            "            \"description\": \"gram\"\n" +
+                            "        }\n" +
+                            "    ],\n" +
+                            "    \"time\": [\n" +
+                            "        {\n" +
+                            "            \"name\": \"s\",\n" +
+                            "            \"description\": \"second\"\n" +
+                            "        }\n" +
+                            "    ]\n" +
+                            "}")))
     @APIResponse(
             responseCode = "401",
             description = "Client has not been authenticated.",
@@ -923,10 +935,10 @@ public class MetricDefinitionEndpoint {
             responseCode = "200",
             description = "Array of Metric Definitions.",
             content = @Content(schema = @Schema(
-                    type = SchemaType.ARRAY,
-                    implementation = MetricDefinitionResponseDto.class)))
+                    type = SchemaType.OBJECT,
+                    implementation = PageableMetricDefinitionResponseDto.class)))
     @APIResponse(
-        responseCode = "401",
+            responseCode = "401",
             description = "Client has not been authenticated.",
             content = @Content(schema = @Schema(
                     type = SchemaType.OBJECT,
@@ -951,7 +963,7 @@ public class MetricDefinitionEndpoint {
     @Consumes(value = MediaType.APPLICATION_JSON)
     @AccessPermission(operation = Operation.READ, collection = Collection.MetricDefinition)
 
-    public Response search(@Valid @NotNull(message = "The request body is empty.") @DefaultValue("")   @RequestBody(description = "a json object to describe the search criteria",
+    public Response search(@Valid @NotNull(message = "The request body is empty.") @DefaultValue("") @RequestBody(description = "a json object to describe the search criteria",
 
             content = @Content(
                     schema = @Schema(implementation = String.class),
@@ -959,7 +971,7 @@ public class MetricDefinitionEndpoint {
                     examples = {
                             @ExampleObject(
                                     name = "An example of a search on metric definitions",
-                                    value ="{\n" +
+                                    value = "{\n" +
                                             "           \"type\":\"query\",\n" +
                                             "           \"field\": \"metric_type\",\n" +
                                             "           \"values\": \"count\",\n" +
@@ -967,7 +979,7 @@ public class MetricDefinitionEndpoint {
                                             "}\n",
                                     summary = "A simple search on a specific field of the metric definition"),
                             @ExampleObject(
-                                    name ="An example request with a combination of criteria of a search on metric definitions",
+                                    name = "An example request with a combination of criteria of a search on metric definitions",
                                     value = "{\n" +
                                             "  \"type\": \"filter\",\n" +
                                             "  \"operator\": \"OR\",\n" +
@@ -998,18 +1010,34 @@ public class MetricDefinitionEndpoint {
                                             "    }\n" +
                                             "  ]\n" +
                                             "}\n",
-                                    summary = "A complex search on Metric definitions") })
+                                    summary = "A complex search on Metric definitions")})
 
-    ) String json  ,  @Parameter(name = "page", in = QUERY,
-                           description = "Indicates the page number. Page number must be >= 1.") @DefaultValue("1") @QueryParam("page") int page,
-    @Parameter(name = "size", in = QUERY,
-    description = "The page size.") @DefaultValue("10") @QueryParam("size") int size, @Context UriInfo uriInfo) throws  NoSuchFieldException, ParseException {
+    ) String json, @Parameter(name = "page", in = QUERY,
+            description = "Indicates the page number. Page number must be >= 1.") @DefaultValue("1") @QueryParam("page") int page,
+                           @Parameter(name = "size", in = QUERY,
+                                   description = "The page size.") @DefaultValue("10") @QueryParam("size") int size, @Context UriInfo uriInfo) throws NoSuchFieldException, ParseException {
 
-        if(page <1){
+        if (page < 1) {
             throw new BadRequestException("Page number must be >= 1.");
         }
-        var list=metricDefinitionService.searchMetricDefinition(json,  requestInformation.getAccessType().equals(AccessType.ALWAYS), page -1, size, uriInfo);
+        var list = metricDefinitionService.searchMetricDefinition(json, requestInformation.getAccessType().equals(AccessType.ALWAYS), page - 1, size, uriInfo);
         return Response.ok().entity(list).build();
 
     }
+
+    public static class PageableMetricDefinitionResponseDto extends PageResource<MetricDefinitionResponseDto> {
+
+        private List<MetricDefinitionResponseDto> content;
+
+        @Override
+        public List<MetricDefinitionResponseDto> getContent() {
+            return content;
+        }
+
+        @Override
+        public void setContent(List<MetricDefinitionResponseDto> content) {
+            this.content = content;
+        }
+    }
 }
+

@@ -11,7 +11,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Schema(name="PageResource", description="An object represents the paginated entities.")
-public class PageResource<T, R> {
+public class PageResource<R> {
 
     @Schema(
             type = SchemaType.NUMBER,
@@ -68,7 +68,7 @@ public class PageResource<T, R> {
     public PageResource() {
     }
 
-    public PageResource(ProjectionQuery<T> projectionQuery, List<R> content, UriInfo uriInfo){
+    public PageResource(ProjectionQuery projectionQuery, List<R> content, UriInfo uriInfo){
 
         links = new ArrayList<>();
         this.content = content;
@@ -93,7 +93,7 @@ public class PageResource<T, R> {
         }
     }
 
-    public PageResource(PanacheQuery<T> panacheQuery, List<R> content, UriInfo uriInfo){
+    public PageResource(PanacheQuery panacheQuery, List<R> content, UriInfo uriInfo){
 
         links = new ArrayList<>();
         this.content = content;

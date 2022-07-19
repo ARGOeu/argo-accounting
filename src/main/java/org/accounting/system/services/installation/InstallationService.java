@@ -139,7 +139,7 @@ public class InstallationService {
         return MetricMapper.INSTANCE.metricToResponse(metric);
     }
 
-    public PageResource<MetricProjection, MetricProjection> fetchAllMetrics(String id, int page, int size, UriInfo uriInfo){
+    public PageResource<MetricProjection> fetchAllMetrics(String id, int page, int size, UriInfo uriInfo){
 
         var installation = installationAccessAlwaysRepository.findById(new ObjectId(id));
 
