@@ -70,7 +70,7 @@ public class ClientService {
      * @param uriInfo The current uri.
      * @return An object represents the paginated results.
      */
-    public PageResource<Client, ClientResponseDto> findAllClientsPageable(int page, int size, UriInfo uriInfo){
+    public PageResource<ClientResponseDto> findAllClientsPageable(int page, int size, UriInfo uriInfo){
 
         PanacheQuery<Client> panacheQuery = clientRepository.findAllPageable(page, size);
 

@@ -6,6 +6,7 @@ import org.accounting.system.dtos.InformativeResponse;
 import org.accounting.system.dtos.authorization.request.RoleRequestDto;
 import org.accounting.system.dtos.authorization.response.RoleResponseDto;
 import org.accounting.system.dtos.authorization.update.UpdateRoleRequestDto;
+import org.accounting.system.dtos.pagination.PageResource;
 import org.accounting.system.enums.Collection;
 import org.accounting.system.enums.Operation;
 import org.accounting.system.interceptors.annotations.AccessPermission;
@@ -44,6 +45,7 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
+import java.util.List;
 
 import static org.eclipse.microprofile.openapi.annotations.enums.ParameterIn.QUERY;
 
@@ -169,7 +171,7 @@ public class RoleEndpoint {
             responseCode = "404",
             description = "Role has not been found.",
             content = @Content(schema = @Schema(
-                    type = SchemaType.ARRAY,
+                    type = SchemaType.OBJECT,
                     implementation = InformativeResponse.class)))
     @APIResponse(
             responseCode = "500",
@@ -214,8 +216,8 @@ public class RoleEndpoint {
             responseCode = "200",
             description = "Array of available roles.",
             content = @Content(schema = @Schema(
-                    type = SchemaType.ARRAY,
-                    implementation = RoleResponseDto.class)))
+                    type = SchemaType.OBJECT,
+                    implementation = PageableRoleResponseDto.class)))
     @APIResponse(
             responseCode = "500",
             description = "Internal Server Errors.",
@@ -693,4 +695,19 @@ public class RoleEndpoint {
 //
 //        return Response.ok().entity(response).build();
 //    }
+
+    public static class PageableRoleResponseDto extends PageResource<RoleResponseDto> {
+
+        private List<RoleResponseDto> content;
+
+        @Override
+        public List<RoleResponseDto> getContent() {
+            return content;
+        }
+
+        @Override
+        public void setContent(List<RoleResponseDto> content) {
+            this.content = content;
+        }
+    }
 }

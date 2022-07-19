@@ -46,7 +46,7 @@ public class ProviderService {
      * @param uriInfo The current uri.
      * @return An object represents the paginated results.
      */
-    public PageResource<Provider, ProviderResponseDto> findAllProvidersPageable(int page, int size, UriInfo uriInfo){
+    public PageResource<ProviderResponseDto> findAllProvidersPageable(int page, int size, UriInfo uriInfo){
 
         PanacheQuery<Provider> panacheQuery = providerRepository.findAllPageable(page, size);
 
@@ -168,7 +168,7 @@ public class ProviderService {
         }
     }
 
-    public PageResource<MetricProjection, MetricProjection> fetchAllMetrics(String projectId, String providerId, int page, int size, UriInfo uriInfo){
+    public PageResource<MetricProjection> fetchAllMetrics(String projectId, String providerId, int page, int size, UriInfo uriInfo){
 
         var projection = providerRepository.fetchAllMetrics(projectId + HierarchicalRelation.PATH_SEPARATOR + providerId, page, size);
 
@@ -179,7 +179,7 @@ public class ProviderService {
         return new PageResource<>(projection, projection.list, uriInfo);
     }
 
-    public PageResource<InstallationProjection, InstallationResponseDto> findInstallationsByProvider(String projectId, String providerId, int page, int size, UriInfo uriInfo){
+    public PageResource<InstallationResponseDto> findInstallationsByProvider(String projectId, String providerId, int page, int size, UriInfo uriInfo){
 
         ProjectionQuery<InstallationProjection> projectionQuery = hierarchicalRelationRepository.findInstallationsByProvider(projectId, providerId, "MetricDefinition", "unit_of_access", "_id", "unit_of_access", page, size, InstallationProjection.class);
 

@@ -14,6 +14,7 @@ import org.accounting.system.dtos.installation.UpdateInstallationRequestDto;
 import org.accounting.system.dtos.metric.MetricRequestDto;
 import org.accounting.system.dtos.metric.MetricResponseDto;
 import org.accounting.system.dtos.metric.UpdateMetricRequestDto;
+import org.accounting.system.dtos.pagination.PageResource;
 import org.accounting.system.entities.HierarchicalRelation;
 import org.accounting.system.entities.projections.MetricProjection;
 import org.accounting.system.enums.Collection;
@@ -57,6 +58,7 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
+import java.util.List;
 
 import static org.accounting.system.enums.Operation.ACL;
 import static org.accounting.system.enums.Operation.CREATE;
@@ -190,7 +192,7 @@ public class InstallationEndpoint {
             responseCode = "404",
             description = "Installation has not been found.",
             content = @Content(schema = @Schema(
-                    type = SchemaType.ARRAY,
+                    type = SchemaType.OBJECT,
                     implementation = InformativeResponse.class)))
     @APIResponse(
             responseCode = "500",
@@ -544,7 +546,7 @@ public class InstallationEndpoint {
             responseCode = "404",
             description = "Installation has not been found.",
             content = @Content(schema = @Schema(
-                    type = SchemaType.ARRAY,
+                    type = SchemaType.OBJECT,
                     implementation = InformativeResponse.class)))
     @APIResponse(
             responseCode = "500",
@@ -767,7 +769,7 @@ public class InstallationEndpoint {
             responseCode = "404",
             description = "Metric has not been found.",
             content = @Content(schema = @Schema(
-                    type = SchemaType.ARRAY,
+                    type = SchemaType.OBJECT,
                     implementation = InformativeResponse.class)))
     @APIResponse(
             responseCode = "500",
@@ -942,8 +944,8 @@ public class InstallationEndpoint {
             responseCode = "200",
             description = "All Metrics.",
             content = @Content(schema = @Schema(
-                    type = SchemaType.ARRAY,
-                    implementation = MetricProjection.class)))
+                    type = SchemaType.OBJECT,
+                    implementation = PageableMetricProjection.class)))
     @APIResponse(
             responseCode = "401",
             description = "Client has not been authenticated.",
@@ -987,5 +989,20 @@ public class InstallationEndpoint {
         var response = installationService.fetchAllMetrics(installationId, page-1, size, uriInfo);
 
         return Response.ok().entity(response).build();
+    }
+
+    public static class PageableMetricProjection extends PageResource<MetricProjection> {
+
+        private List<MetricProjection> content;
+
+        @Override
+        public List<MetricProjection> getContent() {
+            return content;
+        }
+
+        @Override
+        public void setContent(List<MetricProjection> content) {
+            this.content = content;
+        }
     }
 }

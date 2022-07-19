@@ -136,7 +136,7 @@ public class RoleService {
      * @param uriInfo The current uri.
      * @return An object represents the paginated results.
      */
-    public PageResource<Role, RoleResponseDto> findAllRolesPageable(int page, int size, UriInfo uriInfo){
+    public PageResource<RoleResponseDto> findAllRolesPageable(int page, int size, UriInfo uriInfo){
 
         PanacheQuery<Role> panacheQuery = roleRepository.find("system = ?1", false).page(Page.of(page, size));
 
