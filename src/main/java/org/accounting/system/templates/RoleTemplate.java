@@ -28,7 +28,7 @@ public class RoleTemplate {
     @Operation(hidden = true)
     public String keycloakClient() {
         return role
-                .data("roles", roleRepository.findAll().list())
+                .data("roles", roleRepository.find("system = ?1", false).list())
                 .render();
     }
 }
