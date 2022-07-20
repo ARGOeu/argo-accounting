@@ -1402,8 +1402,8 @@ public class ProjectEndpoint {
     @Tag(name = "Project")
     @Operation(
             operationId = "get-all-projects",
-            summary = "Get all projects",
-            description = "Get all Projects" )
+            summary = "Returns all Projects to which a client has access.",
+            description = "Returns all Projects to which a client has access." )
 
     @APIResponse(
             responseCode = "200",
