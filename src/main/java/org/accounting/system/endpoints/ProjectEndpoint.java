@@ -10,6 +10,7 @@ import org.accounting.system.constraints.NotFoundEntity;
 import org.accounting.system.dtos.InformativeResponse;
 import org.accounting.system.dtos.acl.permission.PermissionAccessControlResponseDto;
 import org.accounting.system.dtos.acl.role.RoleAccessControlRequestDto;
+import org.accounting.system.dtos.acl.role.RoleAccessControlResponseDto;
 import org.accounting.system.dtos.acl.role.RoleAccessControlUpdateDto;
 import org.accounting.system.dtos.installation.InstallationResponseDto;
 import org.accounting.system.dtos.pagination.PageResource;
@@ -50,8 +51,17 @@ import javax.inject.Inject;
 import javax.validation.Valid;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
+import javax.ws.rs.BadRequestException;
+import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
-import javax.ws.rs.*;
+import javax.ws.rs.DefaultValue;
+import javax.ws.rs.GET;
+import javax.ws.rs.PATCH;
+import javax.ws.rs.POST;
+import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
+import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
@@ -59,7 +69,11 @@ import javax.ws.rs.core.UriInfo;
 import java.text.ParseException;
 import java.util.List;
 
-import static org.accounting.system.enums.Operation.*;
+import static org.accounting.system.enums.Operation.ACL;
+import static org.accounting.system.enums.Operation.ASSOCIATE;
+import static org.accounting.system.enums.Operation.DISSOCIATE;
+import static org.accounting.system.enums.Operation.READ;
+import static org.accounting.system.enums.Operation.REGISTER;
 import static org.eclipse.microprofile.openapi.annotations.enums.ParameterIn.QUERY;
 
 @Path("/projects")
@@ -858,46 +872,62 @@ public class ProjectEndpoint {
         return Response.ok().entity(response).build();
     }
 
-//    @Tag(name = "Project")
-//    @Operation(
-//            summary = "Returns all Access Control entries that have been created for Project collection.",
-//            description = "Returns all Access Control entries that have been created for Project collection.")
-//    @APIResponse(
-//            responseCode = "200",
-//            description = "The corresponding Access Control entries.",
-//            content = @Content(schema = @Schema(
-//                    type = SchemaType.ARRAY,
-//                    implementation = PermissionAccessControlResponseDto.class)))
-//    @APIResponse(
-//            responseCode = "401",
-//            description = "Client has not been authenticated.",
-//            content = @Content(schema = @Schema(
-//                    type = SchemaType.OBJECT,
-//                    implementation = InformativeResponse.class)))
-//    @APIResponse(
-//            responseCode = "403",
-//            description = "The authenticated client is not permitted to perform the requested operation.",
-//            content = @Content(schema = @Schema(
-//                    type = SchemaType.OBJECT,
-//                    implementation = InformativeResponse.class)))
-//    @APIResponse(
-//            responseCode = "500",
-//            description = "Internal Server Errors.",
-//            content = @Content(schema = @Schema(
-//                    type = SchemaType.OBJECT,
-//                    implementation = InformativeResponse.class)))
-//    @SecurityRequirement(name = "Authentication")
-//
-//    @GET
-//    @Path("/acl")
-//    @Produces(value = MediaType.APPLICATION_JSON)
-//    @AccessPermission(collection = Collection.Project, operation = org.accounting.system.enums.Operation.ACL)
-//    public Response getAllAccessControl(){
-//
-//        var response = accessControlService.fetchAllPermissions(projectRepository);
-//
-//        return Response.ok().entity(response).build();
-//    }
+    @Tag(name = "Project")
+    @Operation(
+            summary = "Returns all Access Control entries that have been created for a particular Project.",
+            description = "Returns all Access Control entries that have been created for a particular Project. " +
+                    "By default, the first page of 10 Metrics will be returned. You can tune the default values by using the query parameters page and size.")
+    @APIResponse(
+            responseCode = "200",
+            description = "The corresponding Access Control entries.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = PageableRoleAccessControlResponseDto.class)))
+    @APIResponse(
+            responseCode = "401",
+            description = "Client has not been authenticated.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "403",
+            description = "The authenticated client is not permitted to perform the requested operation.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "500",
+            description = "Internal Server Errors.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @SecurityRequirement(name = "Authentication")
+
+    @GET
+    @Path("/{project_id}/acl")
+    @Produces(value = MediaType.APPLICATION_JSON)
+    public Response getAllProjectAccessControl(
+            @Parameter(
+                    description = "project_id in which permissions have been granted.",
+                    required = true,
+                    example = "704567",
+                    schema = @Schema(type = SchemaType.STRING))
+            @AccessProject(collection = Collection.Project, operation = ACL)
+            @PathParam("project_id") String projectId,
+            @Parameter(name = "page", in = QUERY,
+            description = "Indicates the page number. Page number must be >= 1.") @DefaultValue("1") @QueryParam("page") int page,
+                                        @Parameter(name = "size", in = QUERY,
+                                                description = "The page size.") @DefaultValue("10") @QueryParam("size") int size,
+                                        @Context UriInfo uriInfo){
+
+        if (page < 1) {
+            throw new BadRequestException("Page number must be >= 1.");
+        }
+
+        var response = accessControlService.fetchAllPermissions(projectId, Collection.Project, page - 1, size, uriInfo);
+
+        return Response.ok().entity(response).build();
+    }
 
     @Tag(name = "Provider")
     @Operation(
@@ -1263,7 +1293,6 @@ public class ProjectEndpoint {
                     example = "704567",
                     schema = @Schema(type = SchemaType.STRING))
             @PathParam("project_id") String projectId,
-
             @Parameter(
                     description = "provider_id in which permissions have been granted.",
                     required = true,
@@ -1285,6 +1314,69 @@ public class ProjectEndpoint {
         }
 
         var response = accessControlService.fetchPermission(projectId + HierarchicalRelation.PATH_SEPARATOR + providerId, who, Collection.Provider);
+
+        return Response.ok().entity(response).build();
+    }
+
+    @Tag(name = "Provider")
+    @Operation(
+            summary = "Returns all Access Control entries that have been created for a particular Provider.",
+            description = "Returns all Access Control entries that have been created for a particular Provider. " +
+                    "By default, the first page of 10 Metrics will be returned. You can tune the default values by using the query parameters page and size.")
+    @APIResponse(
+            responseCode = "200",
+            description = "The corresponding Access Control entries.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = PageableRoleAccessControlResponseDto.class)))
+    @APIResponse(
+            responseCode = "401",
+            description = "Client has not been authenticated.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "403",
+            description = "The authenticated client is not permitted to perform the requested operation.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "500",
+            description = "Internal Server Errors.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @SecurityRequirement(name = "Authentication")
+
+    @GET
+    @Path("/{project_id}/providers/{provider_id}/acl")
+    @Produces(value = MediaType.APPLICATION_JSON)
+    @AccessProvider(collection = Collection.Provider, operation = ACL)
+    public Response getAllProviderAccessControl(
+            @Parameter(
+                    description = "The Project ID that the Provider belongs to.",
+                    required = true,
+                    example = "704567",
+                    schema = @Schema(type = SchemaType.STRING))
+            @PathParam("project_id") String projectId,
+            @Parameter(
+                    description = "provider_id in which permissions have been granted.",
+                    required = true,
+                    example = "sites",
+                    schema = @Schema(type = SchemaType.STRING))
+            @PathParam("provider_id") String providerId,
+            @Parameter(name = "page", in = QUERY,
+                    description = "Indicates the page number. Page number must be >= 1.") @DefaultValue("1") @QueryParam("page") int page,
+            @Parameter(name = "size", in = QUERY,
+                    description = "The page size.") @DefaultValue("10") @QueryParam("size") int size,
+            @Context UriInfo uriInfo){
+
+        if (page < 1) {
+            throw new BadRequestException("Page number must be >= 1.");
+        }
+
+        var response = accessControlService.fetchAllPermissions(projectId + HierarchicalRelation.PATH_SEPARATOR + providerId, Collection.Provider, page - 1, size, uriInfo);
 
         return Response.ok().entity(response).build();
     }
@@ -1510,6 +1602,21 @@ public class ProjectEndpoint {
 
         @Override
         public void setContent(List<String> content) {
+            this.content = content;
+        }
+    }
+
+    public static class PageableRoleAccessControlResponseDto extends PageResource<RoleAccessControlResponseDto> {
+
+        private List<RoleAccessControlResponseDto> content;
+
+        @Override
+        public List<RoleAccessControlResponseDto> getContent() {
+            return content;
+        }
+
+        @Override
+        public void setContent(List<RoleAccessControlResponseDto> content) {
             this.content = content;
         }
     }

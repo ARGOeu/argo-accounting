@@ -15,6 +15,7 @@ import org.mapstruct.MappingTarget;
 import org.mapstruct.factory.Mappers;
 
 import javax.enterprise.inject.spi.CDI;
+import java.util.List;
 
 /**
  * This interface is responsible for turning an Access Control Entity into a request/response and vice versa.
@@ -29,6 +30,8 @@ public interface AccessControlMapper {
     RoleAccessControl requestToRoleAccessControl(RoleAccessControlRequestDto request);
 
     RoleAccessControlResponseDto roleAccessControlToResponse(RoleAccessControl response);
+
+    List<RoleAccessControlResponseDto> roleAccessControlsToResponse(List<RoleAccessControl> response);
 
     @Mapping(target = "who", ignore = true)
     @Mapping(target = "collection", ignore = true)

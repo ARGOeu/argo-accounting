@@ -1,6 +1,8 @@
 package org.accounting.system.repositories.acl;
 
 import io.quarkus.mongodb.panache.PanacheMongoRepository;
+import io.quarkus.mongodb.panache.PanacheQuery;
+import io.quarkus.panache.common.Page;
 import org.accounting.system.entities.acl.AccessControl;
 import org.accounting.system.entities.acl.RoleAccessControl;
 import org.accounting.system.enums.Collection;
@@ -9,7 +11,6 @@ import javax.enterprise.context.ApplicationScoped;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 /**
  * This repository {@link AccessControlRepository} encapsulates the logic required to access
@@ -61,6 +62,26 @@ public class AccessControlRepository implements PanacheMongoRepository<RoleAcces
 
         return optional;
     }
+
+    /**
+     * Executes a query to retrieve all Access Controls that have been created for the given entity id.
+     *
+     * @param id The entity for which permissions will be returned.
+     * @param collection The collection that the entity belongs to.
+     */
+    public PanacheQuery<RoleAccessControl> findAllByEntityAndCollection(String id, Collection collection, int page, int size){
+
+        return find("entity = ?1 and collection = ?2", id, collection).page(Page.of(page, size));
+    }
+
+
+    /**
+     * Returns a specific Collection entity to which a client may has access.
+     *
+     * @param who the one to whom the permission may be granted
+     * @param collection The name of the Collection
+     * @return a list of Access Controls that may grant access to a client in a particular entity
+     */
     public List<RoleAccessControl> findByWhoAndCollection(String who, Collection collection) {
 
         return find("who = ?1 and collection = ?2 ", who, collection).list();

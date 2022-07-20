@@ -4,6 +4,7 @@ import org.accounting.system.dtos.InformativeResponse;
 import org.accounting.system.dtos.acl.role.RoleAccessControlRequestDto;
 import org.accounting.system.dtos.acl.role.RoleAccessControlResponseDto;
 import org.accounting.system.dtos.acl.role.RoleAccessControlUpdateDto;
+import org.accounting.system.dtos.pagination.PageResource;
 import org.accounting.system.enums.Collection;
 import org.accounting.system.mappers.AccessControlMapper;
 import org.accounting.system.repositories.acl.AccessControlRepository;
@@ -11,6 +12,7 @@ import org.accounting.system.repositories.acl.AccessControlRepository;
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 import javax.ws.rs.NotFoundException;
+import javax.ws.rs.core.UriInfo;
 
 @ApplicationScoped
 public class AccessControlService {
@@ -176,6 +178,19 @@ public class AccessControlService {
         accessControl.orElseThrow(()->new NotFoundException("There is no Access Control."));
 
         return AccessControlMapper.INSTANCE.roleAccessControlToResponse(accessControl.get());
+    }
+
+    /**
+     * Fetches all Access Controls that have been created for the given entity id
+     *
+     * @param id The entity for which permissions will be returned.
+     * @param collection The collection that the entity belongs to.
+     */
+    public PageResource<RoleAccessControlResponseDto> fetchAllPermissions(String id, Collection collection, int page, int size, UriInfo uriInfo){
+
+        var panacheQuery = accessControlRepository.findAllByEntityAndCollection(id, collection, page,size);
+
+        return new PageResource<>(panacheQuery, AccessControlMapper.INSTANCE.roleAccessControlsToResponse(panacheQuery.list()), uriInfo);
     }
 
 //    /**
