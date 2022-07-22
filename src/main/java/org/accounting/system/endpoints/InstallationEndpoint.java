@@ -643,6 +643,66 @@ public class InstallationEndpoint {
         return Response.ok().entity(response).build();
     }
 
+    @Tag(name = "Installation")
+    @org.eclipse.microprofile.openapi.annotations.Operation(
+            summary = "Returns all Access Control entries that have been created for a particular Installation.",
+            description = "Returns all Access Control entries that have been created for a particular Installation. " +
+                    "By default, the first page of 10 Metrics will be returned. You can tune the default values by using the query parameters page and size.")
+    @APIResponse(
+            responseCode = "200",
+            description = "The corresponding Access Control entries.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = ProjectEndpoint.PageableRoleAccessControlResponseDto.class)))
+    @APIResponse(
+            responseCode = "401",
+            description = "Client has not been authenticated.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "403",
+            description = "The authenticated client is not permitted to perform the requested operation.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "500",
+            description = "Internal Server Errors.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @SecurityRequirement(name = "Authentication")
+
+    @GET
+    @Path("/{installation_id}/acl")
+    @Produces(value = MediaType.APPLICATION_JSON)
+    public Response getAllInstallationAccessControl(
+            @Parameter(
+                    description = "installation_id in which permissions have been granted.",
+                    required = true,
+                    example = "507f1f77bcf86cd799439011",
+                    schema = @Schema(type = SchemaType.STRING))
+            @PathParam("installation_id")
+            @Valid
+            @AccessInstallation(collection = Collection.Installation, operation = ACL)  String installationId,
+            @Parameter(name = "page", in = QUERY,
+                    description = "Indicates the page number. Page number must be >= 1.") @DefaultValue("1") @QueryParam("page") int page,
+            @Parameter(name = "size", in = QUERY,
+                    description = "The page size.") @DefaultValue("10") @QueryParam("size") int size,
+            @Context UriInfo uriInfo){
+
+        if (page < 1) {
+            throw new BadRequestException("Page number must be >= 1.");
+        }
+
+        var storedInstallation = installationRepository.findById(new ObjectId(installationId));
+
+        var response = accessControlService.fetchAllPermissions(storedInstallation.getProject() + HierarchicalRelation.PATH_SEPARATOR + storedInstallation.getOrganisation() + HierarchicalRelation.PATH_SEPARATOR + installationId, Collection.Installation, page - 1, size, uriInfo);
+
+        return Response.ok().entity(response).build();
+    }
+
 //    @Tag(name = "Installation")
 //    @org.eclipse.microprofile.openapi.annotations.Operation(
 //            summary = "Returns all Access Control entries that have been created for Installation collection.",
