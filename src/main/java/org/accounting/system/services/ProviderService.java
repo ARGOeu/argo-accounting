@@ -16,7 +16,10 @@ import org.accounting.system.mappers.InstallationMapper;
 import org.accounting.system.mappers.ProviderMapper;
 import org.accounting.system.repositories.HierarchicalRelationRepository;
 import org.accounting.system.repositories.provider.ProviderRepository;
+import org.accounting.system.util.QueryParser;
 import org.apache.commons.lang3.StringUtils;
+import org.bson.conversions.Bson;
+import org.eclipse.microprofile.config.inject.ConfigProperty;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
@@ -37,7 +40,10 @@ public class ProviderService {
     @Inject
     HierarchicalRelationService hierarchicalRelationService;
 
-
+    @Inject
+    QueryParser queryParser;
+    @ConfigProperty(name = "key.to.retrieve.id.from.access.token")
+    String id;
     /**
      * Returns the N Providers from the given page.
      *
@@ -178,12 +184,18 @@ public class ProviderService {
 
         return new PageResource<>(projection, projection.list, uriInfo);
     }
-
     public PageResource<InstallationResponseDto> findInstallationsByProvider(String projectId, String providerId, int page, int size, UriInfo uriInfo){
 
         ProjectionQuery<InstallationProjection> projectionQuery = hierarchicalRelationRepository.findInstallationsByProvider(projectId, providerId, "MetricDefinition", "unit_of_access", "_id", "unit_of_access", page, size, InstallationProjection.class);
 
         return new PageResource<>(projectionQuery, InstallationMapper.INSTANCE.installationProjectionsToResponse(projectionQuery.list), uriInfo);
+    }
+
+    public  PageResource< ProviderResponseDto> searchProvider(String json, int page, int size, UriInfo uriInfo) throws  NoSuchFieldException, org.json.simple.parser.ParseException {
+
+        Bson query=queryParser.parseFile(json);
+        PanacheQuery< Provider> projectionQuery = providerRepository.search(query,page,size);
+        return new PageResource<>(projectionQuery, ProviderMapper.INSTANCE.providersToResponse(projectionQuery.list()), uriInfo);
     }
 
 }

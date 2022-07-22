@@ -1,5 +1,6 @@
 package org.accounting.system.endpoints;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import io.quarkus.security.Authenticated;
 import org.accounting.system.constraints.NotFoundEntity;
 import org.accounting.system.dtos.InformativeResponse;
@@ -18,8 +19,10 @@ import org.eclipse.microprofile.openapi.annotations.enums.SchemaType;
 import org.eclipse.microprofile.openapi.annotations.enums.SecuritySchemeIn;
 import org.eclipse.microprofile.openapi.annotations.enums.SecuritySchemeType;
 import org.eclipse.microprofile.openapi.annotations.media.Content;
+import org.eclipse.microprofile.openapi.annotations.media.ExampleObject;
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
 import org.eclipse.microprofile.openapi.annotations.parameters.Parameter;
+import org.eclipse.microprofile.openapi.annotations.parameters.RequestBody;
 import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
 import org.eclipse.microprofile.openapi.annotations.security.SecurityRequirement;
 import org.eclipse.microprofile.openapi.annotations.security.SecurityScheme;
@@ -45,6 +48,8 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 import java.util.List;
+
+import java.text.ParseException;
 
 import static org.eclipse.microprofile.openapi.annotations.enums.ParameterIn.QUERY;
 
@@ -124,18 +129,18 @@ public class ProviderEndpoint {
     @Produces(value = MediaType.APPLICATION_JSON)
     @AccessPermission(collection = Collection.Provider, operation = Operation.READ)
     public Response get(@Parameter(name = "page", in = QUERY,
-                                description = "Indicates the page number. Page number must be >= 1.") @DefaultValue("1") @QueryParam("page") int page,
+            description = "Indicates the page number. Page number must be >= 1.") @DefaultValue("1") @QueryParam("page") int page,
                         @Parameter(name = "size", in = QUERY,
                                 description = "The page size.") @DefaultValue("10") @QueryParam("size") int size,
                         @Context UriInfo uriInfo) {
 
-        if(page <1){
+        if (page < 1) {
             throw new BadRequestException("Page number must be >= 1.");
         }
 
         var serverInfo = new ResteasyUriInfo(serverUrl.concat(basePath).concat(uriInfo.getPath()), basePath);
 
-        var providers = providerService.findAllProvidersPageable(page-1, size, serverInfo);
+        var providers = providerService.findAllProvidersPageable(page - 1, size, serverInfo);
 
         return Response.ok().entity(providers).build();
     }
@@ -246,13 +251,13 @@ public class ProviderEndpoint {
             required = true,
             example = "sites",
             schema = @Schema(type = SchemaType.STRING))
-                               @PathParam("id") @Valid @NotFoundEntity(repository = ProviderRepository.class, id = String.class, message = "There is no Provider with the following id:") String id) {
+                           @PathParam("id") @Valid @NotFoundEntity(repository = ProviderRepository.class, id = String.class, message = "There is no Provider with the following id:") String id) {
 
         var success = providerService.delete(id);
 
         var successResponse = new InformativeResponse();
 
-        if(success){
+        if (success) {
             successResponse.code = 200;
             successResponse.message = "Provider has been deleted successfully.";
         } else {
@@ -329,7 +334,7 @@ public class ProviderEndpoint {
                     required = true,
                     example = "sites",
                     schema = @Schema(type = SchemaType.STRING))
-            @PathParam("id") @Valid @NotFoundEntity(repository = ProviderRepository.class, id = String.class, message = "There is no Provider with the following id:") String id, @Valid @NotNull(message = "The request body is empty.") UpdateProviderRequestDto updateProviderRequestDto){
+            @PathParam("id") @Valid @NotFoundEntity(repository = ProviderRepository.class, id = String.class, message = "There is no Provider with the following id:") String id, @Valid @NotNull(message = "The request body is empty.") UpdateProviderRequestDto updateProviderRequestDto) {
 
         var response = providerService.update(id, updateProviderRequestDto);
 
@@ -382,12 +387,70 @@ public class ProviderEndpoint {
                     required = true,
                     example = "sites",
                     schema = @Schema(type = SchemaType.STRING))
-            @PathParam("id") @Valid @NotFoundEntity(repository = ProviderRepository.class, id = String.class, message = "There is no Provider with the following id:") String id){
+            @PathParam("id") @Valid @NotFoundEntity(repository = ProviderRepository.class, id = String.class, message = "There is no Provider with the following id:") String id) {
 
         var response = providerService.fetchProvider(id);
 
         return Response.ok().entity(response).build();
     }
+
+    @Tag(name = "Search")
+    @org.eclipse.microprofile.openapi.annotations.Operation(
+            summary = "Search",
+            description = "Search")
+    @APIResponse(
+            responseCode = "200",
+            description = "The corresponding Providers.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.ARRAY,
+                    implementation = ProviderResponseDto.class)))
+    @APIResponse(
+            responseCode = "401",
+            description = "Client has not been authenticated.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "403",
+            description = "The authenticated client is not permitted to perform the requested operation.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "500",
+            description = "Internal Server Errors.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @SecurityRequirement(name = "Authentication")
+
+    @POST
+    @Path("/search")
+    @Produces(value = MediaType.APPLICATION_JSON)
+    @Consumes(value = MediaType.APPLICATION_JSON)
+
+    public Response search(
+
+            @Valid @NotNull(message = "The request body is empty.") @RequestBody(content = @Content(
+                    schema = @Schema(implementation = String.class),
+                    mediaType = MediaType.APPLICATION_JSON,
+                    examples = {
+                            @ExampleObject(
+                                    name = "An example request of a search on providers",
+                                    value = "",
+                                    summary = "A complex search on Providers ")})
+            ) String json, @Parameter(name = "page", in = QUERY,
+            description = "Indicates the page number. Page number must be >= 1.") @DefaultValue("1") @QueryParam("page") int page,
+            @Parameter(name = "size", in = QUERY,
+                    description = "The page size.") @DefaultValue("10") @QueryParam("size") int size, @Context UriInfo uriInfo) throws ParseException, NoSuchFieldException, org.json.simple.parser.ParseException, JsonProcessingException {
+        if (page < 1) {
+            throw new BadRequestException("Page number must be >= 1.");
+        }
+        var response = providerService.searchProvider(json, page - 1, size, uriInfo);
+
+        return Response.ok().entity(response).build();
+    }
+
 
 //    @Tag(name = "Provider")
 //    @org.eclipse.microprofile.openapi.annotations.Operation(
@@ -443,5 +506,7 @@ public class ProviderEndpoint {
         public void setContent(List<ProviderResponseDto> content) {
             this.content = content;
         }
+
     }
 }
+

@@ -37,17 +37,7 @@ import org.json.simple.parser.ParseException;
 import javax.inject.Inject;
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
-import javax.ws.rs.BadRequestException;
-import javax.ws.rs.Consumes;
-import javax.ws.rs.DELETE;
-import javax.ws.rs.DefaultValue;
-import javax.ws.rs.GET;
-import javax.ws.rs.PATCH;
-import javax.ws.rs.POST;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
-import javax.ws.rs.QueryParam;
+import javax.ws.rs.*;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
@@ -963,7 +953,8 @@ public class MetricDefinitionEndpoint {
     @Consumes(value = MediaType.APPLICATION_JSON)
     @AccessPermission(operation = Operation.READ, collection = Collection.MetricDefinition)
 
-    public Response search(@Valid @NotNull(message = "The request body is empty.") @DefaultValue("") @RequestBody(description = "a json object to describe the search criteria",
+    public Response search(@Valid @NotNull(message = "The request body is empty.") @DefaultValue("")   @RequestBody(description = "a json object to describe the search criteria",
+
 
             content = @Content(
                     schema = @Schema(implementation = String.class),
@@ -1012,6 +1003,7 @@ public class MetricDefinitionEndpoint {
                                             "}\n",
                                     summary = "A complex search on Metric definitions")})
 
+
     ) String json, @Parameter(name = "page", in = QUERY,
             description = "Indicates the page number. Page number must be >= 1.") @DefaultValue("1") @QueryParam("page") int page,
                            @Parameter(name = "size", in = QUERY,
@@ -1021,7 +1013,8 @@ public class MetricDefinitionEndpoint {
             throw new BadRequestException("Page number must be >= 1.");
         }
         var list = metricDefinitionService.searchMetricDefinition(json, requestInformation.getAccessType().equals(AccessType.ALWAYS), page - 1, size, uriInfo);
-        return Response.ok().entity(list).build();
+
+      return Response.ok().entity(list).build();
 
     }
 
