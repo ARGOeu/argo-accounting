@@ -384,6 +384,44 @@ public class ProviderEndpointTest {
     }
 
     @Test
+    public void updateProviderBelongsToProjectProhibited() throws ParseException {
+
+        var request= new ProviderRequestDto();
+
+        request.id = "update-provider-id-prohibited";
+        request.name = "update-provider-name-prohibited";
+        request.abbreviation = "update-provider-abbreviation-prohibited";
+        request.logo = "update-provider-logo-prohibited";
+        request.website = "update-provider-website-prohibited";
+
+        createProvider(request, "admin");
+
+        String sub = utility.getIdFromToken(keycloakClient.getAccessToken("admin").split("\\.")[1]);
+
+        accessControlRepository.accessListOfProjects(Set.of("777536"), sub);
+
+        projectService.associateProjectWithProviders("777536", Set.of("update-provider-id-prohibited"));
+
+        var requestForUpdating= new UpdateProviderRequestDto();
+
+        requestForUpdating.id = "update-provider-id-prohibited-new";
+
+        var response = given()
+                .auth()
+                .oauth2(getAccessToken("admin"))
+                .contentType(ContentType.JSON)
+                .body(requestForUpdating)
+                .patch("/{providerId}", request.id)
+                .then()
+                .assertThat()
+                .statusCode(403)
+                .extract()
+                .as(InformativeResponse.class);
+
+        assertEquals("You cannot update a Provider which belongs to a Project.", response.message);
+    }
+
+    @Test
     public void updateProviderNotAuthenticated() {
 
         var notAuthenticatedResponse = given()
@@ -537,6 +575,7 @@ public class ProviderEndpointTest {
         var provider = createProvider(request, "admin");
 
         var requestForUpdating= new UpdateProviderRequestDto();
+
         requestForUpdating.id = "update-provider-id-new";
         requestForUpdating.name = "update-providers-name-new";
         requestForUpdating.abbreviation = "update-provider-abbreviation-new";

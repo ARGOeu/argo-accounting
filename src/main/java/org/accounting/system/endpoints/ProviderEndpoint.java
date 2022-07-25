@@ -209,7 +209,8 @@ public class ProviderEndpoint {
     @org.eclipse.microprofile.openapi.annotations.Operation(
             summary = "Deletes an existing Provider.",
             description = "This operation deletes an existing Provider registered through the [Accounting System API](#/Provider/register-a-new-provider). " +
-                    "Deleting Providers which derive from the [EOSC-Portal](#/Provider/providers-from-eosc-portal) is not allowed.")
+                    "Deleting Providers which derive from the [EOSC-Portal](#/Provider/providers-from-eosc-portal) is not allowed. " +
+                    "Bear in mind that you cannot delete a Provider which belongs to a Project.")
     @APIResponse(
             responseCode = "200",
             description = "Provider has been deleted successfully.",
@@ -272,7 +273,8 @@ public class ProviderEndpoint {
             summary = "Updates an existing Provider.",
             description = "This operation updates an existing Provider registered through the [Accounting System API](#/Provider/register-a-new-provider). " +
                     "Updating Providers which derive from the [EOSC-Portal](#/Provider/providers-from-eosc-portal) is not allowed. Finally, " +
-                    "you can update a part or all attributes of Provider. The empty or null values are ignored.")
+                    "you can update a part or all attributes of Provider. The empty or null values are ignored. " +
+                    "Bear in mind that you cannot update a Provider which belongs to a Project.")
     @APIResponse(
             responseCode = "200",
             description = "Provider was updated successfully.",
