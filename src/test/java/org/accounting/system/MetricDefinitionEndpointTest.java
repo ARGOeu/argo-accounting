@@ -16,6 +16,7 @@ import org.accounting.system.entities.MetricDefinition;
 import org.accounting.system.mappers.MetricDefinitionMapper;
 import org.accounting.system.repositories.client.ClientAccessAlwaysRepository;
 import org.accounting.system.repositories.metricdefinition.MetricDefinitionRepository;
+import org.accounting.system.services.MetricService;
 import org.accounting.system.services.ReadPredefinedTypesService;
 import org.accounting.system.services.client.ClientService;
 import org.accounting.system.util.Utility;
@@ -50,6 +51,9 @@ public class MetricDefinitionEndpointTest {
 
     @InjectMock
     ReadPredefinedTypesService readPredefinedTypesService;
+
+    @InjectMock
+    MetricService metricService;
 
     @Inject
     ClientService clientService;
@@ -324,6 +328,44 @@ public class MetricDefinitionEndpointTest {
 
         var metricDefinition = createMetricDefinition(request);
         assertEquals(request.unitType, metricDefinition.unitType);
+    }
+
+    @Test
+    public void updateMetricDefinitionWithMetricsIsNotAllowed(){
+
+        Mockito.when(metricService.countMetricsByMetricDefinitionId(any())).thenReturn(10L);
+
+        Mockito.when(readPredefinedTypesService.searchForUnitType(any())).thenReturn(Optional.of("SECOND"));
+        Mockito.when(readPredefinedTypesService.searchForMetricType(any())).thenReturn(Optional.of("Aggregated"));
+        MetricDefinitionRequestDto request= new MetricDefinitionRequestDto();
+
+        request.metricName = "metric";
+        request.metricDescription = "description";
+        request.unitType = "SECOND";
+        request.metricType = "Aggregated";
+
+        var metricDefinition = createMetricDefinition(request);
+
+        var metricDefinitionToBeUpdated = new UpdateMetricDefinitionRequestDto();
+
+        metricDefinitionToBeUpdated.metricName = "update";
+        metricDefinitionToBeUpdated.metricDescription = "updatedDescription";
+        metricDefinitionToBeUpdated.unitType = "updatedUnitType";
+        metricDefinitionToBeUpdated.metricType = "updatedMetricType";
+
+        var response = given()
+                .auth()
+                .oauth2(getAccessToken("admin"))
+                .contentType(ContentType.JSON)
+                .body(metricDefinitionToBeUpdated)
+                .patch("/{id}", metricDefinition.id)
+                .then()
+                .assertThat()
+                .statusCode(409)
+                .extract()
+                .as(InformativeResponse.class);
+
+        assertEquals("The Metric Definition cannot be updated. There is a Metric assigned to it.", response.message);
     }
 
     @Test
@@ -774,6 +816,35 @@ public class MetricDefinitionEndpointTest {
                 .as(InformativeResponse.class);
 
         assertEquals("There is no Metric Definition with the following id: 7dyebdheb7377e", response.message);
+    }
+
+    @Test
+    public void deleteMetricDefinitionWithMetricsIsNotAllowed(){
+
+        Mockito.when(metricService.countMetricsByMetricDefinitionId(any())).thenReturn(10L);
+
+        Mockito.when(readPredefinedTypesService.searchForUnitType(any())).thenReturn(Optional.of("SECOND"));
+        Mockito.when(readPredefinedTypesService.searchForMetricType(any())).thenReturn(Optional.of("Aggregated"));
+        MetricDefinitionRequestDto request= new MetricDefinitionRequestDto();
+
+        request.metricName = "metric";
+        request.metricDescription = "description";
+        request.unitType = "SECOND";
+        request.metricType = "Aggregated";
+
+        var response = createMetricDefinition(request);
+
+        var deleteResponse = given()
+                .auth()
+                .oauth2(getAccessToken("admin"))
+                .delete("/{metricDefinitionId}", response.id)
+                .then()
+                .assertThat()
+                .statusCode(409)
+                .extract()
+                .as(InformativeResponse.class);
+
+        assertEquals("The Metric Definition cannot be deleted. There is a Metric assigned to it.", deleteResponse.message);
     }
 
     @Test

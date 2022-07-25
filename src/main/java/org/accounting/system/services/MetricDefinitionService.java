@@ -153,12 +153,13 @@ public class MetricDefinitionService {
      * Checks if there is any Metric assigned to the Metric Definition.
      *
      * @param id The Metric Definition id.
+     * @param errorMessage The error message to be returned as a response
      * @throws ConflictException If the Metric Definition has children.
      */
-    public void hasChildren(String id){
+    public void hasChildren(String id, String errorMessage){
 
         if(metricService.countMetricsByMetricDefinitionId(id) > 0){
-            throw new ConflictException("The Metric Definition cannot be deleted. There is a Metric assigned to it.");
+            throw new ConflictException(errorMessage);
         }
     }
 
