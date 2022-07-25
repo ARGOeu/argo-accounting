@@ -274,7 +274,8 @@ public class MetricDefinitionEndpoint {
     @org.eclipse.microprofile.openapi.annotations.Operation(
             summary = "Updates an existing Metric Definition.",
             description = "In order to update the resource properties, the body of the request must contain an updated representation of Metric Definition. " +
-                    "You can update a part or all attributes of Metric Definition except for metric_definition_id. The empty or null values are ignored.")
+                    "You can update a part or all attributes of Metric Definition except for metric_definition_id. The empty or null values are ignored. " +
+                    "Bear in mind that you cannot update an existing Metric Definition if there are Metrics assigned to it.")
     @APIResponse(
             responseCode = "200",
             description = "Metric Definition was updated successfully.",
@@ -338,6 +339,8 @@ public class MetricDefinitionEndpoint {
                     schema = @Schema(type = SchemaType.STRING))
             @PathParam("id") @Valid @NotFoundEntity(repository = MetricDefinitionRepository.class, message = "There is no Metric Definition with the following id:") String id, @Valid @NotNull(message = "The request body is empty.") UpdateMetricDefinitionRequestDto updateMetricDefinitionRequest) {
 
+        metricDefinitionService.hasChildren(id, "The Metric Definition cannot be updated. There is a Metric assigned to it.");
+
         var response = metricDefinitionService.update(id, updateMetricDefinitionRequest);
 
         return Response.ok().entity(response).build();
@@ -390,7 +393,7 @@ public class MetricDefinitionEndpoint {
             schema = @Schema(type = SchemaType.STRING))
                                @PathParam("id") @Valid @NotFoundEntity(repository = MetricDefinitionRepository.class, message = "There is no Metric Definition with the following id:") String id) {
 
-        metricDefinitionService.hasChildren(id);
+        metricDefinitionService.hasChildren(id, "The Metric Definition cannot be deleted. There is a Metric assigned to it.");
 
         var success = metricDefinitionService.delete(id);
 
