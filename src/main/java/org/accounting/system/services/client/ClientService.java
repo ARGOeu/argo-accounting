@@ -54,7 +54,7 @@ public class ClientService {
             client.setName(name);
             client.setEmail(email);
             client.setCreatorId(id);
-            client.setRoles(Set.of("collection_creator"));
+            client.setRoles(Set.of("collection_reader"));
         }
 
         clientRepository.persistOrUpdate(client);

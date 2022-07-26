@@ -261,23 +261,11 @@
                 [
                 {
                 system: true,
-                name: "collection_creator",
-                description: "collection_creator in MetricDefinition, Role and Provider collection can create new entities, read all entities but can update, delete only its entities. Can also read all registered clients.",
+                name: "collection_reader",
+                description: "collection_reader can read all entities in MetricDefinition, Client, and Provider collections.",
                 collections_access_permissions: [
                 {
                 access_permissions: [
-                {
-                operation: "CREATE",
-                access_type: "ALWAYS"
-                },
-                {
-                operation: "UPDATE",
-                access_type: "ENTITY"
-                },
-                {
-                operation: "DELETE",
-                access_type: "ENTITY"
-                },
                 {
                 operation: "READ",
                 access_type: "ALWAYS"
@@ -296,18 +284,6 @@
                 },
                 {
                 access_permissions: [
-                {
-                operation: "CREATE",
-                access_type: "ALWAYS"
-                },
-                {
-                operation: "UPDATE",
-                access_type: "ENTITY"
-                },
-                {
-                operation: "DELETE",
-                access_type: "ENTITY"
-                },
                 {
                 operation: "READ",
                 access_type: "ALWAYS"
@@ -611,5 +587,41 @@
                 }
             </ext:document>
         </ext:insertOne>
+    </changeSet>
+
+    <changeSet id="16" author="accounting-system">
+        <ext:insertMany collectionName="Role">
+            <ext:documents>
+                [
+                {
+                system: false,
+                name: "metric_definition_creator",
+                description: "metric_definition_creator can create new Metric Definitions, and read all Metric Definitions but can update and delete only the entities it created.",
+                collections_access_permissions: [
+                {
+                access_permissions: [
+                {
+                operation: "CREATE",
+                access_type: "ALWAYS"
+                },
+                {
+                operation: "UPDATE",
+                access_type: "ENTITY"
+                },
+                {
+                operation: "DELETE",
+                access_type: "ENTITY"
+                },
+                {
+                operation: "READ",
+                access_type: "ALWAYS"
+                }
+                ],
+                collection: "MetricDefinition"
+                }]
+                }
+                ]
+            </ext:documents>
+        </ext:insertMany>
     </changeSet>
 </databaseChangeLog>

@@ -72,7 +72,7 @@ public class MetricDefinitionAuthorizationTest {
 
         clientService.register(utility.getIdFromToken(keycloakClient.getAccessToken("creator").split("\\.")[1]), "creator", "creator@email.com");
 
-        clientAccessAlwaysRepository.assignRolesToRegisteredClient(utility.getIdFromToken(keycloakClient.getAccessToken("creator").split("\\.")[1]), Set.of("collection_creator"));
+        clientAccessAlwaysRepository.assignRolesToRegisteredClient(utility.getIdFromToken(keycloakClient.getAccessToken("creator").split("\\.")[1]), Set.of("metric_definition_creator"));
     }
 
     @BeforeEach
