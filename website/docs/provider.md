@@ -328,6 +328,128 @@ Success Response `200 OK`
 }
 ```
 
+
+
+###[POST] - Search for Providers
+ 
+You can search on Providers, to find the ones corresponding to the given search criteria. Providers  can be searched by executing the following request:
+
+```
+POST accounting-system/providers/search
+Content-Type: application/json
+```
+#### Example 1: 
+```
+{
+
+           "type":"query",
+           "field": "name",
+           "values":"European Space Agency",
+           "operand": "eq"
+   }
+```
+         
+
+
+#### Example 2: 
+```
+{
+  "type": "filter",
+  "operator": "OR",
+  "criteria": [
+    {
+
+           "type":"query",
+           "field": "name",
+           "values":"European Space Agency",
+           "operand": "eq"
+   },
+    {
+
+           "type":"query",
+           "field": "abbreviation",
+           "values":"SITES",
+           "operand": "eq"
+   }
+  ]
+} 
+```
+ 
+The context of the request can be a json object of type ‘query’ or ‘filter’. 
+‘query’ defines a criterio in a specific field of the provider. 
+ 
+‘query’ can be syntaxed as a json object :
+```
+{
+  "type":string,
+  "field": string ,
+  "values":primitive,
+  "operand": string  
+}
+```
+
+ 
+In the ‘query’ element we need to define the following properties: 
+ | Field          	| Description   	      | 
+|------------------	|-------------------------|
+|type                  |The type of the search and it’s value is ‘query’ |
+|field                 | The field of the collection on which we search |
+|values                |The value of the equation , and it can be of any type depending on the type of the field we search |
+|operand               |The equation we want to apply on the field in order to search results. it’s value can be {eq, neq, lt, lte, gt, gte} |
+
+ 
+__Example 1__ defines a search on field title. The ‘query’ searches for providers that have title="Functional and Molecular Characterisation of Breast Cancer Stem Cells"
+‘filter’ defines multiple criteria and the way they are combined . A filter can include criteria of ‘filter’ or ‘query’ types.
+‘filter’ can be syntaxed as a json object :
+```
+{
+  "type":string,
+  "operator": string ,
+  criteria:array of ‘query’ or ‘filter’ elements
+}
+```
+ 
+In the ‘query’ element we need to define the following properties: 
+ 
+ | Field          	| Description   	      | 
+|------------------	|-------------------------|
+| type  | The type of the search and it’s value is ‘filter’ |
+| operator | The operation on which the elements in the criteria will be combined. it’s values is AND or OR | 
+| criteria |The specific subqueries that will be matched by the operator. criteria is an array of objects of ‘query’ or ‘filter’ type |
+
+ 
+__Example 2__ defines a ‘filter’ containing criteria both of filter and query type. The ‘filter’ searches for  providers  that have 
+name="European Space Agency" OR abbreviation=’SITES’
+ 
+If the operation is successful, you get a list of providers
+```
+{
+   "size_of_page": 2,
+   "number_of_page": 1,
+   "total_elements": 2,
+   "total_pages": 1,
+   "content": [
+       {
+           "id": "esa-int",
+           "name": "European Space Agency",
+           "website": "https://www.esa.int/",
+           "abbreviation": "ESA",
+           "logo": "https://www.esa.int/var/esa/storage/images/esa_multimedia/images/2014/03/b_esa_b/14337112-1-eng-GB/b_ESA_b_pillars.png"
+       },
+       {
+           "id": "sites",
+           "name": "Swedish Infrastructure for Ecosystem Science",
+           "website": "https://www.fieldsites.se/en-GB",
+           "abbreviation": "SITES",
+           "logo": "https://dst15js82dk7j.cloudfront.net/231546/95187636-P5q11.png"
+       }
+   ],
+   "links": []
+
+```
+
+
+Otherwise, an empty response will be returned.
 **Keep in mind that** to execute the above operation, you must have been assigned a role containing the Provider Acl permission.
 
 ### Errors
