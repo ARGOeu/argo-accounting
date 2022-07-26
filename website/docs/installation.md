@@ -302,6 +302,138 @@ Success Response `200 OK`
 
 **Keep in mind that** to execute the above operation, you must have been assigned a role containing the Installation Acl permission.
 
+### [POST] - Search for Installations
+ 
+You can search on Installations, to find the ones corresponding to the given search criteria. Installations  can be searched by executing the following request:
+ 
+``` 
+POST accounting-system/installations/search
+Content-Type: application/json
+```
+#### Example 1: 
+```
+{
+           "type":"query",
+           "field": "installation",
+           "values": "GRNET-KNS-1",
+           "operand": "eq"         
+
+}
+```
+
+#### Example 2: 
+
+```
+{
+ "type": "filter",
+ "operator": "OR",
+ "criteria": [
+   {
+     "type": "filter",
+     "operator": "OR",
+     "criteria": [{
+           "type":"query",
+           "field": "installation",
+           "values": "GRNET-KNS-1",
+           "operand": "eq"         
+
+},{
+           "type":"query",
+           "field": "organisation",
+           "values": "grnet",
+           "operand": "eq"         
+
+}]
+
+   }]}
+```
+ 
+The context of the request can be a json object of type ‘query’ or ‘filter’. 
+‘query’ defines a criterio in a specific field of the installation. 
+ 
+‘query’ can be syntaxed as a json object :
+```
+{
+  "type":string,
+  "field": string ,
+  "values":primitive,
+  "operand": string  
+}
+```
+ 
+In the ‘query’ element we need to define the following properties: 
+ 
+| Field          	| Description   	                      | 
+|------------------	|---------------------------------------- |
+| type | The type of the search and it’s value is ‘query’ |
+| field | The field of the collection on which we search |
+| values | The value of the equation , and it can be of any type depending on the type of the field we search |
+| operand |The equation we want to apply on the field in order to search results. it’s value can be {eq, neq, lt, lte, gt, gte} |
+
+ 
+__Example 1__ defines a search on field title. The ‘query’ searches for installations  that have installation="GRNET-KNS-1" or organisation="grnet"
+‘filter’ defines multiple criteria and the way they are combined . A filter can include criteria of ‘filter’ or ‘query’ types.
+‘filter’ can be syntaxed as a json object :
+```
+{
+  "type":string,
+  "operator": string ,
+  criteria:array of ‘query’ or ‘filter’ elements
+}
+```
+ 
+In the ‘query’ element we need to define the following properties: 
+ 
+| Field          	| Description   	                   | 
+|------------------	|---------------------------------------- |
+|type                  |The type of the search and it’s value is ‘filter’ |
+|operator              |The operation on which the elements in the criteria will be combined. it’s values is AND or OR |
+|criteria |The specific subqueries that will be matched by the operator. criteria is an array of objects of ‘query’ or ‘filter’ type |
+
+ 
+__Example 2__ defines a ‘filter’ containing criteria both of filter and query type. The ‘filter’ searches for  installations   that have installation="GRNET-KNS-1"  OR organisation=’grnet’
+ 
+If the operation is successful, you get a list of installations
+```
+{
+   "size_of_page": 2,
+   "number_of_page": 1,
+   "total_elements": 2,
+   "total_pages": 1,
+   "content": [
+       {
+           "installation_id": "62de52a3be6b3a161e01c75b",
+           "project": "750802",
+           "organisation": "sites",
+           "infrastructure": "okeanos-knossos-1",
+           "installation": "GRNET-KNS-1",
+           "unit_of_access": {
+               "metric_definition_id": "62de528dbe6b3a161e01c75a",
+               "metric_name": "number_of_active_users",
+               "metric_description": "Number of active users",
+               "unit_type": "#",
+               "metric_type": "aggregated"
+           }
+       },
+       {
+           "installation_id": "62de532cbe6b3a161e01c75d",
+           "project": "750802",
+           "organisation": "grnet",
+           "infrastructure": "okeanos-knossos-2",
+           "installation": "GRNET-KNS-2",
+           "unit_of_access": {
+               "metric_definition_id": "62de531cbe6b3a161e01c75c",
+               "metric_name": "number_of_users_deleted",
+               "metric_description": "Number of deleted users",
+               "unit_type": "#",
+               "metric_type": "aggregated"
+           }
+       }
+   ],
+   "links": []
+}
+```
+
 ### Errors
 
 Please refer to section [Errors](./api_errors) to see all possible Errors.
