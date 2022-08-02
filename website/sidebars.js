@@ -31,6 +31,10 @@ module.exports = {
        {
          type: 'doc',
          id: 'accounting_system_roles',
+       },
+       {
+         type: 'doc',
+         id: 'assigning_roles'
        }
        ],
     },
