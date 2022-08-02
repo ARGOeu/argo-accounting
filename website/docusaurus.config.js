@@ -2,11 +2,11 @@ module.exports = {
   title: 'Accounting System API Documentation',
   tagline: 'Learn how the Accounting System API works',
   url: 'https://argoeu.github.io',
-  baseUrl: '/ARGO-accounting/',
+  baseUrl: '/argo-accounting/',
   onBrokenLinks: 'throw',
   favicon: 'img/favicon.ico',
   organizationName: 'ARGOeu', // Usually your GitHub org/user name.
-  projectName: 'ARGO-accounting', // Usually your repo name.
+  projectName: 'argo-accounting', // Usually your repo name.
   themeConfig: {
     navbar: {
       title: 'Accounting System API',
@@ -22,7 +22,7 @@ module.exports = {
           position: 'left',
         },
         {
-          href: 'https://github.com/ARGOeu/ARGO-accounting',
+          href: 'https://github.com/ARGOeu/argo-accounting',
           label: 'GitHub',
           position: 'right',
         },
@@ -50,7 +50,7 @@ module.exports = {
           items: [
             {
               label: 'Github',
-              href: 'https://github.com/ARGOeu/ARGO-accounting',
+              href: 'https://github.com/ARGOeu/argo-accounting',
             }
           ],
         },
@@ -59,7 +59,7 @@ module.exports = {
           items: [
             {
               label: 'GitHub',
-              href: 'https://github.com/ARGOeu/ARGO-accounting',
+              href: 'https://github.com/ARGOeu/argo-accounting',
             },
           ],
         },
