@@ -330,7 +330,7 @@ Success Response `200 OK`
 
 
 
-###[POST] - Search for Providers
+### [POST] - Search for Providers
  
 You can search on Providers, to find the ones corresponding to the given search criteria. Providers  can be searched by executing the following request:
 

@@ -311,7 +311,7 @@ Consequently, any client can have different responsibilities at different Projec
 
 **Keep in mind that** to execute the above operation, you must have been assigned a role containing the Project Acl permission.
 
-###[POST] - Search for Projects
+### [POST] - Search for Projects
  
 You can search on Projects, to find the ones corresponding to the given search criteria. Projects  can be searched by executing the following request:
 ```
