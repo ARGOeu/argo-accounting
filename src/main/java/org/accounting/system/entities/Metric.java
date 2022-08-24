@@ -10,7 +10,7 @@ import java.time.Instant;
  * Every instance of this class represents a record in that collection.
  */
 
-@EqualsAndHashCode(onlyExplicitlyIncluded = true, callSuper = true)
+@EqualsAndHashCode(onlyExplicitlyIncluded = true, callSuper = false)
 @ToString
 public class Metric extends Entity {
 

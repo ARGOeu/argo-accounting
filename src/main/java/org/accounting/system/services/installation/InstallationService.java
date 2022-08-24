@@ -83,7 +83,7 @@ public class InstallationService {
      */
     public InstallationResponseDto save(InstallationRequestDto request) {
 
-        installationRepository.exist(request.infrastructure, request.installation);
+        installationRepository.exist(request.project, request.organisation, request.installation);
 
         var installation = installationAccessAlwaysRepository.save(request);
 
@@ -128,8 +128,8 @@ public class InstallationService {
 
         InstallationMapper.INSTANCE.updateInstallationFromDto(request, installation);
 
-        if (!StringUtils.isAllBlank(installation.getInstallation(), installation.getInfrastructure())) {
-            installationRepository.exist(installation.getInfrastructure(), installation.getInstallation());
+        if (!StringUtils.isAllBlank(installation.getProject(), installation.getOrganisation(), installation.getInstallation())) {
+            installationRepository.exist(installation.getProject(), installation.getOrganisation(), installation.getInstallation());
         }
 
         installationAccessAlwaysRepository.updateEntity(installation, new ObjectId(id));

@@ -399,7 +399,7 @@ public class InstallationEndpointTest {
                 .extract()
                 .as(InformativeResponse.class);
 
-        assertEquals("There is an Installation with infrastructure "+request.infrastructure+" and installation "+request.installation+". Its id is "+installation.id, informativeResponse.message);
+        assertEquals("There is an Installation with the following combination : {"+request.project+", "+request.organisation+", "+request.installation+"}. Its id is "+installation.id, informativeResponse.message);
     }
 
     @Test
@@ -879,12 +879,12 @@ public class InstallationEndpointTest {
 
         var metricDefinitionResponse1 = createMetricDefinition(requestForMetricDefinition1, "admin");
 
-        var requestForUpdating= new InstallationRequestDto();
+        var requestForUpdating = new InstallationRequestDto();
 
-        requestForUpdating.project = "101017567";
-        requestForUpdating.organisation = "sites";
+        requestForUpdating.project = "777536";
+        requestForUpdating.organisation = "grnet";
         requestForUpdating.infrastructure = "okeanos-knossos";
-        requestForUpdating.installation = "grnet-kns";
+        requestForUpdating.installation = "GRNET-KNS";
         requestForUpdating.unitOfAccess = metricDefinitionResponse1.id;
 
         var informativeResponse = given()
@@ -899,7 +899,7 @@ public class InstallationEndpointTest {
                 .extract()
                 .as(InformativeResponse.class);
 
-        assertEquals("There is an Installation with infrastructure "+requestForUpdating.infrastructure+" and installation "+requestForUpdating.installation+". Its id is "+installation.id, informativeResponse.message);
+        assertEquals("There is an Installation with the following combination : {"+requestForUpdating.project+", "+requestForUpdating.organisation+", "+requestForUpdating.installation+"}. Its id is "+installation.id, informativeResponse.message);
     }
 
     private InstallationResponseDto createInstallation(InstallationRequestDto request, String user){
