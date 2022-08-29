@@ -35,9 +35,9 @@ pipeline {
         }
         stage ('Deploy Docs') {
             // run deployment of docs only when merging to devel
-            when {
-                branch 'devel'
-            }
+            // when {
+            //     branch 'devel'
+            // }
             agent {
                 docker {
                     image 'node:16-buster'

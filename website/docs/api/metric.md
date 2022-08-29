@@ -1,6 +1,7 @@
 ---
 id: metric
 title: Metric
+sidebar_position: 6
 ---
 
 In order to register a new Metric in the Accounting System, first you have to complete the following steps:

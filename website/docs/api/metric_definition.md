@@ -1,6 +1,7 @@
 ---
 id: metric_definition
 title: Metric Definition
+sidebar_position: 2
 ---
 
 Metrics are measures of quantitative assessment commonly used for assessing, comparing, and tracking usage or performance of a service. They are the main indicators.

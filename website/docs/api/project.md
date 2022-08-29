@@ -1,6 +1,7 @@
 ---
 id: project
 title: Project
+sidebar_position: 3
 ---
 
 A Project is the main resource of the Accounting System. The first step a user must follow is to create a project under which the metric data will belong.
@@ -355,9 +356,9 @@ Content-Type: application/json
 
  
 The context of the request can be a json object of type ‘query’ or ‘filter’. 
-‘query’ defines a criterio in a specific field of the project. 
+‘query’ defines a criterion in a specific field of the project. 
  
-‘query’ can be syntaxed as a json object :
+‘query’ can be expressed as a json object :
 ```
 {
   "type":string,
@@ -380,7 +381,7 @@ In the ‘query’ element we need to define the following properties:
  
 __Example 1__ defines a search on field title. The ‘query’ searches for projects that have title="Functional and Molecular Characterisation of Breast Cancer Stem Cells"
 ‘filter’ defines multiple criteria and the way they are combined . A filter can include criteria of ‘filter’ or ‘query’ types.
-‘filter’ can be syntaxed as a json object :
+‘filter’ can be expressed as a json object :
 ```
 {
   "type":string,

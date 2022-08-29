@@ -1,6 +1,7 @@
 ---
 id: api_errors
 title: API Errors
+sidebar_position: 10
 ---
 
 ## Errors

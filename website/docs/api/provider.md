@@ -1,6 +1,7 @@
 ---
 id: provider
 title: Provider
+sidebar_position: 4
 ---
 
 As Provider, we refer to the Organisation that offers at least one installation to a specific project.
@@ -376,9 +377,9 @@ Content-Type: application/json
 ```
  
 The context of the request can be a json object of type ‘query’ or ‘filter’. 
-‘query’ defines a criterio in a specific field of the provider. 
+‘query’ defines a criterion in a specific field of the provider. 
  
-‘query’ can be syntaxed as a json object :
+‘query’ can be expressed as a json object :
 ```
 {
   "type":string,
@@ -400,7 +401,7 @@ In the ‘query’ element we need to define the following properties:
  
 __Example 1__ defines a search on field title. The ‘query’ searches for providers that have title="Functional and Molecular Characterisation of Breast Cancer Stem Cells"
 ‘filter’ defines multiple criteria and the way they are combined . A filter can include criteria of ‘filter’ or ‘query’ types.
-‘filter’ can be syntaxed as a json object :
+‘filter’ can be expressed as a json object :
 ```
 {
   "type":string,

@@ -1,6 +1,7 @@
 ---
 id: authorising_api_resources
 title: Authorising API Resources
+sidebar_position: 1
 ---
 
 Authorization is a process of giving permissions to clients to access the Accounting System API resources. We assign permissions to clients based on their roles. 

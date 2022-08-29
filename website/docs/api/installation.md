@@ -1,6 +1,7 @@
 ---
 id: installation
 title: Installation
+sidebar_position: 5
 ---
 
 We use the term installation as it is defined in the Virtual Access documentation to refer to a specific instance or part of a resource/service that is allocated to a specific Project by one Provider.
@@ -349,9 +350,9 @@ Content-Type: application/json
 ```
  
 The context of the request can be a json object of type ‘query’ or ‘filter’. 
-‘query’ defines a criterio in a specific field of the installation. 
+‘query’ defines a criterion in a specific field of the installation. 
  
-‘query’ can be syntaxed as a json object :
+‘query’ can be expressed as a json object :
 ```
 {
   "type":string,
@@ -373,7 +374,7 @@ In the ‘query’ element we need to define the following properties:
  
 __Example 1__ defines a search on field title. The ‘query’ searches for installations  that have installation="GRNET-KNS-1" or organisation="grnet"
 ‘filter’ defines multiple criteria and the way they are combined . A filter can include criteria of ‘filter’ or ‘query’ types.
-‘filter’ can be syntaxed as a json object :
+‘filter’ can be expressed as a json object :
 ```
 {
   "type":string,
