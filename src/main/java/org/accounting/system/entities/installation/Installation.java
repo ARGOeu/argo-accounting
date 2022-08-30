@@ -1,22 +1,27 @@
 package org.accounting.system.entities.installation;
 
+import lombok.EqualsAndHashCode;
 import org.accounting.system.entities.Entity;
 import org.bson.codecs.pojo.annotations.BsonProperty;
 import org.bson.types.ObjectId;
 
+@EqualsAndHashCode(onlyExplicitlyIncluded = true, callSuper = false)
 public class Installation extends Entity {
 
     private ObjectId id;
 
+    @EqualsAndHashCode.Include
     @BsonProperty("project")
     private String project;
 
+    @EqualsAndHashCode.Include
     @BsonProperty("organisation")
     private String organisation;
 
     @BsonProperty("infrastructure")
     private String infrastructure;
 
+    @EqualsAndHashCode.Include
     @BsonProperty("installation")
     private String installation;
 

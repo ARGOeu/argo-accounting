@@ -4,6 +4,7 @@ import lombok.EqualsAndHashCode;
 import org.accounting.system.entities.Entity;
 import org.bson.codecs.pojo.annotations.BsonId;
 
+@EqualsAndHashCode(onlyExplicitlyIncluded = true, callSuper = false)
 public class Provider extends Entity {
 
     @BsonId

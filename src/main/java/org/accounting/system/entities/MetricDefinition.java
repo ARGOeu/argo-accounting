@@ -8,7 +8,7 @@ import org.bson.codecs.pojo.annotations.BsonProperty;
  * Every instance of this class represents a record in that collection.
  */
 
-@EqualsAndHashCode(onlyExplicitlyIncluded = true, callSuper = true)
+@EqualsAndHashCode(onlyExplicitlyIncluded = true, callSuper = false)
 public class MetricDefinition extends Entity {
 
     private ObjectId id;

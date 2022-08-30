@@ -311,10 +311,10 @@
     <changeSet id="10" author="accounting-system">
         <ext:createIndex collectionName="Installation">
             <ext:keys>
-                { infrastructure: 1, installation: 1}
+                { project: 1, organisation: 1, installation: 1}
             </ext:keys>
             <ext:options>
-                {unique: true, name: "unique_infrastructure_installation_entry", collation: { locale: "en" }}
+                {unique: true, name: "unique_project_organisation_installation_entry", collation: { locale: "en" }}
             </ext:options>
         </ext:createIndex>
     </changeSet>
