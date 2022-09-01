@@ -45,7 +45,7 @@ public class InstallationRepository extends InstallationModulator {
 //            case ENTITY:
 //                return projectAccessEntityRepository.hierarchicalStructure(externalId);
 //            default:
-//                throw new ForbiddenException("The authenticated client is not permitted to perform the requested operation.");
+//                throw new ForbiddenException(ApiMessage.NO_PERMISSION.message);
 //        }
     }
 }

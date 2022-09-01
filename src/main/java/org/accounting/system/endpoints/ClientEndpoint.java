@@ -9,6 +9,7 @@ import org.accounting.system.dtos.authorization.request.AssignRoleRequestDto;
 import org.accounting.system.dtos.authorization.request.DetachRoleRequestDto;
 import org.accounting.system.dtos.client.ClientResponseDto;
 import org.accounting.system.dtos.pagination.PageResource;
+import org.accounting.system.enums.ApiMessage;
 import org.accounting.system.enums.Collection;
 import org.accounting.system.enums.Operation;
 import org.accounting.system.interceptors.annotations.AccessPermission;
@@ -146,8 +147,10 @@ public class ClientEndpoint {
                                      description = "The page size.") @DefaultValue("10") @QueryParam("size") int size,
                              @Context UriInfo uriInfo){
         if(page <1){
-            throw new BadRequestException("Page number must be >= 1.");
+            throw new BadRequestException(ApiMessage.PAGE_NUMBER.message);
         }
+
+        System.out.println();
 
         return Response.ok().entity(clientService.findAllClientsPageable(page-1, size, uriInfo)).build();
     }

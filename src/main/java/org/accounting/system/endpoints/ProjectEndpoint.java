@@ -20,6 +20,7 @@ import org.accounting.system.dtos.project.ProjectResponseDto;
 import org.accounting.system.entities.HierarchicalRelation;
 import org.accounting.system.entities.projections.HierarchicalRelationProjection;
 import org.accounting.system.entities.projections.MetricProjection;
+import org.accounting.system.enums.ApiMessage;
 import org.accounting.system.enums.Collection;
 import org.accounting.system.enums.RelationType;
 import org.accounting.system.repositories.HierarchicalRelationRepository;
@@ -222,7 +223,7 @@ public class ProjectEndpoint {
             @Context UriInfo uriInfo) {
 
         if (page < 1) {
-            throw new BadRequestException("Page number must be >= 1.");
+            throw new BadRequestException(ApiMessage.PAGE_NUMBER.message);
         }
 
         var response = projectService.fetchAllMetrics(id, page - 1, size, uriInfo);
@@ -286,7 +287,7 @@ public class ProjectEndpoint {
             @Context UriInfo uriInfo) {
 
         if (page < 1) {
-            throw new BadRequestException("Page number must be >= 1.");
+            throw new BadRequestException(ApiMessage.PAGE_NUMBER.message);
         }
 
         var response = providerService.fetchAllMetrics(projectId, providerId, page - 1, size, uriInfo);
@@ -661,7 +662,7 @@ public class ProjectEndpoint {
             @Context UriInfo uriInfo) {
 
         if (page < 1) {
-            throw new BadRequestException("Page number must be >= 1.");
+            throw new BadRequestException(ApiMessage.PAGE_NUMBER.message);
         }
 
         return Response.ok().entity(projectService.findInstallationsByProject(projectId, page - 1, size, uriInfo)).build();
@@ -921,7 +922,7 @@ public class ProjectEndpoint {
                                         @Context UriInfo uriInfo){
 
         if (page < 1) {
-            throw new BadRequestException("Page number must be >= 1.");
+            throw new BadRequestException(ApiMessage.PAGE_NUMBER.message);
         }
 
         var response = accessControlService.fetchAllPermissions(projectId, Collection.Project, page - 1, size, uriInfo);
@@ -1076,7 +1077,7 @@ public class ProjectEndpoint {
             @Context UriInfo uriInfo) {
 
         if (page < 1) {
-            throw new BadRequestException("Page number must be >= 1.");
+            throw new BadRequestException(ApiMessage.PAGE_NUMBER.message);
         }
 
         return Response.ok().entity(providerService.findInstallationsByProvider(projectId, providerId, page - 1, size, uriInfo)).build();
@@ -1373,7 +1374,7 @@ public class ProjectEndpoint {
             @Context UriInfo uriInfo){
 
         if (page < 1) {
-            throw new BadRequestException("Page number must be >= 1.");
+            throw new BadRequestException(ApiMessage.PAGE_NUMBER.message);
         }
 
         var response = accessControlService.fetchAllPermissions(projectId + HierarchicalRelation.PATH_SEPARATOR + providerId, Collection.Provider, page - 1, size, uriInfo);
@@ -1474,7 +1475,7 @@ public class ProjectEndpoint {
     ) throws ParseException, NoSuchFieldException, org.json.simple.parser.ParseException, JsonProcessingException {
 
         if (page < 1) {
-            throw new BadRequestException("Page number must be >= 1.");
+            throw new BadRequestException(ApiMessage.PAGE_NUMBER.message);
         }
         if(json.equals("")){
             throw  new BadRequestException("not empty body permitted");
@@ -1549,7 +1550,7 @@ public class ProjectEndpoint {
     ) throws ParseException, NoSuchFieldException, org.json.simple.parser.ParseException, JsonProcessingException {
 
         if (page < 1) {
-            throw new BadRequestException("Page number must be >= 1.");
+            throw new BadRequestException(ApiMessage.PAGE_NUMBER.message);
         }
 
         var results= projectService.getAll( page - 1, size, uriInfo);

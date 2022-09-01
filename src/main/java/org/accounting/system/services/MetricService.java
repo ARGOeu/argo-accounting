@@ -1,14 +1,19 @@
 package org.accounting.system.services;
 
 import com.mongodb.MongoWriteException;
+import com.mongodb.client.model.Filters;
 import org.accounting.system.dtos.metric.MetricResponseDto;
 import org.accounting.system.dtos.metric.UpdateMetricRequestDto;
 import org.accounting.system.endpoints.MetricEndpoint;
+import org.accounting.system.entities.HierarchicalRelation;
 import org.accounting.system.entities.Metric;
 import org.accounting.system.exceptions.ConflictException;
 import org.accounting.system.mappers.MetricMapper;
+import org.accounting.system.repositories.HierarchicalRelationRepository;
+import org.accounting.system.repositories.installation.InstallationAccessAlwaysRepository;
 import org.accounting.system.repositories.metric.MetricRepository;
 import org.accounting.system.util.QueryParser;
+import org.bson.Document;
 import org.bson.conversions.Bson;
 import org.bson.types.ObjectId;
 import org.json.simple.parser.ParseException;
@@ -35,6 +40,12 @@ public class MetricService {
 
     @Inject
     MetricDefinitionService metricDefinitionService;
+
+    @Inject
+    InstallationAccessAlwaysRepository installationAccessAlwaysRepository;
+
+    @Inject
+    HierarchicalRelationRepository hierarchicalRelationRepository;
 
     @Inject
     QueryParser queryParser;
@@ -71,12 +82,25 @@ public class MetricService {
     /**
      * Delete a Metric by given id.
      * @param metricId The Metric to be deleted
+     * @param installationId The Installation in which the Metric belongs to.
      * @return if the operation is successful or not
      * @throws NotFoundException If the Metric doesn't exist
      */
-    public boolean delete(String metricId){
+    public boolean delete(String metricId, String installationId){
 
-        return metricRepository.deleteById(new ObjectId(metricId));
+        // first delete Metric from Metric Collection
+        var deletedFromMetricCollection = metricRepository.deleteById(new ObjectId(metricId));
+
+        // then delete Metric ID from HierarchicalRelation collection
+        var installation = installationAccessAlwaysRepository.findById(new ObjectId(installationId));
+
+        Bson filter = Filters.in("metrics", new ObjectId(metricId));
+        Bson query = new Document().append("_id", installation.getProject() + HierarchicalRelation.PATH_SEPARATOR + installation.getOrganisation() + HierarchicalRelation.PATH_SEPARATOR + installationId);
+        Bson update = new Document("$pull", filter);
+
+        hierarchicalRelationRepository.getMongoCollection().updateOne(query, update);
+
+        return deletedFromMetricCollection;
     }
 
     /**

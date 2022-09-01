@@ -34,7 +34,7 @@ public class ProjectAccessControlRepository extends AccessControlModulator<Proje
 //
 //            return project;
 //        } else {
-//            throw new ForbiddenException("The authenticated client is not permitted to perform the requested operation.");
+//            throw new ForbiddenException(ApiMessage.NO_PERMISSION.message);
 //        }
 //    }
 
@@ -57,7 +57,7 @@ public class ProjectAccessControlRepository extends AccessControlModulator<Proje
 //                hierarchicalRelationRepository.save(provider, null);
 //            }
 //        } else {
-//            throw new ForbiddenException("The authenticated client is not permitted to perform the requested operation.");
+//            throw new ForbiddenException(ApiMessage.NO_PERMISSION.message);
 //        }
 //    }
 
@@ -70,7 +70,7 @@ public class ProjectAccessControlRepository extends AccessControlModulator<Proje
 //                    hierarchicalRelationRepository.delete("_id = ?1",projectId + HierarchicalRelation.PATH_SEPARATOR + provider);
 //                }
 //        } else {
-//            throw new ForbiddenException("The authenticated client is not permitted to perform the requested operation.");
+//            throw new ForbiddenException(ApiMessage.NO_PERMISSION.message);
 //        }
 //    }
 
@@ -105,7 +105,7 @@ public class ProjectAccessControlRepository extends AccessControlModulator<Proje
 //        if(optional.isPresent()){
 //            return hierarchicalRelationRepository.hierarchicalStructure(externalId);
 //        } else {
-//            throw new ForbiddenException("The authenticated client is not permitted to perform the requested operation.");
+//            throw new ForbiddenException(ApiMessage.NO_PERMISSION.message);
 //        }
 //    }
 
@@ -118,7 +118,7 @@ public class ProjectAccessControlRepository extends AccessControlModulator<Proje
 //        if(optional.isPresent()){
 //            return hierarchicalRelationService.assignMetric(installationId, request);
 //        } else {
-//            throw new ForbiddenException("The authenticated client is not permitted to perform the requested operation.");
+//            throw new ForbiddenException(ApiMessage.NO_PERMISSION.message);
 //        }
 //    }
 
@@ -136,7 +136,7 @@ public class ProjectAccessControlRepository extends AccessControlModulator<Proje
 //
 //            return projection;
 //        } else {
-//            throw new ForbiddenException("The authenticated client is not permitted to perform the requested operation.");
+//            throw new ForbiddenException(ApiMessage.NO_PERMISSION.message);
 //        }
 //    }
 

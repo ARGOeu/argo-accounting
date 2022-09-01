@@ -12,6 +12,7 @@ import org.accounting.system.dtos.authorization.CollectionAccessPermissionDto;
 import org.accounting.system.dtos.authorization.request.RoleRequestDto;
 import org.accounting.system.dtos.authorization.response.RoleResponseDto;
 import org.accounting.system.endpoints.RoleEndpoint;
+import org.accounting.system.enums.ApiMessage;
 import org.accounting.system.repositories.client.ClientAccessAlwaysRepository;
 import org.accounting.system.services.client.ClientService;
 import org.accounting.system.util.Utility;
@@ -67,7 +68,7 @@ public class RoleEndpointAuthorizationTest {
                 .extract()
                 .as(InformativeResponse.class);
 
-        assertEquals("The authenticated client is not permitted to perform the requested operation.", informativeResponse.message);
+        assertEquals(ApiMessage.UNAUTHORIZED_CLIENT.message, informativeResponse.message);
     }
 
     @Test
@@ -115,7 +116,7 @@ public class RoleEndpointAuthorizationTest {
                 .extract()
                 .as(InformativeResponse.class);
 
-        assertEquals("The authenticated client is not permitted to perform the requested operation.", informativeResponse.message);
+        assertEquals(ApiMessage.UNAUTHORIZED_CLIENT.message, informativeResponse.message);
     }
 
     @Test
@@ -130,7 +131,7 @@ public class RoleEndpointAuthorizationTest {
                 .extract()
                 .as(InformativeResponse.class);
 
-        assertEquals("The authenticated client is not permitted to perform the requested operation.", informativeResponse.message);
+        assertEquals(ApiMessage.UNAUTHORIZED_CLIENT.message, informativeResponse.message);
     }
 
     @Test
@@ -145,7 +146,7 @@ public class RoleEndpointAuthorizationTest {
                 .extract()
                 .as(InformativeResponse.class);
 
-        assertEquals("The authenticated client is not permitted to perform the requested operation.", informativeResponse.message);
+        assertEquals(ApiMessage.UNAUTHORIZED_CLIENT.message, informativeResponse.message);
     }
 
     @Test
@@ -160,7 +161,7 @@ public class RoleEndpointAuthorizationTest {
                 .extract()
                 .as(InformativeResponse.class);
 
-        assertEquals("The authenticated client is not permitted to perform the requested operation.", informativeResponse.message);
+        assertEquals(ApiMessage.UNAUTHORIZED_CLIENT.message, informativeResponse.message);
     }
 
     protected String getAccessToken(String userName) {

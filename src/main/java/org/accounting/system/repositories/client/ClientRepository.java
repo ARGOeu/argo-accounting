@@ -3,6 +3,7 @@ package org.accounting.system.repositories.client;
 import com.mongodb.client.model.Aggregates;
 import io.quarkus.mongodb.panache.PanacheMongoRepository;
 import org.accounting.system.entities.client.Client;
+import org.accounting.system.enums.ApiMessage;
 import org.bson.Document;
 import org.bson.conversions.Bson;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
@@ -91,7 +92,7 @@ public class ClientRepository extends ClientModulator {
         if (client.isPresent()){
             return client.get().getRoles();
         } else {
-            throw new ForbiddenException("The authenticated client is not permitted to perform the requested operation.");
+            throw new ForbiddenException(ApiMessage.UNAUTHORIZED_CLIENT.message);
         }
     }
 

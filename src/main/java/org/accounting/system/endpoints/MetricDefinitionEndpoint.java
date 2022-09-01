@@ -9,6 +9,7 @@ import org.accounting.system.dtos.metricdefinition.MetricDefinitionResponseDto;
 import org.accounting.system.dtos.metricdefinition.UpdateMetricDefinitionRequestDto;
 import org.accounting.system.dtos.pagination.PageResource;
 import org.accounting.system.enums.AccessType;
+import org.accounting.system.enums.ApiMessage;
 import org.accounting.system.enums.Collection;
 import org.accounting.system.enums.Operation;
 import org.accounting.system.interceptors.annotations.AccessPermission;
@@ -37,7 +38,17 @@ import org.json.simple.parser.ParseException;
 import javax.inject.Inject;
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
-import javax.ws.rs.*;
+import javax.ws.rs.BadRequestException;
+import javax.ws.rs.Consumes;
+import javax.ws.rs.DELETE;
+import javax.ws.rs.DefaultValue;
+import javax.ws.rs.GET;
+import javax.ws.rs.PATCH;
+import javax.ws.rs.POST;
+import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
+import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
@@ -211,7 +222,7 @@ public class MetricDefinitionEndpoint {
                            @Context UriInfo uriInfo) {
 
         if (page < 1) {
-            throw new BadRequestException("Page number must be >= 1.");
+            throw new BadRequestException(ApiMessage.PAGE_NUMBER.message);
         }
 
         return Response.ok().entity(metricDefinitionService.findAllMetricDefinitionsPageable(page - 1, size, uriInfo)).build();
@@ -575,7 +586,7 @@ public class MetricDefinitionEndpoint {
 //                                description = "The page size.") @DefaultValue("10") @QueryParam("size") int size, @Context UriInfo uriInfo) {
 //
 //        if(page <1){
-//            throw new BadRequestException("Page number must be >= 1.");
+//            throw new BadRequestException(ApiMessage.PAGE_NUMBER.message);
 //        }
 //
 //        if(size > 100){
@@ -1013,7 +1024,7 @@ public class MetricDefinitionEndpoint {
                                    description = "The page size.") @DefaultValue("10") @QueryParam("size") int size, @Context UriInfo uriInfo) throws NoSuchFieldException, ParseException {
 
         if (page < 1) {
-            throw new BadRequestException("Page number must be >= 1.");
+            throw new BadRequestException(ApiMessage.PAGE_NUMBER.message);
         }
         var list = metricDefinitionService.searchMetricDefinition(json, requestInformation.getAccessType().equals(AccessType.ALWAYS), page - 1, size, uriInfo);
 

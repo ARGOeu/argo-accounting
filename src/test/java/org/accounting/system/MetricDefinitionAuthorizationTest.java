@@ -11,6 +11,7 @@ import org.accounting.system.dtos.metricdefinition.MetricDefinitionRequestDto;
 import org.accounting.system.dtos.metricdefinition.MetricDefinitionResponseDto;
 import org.accounting.system.dtos.metricdefinition.UpdateMetricDefinitionRequestDto;
 import org.accounting.system.dtos.pagination.PageResource;
+import org.accounting.system.enums.ApiMessage;
 import org.accounting.system.repositories.authorization.RoleRepository;
 import org.accounting.system.repositories.client.ClientAccessAlwaysRepository;
 import org.accounting.system.repositories.client.ClientRepository;
@@ -102,7 +103,7 @@ public class MetricDefinitionAuthorizationTest {
                 .extract()
                 .as(InformativeResponse.class);
 
-        assertEquals("The authenticated client is not permitted to perform the requested operation.", informativeResponse.message);
+        assertEquals(ApiMessage.UNAUTHORIZED_CLIENT.message, informativeResponse.message);
     }
 
     @Test
@@ -126,7 +127,7 @@ public class MetricDefinitionAuthorizationTest {
                 .extract()
                 .as(InformativeResponse.class);
 
-        assertEquals("The authenticated client is not permitted to perform the requested operation.", informativeResponse.message);
+        assertEquals(ApiMessage.UNAUTHORIZED_CLIENT.message, informativeResponse.message);
     }
 
     @Test
@@ -154,7 +155,7 @@ public class MetricDefinitionAuthorizationTest {
                 .extract()
                 .as(InformativeResponse.class);
 
-        assertEquals("The authenticated client is not permitted to perform the requested operation.", informativeResponse.message);
+        assertEquals(ApiMessage.UNAUTHORIZED_CLIENT.message, informativeResponse.message);
     }
 
     @Test
@@ -191,7 +192,7 @@ public class MetricDefinitionAuthorizationTest {
                 .extract()
                 .as(InformativeResponse.class);
 
-        assertEquals("The authenticated client is not permitted to perform the requested operation.", informativeResponse.message);
+        assertEquals(ApiMessage.UNAUTHORIZED_CLIENT.message, informativeResponse.message);
 
         //creator user is creating a Metric Definition
         Mockito.when(readPredefinedTypesService.searchForUnitType(any())).thenReturn(Optional.of("SECOND"));
@@ -260,7 +261,7 @@ public class MetricDefinitionAuthorizationTest {
                 .extract()
                 .as(InformativeResponse.class);
 
-        assertEquals("The authenticated client is not permitted to perform the requested operation.", informativeResponse.message);
+        assertEquals(ApiMessage.UNAUTHORIZED_CLIENT.message, informativeResponse.message);
     }
 
     @Test
@@ -294,7 +295,7 @@ public class MetricDefinitionAuthorizationTest {
                 .extract()
                 .as(InformativeResponse.class);
 
-        assertEquals("The authenticated client is not permitted to perform the requested operation.", informativeResponse.message);
+        assertEquals(ApiMessage.UNAUTHORIZED_CLIENT.message, informativeResponse.message);
     }
 
     @Test
@@ -329,7 +330,7 @@ public class MetricDefinitionAuthorizationTest {
                 .extract()
                 .as(InformativeResponse.class);
 
-        assertEquals("The authenticated client is not permitted to perform the requested operation.", informativeResponse.message);
+        assertEquals(ApiMessage.UNAUTHORIZED_CLIENT.message, informativeResponse.message);
 
         // creator user is creating a Metric Definition
         Mockito.when(readPredefinedTypesService.searchForUnitType(any())).thenReturn(Optional.of("SECOND"));

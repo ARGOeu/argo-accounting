@@ -27,6 +27,7 @@ import org.accounting.system.dtos.pagination.PageResource;
 import org.accounting.system.dtos.project.AssociateProjectProviderRequestDto;
 import org.accounting.system.dtos.project.ProjectResponseDto;
 import org.accounting.system.endpoints.ProjectEndpoint;
+import org.accounting.system.enums.ApiMessage;
 import org.accounting.system.mappers.ProviderMapper;
 import org.accounting.system.repositories.acl.AccessControlRepository;
 import org.accounting.system.repositories.client.ClientAccessAlwaysRepository;
@@ -212,7 +213,7 @@ public class ProjectAutorizationTest {
                 .extract()
                 .as(InformativeResponse.class);
 
-        assertEquals("The authenticated client is not permitted to perform the requested operation.", informativeResponse.message);
+        assertEquals(ApiMessage.UNAUTHORIZED_CLIENT.message, informativeResponse.message);
     }
 
     @Test
@@ -253,7 +254,7 @@ public class ProjectAutorizationTest {
                 .extract()
                 .as(InformativeResponse.class);
 
-        assertEquals("The authenticated client is not permitted to perform the requested operation.", informativeResponse.message);
+        assertEquals(ApiMessage.UNAUTHORIZED_CLIENT.message, informativeResponse.message);
     }
 
     @Test
@@ -341,7 +342,7 @@ public class ProjectAutorizationTest {
                 .extract()
                 .as(InformativeResponse.class);
 
-        assertEquals("The authenticated client is not permitted to perform the requested operation.", informativeResponse.message);
+        assertEquals(ApiMessage.UNAUTHORIZED_CLIENT.message, informativeResponse.message);
     }
 
     @Test
@@ -403,7 +404,7 @@ public class ProjectAutorizationTest {
                 .extract()
                 .as(InformativeResponse.class);
 
-        assertEquals("The authenticated client is not permitted to perform the requested operation.", informativeResponse.message);
+        assertEquals(ApiMessage.UNAUTHORIZED_CLIENT.message, informativeResponse.message);
 
         grantProviderAccess("777536", "grnet", "admin", "provider_admin@example.org");
 
@@ -484,7 +485,7 @@ public class ProjectAutorizationTest {
                 .extract()
                 .as(InformativeResponse.class);
 
-        assertEquals("The authenticated client is not permitted to perform the requested operation.", informativeResponse.message);
+        assertEquals(ApiMessage.UNAUTHORIZED_CLIENT.message, informativeResponse.message);
 
         // installationadmin cannot be able to read the Installation Metrics
         var informativeResponseFromInstallation = given()
@@ -498,7 +499,7 @@ public class ProjectAutorizationTest {
                 .extract()
                 .as(InformativeResponse.class);
 
-        assertEquals("The authenticated client is not permitted to perform the requested operation.", informativeResponseFromInstallation.message);
+        assertEquals(ApiMessage.UNAUTHORIZED_CLIENT.message, informativeResponseFromInstallation.message);
 
         // installationadmin will be registered into Accounting System
         var client = given()

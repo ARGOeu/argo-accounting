@@ -39,7 +39,7 @@ public class ProjectModulator extends AbstractModulator<Project, String, RoleAcc
 //            case ENTITY:
 //                return projectAccessEntityRepository.save(id, openAire());
 //            default:
-//                throw new ForbiddenException("The authenticated client is not permitted to perform the requested operation.");
+//                throw new ForbiddenException(ApiMessage.NO_PERMISSION.message);
 //        }
     }
 
@@ -56,7 +56,7 @@ public class ProjectModulator extends AbstractModulator<Project, String, RoleAcc
 //                 projectAccessEntityRepository.associateProjectWithProviders(projectId, providerIds);
 //                 break;
 //            default:
-//                throw new ForbiddenException("The authenticated client is not permitted to perform the requested operation.");
+//                throw new ForbiddenException(ApiMessage.NO_PERMISSION.message);
 //        }
     }
 
@@ -73,7 +73,7 @@ public class ProjectModulator extends AbstractModulator<Project, String, RoleAcc
 //                projectAccessEntityRepository.dissociateProviderFromProject(projectId, providerIds);
 //                break;
 //            default:
-//                throw new ForbiddenException("The authenticated client is not permitted to perform the requested operation.");
+//                throw new ForbiddenException(ApiMessage.NO_PERMISSION.message);
 //        }
     }
 
@@ -86,7 +86,7 @@ public class ProjectModulator extends AbstractModulator<Project, String, RoleAcc
 //            case ENTITY:
 //                return projectAccessEntityRepository.hierarchicalStructure(externalId);
 //            default:
-//                throw new ForbiddenException("The authenticated client is not permitted to perform the requested operation.");
+//                throw new ForbiddenException(ApiMessage.NO_PERMISSION.message);
 //        }
     }
 
@@ -100,7 +100,7 @@ public class ProjectModulator extends AbstractModulator<Project, String, RoleAcc
 //            case ENTITY:
 //                return projectAccessEntityRepository.lookupInstallations(from, localField, foreignField, as, page, size, projection);
 //            default:
-//                throw new ForbiddenException("The authenticated client is not permitted to perform the requested operation.");
+//                throw new ForbiddenException(ApiMessage.NO_PERMISSION.message);
 //        }
     }
 
@@ -115,7 +115,7 @@ public class ProjectModulator extends AbstractModulator<Project, String, RoleAcc
 //            case ENTITY:
 //                return projectAccessEntityRepository.fetchAllMetrics(id, page, size);
 //            default:
-//                throw new ForbiddenException("The authenticated client is not permitted to perform the requested operation.");
+//                throw new ForbiddenException(ApiMessage.NO_PERMISSION.message);
 //        }
     }
 

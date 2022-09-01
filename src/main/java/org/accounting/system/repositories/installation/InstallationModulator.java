@@ -42,7 +42,7 @@ public class InstallationModulator extends AbstractModulator<Installation, Objec
 //            case ENTITY:
 //                return installationAccessEntityRepository.save(request);
 //            default:
-//                throw new ForbiddenException("The authenticated client is not permitted to perform the requested operation.");
+//                throw new ForbiddenException(ApiMessage.NO_PERMISSION.message);
 //        }
     }
 
@@ -62,7 +62,7 @@ public class InstallationModulator extends AbstractModulator<Installation, Objec
 //            case ENTITY:
 //                return installationAccessEntityRepository.fetchAllMetrics(id, page, size);
 //            default:
-//                throw new ForbiddenException("The authenticated client is not permitted to perform the requested operation.");
+//                throw new ForbiddenException(ApiMessage.NO_PERMISSION.message);
 //        }
     }
 
