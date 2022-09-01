@@ -2,6 +2,7 @@ package org.accounting.system.interceptors;
 
 import io.quarkus.arc.ArcInvocationContext;
 import io.quarkus.oidc.TokenIntrospection;
+import org.accounting.system.enums.ApiMessage;
 import org.accounting.system.interceptors.annotations.AccessPermission;
 import org.accounting.system.services.authorization.RoleService;
 import org.accounting.system.util.Utility;
@@ -54,13 +55,13 @@ public class AccessPermissionInterceptor {
         Set<String> providedRoles = utility.getRoles();
 
         if(Objects.isNull(providedRoles)){
-            throw new ForbiddenException("The authenticated client is not permitted to perform the requested operation.");
+            throw new ForbiddenException(ApiMessage.UNAUTHORIZED_CLIENT.message);
         }
 
         var access = roleService.hasAccess(providedRoles, accessPermission.collection(), accessPermission.operation());
 
         if(!access){
-            throw new ForbiddenException("The authenticated client is not permitted to perform the requested operation.");
+            throw new ForbiddenException(ApiMessage.UNAUTHORIZED_CLIENT.message);
         }
 
         return context.proceed();

@@ -1,25 +1,22 @@
 package org.accounting.system.repositories.modulators;
 
-import com.mongodb.client.MongoClient;
-import com.mongodb.client.MongoCollection;
 import com.mongodb.client.model.Filters;
 import io.quarkus.mongodb.panache.PanacheMongoRepository;
-import io.quarkus.mongodb.panache.PanacheMongoRepositoryBase;
 import io.quarkus.mongodb.panache.PanacheQuery;
 import io.quarkus.panache.common.Page;
-import net.jodah.typetools.TypeResolver;
-import org.accounting.system.beans.RequestInformation;
 import org.accounting.system.entities.Entity;
 import org.accounting.system.entities.acl.AccessControl;
 import org.accounting.system.entities.projections.ProjectionQuery;
-import org.accounting.system.enums.Collection;
+import org.accounting.system.enums.ApiMessage;
 import org.bson.Document;
 import org.bson.conversions.Bson;
-import org.eclipse.microprofile.config.inject.ConfigProperty;
 
-import javax.inject.Inject;
 import javax.ws.rs.ForbiddenException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 /**
  * This {@link AccessModulator} defines the operations that determine the degree of accessibility to Collection Entities. Each
@@ -29,41 +26,23 @@ import java.util.*;
  *
  * @param <E> Generic class that represents a mongo collection.
  */
-public abstract class AccessModulator<E extends Entity, I, A extends AccessControl> implements PanacheMongoRepositoryBase<E, I> {
+public abstract class AccessModulator<E extends Entity, I, A extends AccessControl> extends AbstractAccessModulator<E, I> {
 
-    @Inject
-    RequestInformation requestInformation;
-
-    @Inject
-    MongoClient mongoClient;
-
-    @ConfigProperty(name = "quarkus.mongodb.database")
-    String database;
-
-    protected Class<E> clazz;
-
-    private Class<I> identity;
-
-    public AccessModulator() {
-        Class<?>[] typeArguments = TypeResolver.resolveRawArguments(AccessModulator.class, getClass());
-        this.clazz = (Class<E>) typeArguments[0];
-        this.identity = (Class<I>) typeArguments[1];
-    }
 
     public void save(E entity) {
-        throw new ForbiddenException("The authenticated client is not permitted to perform the requested operation.");
+        throw new ForbiddenException(ApiMessage.NO_PERMISSION.message);
     }
 
     public E fetchEntityById(I id) {
-        throw new ForbiddenException("The authenticated client is not permitted to perform the requested operation.");
+        throw new ForbiddenException(ApiMessage.NO_PERMISSION.message);
     }
 
     public boolean deleteEntityById(I id) {
-        throw new ForbiddenException("The authenticated client is not permitted to perform the requested operation.");
+        throw new ForbiddenException(ApiMessage.NO_PERMISSION.message);
     }
 
     public E updateEntity(E entity, I id) {
-        throw new ForbiddenException("The authenticated client is not permitted to perform the requested operation.");
+        throw new ForbiddenException(ApiMessage.NO_PERMISSION.message);
     }
 
     public List<E> getAllEntities() {
@@ -79,7 +58,7 @@ public abstract class AccessModulator<E extends Entity, I, A extends AccessContr
      * @return An object represents the paginated results
      */
     public PanacheQuery<E> findAllPageable(int page, int size) {
-        throw new ForbiddenException("The authenticated client is not permitted to perform the requested operation.");
+        throw new ForbiddenException(ApiMessage.NO_PERMISSION.message);
     }
 
     /**
@@ -88,7 +67,7 @@ public abstract class AccessModulator<E extends Entity, I, A extends AccessContr
      * @param accessControl It essentially expresses the permissions that will be granted.
      */
     public void grantPermission(A accessControl) {
-        throw new ForbiddenException("The authenticated client is not permitted to perform the requested operation.");
+        throw new ForbiddenException(ApiMessage.NO_PERMISSION.message);
     }
 
     /**
@@ -97,7 +76,7 @@ public abstract class AccessModulator<E extends Entity, I, A extends AccessContr
      * @param accessControl It essentially expresses the permissions that will be modified.
      */
     public void modifyPermission(A accessControl) {
-        throw new ForbiddenException("The authenticated client is not permitted to perform the requested operation.");
+        throw new ForbiddenException(ApiMessage.NO_PERMISSION.message);
     }
 
     /**
@@ -106,7 +85,7 @@ public abstract class AccessModulator<E extends Entity, I, A extends AccessContr
      * @param accessControl It essentially expresses the permissions that will be deleted.
      */
     public void deletePermission(A accessControl) {
-        throw new ForbiddenException("The authenticated client is not permitted to perform the requested operation.");
+        throw new ForbiddenException(ApiMessage.NO_PERMISSION.message);
     }
 
     /**
@@ -116,7 +95,7 @@ public abstract class AccessModulator<E extends Entity, I, A extends AccessContr
      * @param who    To whom the permissions have been assigned.
      */
     public A getPermission(String entity, String who) {
-        throw new ForbiddenException("The authenticated client is not permitted to perform the requested operation.");
+        throw new ForbiddenException(ApiMessage.NO_PERMISSION.message);
     }
 
     /**
@@ -127,11 +106,7 @@ public abstract class AccessModulator<E extends Entity, I, A extends AccessContr
     }
 
     public <T> ProjectionQuery<T> lookup(String from, String localField, String foreignField, String as, int page, int size, Class<T> projection) {
-        throw new ForbiddenException("The authenticated client is not permitted to perform the requested operation.");
-    }
-
-    public <T> T lookUpEntityById(String from, String localField, String foreignField, String as, Class<T> projection, I id) {
-        throw new ForbiddenException("The authenticated client is not permitted to perform the requested operation.");
+        throw new ForbiddenException(ApiMessage.NO_PERMISSION.message);
     }
 
     public List<E> combineTwoLists(List<E> a, List<E> b) {
@@ -145,20 +120,8 @@ public abstract class AccessModulator<E extends Entity, I, A extends AccessContr
         return new ArrayList<>(setA);
     }
 
-    public MongoCollection<Document> getMongoCollection() {
-        return mongoClient.getDatabase(database).getCollection(clazz.getSimpleName());
-    }
-
-    public MongoCollection<Document> getMongoCollection(String collection) {
-        return mongoClient.getDatabase(database).getCollection(collection);
-    }
-
-    public RequestInformation getRequestInformation() {
-        return requestInformation;
-    }
-
-    public Collection collection() {
-        return Collection.valueOf(clazz.getSimpleName());
+    public <T> T lookUpEntityById(String from, String localField, String foreignField, String as, Class<T> projection, I id) {
+        throw new ForbiddenException(ApiMessage.NO_PERMISSION.message);
     }
 
     public PanacheQuery<E> search(Bson query, int page, int size) {
@@ -172,9 +135,5 @@ public abstract class AccessModulator<E extends Entity, I, A extends AccessContr
 
         Bson bson = Filters.in("_id", ids);
         return find(Document.parse(bson.toBsonDocument().toJson())).page(Page.of(page, size));
-    }
-
-    public Class<I> getIdentity() {
-        return identity;
     }
 }

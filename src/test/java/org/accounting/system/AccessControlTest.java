@@ -163,7 +163,7 @@
 //                .extract()
 //                .as(InformativeResponse.class);
 //
-//        assertEquals("The authenticated client is not permitted to perform the requested operation.", informativeResponse.message);
+//        assertEquals(ApiMessage.NO_PERMISSION.message, informativeResponse.message);
 //    }
 //
 //    @Test
@@ -330,7 +330,7 @@
 //                .extract()
 //                .as(InformativeResponse.class);
 //
-//        assertEquals("The authenticated client is not permitted to perform the requested operation.", informativeResponse.message);
+//        assertEquals(ApiMessage.NO_PERMISSION.message, informativeResponse.message);
 //    }
 //
 //    @Test
@@ -459,7 +459,7 @@
 //                .extract()
 //                .as(InformativeResponse.class);
 //
-//        assertEquals("The authenticated client is not permitted to perform the requested operation.", informativeResponse.message);
+//        assertEquals(ApiMessage.NO_PERMISSION.message, informativeResponse.message);
 //    }
 //
 //    @Test
@@ -582,7 +582,7 @@
 //                .extract()
 //                .as(InformativeResponse.class);
 //
-//        assertEquals("The authenticated client is not permitted to perform the requested operation.", informativeResponse.message);
+//        assertEquals(ApiMessage.NO_PERMISSION.message, informativeResponse.message);
 //    }
 //
 //    @Test

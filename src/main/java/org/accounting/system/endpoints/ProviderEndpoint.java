@@ -8,6 +8,7 @@ import org.accounting.system.dtos.pagination.PageResource;
 import org.accounting.system.dtos.provider.ProviderRequestDto;
 import org.accounting.system.dtos.provider.ProviderResponseDto;
 import org.accounting.system.dtos.provider.UpdateProviderRequestDto;
+import org.accounting.system.enums.ApiMessage;
 import org.accounting.system.enums.Collection;
 import org.accounting.system.enums.Operation;
 import org.accounting.system.interceptors.annotations.AccessPermission;
@@ -47,11 +48,8 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
+import java.text.ParseException;
 import java.util.List;
-
-import java.text.ParseException;
-
-import java.text.ParseException;
 
 import static org.eclipse.microprofile.openapi.annotations.enums.ParameterIn.QUERY;
 
@@ -137,7 +135,7 @@ public class ProviderEndpoint {
                         @Context UriInfo uriInfo) {
 
         if (page < 1) {
-            throw new BadRequestException("Page number must be >= 1.");
+            throw new BadRequestException(ApiMessage.PAGE_NUMBER.message);
         }
 
         var serverInfo = new ResteasyUriInfo(serverUrl.concat(basePath).concat(uriInfo.getPath()), basePath);
@@ -447,7 +445,7 @@ public class ProviderEndpoint {
             @Parameter(name = "size", in = QUERY,
                     description = "The page size.") @DefaultValue("10") @QueryParam("size") int size, @Context UriInfo uriInfo) throws ParseException, NoSuchFieldException, org.json.simple.parser.ParseException, JsonProcessingException {
         if (page < 1) {
-            throw new BadRequestException("Page number must be >= 1.");
+            throw new BadRequestException(ApiMessage.PAGE_NUMBER.message);
         }
         var response = providerService.searchProvider(json, page - 1, size, uriInfo);
 

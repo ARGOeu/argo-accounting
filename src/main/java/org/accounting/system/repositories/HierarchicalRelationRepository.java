@@ -5,7 +5,6 @@ import com.mongodb.client.MongoCollection;
 import com.mongodb.client.model.Aggregates;
 import com.mongodb.client.model.Field;
 import com.mongodb.client.model.Filters;
-import io.quarkus.mongodb.panache.PanacheMongoRepositoryBase;
 import liquibase.repackaged.org.apache.commons.collections4.CollectionUtils;
 import org.accounting.system.entities.HierarchicalRelation;
 import org.accounting.system.entities.projections.HierarchicalRelationProjection;
@@ -14,6 +13,7 @@ import org.accounting.system.entities.projections.MetricProjection;
 import org.accounting.system.entities.projections.ProjectionQuery;
 import org.accounting.system.repositories.installation.InstallationRepository;
 import org.accounting.system.repositories.metric.MetricRepository;
+import org.accounting.system.repositories.modulators.AbstractAccessModulator;
 import org.bson.Document;
 import org.bson.conversions.Bson;
 import org.bson.types.ObjectId;
@@ -29,7 +29,7 @@ import java.util.Objects;
 import java.util.stream.Collectors;
 
 @ApplicationScoped
-public class HierarchicalRelationRepository implements PanacheMongoRepositoryBase<HierarchicalRelation, String> {
+public class HierarchicalRelationRepository extends AbstractAccessModulator<HierarchicalRelation, String> {
 
     @Inject
     MongoClient mongoClient;
@@ -498,6 +498,4 @@ public class HierarchicalRelationRepository implements PanacheMongoRepositoryBas
     public MongoCollection<Document> getMongoCollection(){
         return mongoClient.getDatabase("accounting-system").getCollection("HierarchicalRelation");
     }
-
-
 }

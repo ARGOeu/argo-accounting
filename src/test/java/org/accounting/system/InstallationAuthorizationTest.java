@@ -22,6 +22,7 @@ import org.accounting.system.dtos.metricdefinition.MetricDefinitionRequestDto;
 import org.accounting.system.dtos.metricdefinition.MetricDefinitionResponseDto;
 import org.accounting.system.dtos.pagination.PageResource;
 import org.accounting.system.endpoints.InstallationEndpoint;
+import org.accounting.system.enums.ApiMessage;
 import org.accounting.system.mappers.ProviderMapper;
 import org.accounting.system.repositories.acl.AccessControlRepository;
 import org.accounting.system.repositories.client.ClientAccessAlwaysRepository;
@@ -274,7 +275,7 @@ public class InstallationAuthorizationTest {
                 .extract()
                 .as(InformativeResponse.class);
 
-        assertEquals("The authenticated client is not permitted to perform the requested operation.", informativeResponse.message);
+        assertEquals(ApiMessage.UNAUTHORIZED_CLIENT.message, informativeResponse.message);
     }
 
     private InstallationResponseDto createInstallation(InstallationRequestDto request, String user){

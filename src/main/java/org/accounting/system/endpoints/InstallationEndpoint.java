@@ -19,8 +19,8 @@ import org.accounting.system.dtos.pagination.PageResource;
 import org.accounting.system.dtos.project.ProjectResponseDto;
 import org.accounting.system.entities.HierarchicalRelation;
 import org.accounting.system.entities.projections.MetricProjection;
+import org.accounting.system.enums.ApiMessage;
 import org.accounting.system.enums.Collection;
-import org.accounting.system.enums.Operation;
 import org.accounting.system.repositories.client.ClientRepository;
 import org.accounting.system.repositories.installation.InstallationRepository;
 import org.accounting.system.repositories.metric.MetricRepository;
@@ -48,16 +48,29 @@ import javax.inject.Inject;
 import javax.validation.Valid;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
+import javax.ws.rs.BadRequestException;
+import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
-import javax.ws.rs.*;
+import javax.ws.rs.DefaultValue;
+import javax.ws.rs.GET;
+import javax.ws.rs.PATCH;
+import javax.ws.rs.POST;
+import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
+import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
-import java.util.List;
 import java.text.ParseException;
+import java.util.List;
 
-import static org.accounting.system.enums.Operation.*;
+import static org.accounting.system.enums.Operation.ACL;
+import static org.accounting.system.enums.Operation.CREATE;
+import static org.accounting.system.enums.Operation.DELETE;
+import static org.accounting.system.enums.Operation.READ;
+import static org.accounting.system.enums.Operation.UPDATE;
 import static org.eclipse.microprofile.openapi.annotations.enums.ParameterIn.QUERY;
 
 @Path("/installations")
@@ -688,7 +701,7 @@ public class InstallationEndpoint {
             @Context UriInfo uriInfo) {
 
         if (page < 1) {
-            throw new BadRequestException("Page number must be >= 1.");
+            throw new BadRequestException(ApiMessage.PAGE_NUMBER.message);
         }
 
         var storedInstallation = installationRepository.findById(new ObjectId(installationId));
@@ -854,7 +867,7 @@ public class InstallationEndpoint {
             @PathParam("id") @Valid @NotFoundEntity(repository = MetricRepository.class, message = "There is no Metric with the following id:") String id) {
 
 
-        boolean success = metricService.delete(id);
+        boolean success = metricService.delete(id, installationId);
 
         var successResponse = new InformativeResponse();
 
@@ -1038,7 +1051,7 @@ public class InstallationEndpoint {
             @Context UriInfo uriInfo) {
 
         if (page < 1) {
-            throw new BadRequestException("Page number must be >= 1.");
+            throw new BadRequestException(ApiMessage.PAGE_NUMBER.message);
         }
 
         var response = installationService.fetchAllMetrics(installationId, page - 1, size, uriInfo);
@@ -1146,7 +1159,7 @@ public class InstallationEndpoint {
     ) throws ParseException, NoSuchFieldException, org.json.simple.parser.ParseException, JsonProcessingException {
 
         if (page < 1) {
-            throw new BadRequestException("Page number must be >= 1.");
+            throw new BadRequestException(ApiMessage.PAGE_NUMBER.message);
         }
         if (json.equals("")) {
             throw new BadRequestException("not empty body permitted");

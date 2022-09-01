@@ -5,6 +5,7 @@ import org.accounting.system.entities.acl.RoleAccessControl;
 import org.accounting.system.entities.installation.Installation;
 import org.accounting.system.entities.projections.MetricProjection;
 import org.accounting.system.entities.projections.ProjectionQuery;
+import org.accounting.system.enums.ApiMessage;
 import org.accounting.system.enums.Collection;
 import org.accounting.system.enums.Operation;
 import org.accounting.system.repositories.HierarchicalRelationRepository;
@@ -26,7 +27,7 @@ public class InstallationAccessEntityRepository extends AccessEntityModulator<In
     InstallationAccessControlRepository installationAccessControlRepository;
 
     public Installation save(InstallationRequestDto request) {
-        throw new ForbiddenException("The authenticated client is not permitted to perform the requested operation.");
+        throw new ForbiddenException(ApiMessage.NO_PERMISSION.message);
     }
 
     public ProjectionQuery<MetricProjection> fetchAllMetrics(String id, int page, int size){

@@ -9,7 +9,7 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
 
-public class HierarchicalRelation {
+public class HierarchicalRelation extends Entity {
 
     public static final String PATH_SEPARATOR = ".";
 

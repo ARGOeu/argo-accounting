@@ -5,6 +5,7 @@ import io.quarkus.mongodb.panache.PanacheQuery;
 import org.accounting.system.entities.Entity;
 import org.accounting.system.entities.acl.AccessControl;
 import org.accounting.system.entities.projections.ProjectionQuery;
+import org.accounting.system.enums.ApiMessage;
 import org.accounting.system.exceptions.ConflictException;
 
 import javax.ws.rs.ForbiddenException;
@@ -99,7 +100,7 @@ public abstract class AbstractModulator<E extends Entity, I, A extends AccessCon
             case ENTITY:
                 return entity();
             default:
-                throw new ForbiddenException("The authenticated client is not permitted to perform the requested operation.");
+                throw new ForbiddenException(ApiMessage.NO_PERMISSION.message);
         }
     }
 

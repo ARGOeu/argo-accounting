@@ -71,7 +71,7 @@ public class ProviderModulator extends AbstractModulator<Provider, String, RoleA
 //            case ENTITY:
 //                return providerAccessEntityRepository.fetchAllMetrics(id, page, size);
 //            default:
-//                throw new ForbiddenException("The authenticated client is not permitted to perform the requested operation.");
+//                throw new ForbiddenException(ApiMessage.NO_PERMISSION.message);
 //        }
     }
 
