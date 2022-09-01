@@ -1,1 +1,0 @@
-"use strict";(self.webpackChunkwebsite=self.webpackChunkwebsite||[]).push([[881],{4385:t=>{t.exports=JSON.parse('{"title":"Accounting System","slug":"/category/accounting-system","permalink":"/argo-accounting/docs/category/accounting-system","navigation":{"next":{"title":"Accounting System API","permalink":"/argo-accounting/docs/"}}}')}}]);
