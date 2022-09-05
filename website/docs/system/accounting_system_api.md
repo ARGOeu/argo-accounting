@@ -1,6 +1,7 @@
 ---
 id: accounting_system_api
 title: Accounting System API
+sidebar_position: 1
 slug: /
 ---
 

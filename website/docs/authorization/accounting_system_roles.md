@@ -1,6 +1,7 @@
 ---
 id: accounting_system_roles
 title: Accounting System Roles
+sidebar_position: 2
 ---
 
 When clients register to the system, they can perform the following actions :

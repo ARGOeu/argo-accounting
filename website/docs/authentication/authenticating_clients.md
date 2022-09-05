@@ -1,6 +1,7 @@
 ---
 id: authenticating_clients
 title: Authenticating Clients
+sidebar_position: 1
 ---
 
 To access Accounting System API resources, you have to be authenticated by EOSC Core Infrastructure proxy. 

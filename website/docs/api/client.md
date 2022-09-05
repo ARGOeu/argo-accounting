@@ -1,6 +1,7 @@
 ---
 id: client
 title: Client
+sidebar_position: 1
 ---
 
 As a client we define either a user or a service that communicates and interacts with the Accounting System API. 
