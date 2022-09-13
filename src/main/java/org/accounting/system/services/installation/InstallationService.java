@@ -36,7 +36,6 @@ import org.eclipse.microprofile.config.inject.ConfigProperty;
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 import javax.ws.rs.BadRequestException;
-import javax.ws.rs.NotFoundException;
 import javax.ws.rs.core.UriInfo;
 import java.util.ArrayList;
 import java.util.List;
@@ -176,10 +175,6 @@ public class InstallationService {
         var installation = installationAccessAlwaysRepository.findById(new ObjectId(id));
 
         var projection = installationRepository.fetchAllMetrics(installation.getProject() + HierarchicalRelation.PATH_SEPARATOR + installation.getOrganisation() + HierarchicalRelation.PATH_SEPARATOR + id, page, size);
-
-        if (projection.count == 0) {
-            throw new NotFoundException("No metrics added.");
-        }
 
         return new PageResource<>(projection, projection.list, uriInfo);
     }

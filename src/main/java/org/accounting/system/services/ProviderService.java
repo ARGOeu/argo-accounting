@@ -26,7 +26,6 @@ import org.eclipse.microprofile.config.inject.ConfigProperty;
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 import javax.ws.rs.ForbiddenException;
-import javax.ws.rs.NotFoundException;
 import javax.ws.rs.core.UriInfo;
 import java.util.Objects;
 
@@ -184,12 +183,9 @@ public class ProviderService {
 
         var projection = providerRepository.fetchAllMetrics(projectId + HierarchicalRelation.PATH_SEPARATOR + providerId, page, size);
 
-        if(projection.count == 0){
-            throw new NotFoundException("No metrics added.");
-        }
-
         return new PageResource<>(projection, projection.list, uriInfo);
     }
+
     public PageResource<InstallationResponseDto> findInstallationsByProvider(String projectId, String providerId, int page, int size, UriInfo uriInfo){
 
         ProjectionQuery<InstallationProjection> projectionQuery = hierarchicalRelationRepository.findInstallationsByProvider(projectId, providerId, "MetricDefinition", "unit_of_access", "_id", "unit_of_access", page, size, InstallationProjection.class);
