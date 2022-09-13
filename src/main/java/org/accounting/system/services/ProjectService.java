@@ -93,10 +93,6 @@ public class ProjectService {
 
         var projection = projectRepository.fetchAllMetrics(id, page, size);
 
-        if(projection.count == 0){
-            throw new NotFoundException("No metrics added.");
-        }
-
         return new PageResource<>(projection, projection.list, uriInfo);
     }
 

@@ -1041,7 +1041,7 @@ public class InstallationEndpoint {
             @Parameter(
                     description = "Τhe Installation id with which you can request all the Metrics that have been assigned to it.",
                     required = true,
-                    example = "grnet",
+                    example = "507f1f77bcf86cd799439011",
                     schema = @Schema(type = SchemaType.STRING))
             @PathParam("installationId") @Valid @AccessInstallation(collection = Collection.Metric, operation = READ) String installationId,
             @Parameter(name = "page", in = QUERY,
