@@ -12,7 +12,11 @@ public enum Operand {
     EQ("eq"){
         @Override
         public Bson execute(String field, Object value) {
+            if(value instanceof String){
             return eqIgn(field,value);
+            }else{
+                return Filters.eq(field, value);
+            }
         }
     },
     LT("lt"){
@@ -72,6 +76,6 @@ public enum Operand {
     public static Bson eqIgn(String fieldName, Object value) {
         String patternString = new StringBuilder("(?i)^").append(value).append("$").toString();
         Pattern pattern = Pattern.compile(patternString, Pattern.CASE_INSENSITIVE);
-        return Filters.regex(fieldName, pattern);
+        return Filters.eq(fieldName, pattern);
     }
 }

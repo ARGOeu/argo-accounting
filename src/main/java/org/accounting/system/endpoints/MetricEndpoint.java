@@ -1,8 +1,10 @@
 package org.accounting.system.endpoints;
 
 import io.quarkus.security.Authenticated;
+import org.accounting.system.beans.RequestInformation;
 import org.accounting.system.dtos.InformativeResponse;
 import org.accounting.system.dtos.metricdefinition.MetricDefinitionResponseDto;
+import org.accounting.system.enums.ApiMessage;
 import org.accounting.system.services.MetricService;
 import org.eclipse.microprofile.openapi.annotations.enums.SchemaType;
 import org.eclipse.microprofile.openapi.annotations.enums.SecuritySchemeIn;
@@ -10,6 +12,7 @@ import org.eclipse.microprofile.openapi.annotations.enums.SecuritySchemeType;
 import org.eclipse.microprofile.openapi.annotations.media.Content;
 import org.eclipse.microprofile.openapi.annotations.media.ExampleObject;
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
+import org.eclipse.microprofile.openapi.annotations.parameters.Parameter;
 import org.eclipse.microprofile.openapi.annotations.parameters.RequestBody;
 import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
 import org.eclipse.microprofile.openapi.annotations.security.SecurityRequirement;
@@ -20,12 +23,13 @@ import org.json.simple.parser.ParseException;
 import javax.inject.Inject;
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
-import javax.ws.rs.Consumes;
-import javax.ws.rs.POST;
-import javax.ws.rs.Path;
-import javax.ws.rs.Produces;
+import javax.ws.rs.*;
+import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import javax.ws.rs.core.UriInfo;
+
+import static org.eclipse.microprofile.openapi.annotations.enums.ParameterIn.QUERY;
 
 @Path("/metrics")
 @Authenticated
@@ -40,7 +44,8 @@ public class MetricEndpoint {
 
     @Inject
     MetricService metricService;
-
+    @Inject
+    RequestInformation requestInformation;
     public MetricEndpoint(MetricService metricService) {
         this.metricService = metricService;
     }
@@ -144,9 +149,14 @@ public class MetricEndpoint {
                                     "  ]\n" +
                                     "}\n",
                             summary = "A complex search on Metrics ") })
-    ) String json) throws  NoSuchFieldException, ParseException {
-
-        var list=metricService.searchMetric(json);
+    ) String json, @Parameter(name = "page", in = QUERY,
+            description = "Indicates the page number. Page number must be >= 1.") @DefaultValue("1") @QueryParam("page") int page,
+                           @Parameter(name = "size", in = QUERY,
+                                   description = "The page size.") @DefaultValue("10") @QueryParam("size") int size, @Context UriInfo uriInfo) throws  NoSuchFieldException, ParseException {
+        if (page < 1) {
+            throw new BadRequestException(ApiMessage.PAGE_NUMBER.message);
+        }
+        var list=metricService.searchMetric(json, page - 1, size, uriInfo);
         return Response.ok().entity(list).build();
 
     }

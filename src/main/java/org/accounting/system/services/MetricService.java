@@ -2,27 +2,37 @@ package org.accounting.system.services;
 
 import com.mongodb.MongoWriteException;
 import com.mongodb.client.model.Filters;
+import io.quarkus.oidc.TokenIntrospection;
 import org.accounting.system.dtos.metric.MetricResponseDto;
 import org.accounting.system.dtos.metric.UpdateMetricRequestDto;
 import org.accounting.system.endpoints.MetricEndpoint;
 import org.accounting.system.entities.HierarchicalRelation;
 import org.accounting.system.entities.Metric;
+import org.accounting.system.entities.acl.RoleAccessControl;
+import org.accounting.system.entities.projections.InstallationProjection;
+import org.accounting.system.enums.Collection;
+import org.accounting.system.enums.Operation;
 import org.accounting.system.exceptions.ConflictException;
 import org.accounting.system.mappers.MetricMapper;
 import org.accounting.system.repositories.HierarchicalRelationRepository;
+import org.accounting.system.repositories.acl.AccessControlRepository;
 import org.accounting.system.repositories.installation.InstallationAccessAlwaysRepository;
 import org.accounting.system.repositories.metric.MetricRepository;
+import org.accounting.system.services.authorization.RoleService;
 import org.accounting.system.util.QueryParser;
 import org.bson.Document;
 import org.bson.conversions.Bson;
 import org.bson.types.ObjectId;
+import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.json.simple.parser.ParseException;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 import javax.ws.rs.BadRequestException;
 import javax.ws.rs.NotFoundException;
+import javax.ws.rs.core.UriInfo;
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -49,6 +59,16 @@ public class MetricService {
 
     @Inject
     QueryParser queryParser;
+
+    @Inject
+    TokenIntrospection tokenIntrospection;
+    @Inject
+    AccessControlRepository accessControlRepository;
+    @Inject
+    RoleService roleService;
+    @ConfigProperty(name = "key.to.retrieve.id.from.access.token")
+    String id;
+
     public MetricService(MetricRepository metricRepository, MetricDefinitionService metricDefinitionService) {
         this.metricRepository = metricRepository;
         this.metricDefinitionService = metricDefinitionService;
@@ -167,10 +187,26 @@ public class MetricService {
         return metricRepository.findByIdOptional(new ObjectId(id));
     }
 
-    public List<MetricResponseDto> searchMetric(String json) throws ParseException, NoSuchFieldException {
+    public List<MetricResponseDto> searchMetric(String json,   int page, int size, UriInfo uriInfo) throws ParseException, NoSuchFieldException {
 
-        Bson query=queryParser.parseFile(json);
+        ArrayList<String> installations = new ArrayList<>();
 
+        //find the installations of projects accessible
+        var projectIds = accessControlRepository.findByWhoAndCollection(tokenIntrospection.getJsonObject().getString(id), Collection.Project).stream().filter(projects ->
+                roleService.hasRoleAccess(projects.getRoles(), Collection.Project, Operation.READ)).map(projects -> projects.getEntity()).collect(Collectors.toList());
+
+        installations.addAll(hierarchicalRelationRepository.findInstallationsOfProjects(projectIds, "MetricDefinition", "unit_of_access", "_id", "unit_of_access").stream().map(InstallationProjection::convertIdToStr).collect(Collectors.toList()));
+        //find the installations of providers accessible
+        var providersIds = accessControlRepository.findByWhoAndCollection(tokenIntrospection.getJsonObject().getString(id), Collection.Provider).stream().collect(Collectors.toList());
+        providersIds.stream().map(RoleAccessControl::getEntity).map(providersId -> {
+            return providersId.trim().split("\\" + HierarchicalRelation.PATH_SEPARATOR);
+        }).forEach(inst -> {
+            installations.addAll(hierarchicalRelationRepository.findInstallationsByProvider(inst[0], inst[1], "MetricDefinition", "unit_of_access", "_id", "unit_of_access").stream().map(InstallationProjection::convertIdToStr).collect(Collectors.toList()));
+        });
+        //find the installations accessible
+        installations.addAll(accessControlRepository.findByWhoAndCollection(tokenIntrospection.getJsonObject().getString(id), Collection.Installation).stream().filter(inst -> roleService.hasRoleAccess(inst.getRoles(), Collection.Installation, Operation.READ)).map(inst -> inst.getEntity()).collect(Collectors.toList()));
+        var metricIds=metricRepository.findMetricsOfInstallations(installations).stream().map(mid-> mid.getId().toString() ).collect(Collectors.toList());
+        Bson query=queryParser.parseFile(json, false,metricIds, Metric.class);
         var list = metricRepository.search(query);
         return  MetricMapper.INSTANCE.metricsToResponse( list.stream().collect(Collectors.toList()));
     }
