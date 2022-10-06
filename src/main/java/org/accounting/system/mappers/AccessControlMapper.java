@@ -1,12 +1,9 @@
 package org.accounting.system.mappers;
 
 import org.accounting.system.beans.RequestInformation;
-import org.accounting.system.dtos.acl.permission.PermissionAccessControlRequestDto;
 import org.accounting.system.dtos.acl.role.RoleAccessControlRequestDto;
 import org.accounting.system.dtos.acl.role.RoleAccessControlResponseDto;
 import org.accounting.system.dtos.acl.role.RoleAccessControlUpdateDto;
-import org.accounting.system.entities.acl.AccessControl;
-import org.accounting.system.entities.acl.PermissionAccessControl;
 import org.accounting.system.entities.acl.RoleAccessControl;
 import org.mapstruct.AfterMapping;
 import org.mapstruct.Mapper;
@@ -26,7 +23,6 @@ public interface AccessControlMapper {
 
     AccessControlMapper INSTANCE = Mappers.getMapper( AccessControlMapper.class );
 
-
     RoleAccessControl requestToRoleAccessControl(RoleAccessControlRequestDto request);
 
     RoleAccessControlResponseDto roleAccessControlToResponse(RoleAccessControl response);
@@ -36,11 +32,11 @@ public interface AccessControlMapper {
     @Mapping(target = "who", ignore = true)
     @Mapping(target = "collection", ignore = true)
     @Mapping(target = "entity", ignore = true)
-    void updateRoleAccessControlFromDto(RoleAccessControlUpdateDto dto, @MappingTarget AccessControl accessControl);
+    void updateRoleAccessControlFromDto(RoleAccessControlUpdateDto dto, @MappingTarget RoleAccessControl accessControl);
 
 
     @AfterMapping
-    default void setCreatorId(PermissionAccessControlRequestDto source, @MappingTarget PermissionAccessControl accessControl) {
+    default void setCreatorId(RoleAccessControlRequestDto source, @MappingTarget RoleAccessControl accessControl) {
         RequestInformation requestInformation = CDI.current().select(RequestInformation.class).get();
         accessControl.setCreatorId(requestInformation.getSubjectOfToken());
     }

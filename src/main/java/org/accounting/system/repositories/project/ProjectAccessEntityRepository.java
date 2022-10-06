@@ -1,9 +1,9 @@
 package org.accounting.system.repositories.project;
 
+import io.quarkus.mongodb.panache.PanacheQuery;
 import org.accounting.system.entities.Project;
 import org.accounting.system.entities.acl.RoleAccessControl;
 import org.accounting.system.entities.projections.MetricProjection;
-import org.accounting.system.entities.projections.ProjectionQuery;
 import org.accounting.system.enums.Collection;
 import org.accounting.system.enums.Operation;
 import org.accounting.system.repositories.HierarchicalRelationRepository;
@@ -54,11 +54,9 @@ public class ProjectAccessEntityRepository extends AccessEntityModulator<Project
 //        return projectAccessControlRepository.lookupInstallations(from, localField, foreignField, as, page, size, projection);
 //    }
 
-    public ProjectionQuery<MetricProjection> fetchAllMetrics(String id, int page, int size){
+    public PanacheQuery<MetricProjection> fetchAllMetrics(String id, int page, int size){
 
-        var projection = hierarchicalRelationRepository.findByExternalId(id, page, size);
-
-        return projection;
+        return hierarchicalRelationRepository.findByExternalId(id, page, size);
     }
 
 

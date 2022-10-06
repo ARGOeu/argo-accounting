@@ -1,6 +1,7 @@
 package org.accounting.system.repositories.project;
 
 import com.pivovarit.function.ThrowingBiFunction;
+import io.quarkus.mongodb.panache.PanacheQuery;
 import org.accounting.system.clients.ProjectClient;
 import org.accounting.system.entities.HierarchicalRelation;
 import org.accounting.system.entities.Project;
@@ -8,7 +9,6 @@ import org.accounting.system.entities.acl.RoleAccessControl;
 import org.accounting.system.entities.projections.HierarchicalRelationProjection;
 import org.accounting.system.entities.projections.InstallationProjection;
 import org.accounting.system.entities.projections.MetricProjection;
-import org.accounting.system.entities.projections.ProjectionQuery;
 import org.accounting.system.enums.RelationType;
 import org.accounting.system.exceptions.ConflictException;
 import org.accounting.system.repositories.HierarchicalRelationRepository;
@@ -89,7 +89,7 @@ public class ProjectAccessAlwaysRepository extends AccessAlwaysModulator<Project
     }
 
 
-    public ProjectionQuery<InstallationProjection> lookupInstallations(String from, String localField, String foreignField, String as, int page, int size, Class<InstallationProjection> projection) {
+    public PanacheQuery<InstallationProjection> lookupInstallations(String from, String localField, String foreignField, String as, int page, int size, Class<InstallationProjection> projection) {
 
         return installationAccessAlwaysRepository.lookup(from, localField, foreignField, as, page, size, projection);
     }
@@ -99,7 +99,7 @@ public class ProjectAccessAlwaysRepository extends AccessAlwaysModulator<Project
         return hierarchicalRelationRepository.hierarchicalStructure(externalId);
     }
 
-    public ProjectionQuery<MetricProjection> fetchAllMetrics(String id, int page, int size){
+    public PanacheQuery<MetricProjection> fetchAllMetrics(String id, int page, int size){
 
         var projection = hierarchicalRelationRepository.findByExternalId(id, page, size);
 

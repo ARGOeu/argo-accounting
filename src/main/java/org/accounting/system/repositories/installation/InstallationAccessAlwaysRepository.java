@@ -1,11 +1,11 @@
 package org.accounting.system.repositories.installation;
 
+import io.quarkus.mongodb.panache.PanacheQuery;
 import org.accounting.system.dtos.installation.InstallationRequestDto;
 import org.accounting.system.entities.HierarchicalRelation;
 import org.accounting.system.entities.acl.RoleAccessControl;
 import org.accounting.system.entities.installation.Installation;
 import org.accounting.system.entities.projections.MetricProjection;
-import org.accounting.system.entities.projections.ProjectionQuery;
 import org.accounting.system.enums.RelationType;
 import org.accounting.system.mappers.InstallationMapper;
 import org.accounting.system.repositories.HierarchicalRelationRepository;
@@ -41,11 +41,9 @@ public class InstallationAccessAlwaysRepository extends AccessAlwaysModulator<In
         return installationToBeStored;
     }
 
-    public ProjectionQuery<MetricProjection> fetchAllMetrics(String id, int page, int size){
+    public PanacheQuery<MetricProjection> fetchAllMetrics(String id, int page, int size){
 
-        var projection = hierarchicalRelationRepository.findByExternalId(id, page, size);
-
-        return projection;
+        return hierarchicalRelationRepository.findByExternalId(id, page, size);
     }
 
     public boolean accessibility(String project, String provider, String installation){

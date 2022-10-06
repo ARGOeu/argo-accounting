@@ -1,12 +1,9 @@
 package org.accounting.system.dtos.acl.role;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import org.accounting.system.constraints.NotFoundEntity;
-import org.accounting.system.repositories.authorization.RoleRepository;
 import org.eclipse.microprofile.openapi.annotations.enums.SchemaType;
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
 
-import javax.validation.Valid;
 import javax.validation.constraints.NotEmpty;
 import java.util.Set;
 
@@ -25,5 +22,5 @@ public class RoleAccessControlUpdateDto {
     )
     @JsonProperty("roles")
     @NotEmpty(message = "roles should have at least one entry.")
-    public Set<@Valid @NotFoundEntity(repository = RoleRepository.class, message = "There is no Role with the following id:") String> roles;
+    public Set<String> roles;
 }

@@ -4,7 +4,6 @@ import com.mongodb.MongoWriteException;
 import io.quarkus.mongodb.panache.PanacheQuery;
 import org.accounting.system.entities.Entity;
 import org.accounting.system.entities.acl.AccessControl;
-import org.accounting.system.entities.projections.ProjectionQuery;
 import org.accounting.system.enums.ApiMessage;
 import org.accounting.system.exceptions.ConflictException;
 
@@ -79,7 +78,7 @@ public abstract class AbstractModulator<E extends Entity, I, A extends AccessCon
     }
 
     @Override
-    public <T> ProjectionQuery<T> lookup(String from, String localField, String foreignField, String as, int page, int size, Class<T> projection) {
+    public <T> PanacheQuery<T> lookup(String from, String localField, String foreignField, String as, int page, int size, Class<T> projection) {
         return get().lookup(from, localField, foreignField, as, page, size, projection);
     }
 

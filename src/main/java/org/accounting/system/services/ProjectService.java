@@ -11,11 +11,9 @@ import org.accounting.system.dtos.installation.InstallationResponseDto;
 import org.accounting.system.dtos.pagination.PageResource;
 import org.accounting.system.dtos.project.ProjectResponseDto;
 import org.accounting.system.entities.Project;
-import org.accounting.system.entities.acl.AccessControl;
 import org.accounting.system.entities.projections.HierarchicalRelationProjection;
 import org.accounting.system.entities.projections.InstallationProjection;
 import org.accounting.system.entities.projections.MetricProjection;
-import org.accounting.system.entities.projections.ProjectionQuery;
 import org.accounting.system.enums.Collection;
 import org.accounting.system.enums.Operation;
 import org.accounting.system.mappers.InstallationMapper;
@@ -93,7 +91,7 @@ public class ProjectService {
 
         var projection = projectRepository.fetchAllMetrics(id, page, size);
 
-        return new PageResource<>(projection, projection.list, uriInfo);
+        return new PageResource<>(projection, projection.list(), uriInfo);
     }
 
     /**
@@ -114,9 +112,9 @@ public class ProjectService {
 
     public PageResource<InstallationResponseDto> findInstallationsByProject(String projectId, int page, int size, UriInfo uriInfo){
 
-        ProjectionQuery<InstallationProjection> projectionQuery = hierarchicalRelationRepository.findInstallationsByProject(projectId, "MetricDefinition", "unit_of_access", "_id", "unit_of_access", page, size, InstallationProjection.class);
+        PanacheQuery<InstallationProjection> projectionQuery = hierarchicalRelationRepository.findInstallationsByProject(projectId, "MetricDefinition", "unit_of_access", "_id", "unit_of_access", page, size, InstallationProjection.class);
 
-        return new PageResource<>(projectionQuery, InstallationMapper.INSTANCE.installationProjectionsToResponse(projectionQuery.list), uriInfo);
+        return new PageResource<>(projectionQuery, InstallationMapper.INSTANCE.installationProjectionsToResponse(projectionQuery.list()), uriInfo);
     }
     public  PageResource<String> searchProject(String json, int page, int size, UriInfo uriInfo) throws  NoSuchFieldException, org.json.simple.parser.ParseException {
 
@@ -129,14 +127,11 @@ public class ProjectService {
 
     }
 
-    public PageResource<String> getAll( int page, int size, UriInfo uriInfo) throws NoSuchFieldException, org.json.simple.parser.ParseException, JsonProcessingException {
+    public PageResource<String> getAll(int page, int size, UriInfo uriInfo) throws NoSuchFieldException, org.json.simple.parser.ParseException, JsonProcessingException {
 
-        var ids= accessControlRepository.findByWhoAndCollection(tokenIntrospection.getJsonObject().getString(id),Collection.Project).stream().filter(projects ->
-                roleService.hasRoleAccess(projects.getRoles(), Collection.Project, Operation.READ)).map(AccessControl::getEntity).collect(Collectors.toList());
+       var projectionQuery = projectRepository.fetchAll(page, size);
 
-        PanacheQuery<Project> projectionQuery = projectRepository.fetchAll(ids, page, size);
-
-        return new PageResource<>(projectionQuery, projectToJson(projectionQuery.list().stream().map(Project::getId).collect(Collectors.toList())), uriInfo);
+       return new PageResource<>(projectionQuery, projectToJson(projectionQuery.list().stream().map(Project::getId).collect(Collectors.toList())), uriInfo);
     }
 
     private List<String> projectToJson(List<String> ids) {

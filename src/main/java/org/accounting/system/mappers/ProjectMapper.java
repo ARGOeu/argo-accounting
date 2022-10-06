@@ -1,13 +1,17 @@
 package org.accounting.system.mappers;
 
+import org.accounting.system.beans.RequestInformation;
 import org.accounting.system.clients.responses.openaire.OpenAireProject;
 import org.accounting.system.dtos.project.ProjectResponseDto;
 import org.accounting.system.entities.Project;
 import org.apache.commons.lang3.StringUtils;
+import org.mapstruct.AfterMapping;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
+import org.mapstruct.MappingTarget;
 import org.mapstruct.factory.Mappers;
 
+import javax.enterprise.inject.spi.CDI;
 import java.util.List;
 import java.util.Objects;
 
@@ -30,4 +34,10 @@ public interface ProjectMapper {
     ProjectResponseDto projectToDto(Project project);
 
     List<ProjectResponseDto> projectsToDto(List<Project> project);
+
+    @AfterMapping
+    default void setCreatorId(OpenAireProject source, @MappingTarget Project project) {
+        RequestInformation requestInformation = CDI.current().select(RequestInformation.class).get();
+        project.setCreatorId(requestInformation.getSubjectOfToken());
+    }
 }

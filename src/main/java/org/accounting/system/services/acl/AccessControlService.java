@@ -118,15 +118,17 @@ public class AccessControlService {
      */
     public RoleAccessControlResponseDto modifyPermission(String id, String who, RoleAccessControlUpdateDto updateDto, Collection collection) {
 
-        var accessControl = accessControlRepository.findByWhoAndCollectionAndEntity(who, collection, id);
+        var optional = accessControlRepository.findByWhoAndCollectionAndEntity(who, collection, id);
 
-        accessControl.orElseThrow(() -> new NotFoundException("There is no Access Control."));
+        optional.orElseThrow(() -> new NotFoundException("There is no Access Control."));
 
-        AccessControlMapper.INSTANCE.updateRoleAccessControlFromDto(updateDto, accessControl.get());
+        var accessControl = optional.get();
 
-        accessControlRepository.update(accessControl.get());
+        AccessControlMapper.INSTANCE.updateRoleAccessControlFromDto(updateDto, accessControl);
 
-        return AccessControlMapper.INSTANCE.roleAccessControlToResponse(accessControl.get());
+        accessControlRepository.update(accessControl);
+
+        return AccessControlMapper.INSTANCE.roleAccessControlToResponse(accessControl);
     }
 
 //    /**
