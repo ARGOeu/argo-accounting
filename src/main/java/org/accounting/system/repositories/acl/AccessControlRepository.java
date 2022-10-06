@@ -74,6 +74,18 @@ public class AccessControlRepository implements PanacheMongoRepository<RoleAcces
         return find("entity = ?1 and collection = ?2", id, collection).page(Page.of(page, size));
     }
 
+    /**
+     * Executes a query to retrieve all Access Controls that have been created for the given entity id and user.
+     *
+     * @param who The user for whom permissions will be returned.
+     * @param id The entity for which permissions will be returned.
+     * @param collection The collection that the entity belongs to.
+     */
+    public PanacheQuery<RoleAccessControl> findAllByWhoAndEntityAndCollection(String who,String id, Collection collection){
+
+        return find("who = ?1 and entity = ?2 and collection = ?3",who, id, collection);
+    }
+
 
     /**
      * Returns a specific Collection entity to which a client may has access.
