@@ -10,7 +10,6 @@ import org.accounting.system.dtos.provider.UpdateProviderRequestDto;
 import org.accounting.system.entities.HierarchicalRelation;
 import org.accounting.system.entities.projections.InstallationProjection;
 import org.accounting.system.entities.projections.MetricProjection;
-import org.accounting.system.entities.projections.ProjectionQuery;
 import org.accounting.system.entities.provider.Provider;
 import org.accounting.system.exceptions.ConflictException;
 import org.accounting.system.mappers.InstallationMapper;
@@ -183,20 +182,20 @@ public class ProviderService {
 
         var projection = providerRepository.fetchAllMetrics(projectId + HierarchicalRelation.PATH_SEPARATOR + providerId, page, size);
 
-        return new PageResource<>(projection, projection.list, uriInfo);
+        return new PageResource<>(projection, projection.list(), uriInfo);
     }
 
     public PageResource<InstallationResponseDto> findInstallationsByProvider(String projectId, String providerId, int page, int size, UriInfo uriInfo){
 
-        ProjectionQuery<InstallationProjection> projectionQuery = hierarchicalRelationRepository.findInstallationsByProvider(projectId, providerId, "MetricDefinition", "unit_of_access", "_id", "unit_of_access", page, size, InstallationProjection.class);
+        PanacheQuery<InstallationProjection> projectionQuery = hierarchicalRelationRepository.findInstallationsByProvider(projectId, providerId, "MetricDefinition", "unit_of_access", "_id", "unit_of_access", page, size, InstallationProjection.class);
 
-        return new PageResource<>(projectionQuery, InstallationMapper.INSTANCE.installationProjectionsToResponse(projectionQuery.list), uriInfo);
+        return new PageResource<>(projectionQuery, InstallationMapper.INSTANCE.installationProjectionsToResponse(projectionQuery.list()), uriInfo);
     }
+
     public  PageResource< ProviderResponseDto> searchProvider(String json, int page, int size, UriInfo uriInfo) throws  NoSuchFieldException, org.json.simple.parser.ParseException {
 
         Bson query=queryParser.parseFile(json);
         PanacheQuery< Provider> projectionQuery = providerRepository.search(query,page,size);
         return new PageResource<>(projectionQuery, ProviderMapper.INSTANCE.providersToResponse(projectionQuery.list()), uriInfo);
     }
-
 }

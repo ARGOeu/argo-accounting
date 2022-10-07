@@ -1,12 +1,10 @@
 package org.accounting.system.repositories.modulators;
 
-import com.mongodb.client.model.Filters;
 import io.quarkus.mongodb.panache.PanacheMongoRepository;
 import io.quarkus.mongodb.panache.PanacheQuery;
 import io.quarkus.panache.common.Page;
 import org.accounting.system.entities.Entity;
 import org.accounting.system.entities.acl.AccessControl;
-import org.accounting.system.entities.projections.ProjectionQuery;
 import org.accounting.system.enums.ApiMessage;
 import org.bson.Document;
 import org.bson.conversions.Bson;
@@ -105,7 +103,7 @@ public abstract class AccessModulator<E extends Entity, I, A extends AccessContr
         return Collections.emptyList();
     }
 
-    public <T> ProjectionQuery<T> lookup(String from, String localField, String foreignField, String as, int page, int size, Class<T> projection) {
+    public <T> PanacheQuery<T> lookup(String from, String localField, String foreignField, String as, int page, int size, Class<T> projection) {
         throw new ForbiddenException(ApiMessage.NO_PERMISSION.message);
     }
 
@@ -130,10 +128,5 @@ public abstract class AccessModulator<E extends Entity, I, A extends AccessContr
 
     public PanacheQuery<E> search(Bson query) {
         return find(Document.parse(query.toBsonDocument().toJson()));
-    }
-    public PanacheQuery<E> fetchAll(List<String> ids, int page, int size) {
-
-        Bson bson = Filters.in("_id", ids);
-        return find(Document.parse(bson.toBsonDocument().toJson())).page(Page.of(page, size));
     }
 }

@@ -1,13 +1,13 @@
 package org.accounting.system.repositories.project;
 
 import com.pivovarit.function.ThrowingBiFunction;
+import io.quarkus.mongodb.panache.PanacheQuery;
 import org.accounting.system.clients.ProjectClient;
 import org.accounting.system.entities.Project;
 import org.accounting.system.entities.acl.RoleAccessControl;
 import org.accounting.system.entities.projections.HierarchicalRelationProjection;
 import org.accounting.system.entities.projections.InstallationProjection;
 import org.accounting.system.entities.projections.MetricProjection;
-import org.accounting.system.entities.projections.ProjectionQuery;
 import org.accounting.system.enums.Collection;
 import org.accounting.system.enums.Operation;
 import org.accounting.system.mappers.ProjectMapper;
@@ -90,7 +90,7 @@ public class ProjectModulator extends AbstractModulator<Project, String, RoleAcc
 //        }
     }
 
-    public ProjectionQuery<InstallationProjection> lookupInstallations(String from, String localField, String foreignField, String as, int page, int size, Class<InstallationProjection> projection) {
+    public PanacheQuery<InstallationProjection> lookupInstallations(String from, String localField, String foreignField, String as, int page, int size, Class<InstallationProjection> projection) {
 
         return projectAccessAlwaysRepository.lookupInstallations(from, localField, foreignField, as, page, size, projection);
 
@@ -104,7 +104,7 @@ public class ProjectModulator extends AbstractModulator<Project, String, RoleAcc
 //        }
     }
 
-    public ProjectionQuery<MetricProjection> fetchAllMetrics(String id, int page, int size){
+    public PanacheQuery<MetricProjection> fetchAllMetrics(String id, int page, int size){
 
         return projectAccessAlwaysRepository.fetchAllMetrics(id, page, size);
 
@@ -155,6 +155,4 @@ public class ProjectModulator extends AbstractModulator<Project, String, RoleAcc
             return ProjectMapper.INSTANCE.openAireResponseToProject(responseFromOpenAire);
         };
     }
-
-
 }

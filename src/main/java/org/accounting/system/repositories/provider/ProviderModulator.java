@@ -1,10 +1,10 @@
 package org.accounting.system.repositories.provider;
 
+import io.quarkus.mongodb.panache.PanacheQuery;
 import org.accounting.system.dtos.provider.UpdateProviderRequestDto;
 import org.accounting.system.entities.acl.RoleAccessControl;
 import org.accounting.system.entities.projections.InstallationProjection;
 import org.accounting.system.entities.projections.MetricProjection;
-import org.accounting.system.entities.projections.ProjectionQuery;
 import org.accounting.system.entities.provider.Provider;
 import org.accounting.system.enums.Collection;
 import org.accounting.system.enums.Operation;
@@ -55,12 +55,12 @@ public class ProviderModulator extends AbstractModulator<Provider, String, RoleA
         return super.updateEntity(entity, id);
     }
 
-    public ProjectionQuery<InstallationProjection> lookupInstallations(String from, String localField, String foreignField, String as, int page, int size, Class<InstallationProjection> projection) {
+    public PanacheQuery<InstallationProjection> lookupInstallations(String from, String localField, String foreignField, String as, int page, int size, Class<InstallationProjection> projection) {
 
         throw new ForbiddenException("This operation has not been implemented yet.");
     }
 
-    public ProjectionQuery<MetricProjection> fetchAllMetrics(String id, int page, int size){
+    public PanacheQuery<MetricProjection> fetchAllMetrics(String id, int page, int size){
 
         return providerAccessAlwaysRepository.fetchAllMetrics(id, page, size);
 

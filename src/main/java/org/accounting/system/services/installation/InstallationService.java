@@ -176,7 +176,7 @@ public class InstallationService {
 
         var projection = installationRepository.fetchAllMetrics(installation.getProject() + HierarchicalRelation.PATH_SEPARATOR + installation.getOrganisation() + HierarchicalRelation.PATH_SEPARATOR + id, page, size);
 
-        return new PageResource<>(projection, projection.list, uriInfo);
+        return new PageResource<>(projection, projection.list(), uriInfo);
     }
 
     public PageResource< InstallationResponseDto> searchInstallation(String json, int page, int size, UriInfo uriInfo) throws NoSuchFieldException, org.json.simple.parser.ParseException {

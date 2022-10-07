@@ -1,6 +1,7 @@
 package org.accounting.system.services.client;
 
 import io.quarkus.mongodb.panache.PanacheQuery;
+import io.quarkus.panache.common.Page;
 import org.accounting.system.dtos.client.ClientResponseDto;
 import org.accounting.system.dtos.pagination.PageResource;
 import org.accounting.system.entities.client.Client;
@@ -72,7 +73,9 @@ public class ClientService {
      */
     public PageResource<ClientResponseDto> findAllClientsPageable(int page, int size, UriInfo uriInfo){
 
-        PanacheQuery<Client> panacheQuery = clientRepository.findAllPageable(page, size);
+        PanacheQuery<Client> panacheQuery = clientRepository
+                .find("systemAdmin = ?1 ", false)
+                .page(Page.of(page, size));
 
         return new PageResource<>(panacheQuery, ClientMapper.INSTANCE.clientsToResponse(panacheQuery.list()), uriInfo);
     }

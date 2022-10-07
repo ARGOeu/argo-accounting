@@ -1,11 +1,12 @@
 package org.accounting.system.repositories.acl;
 
-import io.quarkus.mongodb.panache.PanacheMongoRepository;
 import io.quarkus.mongodb.panache.PanacheQuery;
 import io.quarkus.panache.common.Page;
 import org.accounting.system.entities.acl.AccessControl;
 import org.accounting.system.entities.acl.RoleAccessControl;
 import org.accounting.system.enums.Collection;
+import org.accounting.system.repositories.modulators.AbstractAccessModulator;
+import org.bson.types.ObjectId;
 
 import javax.enterprise.context.ApplicationScoped;
 import java.util.List;
@@ -20,7 +21,7 @@ import java.util.Set;
  *
  */
 @ApplicationScoped
-public class AccessControlRepository implements PanacheMongoRepository<RoleAccessControl> {
+public class AccessControlRepository extends AbstractAccessModulator<RoleAccessControl, ObjectId> {
 
 //    /**
 //     * Returns a specific Collection entity to which a client may has {permission} access.
@@ -90,7 +91,7 @@ public class AccessControlRepository implements PanacheMongoRepository<RoleAcces
     /**
      * Returns a specific Collection entity to which a client may has access.
      *
-     * @param who the one to whom the permission may be granted
+     * @param who The one to whom the permission may be granted
      * @param collection The name of the Collection
      * @return a list of Access Controls that may grant access to a client in a particular entity
      */
@@ -109,6 +110,7 @@ public class AccessControlRepository implements PanacheMongoRepository<RoleAcces
                 accessControl.setCollection(Collection.Project);
                 accessControl.setEntity(project);
                 accessControl.setWho(clientId);
+                accessControl.setCreatorId(clientId);
 
                 persist(accessControl);
             } catch (Exception e){

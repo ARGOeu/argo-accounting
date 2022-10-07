@@ -5,12 +5,14 @@ import com.mongodb.client.MongoCollection;
 import com.mongodb.client.model.Aggregates;
 import com.mongodb.client.model.Field;
 import com.mongodb.client.model.Filters;
+import io.quarkus.mongodb.panache.PanacheQuery;
+import io.quarkus.panache.common.Page;
 import liquibase.repackaged.org.apache.commons.collections4.CollectionUtils;
 import org.accounting.system.entities.HierarchicalRelation;
 import org.accounting.system.entities.projections.HierarchicalRelationProjection;
 import org.accounting.system.entities.projections.InstallationProjection;
 import org.accounting.system.entities.projections.MetricProjection;
-import org.accounting.system.entities.projections.ProjectionQuery;
+import org.accounting.system.entities.projections.MongoQuery;
 import org.accounting.system.repositories.installation.InstallationRepository;
 import org.accounting.system.repositories.metric.MetricRepository;
 import org.accounting.system.repositories.modulators.AbstractAccessModulator;
@@ -83,7 +85,7 @@ public class HierarchicalRelationRepository extends AbstractAccessModulator<Hier
         return build(document, find(Document.parse(Filters.regex("_id", id + "[.\\s]").toBsonDocument().toJson())).list());
     }
 
-    public ProjectionQuery<InstallationProjection> findInstallationsByProjectId(String project, String from, String localField, String foreignField, String as, int page, int size, Class<InstallationProjection> projection){
+    public PanacheQuery<InstallationProjection> findInstallationsByProjectId(String project, String from, String localField, String foreignField, String as, int page, int size, Class<InstallationProjection> projection){
 
         Bson eq = Aggregates.match(Filters.regex("project", project));
 
@@ -95,7 +97,7 @@ public class HierarchicalRelationRepository extends AbstractAccessModulator<Hier
                 .aggregate(List
                         .of(lookup, eq,  Aggregates.skip(size * (page)), Aggregates.limit(size)), InstallationProjection.class).into(new ArrayList<>());
 
-        var projectionQuery = new ProjectionQuery<InstallationProjection>();
+        var projectionQuery = new MongoQuery<InstallationProjection>();
 
         Document count = installationRepository
                 .getMongoCollection()
@@ -106,11 +108,12 @@ public class HierarchicalRelationRepository extends AbstractAccessModulator<Hier
         projectionQuery.index = page;
         projectionQuery.size = size;
         projectionQuery.count = count == null ? 0L : Long.parseLong(count.get("count").toString());
+        projectionQuery.page = Page.of(page, size);
 
         return projectionQuery;
     }
 
-    public ProjectionQuery<InstallationProjection> findInstallationsByProject(String project, String from, String localField, String foreignField, String as, int page, int size, Class<InstallationProjection> projection){
+    public PanacheQuery<InstallationProjection> findInstallationsByProject(String project, String from, String localField, String foreignField, String as, int page, int size, Class<InstallationProjection> projection){
 
         Bson eq = Aggregates.match(Filters.eq("project", project));
 
@@ -122,7 +125,7 @@ public class HierarchicalRelationRepository extends AbstractAccessModulator<Hier
                 .aggregate(List
                         .of(lookup, eq,  Aggregates.skip(size * (page)), Aggregates.limit(size)), InstallationProjection.class).into(new ArrayList<>());
 
-        var projectionQuery = new ProjectionQuery<InstallationProjection>();
+        var projectionQuery = new MongoQuery<InstallationProjection>();
 
         Document count = installationRepository
                 .getMongoCollection()
@@ -133,6 +136,7 @@ public class HierarchicalRelationRepository extends AbstractAccessModulator<Hier
         projectionQuery.index = page;
         projectionQuery.size = size;
         projectionQuery.count = count == null ? 0L : Long.parseLong(count.get("count").toString());
+        projectionQuery.page = Page.of(page, size);
 
         return projectionQuery;
     }
@@ -165,7 +169,7 @@ public class HierarchicalRelationRepository extends AbstractAccessModulator<Hier
                         .of(lookup, eq), InstallationProjection.class).into(new ArrayList<>());
     }
 
-    public ProjectionQuery<InstallationProjection> findInstallationsByProvider(String project, String provider, String from, String localField, String foreignField, String as, int page, int size, Class<InstallationProjection> projection){
+    public PanacheQuery<InstallationProjection> findInstallationsByProvider(String project, String provider, String from, String localField, String foreignField, String as, int page, int size, Class<InstallationProjection> projection){
 
         Bson eq = Aggregates.match(Filters.and(Filters.eq("project", project), Filters.eq("organisation", provider)));
 
@@ -177,7 +181,7 @@ public class HierarchicalRelationRepository extends AbstractAccessModulator<Hier
                 .aggregate(List
                         .of(lookup, eq,  Aggregates.skip(size * (page)), Aggregates.limit(size)), InstallationProjection.class).into(new ArrayList<>());
 
-        var projectionQuery = new ProjectionQuery<InstallationProjection>();
+        var projectionQuery = new MongoQuery<InstallationProjection>();
 
         Document count = installationRepository
                 .getMongoCollection()
@@ -188,6 +192,7 @@ public class HierarchicalRelationRepository extends AbstractAccessModulator<Hier
         projectionQuery.index = page;
         projectionQuery.size = size;
         projectionQuery.count = count == null ? 0L : Long.parseLong(count.get("count").toString());
+        projectionQuery.page = Page.of(page, size);
 
         return projectionQuery;
     }
@@ -208,7 +213,7 @@ public class HierarchicalRelationRepository extends AbstractAccessModulator<Hier
 
     }
 
-    public ProjectionQuery<MetricProjection> findByExternalId(final String externalId, int page, int size) {
+    public PanacheQuery<MetricProjection> findByExternalId(final String externalId, int page, int size) {
         //Bson regex = Aggregates.match(Filters.regex("resource_id", externalId + "[.\\s]"));
         Bson regex = Aggregates.match(Filters.regex("resource_id", "\\b" + externalId + "\\b"+"(?![-])"));
 
@@ -222,12 +227,13 @@ public class HierarchicalRelationRepository extends AbstractAccessModulator<Hier
                 .aggregate(List
                         .of(regex, Aggregates.count())).first();
 
-        var projectionQuery = new ProjectionQuery<MetricProjection>();
+        var projectionQuery = new MongoQuery<MetricProjection>();
 
         projectionQuery.list = projections;
         projectionQuery.index = page;
         projectionQuery.size = size;
         projectionQuery.count = count == null ? 0L : Long.parseLong(count.get("count").toString());
+        projectionQuery.page = Page.of(page, size);
 
         return projectionQuery;
     }
