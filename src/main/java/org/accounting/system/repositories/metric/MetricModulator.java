@@ -4,6 +4,7 @@ import org.accounting.system.dtos.metric.UpdateMetricRequestDto;
 import org.accounting.system.entities.Metric;
 import org.accounting.system.entities.acl.PermissionAccessControl;
 import org.accounting.system.mappers.MetricMapper;
+import org.accounting.system.repositories.HierarchicalRelationRepository;
 import org.accounting.system.repositories.modulators.AbstractModulator;
 import org.bson.types.ObjectId;
 
@@ -19,6 +20,8 @@ public class MetricModulator extends AbstractModulator<Metric, ObjectId, Permiss
     @Inject
     MetricAccessAlwaysRepository metricAccessAlwaysRepository;
 
+    @Inject
+    HierarchicalRelationRepository hierarchicalRelationRepository;
     /**
      * This method is responsible for updating a part or all attributes of existing Metric.
      *
@@ -46,4 +49,5 @@ public class MetricModulator extends AbstractModulator<Metric, ObjectId, Permiss
     public MetricAccessEntityRepository entity() {
         return metricAccessEntityRepository;
     }
+
 }

@@ -5,6 +5,7 @@ import io.quarkus.mongodb.panache.PanacheQuery;
 import io.quarkus.panache.common.Page;
 import io.quarkus.panache.common.Sort;
 import org.accounting.system.entities.Metric;
+import org.bson.Document;
 import org.bson.types.ObjectId;
 
 import javax.enterprise.context.ApplicationScoped;
@@ -17,10 +18,10 @@ import java.util.stream.Collectors;
  * {@link Metric} data stored in the mongo database. More specifically, it encapsulates the queries
  * that can be performed on the {@link Metric} collection. It is also responsible for mapping
  * the data from the storage format to the {@link Metric}.
- *
+ * <p>
  * Since {@link MetricRepository this repository} extends {@link MetricModulator},
  * it has access to all queries, which determine the degree of accessibility of the data.
- *
+ * <p>
  * Also, all the operations that are defined on {@link PanacheMongoRepository} are available on this repository.
  * In this repository, we essentially define the queries that will be executed on the database without any restrictions.
  */
@@ -68,7 +69,20 @@ public class MetricRepository extends MetricModulator {
         return find("metricDefinitionId", Sort.by("metricDefinitionId"), metricDefinitionId).page(Page.of(page, size));
     }
 
-//    public List<Metric> search(Bson query) {
-//        return find(Document.parse(query.toBsonDocument().toJson())).stream().collect(Collectors.toList());
-//    }
+    public List<Metric> findMetricsOfInstallations(List<String> installationsIds) {
+   
+       var queries=installationsIds.stream().map(id -> {
+                    Document regQuery = new Document();
+                    regQuery.append("$regex", id);
+                    Document findQuery = new Document();
+                 return   findQuery.append("resource_id", regQuery);
+                    //queries.add(findQuery);
+                }
+        ).collect(Collectors.toList());
+
+        Document findAll = new Document();
+        findAll.append("$or", queries);
+        return find(findAll).stream().collect(Collectors.toList());
+    }
+
 }
