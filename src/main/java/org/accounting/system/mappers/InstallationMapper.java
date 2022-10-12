@@ -33,11 +33,12 @@ public interface InstallationMapper {
     @Mapping( target="id", expression="java(installation.getId().toString())")
     List<InstallationResponseDto> installationProjectionsToResponse(List<InstallationProjection> installations);
 
-    @Mapping( target="id", expression="java(installation.getId().toString())")
+    //@Mapping( target="id", expression="java(installation.getId().toString())")
     InstallationResponseDto installationProjectionToResponse(InstallationProjection installation);
 
-    @Mapping(target = "project", expression = "java(StringUtils.isNotEmpty(request.project) ? request.project : installation.getProject())")
-    @Mapping(target = "organisation", expression = "java(StringUtils.isNotEmpty(request.organisation) ? request.organisation : installation.getOrganisation())")
+    @Mapping(target = "project", ignore = true)
+    @Mapping(target = "organisation", ignore = true)
+    @Mapping(target = "id", ignore = true)
     @Mapping(target = "infrastructure", expression = "java(StringUtils.isNotEmpty(request.infrastructure) ? request.infrastructure : installation.getInfrastructure())")
     @Mapping(target = "installation", expression = "java(StringUtils.isNotEmpty(request.installation) ? request.installation : installation.getInstallation())")
     @Mapping(target = "unitOfAccess", expression = "java(StringUtils.isNotEmpty(request.unitOfAccess) ? new ObjectId(request.unitOfAccess) : installation.getUnitOfAccess())")

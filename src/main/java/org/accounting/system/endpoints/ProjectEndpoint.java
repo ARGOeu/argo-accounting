@@ -2,13 +2,11 @@ package org.accounting.system.endpoints;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.module.SimpleModule;
 import io.quarkus.security.Authenticated;
 import org.accounting.system.constraints.AccessProject;
 import org.accounting.system.constraints.AccessProvider;
 import org.accounting.system.constraints.NotFoundEntity;
 import org.accounting.system.dtos.InformativeResponse;
-import org.accounting.system.dtos.acl.permission.PermissionAccessControlResponseDto;
 import org.accounting.system.dtos.acl.role.RoleAccessControlRequestDto;
 import org.accounting.system.dtos.acl.role.RoleAccessControlResponseDto;
 import org.accounting.system.dtos.acl.role.RoleAccessControlUpdateDto;
@@ -16,19 +14,10 @@ import org.accounting.system.dtos.installation.InstallationResponseDto;
 import org.accounting.system.dtos.pagination.PageResource;
 import org.accounting.system.dtos.project.AssociateProjectProviderRequestDto;
 import org.accounting.system.dtos.project.DissociateProjectProviderRequestDto;
-import org.accounting.system.dtos.project.ProjectResponseDto;
-import org.accounting.system.entities.HierarchicalRelation;
-import org.accounting.system.entities.projections.HierarchicalRelationProjection;
 import org.accounting.system.entities.projections.MetricProjection;
-import org.accounting.system.enums.ApiMessage;
+import org.accounting.system.entities.projections.ProjectProjection;
 import org.accounting.system.enums.Collection;
-import org.accounting.system.enums.RelationType;
-import org.accounting.system.repositories.HierarchicalRelationRepository;
 import org.accounting.system.repositories.client.ClientRepository;
-import org.accounting.system.repositories.project.ProjectRepository;
-import org.accounting.system.repositories.provider.ProviderRepository;
-import org.accounting.system.serializer.HierarchicalRelationSerializer;
-import org.accounting.system.serializer.PageResourceMixIn;
 import org.accounting.system.services.HierarchicalRelationService;
 import org.accounting.system.services.ProjectService;
 import org.accounting.system.services.ProviderService;
@@ -50,6 +39,8 @@ import org.eclipse.microprofile.openapi.annotations.tags.Tag;
 
 import javax.inject.Inject;
 import javax.validation.Valid;
+import javax.validation.constraints.Max;
+import javax.validation.constraints.Min;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 import javax.ws.rs.BadRequestException;
@@ -74,7 +65,6 @@ import static org.accounting.system.enums.Operation.ACL;
 import static org.accounting.system.enums.Operation.ASSOCIATE;
 import static org.accounting.system.enums.Operation.DISSOCIATE;
 import static org.accounting.system.enums.Operation.READ;
-import static org.accounting.system.enums.Operation.REGISTER;
 import static org.eclipse.microprofile.openapi.annotations.enums.ParameterIn.QUERY;
 
 @Path("/projects")
@@ -92,12 +82,6 @@ public class ProjectEndpoint {
     ProjectService projectService;
 
     @Inject
-    ProjectRepository projectRepository;
-
-    @Inject
-    ProviderRepository providerRepository;
-
-    @Inject
     HierarchicalRelationService hierarchicalRelationService;
 
     @Inject
@@ -111,66 +95,6 @@ public class ProjectEndpoint {
 
     @Inject
     RoleService roleService;
-
-    @Inject
-    HierarchicalRelationRepository hierarchicalRelationRepository;
-    @Tag(name = "Project")
-    @Operation(
-            summary = "Registration of a Project in the Accounting System API.",
-            description = "The Accounting System communicates with Open Aire to retrieve the necessary information of a Project. " +
-                    "Subsequently, it keeps specific information from the Open Aire response and stores that information in the database. This operation returns " +
-                    "a Project as it is stored in the Accounting System API.")
-    @APIResponse(
-            responseCode = "200",
-            description = "The corresponding Project.",
-            content = @Content(schema = @Schema(
-                    type = SchemaType.OBJECT,
-                    implementation = ProjectResponseDto.class)))
-    @APIResponse(
-            responseCode = "401",
-            description = "Client has not been authenticated.",
-            content = @Content(schema = @Schema(
-                    type = SchemaType.OBJECT,
-                    implementation = InformativeResponse.class)))
-    @APIResponse(
-            responseCode = "403",
-            description = "The authenticated client is not permitted to perform the requested operation.",
-            content = @Content(schema = @Schema(
-                    type = SchemaType.OBJECT,
-                    implementation = InformativeResponse.class)))
-    @APIResponse(
-            responseCode = "404",
-            description = "Project has not been found.",
-            content = @Content(schema = @Schema(
-                    type = SchemaType.OBJECT,
-                    implementation = InformativeResponse.class)))
-    @APIResponse(
-            responseCode = "500",
-            description = "Internal Server Errors.",
-            content = @Content(schema = @Schema(
-                    type = SchemaType.OBJECT,
-                    implementation = InformativeResponse.class)))
-
-    @POST
-    @Path("/{id}")
-    @Produces(value = MediaType.APPLICATION_JSON)
-    @SecurityRequirement(name = "Authentication")
-    public Response save(
-            @Parameter(
-                    description = "The Project to be registered.",
-                    required = true,
-                    example = "447535",
-                    schema = @Schema(type = SchemaType.STRING))
-            @Valid
-            @AccessProject(collection = Collection.Project, operation = REGISTER, checkIfExists = false)
-            @PathParam("id") String id) {
-
-        var response = projectService.save(id);
-        HierarchicalRelation project = new HierarchicalRelation(id, RelationType.PROJECT);
-
-        hierarchicalRelationRepository.save(project, null);
-        return Response.ok().entity(response).build();
-    }
 
     @Tag(name = "Metric")
     @Operation(
@@ -217,14 +141,11 @@ public class ProjectEndpoint {
             @Valid
             @AccessProject(collection = Collection.Metric, operation = READ) String id,
             @Parameter(name = "page", in = QUERY,
-                    description = "Indicates the page number. Page number must be >= 1.") @DefaultValue("1") @QueryParam("page") int page,
+                    description = "Indicates the page number. Page number must be >= 1.") @DefaultValue("1") @Min(value = 1, message = "Page number must be >= 1.") @QueryParam("page") int page,
             @Parameter(name = "size", in = QUERY,
-                    description = "The page size.") @DefaultValue("10") @QueryParam("size") int size,
+                    description = "The page size.") @DefaultValue("10") @Min(value = 1, message = "Page size must be between 1 and 100.")
+            @Max(value = 100, message = "Page size must be between 1 and 100.") @QueryParam("size") int size,
             @Context UriInfo uriInfo) {
-
-        if (page < 1) {
-            throw new BadRequestException(ApiMessage.PAGE_NUMBER.message);
-        }
 
         var response = projectService.fetchAllMetrics(id, page - 1, size, uriInfo);
 
@@ -281,14 +202,11 @@ public class ProjectEndpoint {
                     schema = @Schema(type = SchemaType.STRING))
             @PathParam("providerId") String providerId,
             @Parameter(name = "page", in = QUERY,
-                    description = "Indicates the page number. Page number must be >= 1.") @DefaultValue("1") @QueryParam("page") int page,
+                    description = "Indicates the page number. Page number must be >= 1.") @DefaultValue("1") @Min(value = 1, message = "Page number must be >= 1.") @QueryParam("page") int page,
             @Parameter(name = "size", in = QUERY,
-                    description = "The page size.") @DefaultValue("10") @QueryParam("size") int size,
+                    description = "The page size.") @DefaultValue("10") @Min(value = 1, message = "Page size must be between 1 and 100.")
+            @Max(value = 100, message = "Page size must be between 1 and 100.") @QueryParam("size") int size,
             @Context UriInfo uriInfo) {
-
-        if (page < 1) {
-            throw new BadRequestException(ApiMessage.PAGE_NUMBER.message);
-        }
 
         var response = providerService.fetchAllMetrics(projectId, providerId, page - 1, size, uriInfo);
 
@@ -416,6 +334,7 @@ public class ProjectEndpoint {
                     implementation = InformativeResponse.class)))
     @SecurityRequirement(name = "Authentication")
 
+    //TODO We have to generate a PATCH method as well
     @POST
     @Path("/{id}/dissociate")
     @Produces(value = MediaType.APPLICATION_JSON)
@@ -447,32 +366,7 @@ public class ProjectEndpoint {
             description = "The corresponding Project hierarchical structure.",
             content = @Content(schema = @Schema(
                     type = SchemaType.OBJECT,
-                    implementation = Object.class),
-                    example = "{\n" +
-                            "    \"project\": \"101017567\",\n" +
-                            "    \"providers\": [\n" +
-                            "        {\n" +
-                            "            \"provider\": \"bioexcel\",\n" +
-                            "            \"installations\": []\n" +
-                            "        },\n" +
-                            "        {\n" +
-                            "            \"provider\": \"grnet\",\n" +
-                            "            \"installations\": [\n" +
-                            "                {\n" +
-                            "                    \"installation\": \"629eff3a7b0f5d02ab734879\"\n" +
-                            "                }\n" +
-                            "            ]\n" +
-                            "        },\n" +
-                            "        {\n" +
-                            "            \"provider\": \"osmooc\",\n" +
-                            "            \"installations\": []\n" +
-                            "        },\n" +
-                            "        {\n" +
-                            "            \"provider\": \"sites\",\n" +
-                            "            \"installations\": []\n" +
-                            "        }\n" +
-                            "    ]\n" +
-                            "}"))
+                    implementation = ProjectProjection.class)))
     @APIResponse(
             responseCode = "401",
             description = "Client has not been authenticated.",
@@ -510,21 +404,11 @@ public class ProjectEndpoint {
                     schema = @Schema(type = SchemaType.STRING))
             @Valid
             @AccessProject(collection = Collection.Project, operation = READ)
-            @PathParam("id") String id) throws JsonProcessingException {
+            @PathParam("id") String id) {
 
-        var response = projectService.hierarchicalStructure(id);
-//
-//        if (response.isEmpty()) {
-//            throw new NotFoundException("There are no any Provider or Installation correlating with the Project: " + id);
-//        }
+        var response = projectService.getById(id);
 
-        SimpleModule module = new SimpleModule();
-        module.addSerializer(new HierarchicalRelationSerializer(HierarchicalRelationProjection.class));
-        objectMapper.registerModule(module);
-
-        String serialized = objectMapper.writeValueAsString(response.get(0));
-
-        return Response.ok().entity(serialized).build();
+        return Response.ok().entity(response).build();
     }
 
     @Tag(name = "Project")
@@ -608,7 +492,11 @@ public class ProjectEndpoint {
             roleService.checkIfRoleExists(name);
         }
 
-        var informativeResponse = accessControlService.grantPermission(projectId, who, roleAccessControlRequestDto, Collection.Project);
+        projectService.grantPermission(who, roleAccessControlRequestDto, projectId);
+
+        var informativeResponse = new InformativeResponse();
+        informativeResponse.message = "Project Access Control was successfully created.";
+        informativeResponse.code = 200;
 
         return Response.ok().entity(informativeResponse).build();
     }
@@ -656,16 +544,13 @@ public class ProjectEndpoint {
             @AccessProject(collection = Collection.Installation, operation = READ)
             @PathParam("project_id") String projectId,
             @Parameter(name = "page", in = QUERY,
-                    description = "Indicates the page number. Page number must be >= 1.") @DefaultValue("1") @QueryParam("page") int page,
+                    description = "Indicates the page number. Page number must be >= 1.") @DefaultValue("1") @Min(value = 1, message = "Page number must be >= 1.") @QueryParam("page") int page,
             @Parameter(name = "size", in = QUERY,
-                    description = "The page size.") @DefaultValue("10") @QueryParam("size") int size,
+                    description = "The page size.") @DefaultValue("10") @Min(value = 1, message = "Page size must be between 1 and 100.")
+            @Max(value = 100, message = "Page size must be between 1 and 100.") @QueryParam("size") int size,
             @Context UriInfo uriInfo) {
 
-        if (page < 1) {
-            throw new BadRequestException(ApiMessage.PAGE_NUMBER.message);
-        }
-
-        return Response.ok().entity(projectService.findInstallationsByProject(projectId, page - 1, size, uriInfo)).build();
+        return Response.ok().entity(projectService.getInstallationsByProject(projectId, page - 1, size, uriInfo)).build();
     }
 
     @Tag(name = "Project")
@@ -749,7 +634,7 @@ public class ProjectEndpoint {
             roleService.checkIfRoleExists(name);
         }
 
-        var response = accessControlService.modifyPermission(projectId, who, roleAccessControlUpdateDto, Collection.Project);
+        var response = projectService.modifyPermission(who, roleAccessControlUpdateDto, projectId);
 
         return Response.ok().entity(response).build();
     }
@@ -809,7 +694,11 @@ public class ProjectEndpoint {
                                         @PathParam("who") @Valid @NotFoundEntity(repository = ClientRepository.class, id = String.class, message = "There is no registered Client with the following id:") String who) {
 
 
-        var successResponse = accessControlService.deletePermission(projectId, who, Collection.Project);
+        projectService.deletePermission(who, projectId);
+
+        var successResponse = new InformativeResponse();
+        successResponse.code = 200;
+        successResponse.message = "Project Access Control entry has been deleted successfully.";
 
         return Response.ok().entity(successResponse).build();
     }
@@ -823,7 +712,7 @@ public class ProjectEndpoint {
             description = "The corresponding Access Control entry.",
             content = @Content(schema = @Schema(
                     type = SchemaType.OBJECT,
-                    implementation = PermissionAccessControlResponseDto.class)))
+                    implementation = RoleAccessControlResponseDto.class)))
     @APIResponse(
             responseCode = "401",
             description = "Client has not been authenticated.",
@@ -868,7 +757,7 @@ public class ProjectEndpoint {
                     schema = @Schema(type = SchemaType.STRING))
             @PathParam("who") @Valid @NotFoundEntity(repository = ClientRepository.class, id = String.class, message = "There is no registered Client with the following id:") String who) {
 
-        var response = accessControlService.fetchPermission(projectId, who, Collection.Project);
+        var response = projectService.fetchPermission(who, projectId);
 
         return Response.ok().entity(response).build();
     }
@@ -916,16 +805,13 @@ public class ProjectEndpoint {
             @AccessProject(collection = Collection.Project, operation = ACL)
             @PathParam("project_id") String projectId,
             @Parameter(name = "page", in = QUERY,
-            description = "Indicates the page number. Page number must be >= 1.") @DefaultValue("1") @QueryParam("page") int page,
+            description = "Indicates the page number. Page number must be >= 1.") @DefaultValue("1") @Min(value = 1, message = "Page number must be >= 1.") @QueryParam("page") int page,
                                         @Parameter(name = "size", in = QUERY,
-                                                description = "The page size.") @DefaultValue("10") @QueryParam("size") int size,
+                                                description = "The page size.") @DefaultValue("10") @Min(value = 1, message = "Page size must be between 1 and 100.")
+            @Max(value = 100, message = "Page size must be between 1 and 100.") @QueryParam("size") int size,
                                         @Context UriInfo uriInfo){
 
-        if (page < 1) {
-            throw new BadRequestException(ApiMessage.PAGE_NUMBER.message);
-        }
-
-        var response = accessControlService.fetchAllPermissions(projectId, Collection.Project, page - 1, size, uriInfo);
+        var response = projectService.fetchAllPermissions( page - 1, size, uriInfo, projectId);
 
         return Response.ok().entity(response).build();
     }
@@ -1018,7 +904,15 @@ public class ProjectEndpoint {
             throw new BadRequestException(message);
         }
 
-        var informativeResponse = accessControlService.grantPermission(projectId + HierarchicalRelation.PATH_SEPARATOR + providerId, who, roleAccessControlRequestDto, Collection.Provider);
+        for (String name : roleAccessControlRequestDto.roles) {
+            roleService.checkIfRoleExists(name);
+        }
+
+        providerService.grantPermission(who, roleAccessControlRequestDto, projectId, providerId);
+
+        var informativeResponse = new InformativeResponse();
+        informativeResponse.message = "Provider Access Control was successfully created.";
+        informativeResponse.code = 200;
 
         return Response.ok().entity(informativeResponse).build();
     }
@@ -1071,14 +965,11 @@ public class ProjectEndpoint {
                     schema = @Schema(type = SchemaType.STRING))
             @PathParam("provider_id") String providerId,
             @Parameter(name = "page", in = QUERY,
-                    description = "Indicates the page number. Page number must be >= 1.") @DefaultValue("1") @QueryParam("page") int page,
+                    description = "Indicates the page number. Page number must be >= 1.") @DefaultValue("1") @Min(value = 1, message = "Page number must be >= 1.") @QueryParam("page") int page,
             @Parameter(name = "size", in = QUERY,
-                    description = "The page size.") @DefaultValue("10") @QueryParam("size") int size,
+                    description = "The page size.") @DefaultValue("10") @Min(value = 1, message = "Page size must be between 1 and 100.")
+            @Max(value = 100, message = "Page size must be between 1 and 100.") @QueryParam("size") int size,
             @Context UriInfo uriInfo) {
-
-        if (page < 1) {
-            throw new BadRequestException(ApiMessage.PAGE_NUMBER.message);
-        }
 
         return Response.ok().entity(providerService.findInstallationsByProvider(projectId, providerId, page - 1, size, uriInfo)).build();
     }
@@ -1170,7 +1061,11 @@ public class ProjectEndpoint {
             throw new BadRequestException(message);
         }
 
-        var response = accessControlService.modifyPermission(projectId + HierarchicalRelation.PATH_SEPARATOR + providerId, who, roleAccessControlUpdateDto, Collection.Provider);
+        for (String name : roleAccessControlUpdateDto.roles) {
+            roleService.checkIfRoleExists(name);
+        }
+
+        var response = providerService.modifyPermission(who, roleAccessControlUpdateDto, projectId, providerId);
 
         return Response.ok().entity(response).build();
     }
@@ -1242,7 +1137,11 @@ public class ProjectEndpoint {
             throw new BadRequestException(message);
         }
 
-        var successResponse = accessControlService.deletePermission(projectId + HierarchicalRelation.PATH_SEPARATOR + providerId, who, Collection.Provider);
+        providerService.deletePermission(who, projectId, providerId);
+
+        var successResponse = new InformativeResponse();
+        successResponse.code = 200;
+        successResponse.message = "Provider Access Control entry has been deleted successfully.";
 
         return Response.ok().entity(successResponse).build();
     }
@@ -1256,7 +1155,7 @@ public class ProjectEndpoint {
             description = "The corresponding Access Control entry.",
             content = @Content(schema = @Schema(
                     type = SchemaType.OBJECT,
-                    implementation = PermissionAccessControlResponseDto.class)))
+                    implementation = RoleAccessControlResponseDto.class)))
     @APIResponse(
             responseCode = "401",
             description = "Client has not been authenticated.",
@@ -1314,7 +1213,7 @@ public class ProjectEndpoint {
             throw new BadRequestException(message);
         }
 
-        var response = accessControlService.fetchPermission(projectId + HierarchicalRelation.PATH_SEPARATOR + providerId, who, Collection.Provider);
+        var response = providerService.fetchPermission(who, projectId, providerId);
 
         return Response.ok().entity(response).build();
     }
@@ -1368,20 +1267,16 @@ public class ProjectEndpoint {
                     schema = @Schema(type = SchemaType.STRING))
             @PathParam("provider_id") String providerId,
             @Parameter(name = "page", in = QUERY,
-                    description = "Indicates the page number. Page number must be >= 1.") @DefaultValue("1") @QueryParam("page") int page,
+                    description = "Indicates the page number. Page number must be >= 1.") @DefaultValue("1") @Min(value = 1, message = "Page number must be >= 1.") @QueryParam("page") int page,
             @Parameter(name = "size", in = QUERY,
-                    description = "The page size.") @DefaultValue("10") @QueryParam("size") int size,
+                    description = "The page size.") @DefaultValue("10") @Min(value = 1, message = "Page size must be between 1 and 100.")
+            @Max(value = 100, message = "Page size must be between 1 and 100.") @QueryParam("size") int size,
             @Context UriInfo uriInfo){
 
-        if (page < 1) {
-            throw new BadRequestException(ApiMessage.PAGE_NUMBER.message);
-        }
-
-        var response = accessControlService.fetchAllPermissions(projectId + HierarchicalRelation.PATH_SEPARATOR + providerId, Collection.Provider, page - 1, size, uriInfo);
+        var response = providerService.fetchAllPermissions(page - 1, size, uriInfo, projectId, providerId);
 
         return Response.ok().entity(response).build();
     }
-
 
     @Tag(name = "Search")
     @Operation(
@@ -1468,29 +1363,25 @@ public class ProjectEndpoint {
                                     summary = "A complex search on Projects ")})
             )  String json,
             @Parameter(name = "page", in = QUERY,
-                    description = "Indicates the page number. Page number must be >= 1.") @DefaultValue("1") @QueryParam("page") int page,
+                    description = "Indicates the page number. Page number must be >= 1.") @DefaultValue("1") @Min(value = 1, message = "Page number must be >= 1.") @QueryParam("page") int page,
             @Parameter(name = "size", in = QUERY,
-                    description = "The page size.") @DefaultValue("10") @QueryParam("size") int size,
+                    description = "The page size.") @DefaultValue("10") @Min(value = 1, message = "Page size must be between 1 and 100.")
+            @Max(value = 100, message = "Page size must be between 1 and 100.") @QueryParam("size") int size,
             @Context UriInfo uriInfo
     ) throws ParseException, NoSuchFieldException, org.json.simple.parser.ParseException, JsonProcessingException {
 
-        if (page < 1) {
-            throw new BadRequestException(ApiMessage.PAGE_NUMBER.message);
-        }
         if(json.equals("")){
             throw  new BadRequestException("not empty body permitted");
         }
-        var results=projectService.searchProject(json, page - 1, size, uriInfo);
 
-        ObjectMapper objectMapper = new ObjectMapper();
+        //var results=projectService.searchProject(json, page - 1, size, uriInfo);
 
-        objectMapper = objectMapper.addMixIn(PageResource.class, PageResourceMixIn.class);
+        //ObjectMapper objectMapper = new ObjectMapper();
 
-        return Response.ok().entity(objectMapper.writeValueAsString(results)).build();
+        //objectMapper = objectMapper.addMixIn(PageResource.class, PageResourceMixIn.class);
 
+        return Response.ok().build();
     }
-
-
 
     @Tag(name = "Project")
     @Operation(
@@ -1503,7 +1394,7 @@ public class ProjectEndpoint {
             description = "The corresponding Projects.",
             content = @Content(schema = @Schema(
                     type = SchemaType.OBJECT,
-                    implementation = PageableHierarchicalProject.class)))
+                    implementation = PageableProjectProjection.class)))
     @APIResponse(
             responseCode = "400",
             description = "Bad Request.",
@@ -1543,23 +1434,31 @@ public class ProjectEndpoint {
     public Response getAll(
 
             @Parameter(name = "page", in = QUERY,
-                    description = "Indicates the page number. Page number must be >= 1.") @DefaultValue("1") @QueryParam("page") int page,
+                    description = "Indicates the page number. Page number must be >= 1.") @DefaultValue("1") @Min(value = 1, message = "Page number must be >= 1.") @QueryParam("page") int page,
             @Parameter(name = "size", in = QUERY,
-                    description = "The page size.") @DefaultValue("10") @QueryParam("size") int size,
+                    description = "The page size.") @DefaultValue("10") @Min(value = 1, message = "Page size must be between 1 and 100.")
+            @Max(value = 100, message = "Page size must be between 1 and 100.") @QueryParam("size") int size,
             @Context UriInfo uriInfo
     ) throws ParseException, NoSuchFieldException, org.json.simple.parser.ParseException, JsonProcessingException {
 
-        if (page < 1) {
-            throw new BadRequestException(ApiMessage.PAGE_NUMBER.message);
-        }
-
         var results= projectService.getAll( page - 1, size, uriInfo);
 
-        ObjectMapper objectMapper = new ObjectMapper();
+        return Response.ok().entity(results).build();
+    }
 
-        objectMapper = objectMapper.addMixIn(PageResource.class, PageResourceMixIn.class);
+    public static class PageableProjectProjection extends PageResource<ProjectProjection> {
 
-        return Response.ok().entity(objectMapper.writeValueAsString(results)).build();
+        private List<ProjectProjection> content;
+
+        @Override
+        public List<ProjectProjection> getContent() {
+            return content;
+        }
+
+        @Override
+        public void setContent(List<ProjectProjection> content) {
+            this.content = content;
+        }
     }
 
     public static class PageableMetricProjection extends PageResource<MetricProjection> {

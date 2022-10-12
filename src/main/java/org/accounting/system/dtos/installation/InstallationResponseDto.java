@@ -14,7 +14,7 @@ public class InstallationResponseDto {
             description = "The Installation unique id.",
             example = "507f1f77bcf86cd799439011"
     )
-    @JsonProperty("installation_id")
+    @JsonProperty("id")
     public String id;
 
     @Schema(
@@ -55,16 +55,9 @@ public class InstallationResponseDto {
     public String installation;
 
     @Schema(
-            type = SchemaType.STRING,
-            implementation = String.class,
-            description = "The primary Metric Registration.",
-            example = "{\n" +
-                    "    \"metric_definition_id\": \"628ddb672f926e16a7a74156\",\n" +
-                    "    \"metric_name\": \"test5\",\n" +
-                    "    \"metric_description\": \"storage\",\n" +
-                    "    \"unit_type\": \"#\",\n" +
-                    "    \"metric_type\": \"aggregated\"\n" +
-                    "}")
+            type = SchemaType.OBJECT,
+            implementation = MetricDefinitionResponseDto.class,
+            description = "The primary Metric Registration.")
     @JsonProperty("unit_of_access")
     public MetricDefinitionResponseDto metricDefinition;
 }

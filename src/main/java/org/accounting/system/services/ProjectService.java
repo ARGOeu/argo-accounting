@@ -2,29 +2,28 @@ package org.accounting.system.services;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.module.SimpleModule;
 import io.quarkus.mongodb.panache.PanacheQuery;
 import io.quarkus.oidc.TokenIntrospection;
-import io.vavr.CheckedFunction1;
-import io.vavr.control.Option;
+import org.accounting.system.dtos.acl.role.RoleAccessControlRequestDto;
+import org.accounting.system.dtos.acl.role.RoleAccessControlResponseDto;
+import org.accounting.system.dtos.acl.role.RoleAccessControlUpdateDto;
 import org.accounting.system.dtos.installation.InstallationResponseDto;
 import org.accounting.system.dtos.pagination.PageResource;
-import org.accounting.system.dtos.project.ProjectResponseDto;
-import org.accounting.system.entities.Project;
+import org.accounting.system.entities.authorization.Role;
 import org.accounting.system.entities.projections.HierarchicalRelationProjection;
 import org.accounting.system.entities.projections.InstallationProjection;
 import org.accounting.system.entities.projections.MetricProjection;
-import org.accounting.system.enums.Collection;
-import org.accounting.system.enums.Operation;
+import org.accounting.system.entities.projections.ProjectProjection;
+import org.accounting.system.exceptions.ConflictException;
+import org.accounting.system.mappers.AccessControlMapper;
 import org.accounting.system.mappers.InstallationMapper;
-import org.accounting.system.mappers.ProjectMapper;
 import org.accounting.system.repositories.HierarchicalRelationRepository;
 import org.accounting.system.repositories.acl.AccessControlRepository;
+import org.accounting.system.repositories.authorization.RoleRepository;
 import org.accounting.system.repositories.project.ProjectRepository;
-import org.accounting.system.serializer.HierarchicalRelationSerializer;
+import org.accounting.system.services.acl.RoleAccessControlService;
 import org.accounting.system.services.authorization.RoleService;
 import org.accounting.system.util.QueryParser;
-import org.bson.conversions.Bson;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 
 import javax.enterprise.context.ApplicationScoped;
@@ -32,14 +31,17 @@ import javax.inject.Inject;
 import javax.ws.rs.NotFoundException;
 import javax.ws.rs.core.UriInfo;
 import java.util.List;
-import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
+
 @ApplicationScoped
-public class ProjectService {
+public class ProjectService implements RoleAccessControlService {
 
     @Inject
     ProjectRepository projectRepository;
+
+    @Inject
+    RoleRepository roleRepository;
 
     @Inject
     HierarchicalRelationRepository hierarchicalRelationRepository;
@@ -52,27 +54,15 @@ public class ProjectService {
 
     @Inject
     RoleService roleService;
+
     @Inject
     QueryParser queryParser;
+
     @ConfigProperty(name = "key.to.retrieve.id.from.access.token")
     String id;
+
     @Inject
     ObjectMapper objectMapper;
-    /**
-     * An http call is made to Open Aire to retrieve the corresponding Project.
-     * It is then stored in the database, converted into a response body and returned.
-     *
-     * @param id The Project id
-     * @return The Project as it is stored in the Accounting system database.
-     */
-    public ProjectResponseDto save(String id){
-
-        //var project = projectRepository.save(id);
-
-        var project = projectRepository.save(id);
-
-        return ProjectMapper.INSTANCE.projectToDto(project);
-    }
 
     /**
      * This method correlates the given Providers with a specific Project and creates an hierarchical structure with root
@@ -110,49 +100,126 @@ public class ProjectService {
         return projectRepository.hierarchicalStructure(externalId);
     }
 
-    public PageResource<InstallationResponseDto> findInstallationsByProject(String projectId, int page, int size, UriInfo uriInfo){
+    public ProjectProjection getById(final String id) {
 
-        PanacheQuery<InstallationProjection> projectionQuery = hierarchicalRelationRepository.findInstallationsByProject(projectId, "MetricDefinition", "unit_of_access", "_id", "unit_of_access", page, size, InstallationProjection.class);
+        return projectRepository.fetchById(id);
+    }
+
+    public PageResource<InstallationResponseDto> getInstallationsByProject(String projectId, int page, int size, UriInfo uriInfo){
+
+        PanacheQuery<InstallationProjection> projectionQuery = projectRepository.fetchProjectInstallations(projectId, page, size);
 
         return new PageResource<>(projectionQuery, InstallationMapper.INSTANCE.installationProjectionsToResponse(projectionQuery.list()), uriInfo);
     }
-    public  PageResource<String> searchProject(String json, int page, int size, UriInfo uriInfo) throws  NoSuchFieldException, org.json.simple.parser.ParseException {
 
-        var ids=accessControlRepository.findByWhoAndCollection(tokenIntrospection.getJsonObject().getString(id),Collection.Project).stream().filter(projects ->
-                roleService.hasRoleAccess(projects.getRoles(), Collection.Project, Operation.READ)).map(projects -> projects.getEntity()).collect(Collectors.toList());
-        Bson query=queryParser.parseFile(json, false, ids, Project.class);
+//    public  PageResource<String> searchProject(String json, int page, int size, UriInfo uriInfo) throws  NoSuchFieldException, org.json.simple.parser.ParseException {
+//
+//        var ids=accessControlRepository.findByWhoAndCollection(tokenIntrospection.getJsonObject().getString(id),Collection.Project).stream().filter(projects ->
+//                roleService.hasRoleAccess(projects.getRoles(), Collection.Project, Operation.READ)).map(projects -> projects.getEntity()).collect(Collectors.toList());
+//        Bson query=queryParser.parseFile(json, false, ids, Project.class);
+//
+//        PanacheQuery<Project> projectionQuery = projectRepository.search(query,page,size);
+//        return new PageResource<>(projectionQuery, projectToJson(projectionQuery.list().stream().map(Project::getId).collect(Collectors.toList())), uriInfo);
+//
+//    }
 
-        PanacheQuery<Project> projectionQuery = projectRepository.search(query,page,size);
-        return new PageResource<>(projectionQuery, projectToJson(projectionQuery.list().stream().map(Project::getId).collect(Collectors.toList())), uriInfo);
-
-    }
-
-    public PageResource<String> getAll(int page, int size, UriInfo uriInfo) throws NoSuchFieldException, org.json.simple.parser.ParseException, JsonProcessingException {
+    public PageResource<ProjectProjection> getAll(int page, int size, UriInfo uriInfo) throws NoSuchFieldException, org.json.simple.parser.ParseException, JsonProcessingException {
 
        var projectionQuery = projectRepository.fetchAll(page, size);
 
-       return new PageResource<>(projectionQuery, projectToJson(projectionQuery.list().stream().map(Project::getId).collect(Collectors.toList())), uriInfo);
+       return new PageResource<>(projectionQuery, projectionQuery.list(), uriInfo);
     }
 
-    private List<String> projectToJson(List<String> ids) {
+    @Override
+    public void grantPermission(String who, RoleAccessControlRequestDto request, String... id) {
 
-        SimpleModule module = new SimpleModule();
+        var projectID = id[0];
 
-        module.addSerializer(new HierarchicalRelationSerializer(HierarchicalRelationProjection.class));
+        var optional = projectRepository.fetchRoleAccessControl(projectID, who);
 
-        objectMapper.registerModule(module);
+        if(optional.isPresent()){
 
-        List<HierarchicalRelationProjection> projects = ids.stream()
-                .map(this :: hierarchicalStructure)
-                .map(list -> list.get(0))
-                .collect(Collectors.toList());
+            throw new ConflictException("There is a Project Access Control for the client : "+who);
+        }
 
-        return projects
+        var accessControl = AccessControlMapper.INSTANCE.requestToRoleAccessControl(request);
+
+        accessControl.setWho(who);
+
+        accessControl.setRoles(roleRepository.getRolesByName(request.roles));
+
+        projectRepository.insertNewRoleAccessControl(projectID, accessControl);
+    }
+
+    @Override
+    public RoleAccessControlResponseDto modifyPermission(String who, RoleAccessControlUpdateDto updateDto, String... id) {
+
+        var projectID = id[0];
+
+        var optional = projectRepository.fetchRoleAccessControl(projectID, who);
+
+        optional.orElseThrow(() -> new NotFoundException("There is no Access Control."));
+
+        projectRepository.updateRoleAccessControl(projectID, who, roleRepository.getRolesByName(updateDto.roles));
+
+        var updated = projectRepository.fetchRoleAccessControl(projectID, who);
+
+        var response = AccessControlMapper.INSTANCE.roleAccessControlToResponse(updated.get());
+
+        response.roles = updated.get().getRoles().stream().map(Role::getName).collect(Collectors.toSet());
+
+        return response;
+    }
+
+    @Override
+    public void deletePermission(String who, String... id) {
+
+        var projectID = id[0];
+
+        var optional = projectRepository.fetchRoleAccessControl(projectID, who);
+
+        optional.orElseThrow(() -> new NotFoundException("There is no Access Control."));
+
+        projectRepository.deleteRoleAccessControl(projectID, who);
+    }
+
+    @Override
+    public RoleAccessControlResponseDto fetchPermission(String who, String... id) {
+
+        var projectID = id[0];
+
+        var optional = projectRepository.fetchRoleAccessControl(projectID, who);
+
+        optional.orElseThrow(() -> new NotFoundException("There is no Access Control."));
+
+        var response = AccessControlMapper.INSTANCE.roleAccessControlToResponse(optional.get());
+
+        response.roles = optional.get().getRoles().stream().map(Role::getName).collect(Collectors.toSet());
+
+        return response;
+    }
+
+    @Override
+    public PageResource<RoleAccessControlResponseDto> fetchAllPermissions(int page, int size, UriInfo uriInfo, String... id) {
+
+        var projectID = id[0];
+
+        var panacheQuery = projectRepository.fetchAllRoleAccessControls(projectID, page, size);
+
+        var responses = panacheQuery
+                .list()
                 .stream()
-                .map(project-> CheckedFunction1.lift(projection -> objectMapper.writeValueAsString(projection)).apply(project))
-                .map(Option::toJavaOptional)
-                .filter(Optional::isPresent)
-                .map(Optional::get)
+                .map(acl->{
+
+                    var response = AccessControlMapper.INSTANCE.roleAccessControlToResponse(acl);
+
+                    response.roles = acl.getRoles().stream().map(Role::getName).collect(Collectors.toSet());
+
+                    return response;
+
+                })
                 .collect(Collectors.toList());
+
+        return new PageResource<>(panacheQuery, responses, uriInfo);
     }
 }

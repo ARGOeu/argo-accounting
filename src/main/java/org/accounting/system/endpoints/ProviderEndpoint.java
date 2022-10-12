@@ -8,13 +8,11 @@ import org.accounting.system.dtos.pagination.PageResource;
 import org.accounting.system.dtos.provider.ProviderRequestDto;
 import org.accounting.system.dtos.provider.ProviderResponseDto;
 import org.accounting.system.dtos.provider.UpdateProviderRequestDto;
-import org.accounting.system.enums.ApiMessage;
 import org.accounting.system.enums.Collection;
 import org.accounting.system.enums.Operation;
 import org.accounting.system.interceptors.annotations.AccessPermission;
 import org.accounting.system.repositories.provider.ProviderRepository;
 import org.accounting.system.services.ProviderService;
-import org.accounting.system.services.acl.AccessControlService;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.eclipse.microprofile.openapi.annotations.enums.SchemaType;
 import org.eclipse.microprofile.openapi.annotations.enums.SecuritySchemeIn;
@@ -32,8 +30,9 @@ import org.jboss.resteasy.specimpl.ResteasyUriInfo;
 
 import javax.inject.Inject;
 import javax.validation.Valid;
+import javax.validation.constraints.Max;
+import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
-import javax.ws.rs.BadRequestException;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.DefaultValue;
@@ -72,12 +71,6 @@ public class ProviderEndpoint {
 
     @Inject
     ProviderService providerService;
-
-    @Inject
-    ProviderRepository providerRepository;
-
-    @Inject
-    AccessControlService accessControlService;
 
 
     @Tag(name = "Provider")
@@ -129,14 +122,11 @@ public class ProviderEndpoint {
     @Produces(value = MediaType.APPLICATION_JSON)
     @AccessPermission(collection = Collection.Provider, operation = Operation.READ)
     public Response get(@Parameter(name = "page", in = QUERY,
-            description = "Indicates the page number. Page number must be >= 1.") @DefaultValue("1") @QueryParam("page") int page,
+            description = "Indicates the page number. Page number must be >= 1.") @DefaultValue("1") @Min(value = 1, message = "Page number must be >= 1.") @QueryParam("page") int page,
                         @Parameter(name = "size", in = QUERY,
-                                description = "The page size.") @DefaultValue("10") @QueryParam("size") int size,
+                                description = "The page size.") @DefaultValue("10") @Min(value = 1, message = "Page size must be between 1 and 100.")
+                        @Max(value = 100, message = "Page size must be between 1 and 100.") @QueryParam("size") int size,
                         @Context UriInfo uriInfo) {
-
-        if (page < 1) {
-            throw new BadRequestException(ApiMessage.PAGE_NUMBER.message);
-        }
 
         var serverInfo = new ResteasyUriInfo(serverUrl.concat(basePath).concat(uriInfo.getPath()), basePath);
 
@@ -441,12 +431,11 @@ public class ProviderEndpoint {
                                     value = "",
                                     summary = "A complex search on Providers ")})
             ) String json, @Parameter(name = "page", in = QUERY,
-            description = "Indicates the page number. Page number must be >= 1.") @DefaultValue("1") @QueryParam("page") int page,
+            description = "Indicates the page number. Page number must be >= 1.") @DefaultValue("1") @Min(value = 1, message = "Page number must be >= 1.") @QueryParam("page") int page,
             @Parameter(name = "size", in = QUERY,
-                    description = "The page size.") @DefaultValue("10") @QueryParam("size") int size, @Context UriInfo uriInfo) throws ParseException, NoSuchFieldException, org.json.simple.parser.ParseException, JsonProcessingException {
-        if (page < 1) {
-            throw new BadRequestException(ApiMessage.PAGE_NUMBER.message);
-        }
+                    description = "The page size.") @DefaultValue("10") @Min(value = 1, message = "Page size must be between 1 and 100.")
+            @Max(value = 100, message = "Page size must be between 1 and 100.") @QueryParam("size") int size, @Context UriInfo uriInfo) throws ParseException, NoSuchFieldException, org.json.simple.parser.ParseException, JsonProcessingException {
+
         var response = providerService.searchProvider(json, page - 1, size, uriInfo);
 
         return Response.ok().entity(response).build();

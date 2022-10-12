@@ -7,7 +7,6 @@ import org.accounting.system.dtos.authorization.request.RoleRequestDto;
 import org.accounting.system.dtos.authorization.response.RoleResponseDto;
 import org.accounting.system.dtos.authorization.update.UpdateRoleRequestDto;
 import org.accounting.system.dtos.pagination.PageResource;
-import org.accounting.system.enums.ApiMessage;
 import org.accounting.system.enums.Collection;
 import org.accounting.system.enums.Operation;
 import org.accounting.system.interceptors.annotations.AccessPermission;
@@ -30,8 +29,9 @@ import org.jboss.resteasy.specimpl.ResteasyUriInfo;
 
 import javax.inject.Inject;
 import javax.validation.Valid;
+import javax.validation.constraints.Max;
+import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
-import javax.ws.rs.BadRequestException;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.DefaultValue;
@@ -230,13 +230,11 @@ public class RoleEndpoint {
     @Produces(value = MediaType.APPLICATION_JSON)
     @AccessPermission(collection = Collection.Role, operation = Operation.READ)
     public Response getRoles(@Parameter(name = "page", in = QUERY,
-            description = "Indicates the page number. Page number must be >= 1.") @DefaultValue("1") @QueryParam("page") int page,
+            description = "Indicates the page number. Page number must be >= 1.") @DefaultValue("1") @Min(value = 1, message = "Page number must be >= 1.") @QueryParam("page") int page,
                              @Parameter(name = "size", in = QUERY,
-                                     description = "The page size.") @DefaultValue("10") @QueryParam("size") int size,
+                                     description = "The page size.") @DefaultValue("10") @Min(value = 1, message = "Page size must be between 1 and 100.")
+                             @Max(value = 100, message = "Page size must be between 1 and 100.") @QueryParam("size") int size,
                              @Context UriInfo uriInfo){
-        if(page <1){
-            throw new BadRequestException(ApiMessage.PAGE_NUMBER.message);
-        }
 
         return Response.ok().entity(roleService.findAllRolesPageable(page-1, size, uriInfo)).build();
     }

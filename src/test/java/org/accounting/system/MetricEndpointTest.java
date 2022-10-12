@@ -21,7 +21,6 @@ import org.accounting.system.dtos.metric.MetricResponseDto;
 import org.accounting.system.dtos.metric.UpdateMetricRequestDto;
 import org.accounting.system.dtos.metricdefinition.MetricDefinitionRequestDto;
 import org.accounting.system.dtos.metricdefinition.MetricDefinitionResponseDto;
-import org.accounting.system.dtos.project.ProjectResponseDto;
 import org.accounting.system.endpoints.MetricEndpoint;
 import org.accounting.system.mappers.ProviderMapper;
 import org.accounting.system.repositories.acl.AccessControlRepository;
@@ -29,10 +28,10 @@ import org.accounting.system.repositories.client.ClientAccessAlwaysRepository;
 import org.accounting.system.repositories.installation.InstallationRepository;
 import org.accounting.system.repositories.metric.MetricRepository;
 import org.accounting.system.repositories.metricdefinition.MetricDefinitionRepository;
-import org.accounting.system.repositories.project.ProjectAccessAlwaysRepository;
-import org.accounting.system.repositories.project.ProjectModulator;
+import org.accounting.system.repositories.project.ProjectRepository;
 import org.accounting.system.repositories.provider.ProviderRepository;
 import org.accounting.system.services.ReadPredefinedTypesService;
+import org.accounting.system.services.SystemAdminService;
 import org.accounting.system.services.client.ClientService;
 import org.accounting.system.util.Utility;
 import org.accounting.system.wiremock.ProjectWireMockServer;
@@ -86,10 +85,13 @@ public class MetricEndpointTest {
     MetricRepository metricRepository;
 
     @Inject
-    ProjectAccessAlwaysRepository projectAccessAlwaysRepository;
+    ProjectRepository projectRepository;
 
     @Inject
     AccessControlRepository accessControlRepository;
+
+    @Inject
+    SystemAdminService systemAdminService;
 
     @Inject
     Utility utility;
@@ -119,15 +121,14 @@ public class MetricEndpointTest {
     @BeforeEach
     public void before() throws ParseException {
 
-        installationRepository.deleteAll();
         metricDefinitionRepository.deleteAll();
         metricRepository.deleteAll();
-        projectAccessAlwaysRepository.deleteAll();
+        projectRepository.deleteAll();
 
         accessControlRepository.deleteAll();
 
         String sub = utility.getIdFromToken(keycloakClient.getAccessToken("admin").split("\\.")[1]);
-        accessControlRepository.accessListOfProjects(Set.of("777536"), sub);
+        systemAdminService.accessListOfProjects(Set.of("777536"), sub);
     }
 
     @Test
@@ -352,8 +353,7 @@ public class MetricEndpointTest {
         request.installation = "SECOND";
         request.unitOfAccess = metricDefinitionResponse.id;
 
-        projectAccessAlwaysRepository.save("777536", ProjectModulator.openAire());
-        projectAccessAlwaysRepository.associateProjectWithProviders("777536", Set.of("grnet"));
+        projectRepository.associateProjectWithProviders("777536", Set.of("grnet"));
 
         var installation = createInstallation(request, "admin");
 
@@ -1110,19 +1110,7 @@ public class MetricEndpointTest {
 
     private io.restassured.response.Response assignMetric(String user, MetricRequestDto body, List<String> installationId){
 
-        //Registering a project
-        var project = given()
-                .auth()
-                .oauth2(getAccessToken("admin"))
-                .basePath("accounting-system/projects")
-                .post("/{id}", "777536")
-                .then()
-                .assertThat()
-                .statusCode(200)
-                .extract()
-                .as(ProjectResponseDto.class);
-
-        projectAccessAlwaysRepository.associateProjectWithProviders("777536", Set.of("grnet"));
+        projectRepository.associateProjectWithProviders("777536", Set.of("grnet"));
 
         //Registering an installation
         Mockito.when(readPredefinedTypesService.searchForUnitType(any())).thenReturn(Optional.of("KG"));

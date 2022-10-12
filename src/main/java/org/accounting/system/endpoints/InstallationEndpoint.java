@@ -1,6 +1,5 @@
 package org.accounting.system.endpoints;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import io.quarkus.security.Authenticated;
 import org.accounting.system.constraints.AccessInstallation;
 import org.accounting.system.constraints.AccessProvider;
@@ -16,10 +15,7 @@ import org.accounting.system.dtos.metric.MetricRequestDto;
 import org.accounting.system.dtos.metric.MetricResponseDto;
 import org.accounting.system.dtos.metric.UpdateMetricRequestDto;
 import org.accounting.system.dtos.pagination.PageResource;
-import org.accounting.system.dtos.project.ProjectResponseDto;
-import org.accounting.system.entities.HierarchicalRelation;
 import org.accounting.system.entities.projections.MetricProjection;
-import org.accounting.system.enums.ApiMessage;
 import org.accounting.system.enums.Collection;
 import org.accounting.system.repositories.client.ClientRepository;
 import org.accounting.system.repositories.installation.InstallationRepository;
@@ -27,17 +23,15 @@ import org.accounting.system.repositories.metric.MetricRepository;
 import org.accounting.system.services.HierarchicalRelationService;
 import org.accounting.system.services.MetricService;
 import org.accounting.system.services.acl.AccessControlService;
+import org.accounting.system.services.authorization.RoleService;
 import org.accounting.system.services.installation.InstallationService;
-import org.bson.types.ObjectId;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.eclipse.microprofile.openapi.annotations.enums.SchemaType;
 import org.eclipse.microprofile.openapi.annotations.enums.SecuritySchemeIn;
 import org.eclipse.microprofile.openapi.annotations.enums.SecuritySchemeType;
 import org.eclipse.microprofile.openapi.annotations.media.Content;
-import org.eclipse.microprofile.openapi.annotations.media.ExampleObject;
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
 import org.eclipse.microprofile.openapi.annotations.parameters.Parameter;
-import org.eclipse.microprofile.openapi.annotations.parameters.RequestBody;
 import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
 import org.eclipse.microprofile.openapi.annotations.security.SecurityRequirement;
 import org.eclipse.microprofile.openapi.annotations.security.SecurityScheme;
@@ -46,7 +40,8 @@ import org.jboss.resteasy.specimpl.ResteasyUriInfo;
 
 import javax.inject.Inject;
 import javax.validation.Valid;
-import javax.validation.constraints.NotEmpty;
+import javax.validation.constraints.Max;
+import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
 import javax.ws.rs.BadRequestException;
 import javax.ws.rs.Consumes;
@@ -63,7 +58,6 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
-import java.text.ParseException;
 import java.util.List;
 
 import static org.accounting.system.enums.Operation.ACL;
@@ -104,6 +98,9 @@ public class InstallationEndpoint {
 
     @Inject
     MetricService metricService;
+
+    @Inject
+    RoleService roleService;
 
     @Tag(name = "Installation")
     @org.eclipse.microprofile.openapi.annotations.Operation(
@@ -222,17 +219,13 @@ public class InstallationEndpoint {
                                @Valid
                                @AccessInstallation(collection = Collection.Installation, operation = DELETE) String id) {
 
-        var success = installationService.delete(id);
+        installationService.delete(id);
 
         var successResponse = new InformativeResponse();
 
-        if (success) {
-            successResponse.code = 200;
-            successResponse.message = "Installation has been deleted successfully.";
-        } else {
-            successResponse.code = 500;
-            successResponse.message = "Installation cannot be deleted due to a server issue. Please try again.";
-        }
+        successResponse.code = 200;
+        successResponse.message = "Installation has been deleted successfully.";
+
         return Response.ok().entity(successResponse).build();
     }
 
@@ -284,7 +277,7 @@ public class InstallationEndpoint {
             @PathParam("id") @Valid
             @AccessInstallation(collection = Collection.Installation, operation = READ) String id) {
 
-        var response = installationService.fetchInstallation(id);
+        var response = installationService.installationToResponse(id);
 
         return Response.ok().entity(response).build();
     }
@@ -438,9 +431,15 @@ public class InstallationEndpoint {
                                                 schema = @Schema(type = SchemaType.STRING))
                                             @PathParam("who") @Valid @NotFoundEntity(repository = ClientRepository.class, id = String.class, message = "There is no registered Client with the following id:") String who) {
 
-        var storedInstallation = installationRepository.findById(new ObjectId(installationId));
+        for (String name : roleAccessControlRequestDto.roles) {
+            roleService.checkIfRoleExists(name);
+        }
 
-        var informativeResponse = accessControlService.grantPermission(storedInstallation.getProject() + HierarchicalRelation.PATH_SEPARATOR + storedInstallation.getOrganisation() + HierarchicalRelation.PATH_SEPARATOR + installationId, who, roleAccessControlRequestDto, Collection.Installation);
+        installationService.grantPermission(who, roleAccessControlRequestDto,installationId);
+
+        var informativeResponse = new InformativeResponse();
+        informativeResponse.message = "Installation Access Control was successfully created.";
+        informativeResponse.code = 200;
 
         return Response.ok().entity(informativeResponse).build();
     }
@@ -521,9 +520,11 @@ public class InstallationEndpoint {
                                                 schema = @Schema(type = SchemaType.STRING))
                                             @PathParam("who") @Valid @NotFoundEntity(repository = ClientRepository.class, id = String.class, message = "There is no registered Client with the following id:") String who) {
 
-        var storedInstallation = installationRepository.findById(new ObjectId(installationId));
+        for (String name : roleAccessControlUpdateDto.roles) {
+            roleService.checkIfRoleExists(name);
+        }
 
-        var response = accessControlService.modifyPermission(storedInstallation.getProject() + HierarchicalRelation.PATH_SEPARATOR + storedInstallation.getOrganisation() + HierarchicalRelation.PATH_SEPARATOR + installationId, who, roleAccessControlUpdateDto, Collection.Installation);
+        var response = installationService.modifyPermission(who, roleAccessControlUpdateDto,installationId);
 
         return Response.ok().entity(response).build();
     }
@@ -582,9 +583,11 @@ public class InstallationEndpoint {
                                                 schema = @Schema(type = SchemaType.STRING))
                                         @PathParam("who") @Valid @NotFoundEntity(repository = ClientRepository.class, id = String.class, message = "There is no registered Client with the following id:") String who) {
 
-        var storedInstallation = installationRepository.findById(new ObjectId(installationId));
+        installationService.deletePermission(who, installationId);
 
-        var successResponse = accessControlService.deletePermission(storedInstallation.getProject() + HierarchicalRelation.PATH_SEPARATOR + storedInstallation.getOrganisation() + HierarchicalRelation.PATH_SEPARATOR + installationId, who, Collection.Installation);
+        var successResponse = new InformativeResponse();
+        successResponse.code = 200;
+        successResponse.message = "Installation Access Control entry has been deleted successfully.";
 
         return Response.ok().entity(successResponse).build();
     }
@@ -644,9 +647,7 @@ public class InstallationEndpoint {
                     schema = @Schema(type = SchemaType.STRING))
             @PathParam("who") @Valid @NotFoundEntity(repository = ClientRepository.class, id = String.class, message = "There is no registered Client with the following id:") String who) {
 
-        var storedInstallation = installationRepository.findById(new ObjectId(installationId));
-
-        var response = accessControlService.fetchPermission(storedInstallation.getProject() + HierarchicalRelation.PATH_SEPARATOR + storedInstallation.getOrganisation() + HierarchicalRelation.PATH_SEPARATOR + installationId, who, Collection.Installation);
+        var response = installationService.fetchPermission(who, installationId);
 
         return Response.ok().entity(response).build();
     }
@@ -695,18 +696,13 @@ public class InstallationEndpoint {
             @Valid
             @AccessInstallation(collection = Collection.Installation, operation = ACL) String installationId,
             @Parameter(name = "page", in = QUERY,
-                    description = "Indicates the page number. Page number must be >= 1.") @DefaultValue("1") @QueryParam("page") int page,
+                    description = "Indicates the page number. Page number must be >= 1.") @DefaultValue("1") @Min(value = 1, message = "Page number must be >= 1.") @QueryParam("page") int page,
             @Parameter(name = "size", in = QUERY,
-                    description = "The page size.") @DefaultValue("10") @QueryParam("size") int size,
+                    description = "The page size.") @DefaultValue("10") @Min(value = 1, message = "Page size must be between 1 and 100.")
+            @Max(value = 100, message = "Page size must be between 1 and 100.") @QueryParam("size") int size,
             @Context UriInfo uriInfo) {
 
-        if (page < 1) {
-            throw new BadRequestException(ApiMessage.PAGE_NUMBER.message);
-        }
-
-        var storedInstallation = installationRepository.findById(new ObjectId(installationId));
-
-        var response = accessControlService.fetchAllPermissions(storedInstallation.getProject() + HierarchicalRelation.PATH_SEPARATOR + storedInstallation.getOrganisation() + HierarchicalRelation.PATH_SEPARATOR + installationId, Collection.Installation, page - 1, size, uriInfo);
+        var response = installationService.fetchAllPermissions(page - 1, size, uriInfo,installationId);
 
         return Response.ok().entity(response).build();
     }
@@ -1045,14 +1041,11 @@ public class InstallationEndpoint {
                     schema = @Schema(type = SchemaType.STRING))
             @PathParam("installationId") @Valid @AccessInstallation(collection = Collection.Metric, operation = READ) String installationId,
             @Parameter(name = "page", in = QUERY,
-                    description = "Indicates the page number. Page number must be >= 1.") @DefaultValue("1") @QueryParam("page") int page,
+                    description = "Indicates the page number. Page number must be >= 1.") @DefaultValue("1") @Min(value = 1, message = "Page number must be >= 1.") @QueryParam("page") int page,
             @Parameter(name = "size", in = QUERY,
-                    description = "The page size.") @DefaultValue("10") @QueryParam("size") int size,
+                    description = "The page size.") @DefaultValue("10") @Min(value = 1, message = "Page size must be between 1 and 100.")
+            @Max(value = 100, message = "Page size must be between 1 and 100.") @QueryParam("size") int size,
             @Context UriInfo uriInfo) {
-
-        if (page < 1) {
-            throw new BadRequestException(ApiMessage.PAGE_NUMBER.message);
-        }
 
         var response = installationService.fetchAllMetrics(installationId, page - 1, size, uriInfo);
 
@@ -1060,129 +1053,126 @@ public class InstallationEndpoint {
     }
 
 
-    @Tag(name = "Search")
-    @org.eclipse.microprofile.openapi.annotations.Operation(
-            operationId = "search-project",
-            summary = "Searches a project",
-            description = "Search Project")
-
-    @APIResponse(
-            responseCode = "200",
-            description = "The corresponding Projects.",
-            content = @Content(schema = @Schema(
-                    type = SchemaType.STRING,
-                    implementation = ProjectResponseDto.class)))
-    @APIResponse(
-            responseCode = "400",
-            description = "Bad Request.",
-            content = @Content(schema = @Schema(
-                    type = SchemaType.OBJECT,
-                    implementation = InformativeResponse.class)))
-    @APIResponse(
-            responseCode = "401",
-            description = "Client has not been authenticated.",
-            content = @Content(schema = @Schema(
-                    type = SchemaType.OBJECT,
-                    implementation = InformativeResponse.class)))
-    @APIResponse(
-            responseCode = "403",
-            description = "The authenticated client is not permitted to perform the requested operation.",
-            content = @Content(schema = @Schema(
-                    type = SchemaType.OBJECT,
-                    implementation = InformativeResponse.class)))
-    @APIResponse(
-            responseCode = "415",
-            description = "Cannot consume content type.",
-            content = @Content(schema = @Schema(
-                    type = SchemaType.OBJECT,
-                    implementation = InformativeResponse.class)))
-    @APIResponse(
-            responseCode = "500",
-            description = "Internal Server Errors.",
-            content = @Content(schema = @Schema(
-                    type = SchemaType.OBJECT,
-                    implementation = InformativeResponse.class)))
-    @SecurityRequirement(name = "Authentication")
-
-    @POST
-    @Path("/search")
-    @Produces(value = MediaType.APPLICATION_JSON)
-    @Consumes(value = MediaType.APPLICATION_JSON)
-
-    public Response search(
-            @NotEmpty(message = "The request body is empty.") @RequestBody(content = @Content(
-                    schema = @Schema(implementation = String.class),
-                    mediaType = MediaType.APPLICATION_JSON,
-                    examples = {
-                            @ExampleObject(
-                                    name = "An example request of a search on installations",
-                                    value = "{\n" +
-                                            "            \"type\":\"query\",\n" +
-                                            "            \"field\": \"installation\",\n" +
-                                            "            \"values\": \"GRNET-KNS-3\",\n" +
-                                            "            \"operand\": \"eq\"          \n" +
-                                            "\n" +
-                                            "}",
-                                    summary = "A simple search on Installations "),
-                            @ExampleObject(
-                                    name = "An example request of a complex search on installations",
-                                    value = "\n" +
-                                            "{\n" +
-                                            "  \"type\": \"filter\",\n" +
-                                            "  \"operator\": \"OR\",\n" +
-                                            "  \"criteria\": [\n" +
-                                            " \n" +
-                                            "    {\n" +
-                                            "      \"type\": \"filter\",\n" +
-                                            "      \"operator\": \"OR\",\n" +
-                                            "      \"criteria\": [{\n" +
-                                            "            \"type\":\"query\",\n" +
-                                            "            \"field\": \"installation\",\n" +
-                                            "            \"values\": \"GRNET-KNS-3\",\n" +
-                                            "            \"operand\": \"eq\"          \n" +
-                                            "\n" +
-                                            "},{\n" +
-                                            "            \"type\":\"query\",\n" +
-                                            "            \"field\": \"organisation\",\n" +
-                                            "            \"values\": \"grnet\",\n" +
-                                            "            \"operand\": \"eq\"          \n" +
-                                            "\n" +
-                                            "}]\n" +
-                                            "    }]}",
-                                    summary = "A complex search on Installations ")})
-            ) String json,
-            @Parameter(name = "page", in = QUERY,
-                    description = "Indicates the page number. Page number must be >= 1.") @DefaultValue("1") @QueryParam("page") int page,
-            @Parameter(name = "size", in = QUERY,
-                    description = "The page size.") @DefaultValue("10") @QueryParam("size") int size,
-            @Context UriInfo uriInfo
-    ) throws ParseException, NoSuchFieldException, org.json.simple.parser.ParseException, JsonProcessingException {
-
-        if (page < 1) {
-            throw new BadRequestException(ApiMessage.PAGE_NUMBER.message);
-        }
-        if (json.equals("")) {
-            throw new BadRequestException("not empty body permitted");
-        }
-        var results = installationService.searchInstallation(json, page - 1, size, uriInfo);
-
-
-        return Response.ok().entity(results).build();
-
-
-//        var  response =results.content.stream().map(ProjectResponseDto::getId).collect(Collectors.toList()).stream().map(installationService::hierarchicalStructure).collect(Collectors.toList());
+//    @Tag(name = "Search")
+//    @org.eclipse.microprofile.openapi.annotations.Operation(
+//            operationId = "search-project",
+//            summary = "Searches a project",
+//            description = "Search Project")
+//
+//    @APIResponse(
+//            responseCode = "200",
+//            description = "The corresponding Projects.",
+//            content = @Content(schema = @Schema(
+//                    type = SchemaType.STRING,
+//                    implementation = ProjectResponseDto.class)))
+//    @APIResponse(
+//            responseCode = "400",
+//            description = "Bad Request.",
+//            content = @Content(schema = @Schema(
+//                    type = SchemaType.OBJECT,
+//                    implementation = InformativeResponse.class)))
+//    @APIResponse(
+//            responseCode = "401",
+//            description = "Client has not been authenticated.",
+//            content = @Content(schema = @Schema(
+//                    type = SchemaType.OBJECT,
+//                    implementation = InformativeResponse.class)))
+//    @APIResponse(
+//            responseCode = "403",
+//            description = "The authenticated client is not permitted to perform the requested operation.",
+//            content = @Content(schema = @Schema(
+//                    type = SchemaType.OBJECT,
+//                    implementation = InformativeResponse.class)))
+//    @APIResponse(
+//            responseCode = "415",
+//            description = "Cannot consume content type.",
+//            content = @Content(schema = @Schema(
+//                    type = SchemaType.OBJECT,
+//                    implementation = InformativeResponse.class)))
+//    @APIResponse(
+//            responseCode = "500",
+//            description = "Internal Server Errors.",
+//            content = @Content(schema = @Schema(
+//                    type = SchemaType.OBJECT,
+//                    implementation = InformativeResponse.class)))
+//    @SecurityRequirement(name = "Authentication")
+//
+//    @POST
+//    @Path("/search")
+//    @Produces(value = MediaType.APPLICATION_JSON)
+//    @Consumes(value = MediaType.APPLICATION_JSON)
+//
+//    public Response search(
+//            @NotEmpty(message = "The request body is empty.") @RequestBody(content = @Content(
+//                    schema = @Schema(implementation = String.class),
+//                    mediaType = MediaType.APPLICATION_JSON,
+//                    examples = {
+//                            @ExampleObject(
+//                                    name = "An example request of a search on installations",
+//                                    value = "{\n" +
+//                                            "            \"type\":\"query\",\n" +
+//                                            "            \"field\": \"installation\",\n" +
+//                                            "            \"values\": \"GRNET-KNS-3\",\n" +
+//                                            "            \"operand\": \"eq\"          \n" +
+//                                            "\n" +
+//                                            "}",
+//                                    summary = "A simple search on Installations "),
+//                            @ExampleObject(
+//                                    name = "An example request of a complex search on installations",
+//                                    value = "\n" +
+//                                            "{\n" +
+//                                            "  \"type\": \"filter\",\n" +
+//                                            "  \"operator\": \"OR\",\n" +
+//                                            "  \"criteria\": [\n" +
+//                                            " \n" +
+//                                            "    {\n" +
+//                                            "      \"type\": \"filter\",\n" +
+//                                            "      \"operator\": \"OR\",\n" +
+//                                            "      \"criteria\": [{\n" +
+//                                            "            \"type\":\"query\",\n" +
+//                                            "            \"field\": \"installation\",\n" +
+//                                            "            \"values\": \"GRNET-KNS-3\",\n" +
+//                                            "            \"operand\": \"eq\"          \n" +
+//                                            "\n" +
+//                                            "},{\n" +
+//                                            "            \"type\":\"query\",\n" +
+//                                            "            \"field\": \"organisation\",\n" +
+//                                            "            \"values\": \"grnet\",\n" +
+//                                            "            \"operand\": \"eq\"          \n" +
+//                                            "\n" +
+//                                            "}]\n" +
+//                                            "    }]}",
+//                                    summary = "A complex search on Installations ")})
+//            ) String json,
+//            @Parameter(name = "page", in = QUERY,
+//                    description = "Indicates the page number. Page number must be >= 1.") @DefaultValue("1") @Min(value = 1, message = "Page number must be >= 1.") @QueryParam("page") int page,
+//            @Parameter(name = "size", in = QUERY,
+//                    description = "The page size.") @DefaultValue("10") @Min(value = 1, message = "Page size must be between 1 and 100.")
+//            @Max(value = 100, message = "Page size must be between 1 and 100.") @QueryParam("size") int size,
+//            @Context UriInfo uriInfo
+//    ) throws ParseException, NoSuchFieldException, org.json.simple.parser.ParseException, JsonProcessingException {
+//
+//        if (json.equals("")) {
+//            throw new BadRequestException("not empty body permitted");
+//        }
+//        //var results = installationService.searchInstallation(json, page - 1, size, uriInfo);
 //
 //
-//        PageResource<Project, List<HierarchicalRelationProjection>> pageResource=new PageResource<>();
-//        pageResource.content=response;
-//        pageResource.sizeOfPage=results.sizeOfPage;
-//        pageResource.numberOfPage=results.numberOfPage;
-//        pageResource.totalPages=results.totalPages;
-//        pageResource.links=results.links;
-//        pageResource.totalElements=results.totalElements;
+//        return Response.ok().build();
 //
-
-    }
+//
+////        var  response =results.content.stream().map(ProjectResponseDto::getId).collect(Collectors.toList()).stream().map(installationService::hierarchicalStructure).collect(Collectors.toList());
+////
+////
+////        PageResource<Project, List<HierarchicalRelationProjection>> pageResource=new PageResource<>();
+////        pageResource.content=response;
+////        pageResource.sizeOfPage=results.sizeOfPage;
+////        pageResource.numberOfPage=results.numberOfPage;
+////        pageResource.totalPages=results.totalPages;
+////        pageResource.links=results.links;
+////        pageResource.totalElements=results.totalElements;
+////
+//    }
 
 
     public static class PageableMetricProjection extends PageResource<MetricProjection> {

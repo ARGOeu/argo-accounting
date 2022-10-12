@@ -2,8 +2,6 @@ package org.accounting.system.repositories.project;
 
 import org.accounting.system.entities.Project;
 import org.accounting.system.entities.acl.RoleAccessControl;
-import org.accounting.system.enums.Collection;
-import org.accounting.system.enums.Operation;
 import org.accounting.system.repositories.acl.AccessControlRepository;
 import org.accounting.system.repositories.modulators.AccessControlModulator;
 import org.accounting.system.services.authorization.RoleService;
@@ -139,11 +137,4 @@ public class ProjectAccessControlRepository extends AccessControlModulator<Proje
 //            throw new ForbiddenException(ApiMessage.NO_PERMISSION.message);
 //        }
 //    }
-
-    public boolean accessibility(String projectId, Collection collection, Operation operation){
-
-        var accessControl= accessControlRepository.findByWhoAndCollectionAndEntity(getRequestInformation().getSubjectOfToken(), Collection.Project, projectId);
-
-        return accessControl.filter(roleAccessControl -> roleService.hasRoleAccess(roleAccessControl.getRoles(), collection, operation)).isPresent();
-    }
 }

@@ -48,7 +48,13 @@ Success Response `201 CREATED`
   "organisation" : "grnet",
   "infrastructure" : "okeanos-knossos",
   "installation" : "GRNET-KNS",
-  "unit_of_access" : "62973fea0f41a20c683e9014"
+  "unit_of_access": {
+        "metric_definition_id": "62973fea0f41a20c683e9014",
+        "metric_name": "lalala",
+        "metric_description": "Number of users",
+        "unit_type": "#",
+        "metric_type": "aggregated"
+    }
 }
 ```
 
@@ -119,17 +125,18 @@ Success Response `200 OK`
 
 ```
 {
-   "installation_id": "62986c61683f693f470bb67c",
-   "organisation": "grnet",
-   "infrastructure": "okeanos-knossos",
-   "installation": "GRNET-KNS",
-   "unit_of_access": {
-       "metric_definition_id": "62986c4e683f693f470bb67b",
-       "metric_name": "number_of_users",
-       "metric_description": "Number of users",
-       "unit_type": "#",
-       "metric_type": "aggregated"
-   }
+    "id": "6350f13072dda00a3ce5f0cb",
+    "project": "725025",
+    "organisation": "sites",
+    "infrastructure": "infra-grnet-test",
+    "installation": "installation-grnet",
+    "unit_of_access": {
+        "metric_definition_id": "6350f12772dda00a3ce5f0ca",
+        "metric_name": "lalala",
+        "metric_description": "Number of users",
+        "unit_type": "#",
+        "metric_type": "aggregated"
+    }
 }
 ```
 
@@ -163,7 +170,7 @@ Success Response 200 OK
    "total_pages": 16,
    "content": [
    {
-   "installation_id": "62986c61683f693f470bb67c",
+   "id": "62986c61683f693f470bb67c",
    "organisation": "grnet",
    "infrastructure": "okeanos-knossos",
    "installation": "GRNET-KNS",
@@ -230,20 +237,21 @@ Success Response 200 OK
    "total_elements": 237,
    "total_pages": 16,
    "content": [
-   {
-   "installation_id": "62986c61683f693f470bb67c",
-   "organisation": "grnet",
-   "infrastructure": "okeanos-knossos",
-   "installation": "GRNET-KNS",
-   "unit_of_access": {
-       "metric_definition_id": "62986c4e683f693f470bb67b",
-       "metric_name": "number_of_users",
-       "metric_description": "Number of users",
-       "unit_type": "#",
-       "metric_type": "aggregated"
-   }
-   }
-   ],
+        {
+            "id": "6350f13072dda00a3ce5f0cb",
+            "project": "725025",
+            "organisation": "sites",
+            "infrastructure": "infra-grnet-test",
+            "installation": "installation-grnet",
+            "unit_of_access": {
+                "metric_definition_id": "6350f12772dda00a3ce5f0ca",
+                "metric_name": "lalala",
+                "metric_description": "Number of users",
+                "unit_type": "#",
+                "metric_type": "aggregated"
+            }
+        }
+    ],
    "links": [
        {
            "href": "https://acc.devel.argo.grnet.gr/accounting-system/installations?page=1&size=15",
@@ -297,7 +305,7 @@ Success Response `200 OK`
 ```
 {
    "code": 200,
-   "message": "Access Control entry has been created successfully."
+   "message": "Installation Access Control was successfully created."
 }
 ```
 

@@ -8,6 +8,7 @@ import org.accounting.system.enums.Collection;
 import javax.enterprise.context.ApplicationScoped;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
@@ -50,5 +51,9 @@ public class RoleRepository extends RoleModulator {
      */
     public Optional<Role> getRoleByName(String name){
         return find("name = ?1", name).stream().findFirst();
+    }
+
+    public Set<Role> getRolesByName(Set<String> names){
+        return find("name in ?1", names).stream().collect(Collectors.toSet());
     }
 }

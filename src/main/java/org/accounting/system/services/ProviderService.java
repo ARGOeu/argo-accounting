@@ -1,53 +1,56 @@
 package org.accounting.system.services;
 
 import io.quarkus.mongodb.panache.PanacheQuery;
-import io.quarkus.oidc.TokenIntrospection;
+import org.accounting.system.dtos.acl.role.RoleAccessControlRequestDto;
+import org.accounting.system.dtos.acl.role.RoleAccessControlResponseDto;
+import org.accounting.system.dtos.acl.role.RoleAccessControlUpdateDto;
 import org.accounting.system.dtos.installation.InstallationResponseDto;
 import org.accounting.system.dtos.pagination.PageResource;
 import org.accounting.system.dtos.provider.ProviderRequestDto;
 import org.accounting.system.dtos.provider.ProviderResponseDto;
 import org.accounting.system.dtos.provider.UpdateProviderRequestDto;
 import org.accounting.system.entities.HierarchicalRelation;
+import org.accounting.system.entities.authorization.Role;
 import org.accounting.system.entities.projections.InstallationProjection;
 import org.accounting.system.entities.projections.MetricProjection;
 import org.accounting.system.entities.provider.Provider;
 import org.accounting.system.exceptions.ConflictException;
+import org.accounting.system.mappers.AccessControlMapper;
 import org.accounting.system.mappers.InstallationMapper;
 import org.accounting.system.mappers.ProviderMapper;
 import org.accounting.system.repositories.HierarchicalRelationRepository;
+import org.accounting.system.repositories.authorization.RoleRepository;
 import org.accounting.system.repositories.provider.ProviderRepository;
-import org.accounting.system.services.authorization.RoleService;
+import org.accounting.system.services.acl.RoleAccessControlService;
 import org.accounting.system.util.QueryParser;
 import org.apache.commons.lang3.StringUtils;
 import org.bson.conversions.Bson;
-import org.eclipse.microprofile.config.inject.ConfigProperty;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 import javax.ws.rs.ForbiddenException;
+import javax.ws.rs.NotFoundException;
 import javax.ws.rs.core.UriInfo;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 @ApplicationScoped
-public class ProviderService {
+public class ProviderService implements RoleAccessControlService {
 
     @Inject
     ProviderRepository providerRepository;
+
+    @Inject
+    RoleRepository roleRepository;
 
     @Inject
     HierarchicalRelationRepository hierarchicalRelationRepository;
 
     @Inject
     HierarchicalRelationService hierarchicalRelationService;
-
-    @Inject
-    TokenIntrospection tokenIntrospection;
-    @Inject
-    RoleService roleService;
     @Inject
     QueryParser queryParser;
-    @ConfigProperty(name = "key.to.retrieve.id.from.access.token")
-    String id;
+
     /**
      * Returns the N Providers from the given page.
      *
@@ -187,7 +190,7 @@ public class ProviderService {
 
     public PageResource<InstallationResponseDto> findInstallationsByProvider(String projectId, String providerId, int page, int size, UriInfo uriInfo){
 
-        PanacheQuery<InstallationProjection> projectionQuery = hierarchicalRelationRepository.findInstallationsByProvider(projectId, providerId, "MetricDefinition", "unit_of_access", "_id", "unit_of_access", page, size, InstallationProjection.class);
+        PanacheQuery<InstallationProjection> projectionQuery = providerRepository.fetchProviderInstallations(projectId, providerId, page, size);
 
         return new PageResource<>(projectionQuery, InstallationMapper.INSTANCE.installationProjectionsToResponse(projectionQuery.list()), uriInfo);
     }
@@ -197,5 +200,108 @@ public class ProviderService {
         Bson query=queryParser.parseFile(json);
         PanacheQuery< Provider> projectionQuery = providerRepository.search(query,page,size);
         return new PageResource<>(projectionQuery, ProviderMapper.INSTANCE.providersToResponse(projectionQuery.list()), uriInfo);
+    }
+
+    @Override
+    public void grantPermission(String who, RoleAccessControlRequestDto request, String... id) {
+
+        var projectID = id[0];
+
+        var providerID = id[1];
+
+        var optional = providerRepository.fetchRoleAccessControl(projectID, providerID, who);
+
+        if(optional.isPresent()){
+
+            throw new ConflictException("There is a Provider Access Control for the client : "+who);
+        }
+
+        var accessControl = AccessControlMapper.INSTANCE.requestToRoleAccessControl(request);
+
+        accessControl.setWho(who);
+
+        accessControl.setRoles(roleRepository.getRolesByName(request.roles));
+
+        providerRepository.insertNewRoleAccessControl(projectID, providerID, accessControl);
+    }
+
+    @Override
+    public RoleAccessControlResponseDto modifyPermission(String who, RoleAccessControlUpdateDto updateDto, String... id) {
+
+        var projectID = id[0];
+
+        var providerID = id[1];
+
+        var optional = providerRepository.fetchRoleAccessControl(projectID, providerID, who);
+
+        optional.orElseThrow(() -> new NotFoundException("There is no Access Control."));
+
+        providerRepository.updateRoleAccessControl(projectID, providerID, who, roleRepository.getRolesByName(updateDto.roles));
+
+        var updated = providerRepository.fetchRoleAccessControl(projectID, providerID, who);
+
+        var response = AccessControlMapper.INSTANCE.roleAccessControlToResponse(updated.get());
+
+        response.roles = updated.get().getRoles().stream().map(Role::getName).collect(Collectors.toSet());
+
+        return response;
+    }
+
+    @Override
+    public void deletePermission(String who, String... id) {
+
+        var projectID = id[0];
+
+        var providerID = id[1];
+
+        var optional = providerRepository.fetchRoleAccessControl(projectID, providerID, who);
+
+        optional.orElseThrow(() -> new NotFoundException("There is no Access Control."));
+
+        providerRepository.deleteRoleAccessControl(projectID, providerID, who);
+    }
+
+    @Override
+    public RoleAccessControlResponseDto fetchPermission(String who, String... id) {
+
+        var projectID = id[0];
+
+        var providerID = id[1];
+
+        var optional = providerRepository.fetchRoleAccessControl(projectID, providerID, who);
+
+        optional.orElseThrow(() -> new NotFoundException("There is no Access Control."));
+
+        var response = AccessControlMapper.INSTANCE.roleAccessControlToResponse(optional.get());
+
+        response.roles = optional.get().getRoles().stream().map(Role::getName).collect(Collectors.toSet());
+
+        return response;
+    }
+
+    @Override
+    public PageResource<RoleAccessControlResponseDto> fetchAllPermissions(int page, int size, UriInfo uriInfo, String... id) {
+
+        var projectID = id[0];
+
+        var providerID = id[1];
+
+        var panacheQuery = providerRepository.fetchAllRoleAccessControls(projectID, providerID, page, size);
+
+        var responses = panacheQuery
+                .list()
+                .stream()
+                .map(acl->{
+
+                    var response = AccessControlMapper.INSTANCE.roleAccessControlToResponse(acl);
+
+                    response.roles = acl.getRoles().stream().map(Role::getName).collect(Collectors.toSet());
+
+                    return response;
+
+                })
+                .collect(Collectors.toList());
+
+        return new PageResource<>(panacheQuery, responses, uriInfo);
     }
 }

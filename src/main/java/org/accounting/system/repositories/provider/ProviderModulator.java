@@ -6,8 +6,6 @@ import org.accounting.system.entities.acl.RoleAccessControl;
 import org.accounting.system.entities.projections.InstallationProjection;
 import org.accounting.system.entities.projections.MetricProjection;
 import org.accounting.system.entities.provider.Provider;
-import org.accounting.system.enums.Collection;
-import org.accounting.system.enums.Operation;
 import org.accounting.system.mappers.ProviderMapper;
 import org.accounting.system.repositories.modulators.AbstractModulator;
 import org.accounting.system.services.HierarchicalRelationService;
@@ -73,12 +71,6 @@ public class ProviderModulator extends AbstractModulator<Provider, String, RoleA
 //            default:
 //                throw new ForbiddenException(ApiMessage.NO_PERMISSION.message);
 //        }
-    }
-
-
-    public boolean accessibility(String project, String provider, Collection collection, Operation operation){
-
-                return providerAccessEntityRepository.accessibility(project, provider, collection, operation);
     }
 
     @Override

@@ -325,7 +325,7 @@ Success Response `200 OK`
 ```
 {
    "code": 200,
-   "message": "Access Control entry has been created successfully."
+   "message": "Provider Access Control was successfully created."
 }
 ```
 

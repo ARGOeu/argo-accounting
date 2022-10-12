@@ -1,22 +1,20 @@
 package org.accounting.system.services.acl;
 
-import io.quarkus.mongodb.panache.PanacheQuery;
-import org.accounting.system.dtos.InformativeResponse;
 import org.accounting.system.dtos.acl.role.RoleAccessControlRequestDto;
 import org.accounting.system.dtos.acl.role.RoleAccessControlResponseDto;
 import org.accounting.system.dtos.acl.role.RoleAccessControlUpdateDto;
 import org.accounting.system.dtos.pagination.PageResource;
-import org.accounting.system.entities.acl.RoleAccessControl;
-import org.accounting.system.enums.Collection;
+import org.accounting.system.entities.authorization.Role;
+import org.accounting.system.exceptions.ConflictException;
 import org.accounting.system.mappers.AccessControlMapper;
 import org.accounting.system.repositories.acl.AccessControlRepository;
+import org.accounting.system.repositories.authorization.RoleRepository;
+import org.accounting.system.repositories.project.ProjectRepository;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 import javax.ws.rs.NotFoundException;
 import javax.ws.rs.core.UriInfo;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.stream.Collectors;
 
 @ApplicationScoped
@@ -26,6 +24,11 @@ public class AccessControlService {
     @Inject
     AccessControlRepository accessControlRepository;
 
+    @Inject
+    RoleRepository roleRepository;
+
+    @Inject
+    ProjectRepository projectRepository;
 
 //    /**
 //     * Converts the request for {@link PermissionAccessControlRequestDto permissions} to {@link org.accounting.system.entities.acl.AccessControl} and stores it in the database.
@@ -60,35 +63,24 @@ public class AccessControlService {
      * @param who     To whom the permissions will be granted.
      * @param request The roles
      */
-    public InformativeResponse grantPermission(String id, String who, RoleAccessControlRequestDto request, Collection collection) {
+    public void grantPermission(String who, RoleAccessControlRequestDto request, String... id) {
 
-        PanacheQuery<RoleAccessControl> roleAccessControl = accessControlRepository.findAllByWhoAndEntityAndCollection(who, id, collection);
+        var projectID = id[0];
 
-        var rolesExisting = roleAccessControl
-                .stream()
-                .flatMap(rac->rac.getRoles().stream())
-                .collect(Collectors.toSet());
+        var optional = projectRepository.fetchRoleAccessControl(projectID, who);
 
+        if(optional.isPresent()){
 
-        request.roles.removeAll(rolesExisting);
-        var rolesToBeAdded=request.roles;
-        if (request.roles.size() > 0) {
-
-            var accessControl = AccessControlMapper.INSTANCE.requestToRoleAccessControl(request);
-
-            accessControl.setEntity(id);
-
-            accessControl.setWho(who);
-
-            accessControl.setCollection(collection);
-
-            accessControlRepository.persist(accessControl);
+            throw new ConflictException("There is a Project Access Control for the client : "+who);
         }
-        var informativeResponse = new InformativeResponse();
-        informativeResponse.message = buildMsg(new ArrayList<>(rolesToBeAdded),new ArrayList<>(rolesExisting));
-        informativeResponse.code = 200;
 
-        return informativeResponse;
+        var accessControl = AccessControlMapper.INSTANCE.requestToRoleAccessControl(request);
+
+        accessControl.setWho(who);
+
+        accessControl.setRoles(roleRepository.getRolesByName(request.roles));
+
+        projectRepository.insertNewRoleAccessControl(projectID, accessControl);
     }
 
 //    /**
@@ -116,19 +108,23 @@ public class AccessControlService {
      * @param who       To whom belongs the permissions which will be modified.
      * @param updateDto The permissions which will be modified.
      */
-    public RoleAccessControlResponseDto modifyPermission(String id, String who, RoleAccessControlUpdateDto updateDto, Collection collection) {
+    public RoleAccessControlResponseDto modifyPermission(String who, RoleAccessControlUpdateDto updateDto, String... id) {
 
-        var optional = accessControlRepository.findByWhoAndCollectionAndEntity(who, collection, id);
+        var projectID = id[0];
+
+        var optional = projectRepository.fetchRoleAccessControl(projectID, who);
 
         optional.orElseThrow(() -> new NotFoundException("There is no Access Control."));
 
-        var accessControl = optional.get();
+        projectRepository.updateRoleAccessControl(projectID, who, roleRepository.getRolesByName(updateDto.roles));
 
-        AccessControlMapper.INSTANCE.updateRoleAccessControlFromDto(updateDto, accessControl);
+        var updated = projectRepository.fetchRoleAccessControl(projectID, who);
 
-        accessControlRepository.update(accessControl);
+        var response = AccessControlMapper.INSTANCE.roleAccessControlToResponse(updated.get());
 
-        return AccessControlMapper.INSTANCE.roleAccessControlToResponse(accessControl);
+        response.roles = updated.get().getRoles().stream().map(Role::getName).collect(Collectors.toSet());
+
+        return response;
     }
 
 //    /**
@@ -156,19 +152,15 @@ public class AccessControlService {
      * @param id  The entity for which permissions will be deleted.
      * @param who The client id for which the permissions will be deleted.
      */
-    public InformativeResponse deletePermission(String id, String who, Collection collection) {
+    public void deletePermission(String who, String... id) {
 
-        var accessControl = accessControlRepository.findByWhoAndCollectionAndEntity(who, collection, id);
+        var projectID = id[0];
 
-        accessControl.orElseThrow(() -> new NotFoundException("There is no Access Control."));
+        var optional = projectRepository.fetchRoleAccessControl(projectID, who);
 
-        accessControlRepository.delete(accessControl.get());
+        optional.orElseThrow(() -> new NotFoundException("There is no Access Control."));
 
-        var successResponse = new InformativeResponse();
-        successResponse.code = 200;
-        successResponse.message = "Access Control entry has been deleted successfully.";
-
-        return successResponse;
+        projectRepository.deleteRoleAccessControl(projectID, who);
     }
 
 //    /**
@@ -190,26 +182,47 @@ public class AccessControlService {
      * @param id  The entity for which permissions will be returned.
      * @param who The client id for which the permissions will be returned.
      */
-    public RoleAccessControlResponseDto fetchPermission(String id, String who, Collection collection) {
+    public RoleAccessControlResponseDto fetchPermission(String who, String... id) {
 
-        var accessControl = accessControlRepository.findByWhoAndCollectionAndEntity(who, collection, id);
+        var projectID = id[0];
 
-        accessControl.orElseThrow(() -> new NotFoundException("There is no Access Control."));
+        var optional = projectRepository.fetchRoleAccessControl(projectID, who);
 
-        return AccessControlMapper.INSTANCE.roleAccessControlToResponse(accessControl.get());
+        optional.orElseThrow(() -> new NotFoundException("There is no Access Control."));
+
+        var response = AccessControlMapper.INSTANCE.roleAccessControlToResponse(optional.get());
+
+        response.roles = optional.get().getRoles().stream().map(Role::getName).collect(Collectors.toSet());
+
+        return response;
     }
 
     /**
      * Fetches all Access Controls that have been created for the given entity id
      *
      * @param id         The entity for which permissions will be returned.
-     * @param collection The collection that the entity belongs to.
      */
-    public PageResource<RoleAccessControlResponseDto> fetchAllPermissions(String id, Collection collection, int page, int size, UriInfo uriInfo) {
+    public PageResource<RoleAccessControlResponseDto> fetchAllPermissions(int page, int size, UriInfo uriInfo, String... id) {
 
-        var panacheQuery = accessControlRepository.findAllByEntityAndCollection(id, collection, page, size);
+        var projectID = id[0];
 
-        return new PageResource<>(panacheQuery, AccessControlMapper.INSTANCE.roleAccessControlsToResponse(panacheQuery.list()), uriInfo);
+        var panacheQuery = projectRepository.fetchAllRoleAccessControls(projectID, page, size);
+
+        var responses = panacheQuery
+                .list()
+                .stream()
+                .map(acl->{
+
+                    var response = AccessControlMapper.INSTANCE.roleAccessControlToResponse(acl);
+
+                    response.roles = acl.getRoles().stream().map(Role::getName).collect(Collectors.toSet());
+
+                    return response;
+
+                })
+                .collect(Collectors.toList());
+
+        return new PageResource<>(panacheQuery, responses, uriInfo);
     }
 
     //    /**
@@ -221,33 +234,33 @@ public class AccessControlService {
 //
 //        return AccessControlMapper.INSTANCE.permissionAccessControlsToResponse(accessControl);
 //    }
-    private String buildMsg(List<String> rolesToBeAdded, List<String> rolesExisting) {
-
-
-        String message = rolesToBeAdded.stream().map(r -> {
-            if (rolesToBeAdded.indexOf(r) == 0) {
-                return "Access Control Entry successfully added for roles: " + r;
-            } else {
-                return r;
-            }
-
-        }).collect(Collectors.joining(","));
-        String msgExist = rolesExisting.stream().map(r -> {
-            if (rolesExisting.indexOf(r) == 0) {
-                return "Access Control Entry already exists for roles: " + r;
-            } else {
-                return r;
-            }
-
-        }).collect(Collectors.joining(","));
-
-        String totalMsg = "";
-        if (!message.equals("")) {
-            totalMsg = message + ".";
-        }
-        if (!msgExist.equals("")) {
-            totalMsg = totalMsg + " " + msgExist + ".";
-        }
-        return totalMsg;
-    }
+//    private String buildMsg(List<String> rolesToBeAdded, List<String> rolesExisting) {
+//
+//
+//        String message = rolesToBeAdded.stream().map(r -> {
+//            if (rolesToBeAdded.indexOf(r) == 0) {
+//                return "Access Control Entry successfully added for roles: " + r;
+//            } else {
+//                return r;
+//            }
+//
+//        }).collect(Collectors.joining(","));
+//        String msgExist = rolesExisting.stream().map(r -> {
+//            if (rolesExisting.indexOf(r) == 0) {
+//                return "Access Control Entry already exists for roles: " + r;
+//            } else {
+//                return r;
+//            }
+//
+//        }).collect(Collectors.joining(","));
+//
+//        String totalMsg = "";
+//        if (!message.equals("")) {
+//            totalMsg = message + ".";
+//        }
+//        if (!msgExist.equals("")) {
+//            totalMsg = totalMsg + " " + msgExist + ".";
+//        }
+//        return totalMsg;
+//    }
 }

@@ -53,14 +53,13 @@ Project admin role, has  full access  on the projects it is assigned and can per
 
 **On an assigned project and the providers/installation/metrics of the project, the project admin role can : **
 
-- Register the assigned Project
 - Read the project
 - Associate and dissociate providers on the project
 - Grant access to a client  with a specific role, on a project
 
-| Collection       	| Register 	| Associate | Dissociate | Read   	| Acl    |
-|------------------	|--------	|--------	|--------	 |--------	| ------ |
-| Project        	| Always <sup>*</sup> 	| Always <sup>*</sup> 	| Always <sup>*</sup> 	 | Always <sup>*</sup> 	| Always <sup>*</sup> |
+| Collection       	| Associate | Dissociate | Read   	| Acl    |
+|------------------	|--------	|--------	 |--------	| ------ |
+| Project        	| Always <sup>*</sup> 	| Always <sup>*</sup> 	 | Always <sup>*</sup> 	| Always <sup>*</sup> |
 
 - Create/Update/Delete/Read  Installations, on a project
 - Grant access to a client with a specific role , on an installation

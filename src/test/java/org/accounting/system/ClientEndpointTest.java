@@ -13,6 +13,7 @@ import org.accounting.system.entities.acl.RoleAccessControl;
 import org.accounting.system.entities.client.Client;
 import org.accounting.system.enums.Collection;
 import org.accounting.system.repositories.acl.AccessControlRepository;
+import org.accounting.system.repositories.authorization.RoleRepository;
 import org.accounting.system.repositories.client.ClientAccessAlwaysRepository;
 import org.accounting.system.repositories.client.ClientRepository;
 import org.accounting.system.services.client.ClientService;
@@ -44,6 +45,9 @@ public class ClientEndpointTest {
     @Inject
     AccessControlRepository accessControlRepository;
 
+    @Inject
+    RoleRepository roleRepository;
+
     @BeforeAll
     public void setup() {
 
@@ -56,7 +60,7 @@ public class ClientEndpointTest {
         roleAccess.setWho("xyz@example.org");
         roleAccess.setEntity("784569");
         roleAccess.setCollection(Collection.Project);
-        roleAccess.setRoles(Set.of("project_admin"));
+        roleAccess.setRoles(roleRepository.getRolesByName(Set.of("project_admin")));
         accessControlRepository.persist(roleAccess);
     }
 

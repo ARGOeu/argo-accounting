@@ -9,12 +9,11 @@ import org.accounting.system.enums.RelationType;
 import org.accounting.system.exceptions.ConflictException;
 import org.accounting.system.mappers.MetricMapper;
 import org.accounting.system.repositories.HierarchicalRelationRepository;
-import org.accounting.system.repositories.installation.InstallationRepository;
 import org.accounting.system.repositories.metric.MetricRepository;
 import org.accounting.system.repositories.project.ProjectRepository;
 import org.accounting.system.repositories.provider.ProviderRepository;
+import org.accounting.system.services.installation.InstallationService;
 import org.bson.Document;
-import org.bson.types.ObjectId;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
@@ -33,14 +32,14 @@ public class HierarchicalRelationService {
     ProviderRepository providerRepository;
 
     @Inject
-    InstallationRepository installationRepository;
+    InstallationService installationService;
 
     @Inject
     MetricRepository metricRepository;
 
     public Metric assignMetric(String installationId, MetricRequestDto request) {
 
-        var storedInstallation = installationRepository.findById(new ObjectId(installationId));
+        var storedInstallation = installationService.fetchInstallation(installationId);
 
         HierarchicalRelation project = new HierarchicalRelation(storedInstallation.getProject(), RelationType.PROJECT);
 
