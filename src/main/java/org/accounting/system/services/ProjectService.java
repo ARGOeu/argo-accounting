@@ -1,9 +1,7 @@
 package org.accounting.system.services;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import io.quarkus.mongodb.panache.PanacheQuery;
-import io.quarkus.oidc.TokenIntrospection;
 import org.accounting.system.dtos.acl.role.RoleAccessControlRequestDto;
 import org.accounting.system.dtos.acl.role.RoleAccessControlResponseDto;
 import org.accounting.system.dtos.acl.role.RoleAccessControlUpdateDto;
@@ -11,29 +9,23 @@ import org.accounting.system.dtos.installation.InstallationResponseDto;
 import org.accounting.system.dtos.pagination.PageResource;
 import org.accounting.system.entities.Project;
 import org.accounting.system.entities.authorization.Role;
-import org.accounting.system.entities.projections.HierarchicalRelationProjection;
 import org.accounting.system.entities.projections.InstallationProjection;
 import org.accounting.system.entities.projections.MetricProjection;
 import org.accounting.system.entities.projections.ProjectProjection;
 import org.accounting.system.exceptions.ConflictException;
 import org.accounting.system.mappers.AccessControlMapper;
 import org.accounting.system.mappers.InstallationMapper;
-import org.accounting.system.repositories.HierarchicalRelationRepository;
-import org.accounting.system.repositories.acl.AccessControlRepository;
 import org.accounting.system.repositories.authorization.RoleRepository;
 import org.accounting.system.repositories.project.ProjectRepository;
 import org.accounting.system.services.acl.RoleAccessControlService;
-import org.accounting.system.services.authorization.RoleService;
 import org.accounting.system.util.QueryParser;
 import org.bson.conversions.Bson;
-import org.eclipse.microprofile.config.inject.ConfigProperty;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 import javax.ws.rs.NotFoundException;
 import javax.ws.rs.core.UriInfo;
 import java.util.ArrayList;
-import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -47,25 +39,8 @@ public class ProjectService implements RoleAccessControlService {
     RoleRepository roleRepository;
 
     @Inject
-    HierarchicalRelationRepository hierarchicalRelationRepository;
-
-    @Inject
-    AccessControlRepository accessControlRepository;
-
-    @Inject
-    TokenIntrospection tokenIntrospection;
-
-    @Inject
-    RoleService roleService;
-
-    @Inject
     QueryParser queryParser;
 
-    @ConfigProperty(name = "key.to.retrieve.id.from.access.token")
-    String id;
-
-    @Inject
-    ObjectMapper objectMapper;
 
     /**
      * This method correlates the given Providers with a specific Project and creates an hierarchical structure with root
@@ -97,15 +72,9 @@ public class ProjectService implements RoleAccessControlService {
 
         projectRepository.dissociateProviderFromProject(projectId, providerIds);
     }
-
-    public List<HierarchicalRelationProjection> hierarchicalStructure(final String externalId) {
-
-        return projectRepository.hierarchicalStructure(externalId);
-    }
-
     public ProjectProjection getById(final String id) {
 
-        return projectRepository.fetchById(id);
+         return projectRepository.fetchById(id);
     }
 
     public PageResource<InstallationResponseDto> getInstallationsByProject(String projectId, int page, int size, UriInfo uriInfo){

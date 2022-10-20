@@ -5,7 +5,6 @@ import io.quarkus.mongodb.panache.PanacheQuery;
 import org.accounting.system.clients.ProjectClient;
 import org.accounting.system.entities.Project;
 import org.accounting.system.entities.acl.RoleAccessControl;
-import org.accounting.system.entities.projections.HierarchicalRelationProjection;
 import org.accounting.system.entities.projections.MetricProjection;
 import org.accounting.system.exceptions.ConflictException;
 import org.accounting.system.repositories.HierarchicalRelationRepository;
@@ -15,7 +14,6 @@ import org.eclipse.microprofile.rest.client.inject.RestClient;
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 import javax.ws.rs.NotFoundException;
-import java.util.List;
 
 @ApplicationScoped
 public class ProjectAccessAlwaysRepository extends AccessAlwaysModulator<Project, String, RoleAccessControl> {
@@ -37,12 +35,6 @@ public class ProjectAccessAlwaysRepository extends AccessAlwaysModulator<Project
 
         return project;
     }
-
-    public List<HierarchicalRelationProjection> hierarchicalStructure(final String externalId) {
-
-        return hierarchicalRelationRepository.hierarchicalStructure(externalId);
-    }
-
     public PanacheQuery<MetricProjection> fetchAllMetrics(String id, int page, int size){
 
         var projection = hierarchicalRelationRepository.findByExternalId(id, page, size);

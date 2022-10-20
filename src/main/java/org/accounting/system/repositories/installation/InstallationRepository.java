@@ -1,9 +1,6 @@
 package org.accounting.system.repositories.installation;
 
-import com.mongodb.client.model.Aggregates;
-import com.mongodb.client.model.Filters;
-import com.mongodb.client.model.UpdateOptions;
-import com.mongodb.client.model.Updates;
+import com.mongodb.client.model.*;
 import io.quarkus.mongodb.panache.PanacheQuery;
 import io.quarkus.oidc.TokenIntrospection;
 import io.quarkus.panache.common.Page;
@@ -12,7 +9,6 @@ import org.accounting.system.entities.HierarchicalRelation;
 import org.accounting.system.entities.acl.RoleAccessControl;
 import org.accounting.system.entities.authorization.Role;
 import org.accounting.system.entities.installation.Installation;
-import org.accounting.system.entities.projections.HierarchicalRelationProjection;
 import org.accounting.system.entities.projections.InstallationProjection;
 import org.accounting.system.entities.projections.MongoQuery;
 import org.accounting.system.enums.AccessType;
@@ -367,17 +363,100 @@ public class InstallationRepository {
 
         return precedence.access;
     }
+    public PanacheQuery<InstallationProjection> fetchAllInstallations(int page, int size) {
 
-    public List<HierarchicalRelationProjection> hierarchicalStructure(final String externalId) {
+        var eqAccessControl =Aggregates.match(Filters.or(
+                Filters.and(Filters.eq("roleAccessControls.who", tokenIntrospection.getJsonObject().getString(key)),
+                        Filters.eq("roleAccessControls.roles.collections_access_permissions.collection", Collection.Installation.name()),
+                        Filters.eq("roleAccessControls.roles.collections_access_permissions.access_permissions.operation", Operation.READ.name()),
+                        Filters.eq("roleAccessControls.roles.collections_access_permissions.access_permissions.access_type", AccessType.ALWAYS.name())),
 
-        return hierarchicalRelationRepository.hierarchicalStructure(externalId);
-//        switch (getRequestInformation().getAccessType()){
-//            case ALWAYS:
-//                return projectAccessAlwaysRepository.hierarchicalStructure(externalId);
-//            case ENTITY:
-//                return projectAccessEntityRepository.hierarchicalStructure(externalId);
-//            default:
-//                throw new ForbiddenException(ApiMessage.NO_PERMISSION.message);
-//        }
+                Filters.and(Filters.eq("providers.roleAccessControls.who", tokenIntrospection.getJsonObject().getString(key)),
+                        Filters.eq("providers.roleAccessControls.roles.collections_access_permissions.collection", Collection.Installation.name()),
+                        Filters.eq("providers.roleAccessControls.roles.collections_access_permissions.access_permissions.operation", Operation.READ.name()),
+                        Filters.eq("providers.roleAccessControls.roles.collections_access_permissions.access_permissions.access_type", AccessType.ALWAYS.name())),
+
+                Filters.and(Filters.eq("providers.installations.roleAccessControls.who", tokenIntrospection.getJsonObject().getString(key)),
+                        Filters.eq("providers.installations.roleAccessControls.roles.collections_access_permissions.collection", Collection.Installation.name()),
+                        Filters.eq("providers.installations.roleAccessControls.roles.collections_access_permissions.access_permissions.operation", Operation.READ.name()),
+                        Filters.eq("providers.installations.roleAccessControls.roles.collections_access_permissions.access_permissions.access_type", AccessType.ALWAYS.name()))));
+
+        var unwind = Aggregates
+                .unwind("$providers");
+
+        var replaceRoot = Aggregates
+                .replaceRoot("$providers");
+        var unwindOptions = new UnwindOptions();
+        var unwindInstallations = Aggregates.unwind("$providers.installations",unwindOptions.preserveNullAndEmptyArrays(Boolean.FALSE));
+
+        var replaceRootToInstallation = Aggregates.replaceRoot("$installations");
+        Bson lookup = Aggregates.lookup("MetricDefinition", "unit_of_access", "_id", "unit_of_access");
+
+        var installations= projectRepository.getMongoCollection()
+                .aggregate(List.of(eqAccessControl, unwind,unwindInstallations,eqAccessControl,replaceRoot,replaceRootToInstallation, Aggregates.skip(size * (page)), Aggregates.limit(size),lookup),  InstallationProjection.class)
+                .into(new ArrayList<>());
+
+        Document count = projectRepository.getMongoCollection()
+                .aggregate(List.of(eqAccessControl,unwind,unwindInstallations,eqAccessControl,replaceRoot,replaceRootToInstallation,Aggregates.count()))
+                .first();
+        var projectionQuery = new MongoQuery<InstallationProjection>();
+
+        projectionQuery.list = installations;
+        projectionQuery.index = page;
+        projectionQuery.size = size;
+        projectionQuery.count = count == null ? 0L : Long.parseLong(count.get("count").toString());
+        projectionQuery.page = Page.of(page, size);
+
+        return projectionQuery;
+
+    }
+
+
+    public PanacheQuery<InstallationProjection> searchInstallations(Bson searchDoc, int page, int size) {
+
+        var eqAccessControl =Aggregates.match(Filters.or(
+                Filters.and(Filters.eq("roleAccessControls.who", tokenIntrospection.getJsonObject().getString(key)),
+                        Filters.eq("roleAccessControls.roles.collections_access_permissions.collection", Collection.Installation.name()),
+                        Filters.eq("roleAccessControls.roles.collections_access_permissions.access_permissions.operation", Operation.READ.name()),
+                        Filters.eq("roleAccessControls.roles.collections_access_permissions.access_permissions.access_type", AccessType.ALWAYS.name())),
+
+                Filters.and(Filters.eq("providers.roleAccessControls.who", tokenIntrospection.getJsonObject().getString(key)),
+                        Filters.eq("providers.roleAccessControls.roles.collections_access_permissions.collection", Collection.Installation.name()),
+                        Filters.eq("providers.roleAccessControls.roles.collections_access_permissions.access_permissions.operation", Operation.READ.name()),
+                        Filters.eq("providers.roleAccessControls.roles.collections_access_permissions.access_permissions.access_type", AccessType.ALWAYS.name())),
+
+                Filters.and(Filters.eq("providers.installations.roleAccessControls.who", tokenIntrospection.getJsonObject().getString(key)),
+                        Filters.eq("providers.installations.roleAccessControls.roles.collections_access_permissions.collection", Collection.Installation.name()),
+                        Filters.eq("providers.installations.roleAccessControls.roles.collections_access_permissions.access_permissions.operation", Operation.READ.name()),
+                        Filters.eq("providers.installations.roleAccessControls.roles.collections_access_permissions.access_permissions.access_type", AccessType.ALWAYS.name()))));
+
+        var unwind = Aggregates
+                .unwind("$providers");
+
+        var replaceRoot = Aggregates
+                .replaceRoot("$providers");
+
+        var unwindInstallations = Aggregates.unwind("$providers.installations");
+
+        var replaceRootToInstallation = Aggregates.replaceRoot("$installations");
+        Bson lookup = Aggregates.lookup("MetricDefinition", "unit_of_access", "_id", "unit_of_access");
+
+        var installations= projectRepository.getMongoCollection()
+                .aggregate(List.of(eqAccessControl, unwind,unwindInstallations,eqAccessControl,replaceRoot,replaceRootToInstallation, Aggregates.match(searchDoc),Aggregates.skip(size * (page)), Aggregates.limit(size),lookup),  InstallationProjection.class)
+                .into(new ArrayList<>());
+
+        Document count = projectRepository.getMongoCollection()
+                .aggregate(List.of(eqAccessControl,unwind,eqAccessControl,replaceRoot,unwindInstallations,replaceRootToInstallation,Aggregates.match(searchDoc),Aggregates.count()))
+                .first();
+        var projectionQuery = new MongoQuery<InstallationProjection>();
+
+        projectionQuery.list = installations;
+        projectionQuery.index = page;
+        projectionQuery.size = size;
+        projectionQuery.count = count == null ? 0L : Long.parseLong(count.get("count").toString());
+        projectionQuery.page = Page.of(page, size);
+
+        return projectionQuery;
+
     }
 }
