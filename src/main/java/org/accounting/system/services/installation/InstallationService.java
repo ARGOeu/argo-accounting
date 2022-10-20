@@ -1,6 +1,5 @@
 package org.accounting.system.services.installation;
 
-import io.quarkus.oidc.TokenIntrospection;
 import org.accounting.system.dtos.acl.role.RoleAccessControlRequestDto;
 import org.accounting.system.dtos.acl.role.RoleAccessControlResponseDto;
 import org.accounting.system.dtos.acl.role.RoleAccessControlUpdateDto;
@@ -21,17 +20,14 @@ import org.accounting.system.mappers.AccessControlMapper;
 import org.accounting.system.mappers.InstallationMapper;
 import org.accounting.system.mappers.MetricMapper;
 import org.accounting.system.repositories.HierarchicalRelationRepository;
-import org.accounting.system.repositories.acl.AccessControlRepository;
 import org.accounting.system.repositories.authorization.RoleRepository;
 import org.accounting.system.repositories.installation.InstallationRepository;
 import org.accounting.system.repositories.provider.ProviderRepository;
 import org.accounting.system.services.HierarchicalRelationService;
 import org.accounting.system.services.acl.RoleAccessControlService;
-import org.accounting.system.services.authorization.RoleService;
 import org.accounting.system.util.QueryParser;
 import org.apache.commons.lang3.StringUtils;
 import org.bson.conversions.Bson;
-import org.eclipse.microprofile.config.inject.ConfigProperty;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
@@ -59,19 +55,7 @@ public class InstallationService implements RoleAccessControlService {
     RoleRepository roleRepository;
 
     @Inject
-    AccessControlRepository accessControlRepository;
-
-    @Inject
-    TokenIntrospection tokenIntrospection;
-
-    @Inject
-    RoleService roleService;
-
-    @Inject
     HierarchicalRelationRepository hierarchicalRelationRepository;
-
-    @ConfigProperty(name = "key.to.retrieve.id.from.access.token")
-    String id;
 
     @Inject
     QueryParser queryParser;

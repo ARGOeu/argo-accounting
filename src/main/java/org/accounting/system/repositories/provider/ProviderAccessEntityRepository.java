@@ -1,7 +1,6 @@
 package org.accounting.system.repositories.provider;
 
 import io.quarkus.mongodb.panache.PanacheQuery;
-import org.accounting.system.entities.acl.RoleAccessControl;
 import org.accounting.system.entities.projections.MetricProjection;
 import org.accounting.system.entities.provider.Provider;
 import org.accounting.system.repositories.HierarchicalRelationRepository;
@@ -12,7 +11,7 @@ import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 
 @ApplicationScoped
-public class ProviderAccessEntityRepository extends AccessEntityModulator<Provider, String, RoleAccessControl> {
+public class ProviderAccessEntityRepository extends AccessEntityModulator<Provider, String> {
 
     @Inject
     ProviderAccessControlRepository providerAccessControlRepository;
@@ -27,7 +26,7 @@ public class ProviderAccessEntityRepository extends AccessEntityModulator<Provid
     }
 
     @Override
-    public AccessControlModulator<Provider, String, RoleAccessControl> accessControlModulator() {
+    public AccessControlModulator<Provider, String> accessControlModulator() {
         return providerAccessControlRepository;
     }
 }

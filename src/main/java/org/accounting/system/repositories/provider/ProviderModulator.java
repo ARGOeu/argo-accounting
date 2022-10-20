@@ -2,7 +2,6 @@ package org.accounting.system.repositories.provider;
 
 import io.quarkus.mongodb.panache.PanacheQuery;
 import org.accounting.system.dtos.provider.UpdateProviderRequestDto;
-import org.accounting.system.entities.acl.RoleAccessControl;
 import org.accounting.system.entities.projections.InstallationProjection;
 import org.accounting.system.entities.projections.MetricProjection;
 import org.accounting.system.entities.provider.Provider;
@@ -15,7 +14,7 @@ import javax.ws.rs.ForbiddenException;
 import java.util.Objects;
 
 
-public class ProviderModulator extends AbstractModulator<Provider, String, RoleAccessControl> {
+public class ProviderModulator extends AbstractModulator<Provider, String> {
 
 
     @Inject
@@ -61,16 +60,6 @@ public class ProviderModulator extends AbstractModulator<Provider, String, RoleA
     public PanacheQuery<MetricProjection> fetchAllMetrics(String id, int page, int size){
 
         return providerAccessAlwaysRepository.fetchAllMetrics(id, page, size);
-
-
-//        switch (getRequestInformation().getAccessType()){
-//            case ALWAYS:
-//                return providerAccessAlwaysRepository.fetchAllMetrics(id, page, size);
-//            case ENTITY:
-//                return providerAccessEntityRepository.fetchAllMetrics(id, page, size);
-//            default:
-//                throw new ForbiddenException(ApiMessage.NO_PERMISSION.message);
-//        }
     }
 
     @Override

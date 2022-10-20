@@ -3,7 +3,6 @@ package org.accounting.system.repositories.modulators;
 import com.mongodb.client.model.Aggregates;
 import com.mongodb.client.model.Filters;
 import org.accounting.system.entities.Entity;
-import org.accounting.system.entities.acl.AccessControl;
 import org.bson.conversions.Bson;
 
 import java.util.ArrayList;
@@ -16,7 +15,7 @@ import java.util.List;
  *
  * @param <E> Generic class that represents a mongo collection.
  */
-public abstract class AccessEntityModulator<E extends Entity, I, A extends AccessControl> extends AccessModulator<E, I, A> {
+public abstract class AccessEntityModulator<E extends Entity, I> extends AccessModulator<E, I> {
 
     @Override
     public void save(E entity) {
@@ -67,44 +66,6 @@ public abstract class AccessEntityModulator<E extends Entity, I, A extends Acces
         return combineTwoLists(fromCollection, fromAccessControl);
     }
 
-//    @Override
-//    public PanacheQuery<E> findAllPageable(int page, int size) {
-//
-//        List<String> entities = accessControlModulator().getAccessControlEntities();
-//
-//        return find("creatorId = ?1 or _id in ?2", getRequestInformation().getSubjectOfToken(), Utility.transformIdsToSpecificClassType(getIdentity(), entities)).page(page, size);
-//    }
-//
-//    @Override
-//    public <T> ProjectionQuery<T> lookup(String from, String localField, String foreignField, String as, int page, int size, Class<T> projection) {
-//
-//        Bson bson = Aggregates.lookup(from, localField, foreignField, as);
-//
-//        List<String> entities = accessControlModulator().getAccessControlEntities();
-//
-//        List<T> projections = getMongoCollection()
-//                .aggregate(List
-//                        .of(bson,
-//                                Aggregates.skip(size * (page)),
-//                                Aggregates.limit(size),
-//                                Aggregates.match(Filters.or(Filters.eq("creatorId", getRequestInformation().getSubjectOfToken()), Filters.in("_id",  Utility.transformIdsToSpecificClassType(getIdentity(), entities))))
-//                        ), projection)
-//                .into(new ArrayList<>());
-//
-//        Document totalDocuments = getMongoCollection()
-//                .aggregate(List
-//                        .of(Aggregates.match(Filters.or(Filters.eq("creatorId", getRequestInformation().getSubjectOfToken()), Filters.in("_id",  Utility.transformIdsToSpecificClassType(getIdentity(), entities)))), Aggregates.count()))
-//                .first();
-//
-//        var projectionQuery = new ProjectionQuery<T>();
-//
-//        projectionQuery.list = projections;
-//        projectionQuery.index = page;
-//        projectionQuery.size = size;
-//        projectionQuery.count = Long.parseLong(totalDocuments.get("count").toString());
-//
-//        return projectionQuery;
-//    }
 
     @Override
     public <T> T lookUpEntityById(String from, String localField, String foreignField, String as, Class<T> projection, I id) {
@@ -122,56 +83,7 @@ public abstract class AccessEntityModulator<E extends Entity, I, A extends Acces
         }
     }
 
-//    @Override
-//    public void grantPermission(A accessControl) {
-//
-//        E entity = findById(Utility.transformIdToSpecificClassType(getIdentity(), accessControl.getEntity()));
-//
-//        if (isIdentifiable(entity.getCreatorId())) {
-//            getAccessControlRepository().persist(accessControl);
-//        } else {
-//            accessControlModulator().grantPermission(accessControl);
-//        }
-//    }
-//
-//    @Override
-//    public void modifyPermission(A accessControl) {
-//
-//        if (isIdentifiable(accessControl.getCreatorId())) {
-//            getAccessControlRepository().update(accessControl);
-//        } else {
-//            accessControlModulator().modifyPermission(accessControl);
-//        }
-//    }
-//
-//    @Override
-//    public void deletePermission(A accessControl) {
-//
-//        if (isIdentifiable(accessControl.getCreatorId())) {
-//            getAccessControlRepository().delete(accessControl);
-//        } else {
-//            accessControlModulator().deletePermission(accessControl);
-//        }
-//    }
-//
-//    @Override
-//    public A getPermission(String entity, String who) {
-//
-//        var accessControl = getAccessControlRepository().findByWhoAndCollectionAndEntity(who, collection(), entity);
-//
-//        if(isIdentifiable(accessControl.getCreatorId())){
-//            return accessControl;
-//        } else {
-//            return accessControlModulator().getPermission(entity, who);
-//        }
-//    }
-//
-//    @Override
-//    public List<A> getAllPermissions() {
-//        return getAccessControlRepository().findAllByCollectionAndCreatorId(collection(), getRequestInformation().getSubjectOfToken());
-//    }
-
-    public abstract AccessControlModulator<E, I, A> accessControlModulator();
+    public abstract AccessControlModulator<E, I> accessControlModulator();
 
     /**
      * Checks if the given id can be identified by the subject of an access token.

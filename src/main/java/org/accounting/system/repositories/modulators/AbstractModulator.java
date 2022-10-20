@@ -1,11 +1,8 @@
 package org.accounting.system.repositories.modulators;
 
-import com.mongodb.MongoWriteException;
 import io.quarkus.mongodb.panache.PanacheQuery;
 import org.accounting.system.entities.Entity;
-import org.accounting.system.entities.acl.AccessControl;
 import org.accounting.system.enums.ApiMessage;
-import org.accounting.system.exceptions.ConflictException;
 
 import javax.ws.rs.ForbiddenException;
 import java.util.List;
@@ -16,7 +13,7 @@ import java.util.List;
  *
  * @param <E> Generic class that represents a mongo collection.
  */
-public abstract class AbstractModulator<E extends Entity, I, A extends AccessControl> extends AccessModulator<E, I, A>{
+public abstract class AbstractModulator<E extends Entity, I> extends AccessModulator<E, I>{
 
     @Override
     public void save(E entity) {
@@ -49,35 +46,6 @@ public abstract class AbstractModulator<E extends Entity, I, A extends AccessCon
     }
 
     @Override
-    public void grantPermission(A accessControl){
-        try{
-            get().grantPermission(accessControl);
-        } catch (MongoWriteException e){
-            throw new ConflictException("There is already an Access Control Entry with this {who, collection, entity} : {" + accessControl.getWho()+", "+accessControl.getCollection()+", "+accessControl.getEntity()+"}");
-        }
-    }
-
-    @Override
-    public void modifyPermission(A accessControl) {
-        get().modifyPermission(accessControl);
-    }
-
-    @Override
-    public void deletePermission(A accessControl) {
-        get().deletePermission(accessControl);
-    }
-
-    @Override
-    public A getPermission(String entity, String who) {
-        return get().getPermission(entity, who);
-    }
-
-    @Override
-    public List<A> getAllPermissions() {
-        return get().getAllPermissions();
-    }
-
-    @Override
     public <T> PanacheQuery<T> lookup(String from, String localField, String foreignField, String as, int page, int size, Class<T> projection) {
         return get().lookup(from, localField, foreignField, as, page, size, projection);
     }
@@ -87,11 +55,11 @@ public abstract class AbstractModulator<E extends Entity, I, A extends AccessCon
         return get().lookUpEntityById(from, localField, foreignField, as, projection, id);
     }
 
-    public abstract AccessAlwaysModulator<E, I, A> always();
+    public abstract AccessAlwaysModulator<E, I> always();
 
-    public abstract AccessEntityModulator<E, I, A> entity();
+    public abstract AccessEntityModulator<E, I> entity();
 
-    public AccessModulator<E, I, A> get(){
+    public AccessModulator<E, I> get(){
 
         switch (getRequestInformation().getAccessType()){
             case ALWAYS:

@@ -4,7 +4,6 @@ import com.pivovarit.function.ThrowingBiFunction;
 import io.quarkus.mongodb.panache.PanacheQuery;
 import org.accounting.system.clients.ProjectClient;
 import org.accounting.system.entities.Project;
-import org.accounting.system.entities.acl.RoleAccessControl;
 import org.accounting.system.entities.projections.MetricProjection;
 import org.accounting.system.mappers.ProjectMapper;
 import org.accounting.system.repositories.modulators.AbstractModulator;
@@ -15,7 +14,7 @@ import java.util.Objects;
 import java.util.Set;
 
 
-public class ProjectModulator extends AbstractModulator<Project, String, RoleAccessControl> {
+public class ProjectModulator extends AbstractModulator<Project, String> {
 
 
     @Inject
@@ -31,31 +30,12 @@ public class ProjectModulator extends AbstractModulator<Project, String, RoleAcc
 
         return projectAccessAlwaysRepository.save(id, openAire());
 
-//        switch (getRequestInformation().getAccessType()){
-//            case ALWAYS:
-//                 return projectAccessAlwaysRepository.save(id, openAire());
-//            case ENTITY:
-//                return projectAccessEntityRepository.save(id, openAire());
-//            default:
-//                throw new ForbiddenException(ApiMessage.NO_PERMISSION.message);
-//        }
     }
 
     public void associateProjectWithProviders(String projectId, Set<String> providerIds){
 
         projectRepository.associateProjectWithProviders(projectId, providerIds);
 
-
-//        switch (getRequestInformation().getAccessType()){
-//            case ALWAYS:
-//                 projectAccessAlwaysRepository.associateProjectWithProviders(projectId, providerIds);
-//                 break;
-//            case ENTITY:
-//                 projectAccessEntityRepository.associateProjectWithProviders(projectId, providerIds);
-//                 break;
-//            default:
-//                throw new ForbiddenException(ApiMessage.NO_PERMISSION.message);
-//        }
     }
 
     public void dissociateProviderFromProject(String projectId, Set<String> providerIds){

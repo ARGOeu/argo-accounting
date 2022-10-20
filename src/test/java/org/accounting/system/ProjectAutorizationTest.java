@@ -29,9 +29,7 @@ import org.accounting.system.endpoints.ProjectEndpoint;
 import org.accounting.system.entities.projections.ProjectProjection;
 import org.accounting.system.enums.ApiMessage;
 import org.accounting.system.mappers.ProviderMapper;
-import org.accounting.system.repositories.acl.AccessControlRepository;
 import org.accounting.system.repositories.client.ClientAccessAlwaysRepository;
-import org.accounting.system.repositories.installation.InstallationRepository;
 import org.accounting.system.repositories.metric.MetricRepository;
 import org.accounting.system.repositories.metricdefinition.MetricDefinitionRepository;
 import org.accounting.system.repositories.project.ProjectRepository;
@@ -76,13 +74,7 @@ public class ProjectAutorizationTest {
     ProviderRepository providerRepository;
 
     @Inject
-    InstallationRepository installationRepository;
-
-    @Inject
     MetricDefinitionRepository metricDefinitionRepository;
-
-    @Inject
-    AccessControlRepository accessControlRepository;
 
     @Inject
     SystemAdminService systemAdminService;
@@ -129,8 +121,6 @@ public class ProjectAutorizationTest {
         metricDefinitionRepository.deleteAll();
         projectRepository.deleteAll();
         metricRepository.deleteAll();
-
-        accessControlRepository.deleteAll();
 
         String sub = utility.getIdFromToken(keycloakClient.getAccessToken("admin").split("\\.")[1]);
         systemAdminService.accessListOfProjects(Set.of("777536"), sub);

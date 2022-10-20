@@ -8,7 +8,6 @@ import io.quarkus.mongodb.panache.PanacheQuery;
 import io.quarkus.oidc.TokenIntrospection;
 import io.quarkus.panache.common.Page;
 import org.accounting.system.entities.HierarchicalRelation;
-import org.accounting.system.entities.Project;
 import org.accounting.system.entities.acl.RoleAccessControl;
 import org.accounting.system.entities.authorization.Role;
 import org.accounting.system.entities.projections.InstallationProjection;

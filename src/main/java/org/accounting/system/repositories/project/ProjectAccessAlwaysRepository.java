@@ -4,7 +4,6 @@ import com.pivovarit.function.ThrowingBiFunction;
 import io.quarkus.mongodb.panache.PanacheQuery;
 import org.accounting.system.clients.ProjectClient;
 import org.accounting.system.entities.Project;
-import org.accounting.system.entities.acl.RoleAccessControl;
 import org.accounting.system.entities.projections.MetricProjection;
 import org.accounting.system.exceptions.ConflictException;
 import org.accounting.system.repositories.HierarchicalRelationRepository;
@@ -16,7 +15,7 @@ import javax.inject.Inject;
 import javax.ws.rs.NotFoundException;
 
 @ApplicationScoped
-public class ProjectAccessAlwaysRepository extends AccessAlwaysModulator<Project, String, RoleAccessControl> {
+public class ProjectAccessAlwaysRepository extends AccessAlwaysModulator<Project, String> {
 
     @Inject
     @RestClient

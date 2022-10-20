@@ -12,9 +12,7 @@ import org.accounting.system.dtos.metricdefinition.MetricDefinitionResponseDto;
 import org.accounting.system.dtos.metricdefinition.UpdateMetricDefinitionRequestDto;
 import org.accounting.system.dtos.pagination.PageResource;
 import org.accounting.system.enums.ApiMessage;
-import org.accounting.system.repositories.authorization.RoleRepository;
 import org.accounting.system.repositories.client.ClientAccessAlwaysRepository;
-import org.accounting.system.repositories.client.ClientRepository;
 import org.accounting.system.repositories.metricdefinition.MetricDefinitionRepository;
 import org.accounting.system.services.ReadPredefinedTypesService;
 import org.accounting.system.services.client.ClientService;
@@ -44,16 +42,10 @@ public class MetricDefinitionAuthorizationTest {
     ReadPredefinedTypesService readPredefinedTypesService;
 
     @Inject
-    RoleRepository roleRepository;
-
-    @Inject
     MetricDefinitionRepository metricDefinitionRepository;
 
     @Inject
     Utility utility;
-
-    @Inject
-    ClientRepository clientRepository;
 
     @Inject
     ClientService clientService;

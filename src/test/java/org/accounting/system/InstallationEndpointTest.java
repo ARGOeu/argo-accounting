@@ -17,7 +17,6 @@ import org.accounting.system.dtos.metricdefinition.MetricDefinitionRequestDto;
 import org.accounting.system.dtos.metricdefinition.MetricDefinitionResponseDto;
 import org.accounting.system.endpoints.InstallationEndpoint;
 import org.accounting.system.mappers.ProviderMapper;
-import org.accounting.system.repositories.acl.AccessControlRepository;
 import org.accounting.system.repositories.client.ClientAccessAlwaysRepository;
 import org.accounting.system.repositories.installation.InstallationRepository;
 import org.accounting.system.repositories.metricdefinition.MetricDefinitionRepository;
@@ -70,9 +69,6 @@ public class InstallationEndpointTest {
     ProjectRepository projectRepository;
 
     @Inject
-    AccessControlRepository accessControlRepository;
-
-    @Inject
     SystemAdminService systemAdminService;
 
     @Inject
@@ -108,7 +104,6 @@ public class InstallationEndpointTest {
     public void before() throws ParseException {
 
         metricDefinitionRepository.deleteAll();
-        accessControlRepository.deleteAll();
         projectRepository.deleteAll();
 
         String sub = utility.getIdFromToken(keycloakClient.getAccessToken("admin").split("\\.")[1]);

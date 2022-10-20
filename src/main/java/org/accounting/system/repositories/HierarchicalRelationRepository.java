@@ -3,7 +3,6 @@ package org.accounting.system.repositories;
 import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.model.Aggregates;
-import com.mongodb.client.model.Field;
 import com.mongodb.client.model.Filters;
 import io.quarkus.mongodb.panache.PanacheQuery;
 import io.quarkus.panache.common.Page;
@@ -11,7 +10,6 @@ import liquibase.repackaged.org.apache.commons.collections4.CollectionUtils;
 import org.accounting.system.entities.HierarchicalRelation;
 import org.accounting.system.entities.projections.MetricProjection;
 import org.accounting.system.entities.projections.MongoQuery;
-import org.accounting.system.repositories.installation.InstallationRepository;
 import org.accounting.system.repositories.metric.MetricRepository;
 import org.accounting.system.repositories.modulators.AbstractAccessModulator;
 import org.bson.Document;
@@ -26,7 +24,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.stream.Collectors;
 
 @ApplicationScoped
 public class HierarchicalRelationRepository extends AbstractAccessModulator<HierarchicalRelation, String> {
@@ -36,9 +33,6 @@ public class HierarchicalRelationRepository extends AbstractAccessModulator<Hier
 
     @Inject
     MetricRepository metricRepository;
-
-    @Inject
-    InstallationRepository installationRepository;
 
     public void save(HierarchicalRelation hierarchicalRelation, ObjectId metric){
 

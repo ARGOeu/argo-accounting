@@ -1,7 +1,6 @@
 package org.accounting.system.endpoints;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import io.quarkus.security.Authenticated;
 import org.accounting.system.constraints.AccessProject;
 import org.accounting.system.constraints.AccessProvider;
@@ -21,7 +20,6 @@ import org.accounting.system.repositories.client.ClientRepository;
 import org.accounting.system.services.HierarchicalRelationService;
 import org.accounting.system.services.ProjectService;
 import org.accounting.system.services.ProviderService;
-import org.accounting.system.services.acl.AccessControlService;
 import org.accounting.system.services.authorization.RoleService;
 import org.eclipse.microprofile.openapi.annotations.Operation;
 import org.eclipse.microprofile.openapi.annotations.enums.SchemaType;
@@ -43,8 +41,17 @@ import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
+import javax.ws.rs.BadRequestException;
+import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
-import javax.ws.rs.*;
+import javax.ws.rs.DefaultValue;
+import javax.ws.rs.GET;
+import javax.ws.rs.PATCH;
+import javax.ws.rs.POST;
+import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
+import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
@@ -52,7 +59,10 @@ import javax.ws.rs.core.UriInfo;
 import java.text.ParseException;
 import java.util.List;
 
-import static org.accounting.system.enums.Operation.*;
+import static org.accounting.system.enums.Operation.ACL;
+import static org.accounting.system.enums.Operation.ASSOCIATE;
+import static org.accounting.system.enums.Operation.DISSOCIATE;
+import static org.accounting.system.enums.Operation.READ;
 import static org.eclipse.microprofile.openapi.annotations.enums.ParameterIn.QUERY;
 
 @Path("/projects")
@@ -71,12 +81,6 @@ public class ProjectEndpoint {
 
     @Inject
     HierarchicalRelationService hierarchicalRelationService;
-
-    @Inject
-    ObjectMapper objectMapper;
-
-    @Inject
-    AccessControlService accessControlService;
 
     @Inject
     ProviderService providerService;
