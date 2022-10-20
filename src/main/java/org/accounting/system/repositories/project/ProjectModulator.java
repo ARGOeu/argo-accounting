@@ -5,14 +5,12 @@ import io.quarkus.mongodb.panache.PanacheQuery;
 import org.accounting.system.clients.ProjectClient;
 import org.accounting.system.entities.Project;
 import org.accounting.system.entities.acl.RoleAccessControl;
-import org.accounting.system.entities.projections.HierarchicalRelationProjection;
 import org.accounting.system.entities.projections.MetricProjection;
 import org.accounting.system.mappers.ProjectMapper;
 import org.accounting.system.repositories.modulators.AbstractModulator;
 
 import javax.inject.Inject;
 import javax.ws.rs.NotFoundException;
-import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 
@@ -63,46 +61,11 @@ public class ProjectModulator extends AbstractModulator<Project, String, RoleAcc
     public void dissociateProviderFromProject(String projectId, Set<String> providerIds){
 
         projectRepository.dissociateProviderFromProject(projectId, providerIds);
-
-
-//        switch (getRequestInformation().getAccessType()){
-//            case ALWAYS:
-//                projectAccessAlwaysRepository.dissociateProviderFromProject(projectId, providerIds);
-//                break;
-//            case ENTITY:
-//                projectAccessEntityRepository.dissociateProviderFromProject(projectId, providerIds);
-//                break;
-//            default:
-//                throw new ForbiddenException(ApiMessage.NO_PERMISSION.message);
-//        }
-    }
-
-    public List<HierarchicalRelationProjection> hierarchicalStructure(final String externalId) {
-
-        return projectAccessAlwaysRepository.hierarchicalStructure(externalId);
-//        switch (getRequestInformation().getAccessType()){
-//            case ALWAYS:
-//                return projectAccessAlwaysRepository.hierarchicalStructure(externalId);
-//            case ENTITY:
-//                return projectAccessEntityRepository.hierarchicalStructure(externalId);
-//            default:
-//                throw new ForbiddenException(ApiMessage.NO_PERMISSION.message);
-//        }
     }
 
     public PanacheQuery<MetricProjection> fetchAllMetrics(String id, int page, int size){
 
         return projectAccessAlwaysRepository.fetchAllMetrics(id, page, size);
-
-
-//        switch (getRequestInformation().getAccessType()){
-//            case ALWAYS:
-//                return projectAccessAlwaysRepository.fetchAllMetrics(id, page, size);
-//            case ENTITY:
-//                return projectAccessEntityRepository.fetchAllMetrics(id, page, size);
-//            default:
-//                throw new ForbiddenException(ApiMessage.NO_PERMISSION.message);
-//        }
     }
 
     @Override

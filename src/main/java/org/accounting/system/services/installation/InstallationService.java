@@ -30,12 +30,14 @@ import org.accounting.system.services.acl.RoleAccessControlService;
 import org.accounting.system.services.authorization.RoleService;
 import org.accounting.system.util.QueryParser;
 import org.apache.commons.lang3.StringUtils;
+import org.bson.conversions.Bson;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 import javax.ws.rs.NotFoundException;
 import javax.ws.rs.core.UriInfo;
+import java.util.ArrayList;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
@@ -236,33 +238,6 @@ public class InstallationService implements RoleAccessControlService {
         return new PageResource<>(projection, projection.list(), uriInfo);
     }
 
-//    public PageResource< InstallationResponseDto> searchInstallation(String json, int page, int size, UriInfo uriInfo) throws NoSuchFieldException, org.json.simple.parser.ParseException {
-//        ArrayList<String> installations = new ArrayList<>();
-//
-//        //find the installations of projects accessible
-//        var projectIds = accessControlRepository.findByWhoAndCollection(tokenIntrospection.getJsonObject().getString(id), Collection.Project).stream().filter(projects ->
-//                roleService.hasRoleAccess(projects.getRoles(), Collection.Project, Operation.READ)).map(projects -> projects.getEntity()).collect(Collectors.toList());
-//
-//        installations.addAll(hierarchicalRelationRepository.findInstallationsOfProjects(projectIds, "MetricDefinition", "unit_of_access", "_id", "unit_of_access").stream().map(InstallationProjection::convertIdToStr).collect(Collectors.toList()));
-//        //find the installations of providers accessible
-//        var providersIds = accessControlRepository.findByWhoAndCollection(tokenIntrospection.getJsonObject().getString(id), Collection.Provider).stream().collect(Collectors.toList());
-//        providersIds.stream().map(RoleAccessControl::getEntity).map(providersId -> {
-//            return providersId.trim().split("\\" + HierarchicalRelation.PATH_SEPARATOR);
-//        }).forEach(inst -> {
-//            installations.addAll(hierarchicalRelationRepository.findInstallationsByProvider(inst[0], inst[1], "MetricDefinition", "unit_of_access", "_id", "unit_of_access").stream().map(InstallationProjection::convertIdToStr).collect(Collectors.toList()));
-//        });
-//        //find the installations accessible
-//        installations.addAll(accessControlRepository.findByWhoAndCollection(tokenIntrospection.getJsonObject().getString(id), Collection.Installation).stream().filter(inst -> roleService.hasRoleAccess(inst.getRoles(), Collection.Installation, Operation.READ)).map(inst -> inst.getEntity()).collect(Collectors.toList()));
-//         //search on installations
-//        Bson query = queryParser.parseFile(json, false, installations, Installation.class);
-//
-//        PanacheQuery<Installation> projectionQuery = installationRepository.search(query, page, size);
-//        var installs = projectionQuery.list().stream().map(Installation::getId).map(instId -> {
-//            return installationAccessAlwaysRepository.lookUpEntityById("MetricDefinition", "unit_of_access", "_id", "unit_of_access", InstallationProjection.class, instId);
-//        }).collect(Collectors.toList());
-//        return new PageResource<>(projectionQuery, InstallationMapper.INSTANCE.installationProjectionsToResponse(installs), uriInfo);
-//    }
-
 
     @Override
     public void grantPermission(String who, RoleAccessControlRequestDto request, String... id) {
@@ -376,4 +351,20 @@ public class InstallationService implements RoleAccessControlService {
 
         return new PageResource<>(panacheQuery, responses, uriInfo);
     }
+    public PageResource<InstallationResponseDto> getAllInstallations(int page, int size, UriInfo uriInfo){
+
+        var projection = installationRepository.fetchAllInstallations( page, size);
+
+        return new PageResource<>(projection, InstallationMapper.INSTANCE.installationProjectionsToResponse(projection.list()), uriInfo);
+
+    }
+
+    public PageResource<InstallationResponseDto>  searchInstallation(String json, int page, int size, UriInfo uriInfo) throws NoSuchFieldException, org.json.simple.parser.ParseException {
+        Bson query = queryParser.parseFile(json, true, new ArrayList<>(), Installation.class);
+        var projection = installationRepository.searchInstallations( query,page, size);
+
+        return new PageResource<>(projection, InstallationMapper.INSTANCE.installationProjectionsToResponse(projection.list()), uriInfo);
+
+    }
+
 }

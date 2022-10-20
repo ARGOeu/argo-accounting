@@ -4,7 +4,6 @@ import com.mongodb.MongoWriteException;
 import org.accounting.system.dtos.metric.MetricRequestDto;
 import org.accounting.system.entities.HierarchicalRelation;
 import org.accounting.system.entities.Metric;
-import org.accounting.system.entities.projections.HierarchicalRelationProjection;
 import org.accounting.system.enums.RelationType;
 import org.accounting.system.exceptions.ConflictException;
 import org.accounting.system.mappers.MetricMapper;
@@ -13,11 +12,9 @@ import org.accounting.system.repositories.metric.MetricRepository;
 import org.accounting.system.repositories.project.ProjectRepository;
 import org.accounting.system.repositories.provider.ProviderRepository;
 import org.accounting.system.services.installation.InstallationService;
-import org.bson.Document;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
-import java.util.Set;
 
 @ApplicationScoped
 public class HierarchicalRelationService {
@@ -98,19 +95,5 @@ public class HierarchicalRelationService {
     public boolean providerBelongsToAnyProject(String providerId){
 
         return hierarchicalRelationRepository.exist(providerId);
-    }
-
-
-    public void recursion(HierarchicalRelationProjection relation, Set<Document> metrics){
-
-        metrics.addAll(relation.metrics);
-
-        if (relation.hierarchicalRelations.isEmpty()) {
-            return;
-        }
-
-        for (HierarchicalRelationProjection rel : relation.hierarchicalRelations) {
-            recursion(rel, metrics );
-        }
     }
 }

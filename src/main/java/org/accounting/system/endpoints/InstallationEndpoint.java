@@ -1,5 +1,6 @@
 package org.accounting.system.endpoints;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import io.quarkus.security.Authenticated;
 import org.accounting.system.constraints.AccessInstallation;
 import org.accounting.system.constraints.AccessProvider;
@@ -30,8 +31,10 @@ import org.eclipse.microprofile.openapi.annotations.enums.SchemaType;
 import org.eclipse.microprofile.openapi.annotations.enums.SecuritySchemeIn;
 import org.eclipse.microprofile.openapi.annotations.enums.SecuritySchemeType;
 import org.eclipse.microprofile.openapi.annotations.media.Content;
+import org.eclipse.microprofile.openapi.annotations.media.ExampleObject;
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
 import org.eclipse.microprofile.openapi.annotations.parameters.Parameter;
+import org.eclipse.microprofile.openapi.annotations.parameters.RequestBody;
 import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
 import org.eclipse.microprofile.openapi.annotations.security.SecurityRequirement;
 import org.eclipse.microprofile.openapi.annotations.security.SecurityScheme;
@@ -42,6 +45,7 @@ import javax.inject.Inject;
 import javax.validation.Valid;
 import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
+import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 import javax.ws.rs.BadRequestException;
 import javax.ws.rs.Consumes;
@@ -58,6 +62,7 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
+import java.text.ParseException;
 import java.util.List;
 
 import static org.accounting.system.enums.Operation.ACL;
@@ -1051,129 +1056,178 @@ public class InstallationEndpoint {
 
         return Response.ok().entity(response).build();
     }
+    @Tag(name = "Installation")
+    @org.eclipse.microprofile.openapi.annotations.Operation(
+            operationId = "search-installation",
+            summary = "Searches an installation",
+            description = "Search Installation")
+
+    @APIResponse(
+            responseCode = "200",
+            description = "The corresponding Installations.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.STRING,
+                    implementation = PageableInstallationResponseDto.class)))
+    @APIResponse(
+            responseCode = "400",
+            description = "Bad Request.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "401",
+            description = "Client has not been authenticated.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "403",
+            description = "The authenticated client is not permitted to perform the requested operation.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "415",
+            description = "Cannot consume content type.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "500",
+            description = "Internal Server Errors.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @SecurityRequirement(name = "Authentication")
+
+    @POST
+    @Path("/search")
+    @Produces(value = MediaType.APPLICATION_JSON)
+    @Consumes(value = MediaType.APPLICATION_JSON)
+
+    public Response search(
+            @NotEmpty(message = "The request body is empty.") @RequestBody(content = @Content(
+                    schema = @Schema(implementation = String.class),
+                    mediaType = MediaType.APPLICATION_JSON,
+                    examples = {
+                            @ExampleObject(
+                                    name = "An example request of a search on installations",
+                                    value = "{\n" +
+                                            "            \"type\":\"query\",\n" +
+                                            "            \"field\": \"installation\",\n" +
+                                            "            \"values\": \"GRNET-KNS-3\",\n" +
+                                            "            \"operand\": \"eq\"          \n" +
+                                            "\n" +
+                                            "}",
+                                    summary = "A simple search on Installations "),
+                            @ExampleObject(
+                                    name = "An example request of a complex search on installations",
+                                    value = "\n" +
+                                            "{\n" +
+                                            "  \"type\": \"filter\",\n" +
+                                            "  \"operator\": \"OR\",\n" +
+                                            "  \"criteria\": [\n" +
+                                            " \n" +
+                                            "    {\n" +
+                                            "      \"type\": \"filter\",\n" +
+                                            "      \"operator\": \"OR\",\n" +
+                                            "      \"criteria\": [{\n" +
+                                            "            \"type\":\"query\",\n" +
+                                            "            \"field\": \"installation\",\n" +
+                                            "            \"values\": \"GRNET-KNS-3\",\n" +
+                                            "            \"operand\": \"eq\"          \n" +
+                                            "\n" +
+                                            "},{\n" +
+                                            "            \"type\":\"query\",\n" +
+                                            "            \"field\": \"organisation\",\n" +
+                                            "            \"values\": \"grnet\",\n" +
+                                            "            \"operand\": \"eq\"          \n" +
+                                            "\n" +
+                                            "}]\n" +
+                                            "    }]}",
+                                    summary = "A complex search on Installations ")})
+            ) String json,
+            @Parameter(name = "page", in = QUERY,
+                    description = "Indicates the page number. Page number must be >= 1.") @DefaultValue("1")@Min(value = 1, message = "Page number must be >= 1.") @QueryParam("page") int page,
+            @Parameter(name = "size", in = QUERY,
+                    description = "The page size.") @DefaultValue("10") @Min(value = 1, message = "Page size must be between 1 and 100.")
+            @Max(value = 100, message = "Page size must be between 1 and 100.") @QueryParam("size") int size,
+            @Context UriInfo uriInfo
+    ) throws ParseException, NoSuchFieldException, org.json.simple.parser.ParseException, JsonProcessingException {
 
 
-//    @Tag(name = "Search")
-//    @org.eclipse.microprofile.openapi.annotations.Operation(
-//            operationId = "search-project",
-//            summary = "Searches a project",
-//            description = "Search Project")
-//
-//    @APIResponse(
-//            responseCode = "200",
-//            description = "The corresponding Projects.",
-//            content = @Content(schema = @Schema(
-//                    type = SchemaType.STRING,
-//                    implementation = ProjectResponseDto.class)))
-//    @APIResponse(
-//            responseCode = "400",
-//            description = "Bad Request.",
-//            content = @Content(schema = @Schema(
-//                    type = SchemaType.OBJECT,
-//                    implementation = InformativeResponse.class)))
-//    @APIResponse(
-//            responseCode = "401",
-//            description = "Client has not been authenticated.",
-//            content = @Content(schema = @Schema(
-//                    type = SchemaType.OBJECT,
-//                    implementation = InformativeResponse.class)))
-//    @APIResponse(
-//            responseCode = "403",
-//            description = "The authenticated client is not permitted to perform the requested operation.",
-//            content = @Content(schema = @Schema(
-//                    type = SchemaType.OBJECT,
-//                    implementation = InformativeResponse.class)))
-//    @APIResponse(
-//            responseCode = "415",
-//            description = "Cannot consume content type.",
-//            content = @Content(schema = @Schema(
-//                    type = SchemaType.OBJECT,
-//                    implementation = InformativeResponse.class)))
-//    @APIResponse(
-//            responseCode = "500",
-//            description = "Internal Server Errors.",
-//            content = @Content(schema = @Schema(
-//                    type = SchemaType.OBJECT,
-//                    implementation = InformativeResponse.class)))
-//    @SecurityRequirement(name = "Authentication")
-//
-//    @POST
-//    @Path("/search")
-//    @Produces(value = MediaType.APPLICATION_JSON)
-//    @Consumes(value = MediaType.APPLICATION_JSON)
-//
-//    public Response search(
-//            @NotEmpty(message = "The request body is empty.") @RequestBody(content = @Content(
-//                    schema = @Schema(implementation = String.class),
-//                    mediaType = MediaType.APPLICATION_JSON,
-//                    examples = {
-//                            @ExampleObject(
-//                                    name = "An example request of a search on installations",
-//                                    value = "{\n" +
-//                                            "            \"type\":\"query\",\n" +
-//                                            "            \"field\": \"installation\",\n" +
-//                                            "            \"values\": \"GRNET-KNS-3\",\n" +
-//                                            "            \"operand\": \"eq\"          \n" +
-//                                            "\n" +
-//                                            "}",
-//                                    summary = "A simple search on Installations "),
-//                            @ExampleObject(
-//                                    name = "An example request of a complex search on installations",
-//                                    value = "\n" +
-//                                            "{\n" +
-//                                            "  \"type\": \"filter\",\n" +
-//                                            "  \"operator\": \"OR\",\n" +
-//                                            "  \"criteria\": [\n" +
-//                                            " \n" +
-//                                            "    {\n" +
-//                                            "      \"type\": \"filter\",\n" +
-//                                            "      \"operator\": \"OR\",\n" +
-//                                            "      \"criteria\": [{\n" +
-//                                            "            \"type\":\"query\",\n" +
-//                                            "            \"field\": \"installation\",\n" +
-//                                            "            \"values\": \"GRNET-KNS-3\",\n" +
-//                                            "            \"operand\": \"eq\"          \n" +
-//                                            "\n" +
-//                                            "},{\n" +
-//                                            "            \"type\":\"query\",\n" +
-//                                            "            \"field\": \"organisation\",\n" +
-//                                            "            \"values\": \"grnet\",\n" +
-//                                            "            \"operand\": \"eq\"          \n" +
-//                                            "\n" +
-//                                            "}]\n" +
-//                                            "    }]}",
-//                                    summary = "A complex search on Installations ")})
-//            ) String json,
-//            @Parameter(name = "page", in = QUERY,
-//                    description = "Indicates the page number. Page number must be >= 1.") @DefaultValue("1") @Min(value = 1, message = "Page number must be >= 1.") @QueryParam("page") int page,
-//            @Parameter(name = "size", in = QUERY,
-//                    description = "The page size.") @DefaultValue("10") @Min(value = 1, message = "Page size must be between 1 and 100.")
-//            @Max(value = 100, message = "Page size must be between 1 and 100.") @QueryParam("size") int size,
-//            @Context UriInfo uriInfo
-//    ) throws ParseException, NoSuchFieldException, org.json.simple.parser.ParseException, JsonProcessingException {
-//
-//        if (json.equals("")) {
-//            throw new BadRequestException("not empty body permitted");
-//        }
-//        //var results = installationService.searchInstallation(json, page - 1, size, uriInfo);
-//
-//
-//        return Response.ok().build();
-//
-//
-////        var  response =results.content.stream().map(ProjectResponseDto::getId).collect(Collectors.toList()).stream().map(installationService::hierarchicalStructure).collect(Collectors.toList());
-////
-////
-////        PageResource<Project, List<HierarchicalRelationProjection>> pageResource=new PageResource<>();
-////        pageResource.content=response;
-////        pageResource.sizeOfPage=results.sizeOfPage;
-////        pageResource.numberOfPage=results.numberOfPage;
-////        pageResource.totalPages=results.totalPages;
-////        pageResource.links=results.links;
-////        pageResource.totalElements=results.totalElements;
-////
-//    }
+        if (json.equals("")) {
+            throw new BadRequestException("not empty body permitted");
+        }
+        var response= installationService.searchInstallation(json, page - 1, size, uriInfo);
+       return Response.ok(response).build();
 
+
+    }
+    @Tag(name = "Installation")
+    @org.eclipse.microprofile.openapi.annotations.Operation(
+            summary = "get all installations",
+            description = "Get All Installations")
+    @APIResponse(
+            responseCode = "200",
+            description = "The corresponding Installations.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.ARRAY,
+                    implementation = PageableInstallationResponseDto.class)))
+    @APIResponse(
+            responseCode = "401",
+            description = "Client has not been authenticated.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "403",
+            description = "The authenticated client is not permitted to perform the requested operation.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "500",
+            description = "Internal Server Errors.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @SecurityRequirement(name = "Authentication")
+
+    @GET
+    @Path("/all")
+    @Produces(value = MediaType.APPLICATION_JSON)
+    @Consumes(value = MediaType.APPLICATION_JSON)
+
+    public Response getAll(
+            @Valid @NotNull(message = "The request body is empty.") @RequestBody(content = @Content(
+                    schema = @Schema(implementation = String.class),
+                    mediaType = MediaType.APPLICATION_JSON))
+            @Parameter(name = "page", in = QUERY,
+                    description = "Indicates the page number. Page number must be >= 1.") @DefaultValue("1") @Min(value = 1, message = "Page number must be >= 1.") @QueryParam("page") int page,
+            @Parameter(name = "size", in = QUERY,
+                    description = "The page size.") @DefaultValue("10") @Min(value = 1, message = "Page size must be between 1 and 100.")
+            @Max(value = 100, message = "Page size must be between 1 and 100.") @QueryParam("size") int size, @Context UriInfo uriInfo) throws ParseException, NoSuchFieldException, org.json.simple.parser.ParseException, JsonProcessingException {
+
+        var response = installationService.getAllInstallations( page - 1, size, uriInfo);
+
+        return Response.ok().entity(response).build();
+    }
+
+    public static class PageableInstallationResponseDto extends PageResource<InstallationResponseDto> {
+
+        private List<InstallationResponseDto> content;
+
+        @Override
+        public List<InstallationResponseDto> getContent() {
+            return content;
+        }
+
+        @Override
+        public void setContent(List<InstallationResponseDto> content) {
+            this.content = content;
+        }
+    }
 
     public static class PageableMetricProjection extends PageResource<MetricProjection> {
 
