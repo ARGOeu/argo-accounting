@@ -24,9 +24,7 @@ import org.accounting.system.dtos.pagination.PageResource;
 import org.accounting.system.endpoints.InstallationEndpoint;
 import org.accounting.system.enums.ApiMessage;
 import org.accounting.system.mappers.ProviderMapper;
-import org.accounting.system.repositories.acl.AccessControlRepository;
 import org.accounting.system.repositories.client.ClientAccessAlwaysRepository;
-import org.accounting.system.repositories.installation.InstallationRepository;
 import org.accounting.system.repositories.metricdefinition.MetricDefinitionRepository;
 import org.accounting.system.repositories.project.ProjectRepository;
 import org.accounting.system.repositories.provider.ProviderRepository;
@@ -62,9 +60,6 @@ import static org.mockito.ArgumentMatchers.any;
 public class InstallationAuthorizationTest {
 
     @Inject
-    InstallationRepository installationRepository;
-
-    @Inject
     MetricDefinitionRepository metricDefinitionRepository;
 
     @Inject
@@ -75,9 +70,6 @@ public class InstallationAuthorizationTest {
 
     @Inject
     ProjectRepository projectRepository;
-
-    @Inject
-    AccessControlRepository accessControlRepository;
 
     @Inject
     SystemAdminService systemAdminService;
@@ -117,7 +109,6 @@ public class InstallationAuthorizationTest {
     public void before() throws ParseException {
 
         metricDefinitionRepository.deleteAll();
-        accessControlRepository.deleteAll();
         projectRepository.deleteAll();
 
         String sub = utility.getIdFromToken(keycloakClient.getAccessToken("admin").split("\\.")[1]);

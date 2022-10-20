@@ -4,7 +4,6 @@ import io.quarkus.mongodb.panache.PanacheMongoRepository;
 import io.quarkus.mongodb.panache.PanacheQuery;
 import io.quarkus.panache.common.Page;
 import org.accounting.system.entities.Entity;
-import org.accounting.system.entities.acl.AccessControl;
 import org.accounting.system.enums.ApiMessage;
 import org.bson.Document;
 import org.bson.conversions.Bson;
@@ -24,7 +23,7 @@ import java.util.Set;
  *
  * @param <E> Generic class that represents a mongo collection.
  */
-public abstract class AccessModulator<E extends Entity, I, A extends AccessControl> extends AbstractAccessModulator<E, I> {
+public abstract class AccessModulator<E extends Entity, I> extends AbstractAccessModulator<E, I> {
 
 
     public void save(E entity) {
@@ -57,50 +56,6 @@ public abstract class AccessModulator<E extends Entity, I, A extends AccessContr
      */
     public PanacheQuery<E> findAllPageable(int page, int size) {
         throw new ForbiddenException(ApiMessage.NO_PERMISSION.message);
-    }
-
-    /**
-     * This method is responsible fοr granting permissions to specific entity within a generic collection.
-     *
-     * @param accessControl It essentially expresses the permissions that will be granted.
-     */
-    public void grantPermission(A accessControl) {
-        throw new ForbiddenException(ApiMessage.NO_PERMISSION.message);
-    }
-
-    /**
-     * This method is responsible fοr updating existing permissions which have already been granted to a specific entity.
-     *
-     * @param accessControl It essentially expresses the permissions that will be modified.
-     */
-    public void modifyPermission(A accessControl) {
-        throw new ForbiddenException(ApiMessage.NO_PERMISSION.message);
-    }
-
-    /**
-     * This method is responsible fοr deleting existing permissions which have already been granted to a specific entity.
-     *
-     * @param accessControl It essentially expresses the permissions that will be deleted.
-     */
-    public void deletePermission(A accessControl) {
-        throw new ForbiddenException(ApiMessage.NO_PERMISSION.message);
-    }
-
-    /**
-     * This method is responsible fοr fetching existing permissions which have already been granted to a specific entity.
-     *
-     * @param entity The entity id to which permissions have been assigned.
-     * @param who    To whom the permissions have been assigned.
-     */
-    public A getPermission(String entity, String who) {
-        throw new ForbiddenException(ApiMessage.NO_PERMISSION.message);
-    }
-
-    /**
-     * This method is responsible for returning all permissions granted in a Collection.
-     */
-    public List<A> getAllPermissions() {
-        return Collections.emptyList();
     }
 
     public <T> PanacheQuery<T> lookup(String from, String localField, String foreignField, String as, int page, int size, Class<T> projection) {

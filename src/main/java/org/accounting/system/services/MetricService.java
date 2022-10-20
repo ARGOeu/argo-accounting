@@ -11,7 +11,6 @@ import org.accounting.system.entities.Metric;
 import org.accounting.system.exceptions.ConflictException;
 import org.accounting.system.mappers.MetricMapper;
 import org.accounting.system.repositories.HierarchicalRelationRepository;
-import org.accounting.system.repositories.acl.AccessControlRepository;
 import org.accounting.system.repositories.metric.MetricRepository;
 import org.accounting.system.services.authorization.RoleService;
 import org.accounting.system.services.installation.InstallationService;
@@ -53,10 +52,10 @@ public class MetricService {
 
     @Inject
     TokenIntrospection tokenIntrospection;
-    @Inject
-    AccessControlRepository accessControlRepository;
+
     @Inject
     RoleService roleService;
+
     @ConfigProperty(name = "key.to.retrieve.id.from.access.token")
     String id;
 

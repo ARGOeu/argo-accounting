@@ -1,6 +1,5 @@
 package org.accounting.system.services;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import io.quarkus.mongodb.panache.PanacheQuery;
 import org.accounting.system.dtos.acl.role.RoleAccessControlRequestDto;
 import org.accounting.system.dtos.acl.role.RoleAccessControlResponseDto;
@@ -19,7 +18,6 @@ import org.accounting.system.exceptions.ConflictException;
 import org.accounting.system.mappers.AccessControlMapper;
 import org.accounting.system.mappers.InstallationMapper;
 import org.accounting.system.mappers.ProviderMapper;
-import org.accounting.system.repositories.HierarchicalRelationRepository;
 import org.accounting.system.repositories.authorization.RoleRepository;
 import org.accounting.system.repositories.provider.ProviderRepository;
 import org.accounting.system.services.acl.RoleAccessControlService;
@@ -43,9 +41,6 @@ public class ProviderService implements RoleAccessControlService {
 
     @Inject
     RoleRepository roleRepository;
-
-    @Inject
-    HierarchicalRelationRepository hierarchicalRelationRepository;
 
     @Inject
     HierarchicalRelationService hierarchicalRelationService;

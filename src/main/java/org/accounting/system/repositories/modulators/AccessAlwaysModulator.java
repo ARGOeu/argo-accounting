@@ -5,7 +5,6 @@ import com.mongodb.client.model.Filters;
 import io.quarkus.mongodb.panache.PanacheQuery;
 import io.quarkus.panache.common.Page;
 import org.accounting.system.entities.Entity;
-import org.accounting.system.entities.acl.AccessControl;
 import org.accounting.system.entities.projections.MongoQuery;
 import org.bson.conversions.Bson;
 
@@ -18,7 +17,7 @@ import java.util.List;
  *
  * @param <E> Generic class that represents a mongo collection.
  */
-public abstract class AccessAlwaysModulator<E extends Entity, I, A extends AccessControl> extends AccessModulator<E, I, A> {
+public abstract class AccessAlwaysModulator<E extends Entity, I> extends AccessModulator<E, I> {
 
     @Override
     public void save(E entity) {
@@ -78,29 +77,4 @@ public abstract class AccessAlwaysModulator<E extends Entity, I, A extends Acces
         List<T> projections = getMongoCollection().aggregate(List.of(bson, Aggregates.match(Filters.eq("_id", id))), projection).into(new ArrayList<>());
         return projections.get(0);
     }
-
-//    @Override
-//    public void grantPermission(A accessControl) {
-//        getAccessControlRepository().persist(accessControl);
-//    }
-//
-//    @Override
-//    public void modifyPermission(A accessControl) {
-//        getAccessControlRepository().update(accessControl);
-//    }
-//
-//    @Override
-//    public void deletePermission(A accessControl) {
-//        getAccessControlRepository().delete(accessControl);
-//    }
-//
-//    @Override
-//    public A getPermission(String entity, String who) {
-//        return getAccessControlRepository().findByWhoAndCollectionAndEntity(who, collection(), entity);
-//    }
-//
-//    @Override
-//    public List<A> getAllPermissions() {
-//        return getAccessControlRepository().findAllByCollection(collection());
-//    }
 }

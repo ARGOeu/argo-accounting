@@ -19,11 +19,9 @@ import org.accounting.system.dtos.pagination.PageResource;
 import org.accounting.system.entities.projections.MetricProjection;
 import org.accounting.system.enums.Collection;
 import org.accounting.system.repositories.client.ClientRepository;
-import org.accounting.system.repositories.installation.InstallationRepository;
 import org.accounting.system.repositories.metric.MetricRepository;
 import org.accounting.system.services.HierarchicalRelationService;
 import org.accounting.system.services.MetricService;
-import org.accounting.system.services.acl.AccessControlService;
 import org.accounting.system.services.authorization.RoleService;
 import org.accounting.system.services.installation.InstallationService;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
@@ -94,12 +92,6 @@ public class InstallationEndpoint {
 
     @Inject
     HierarchicalRelationService hierarchicalRelationService;
-
-    @Inject
-    AccessControlService accessControlService;
-
-    @Inject
-    InstallationRepository installationRepository;
 
     @Inject
     MetricService metricService;
@@ -711,47 +703,6 @@ public class InstallationEndpoint {
 
         return Response.ok().entity(response).build();
     }
-
-//    @Tag(name = "Installation")
-//    @org.eclipse.microprofile.openapi.annotations.Operation(
-//            summary = "Returns all Access Control entries that have been created for Installation collection.",
-//            description = "Returns all Access Control entries that have been created for Installation collection.")
-//    @APIResponse(
-//            responseCode = "200",
-//            description = "The corresponding Access Control entries.",
-//            content = @Content(schema = @Schema(
-//                    type = SchemaType.ARRAY,
-//                    implementation = PermissionAccessControlResponseDto.class)))
-//    @APIResponse(
-//            responseCode = "401",
-//            description = "Client has not been authenticated.",
-//            content = @Content(schema = @Schema(
-//                    type = SchemaType.OBJECT,
-//                    implementation = InformativeResponse.class)))
-//    @APIResponse(
-//            responseCode = "403",
-//            description = "The authenticated client is not permitted to perform the requested operation.",
-//            content = @Content(schema = @Schema(
-//                    type = SchemaType.OBJECT,
-//                    implementation = InformativeResponse.class)))
-//    @APIResponse(
-//            responseCode = "500",
-//            description = "Internal Server Errors.",
-//            content = @Content(schema = @Schema(
-//                    type = SchemaType.OBJECT,
-//                    implementation = InformativeResponse.class)))
-//    @SecurityRequirement(name = "Authentication")
-//
-//    @GET
-//    @Path("/acl")
-//    @Produces(value = MediaType.APPLICATION_JSON)
-//    @AccessPermission(collection = Collection.Installation, operation = ACL)
-//    public Response getAllAccessControl(){
-//
-//        var response = accessControlService.fetchAllPermissions(installationRepository);
-//
-//        return Response.ok().entity(response).build();
-//    }
 
     @Tag(name = "Metric")
     @org.eclipse.microprofile.openapi.annotations.Operation(

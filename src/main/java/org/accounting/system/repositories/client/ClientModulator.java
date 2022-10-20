@@ -1,6 +1,5 @@
 package org.accounting.system.repositories.client;
 
-import org.accounting.system.entities.acl.PermissionAccessControl;
 import org.accounting.system.entities.client.Client;
 import org.accounting.system.repositories.modulators.AbstractModulator;
 
@@ -8,7 +7,7 @@ import javax.inject.Inject;
 import java.util.Set;
 
 
-public class ClientModulator extends AbstractModulator<Client, String, PermissionAccessControl> {
+public class ClientModulator extends AbstractModulator<Client, String> {
 
 
     @Inject

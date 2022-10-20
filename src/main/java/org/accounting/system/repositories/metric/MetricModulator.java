@@ -2,16 +2,14 @@ package org.accounting.system.repositories.metric;
 
 import org.accounting.system.dtos.metric.UpdateMetricRequestDto;
 import org.accounting.system.entities.Metric;
-import org.accounting.system.entities.acl.PermissionAccessControl;
 import org.accounting.system.mappers.MetricMapper;
-import org.accounting.system.repositories.HierarchicalRelationRepository;
 import org.accounting.system.repositories.modulators.AbstractModulator;
 import org.bson.types.ObjectId;
 
 import javax.inject.Inject;
 
 
-public class MetricModulator extends AbstractModulator<Metric, ObjectId, PermissionAccessControl> {
+public class MetricModulator extends AbstractModulator<Metric, ObjectId> {
 
 
     @Inject
@@ -20,8 +18,6 @@ public class MetricModulator extends AbstractModulator<Metric, ObjectId, Permiss
     @Inject
     MetricAccessAlwaysRepository metricAccessAlwaysRepository;
 
-    @Inject
-    HierarchicalRelationRepository hierarchicalRelationRepository;
     /**
      * This method is responsible for updating a part or all attributes of existing Metric.
      *

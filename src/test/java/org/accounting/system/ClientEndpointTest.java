@@ -9,11 +9,7 @@ import io.quarkus.test.security.oidc.TokenIntrospection;
 import io.quarkus.test.security.oidc.UserInfo;
 import org.accounting.system.dtos.client.ClientResponseDto;
 import org.accounting.system.endpoints.ClientEndpoint;
-import org.accounting.system.entities.acl.RoleAccessControl;
 import org.accounting.system.entities.client.Client;
-import org.accounting.system.enums.Collection;
-import org.accounting.system.repositories.acl.AccessControlRepository;
-import org.accounting.system.repositories.authorization.RoleRepository;
 import org.accounting.system.repositories.client.ClientAccessAlwaysRepository;
 import org.accounting.system.repositories.client.ClientRepository;
 import org.accounting.system.services.client.ClientService;
@@ -42,26 +38,12 @@ public class ClientEndpointTest {
     @Inject
     ClientAccessAlwaysRepository clientAccessAlwaysRepository;
 
-    @Inject
-    AccessControlRepository accessControlRepository;
-
-    @Inject
-    RoleRepository roleRepository;
-
     @BeforeAll
     public void setup() {
 
         clientService.register("xyz@example.org", "John Doe", "john.doe@example.org");
 
         clientAccessAlwaysRepository.assignRolesToRegisteredClient("xyz@example.org", Set.of("collection_owner"));
-
-        var roleAccess = new RoleAccessControl();
-
-        roleAccess.setWho("xyz@example.org");
-        roleAccess.setEntity("784569");
-        roleAccess.setCollection(Collection.Project);
-        roleAccess.setRoles(roleRepository.getRolesByName(Set.of("project_admin")));
-        accessControlRepository.persist(roleAccess);
     }
 
     @Test

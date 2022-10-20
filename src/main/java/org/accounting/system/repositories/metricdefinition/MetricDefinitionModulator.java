@@ -4,7 +4,6 @@ import com.mongodb.client.model.Collation;
 import com.mongodb.client.model.CollationStrength;
 import org.accounting.system.dtos.metricdefinition.UpdateMetricDefinitionRequestDto;
 import org.accounting.system.entities.MetricDefinition;
-import org.accounting.system.entities.acl.PermissionAccessControl;
 import org.accounting.system.exceptions.ConflictException;
 import org.accounting.system.mappers.MetricDefinitionMapper;
 import org.accounting.system.repositories.modulators.AbstractModulator;
@@ -14,7 +13,7 @@ import org.bson.types.ObjectId;
 import javax.inject.Inject;
 
 
-public class MetricDefinitionModulator extends AbstractModulator<MetricDefinition, ObjectId, PermissionAccessControl> {
+public class MetricDefinitionModulator extends AbstractModulator<MetricDefinition, ObjectId> {
 
 
     @Inject
