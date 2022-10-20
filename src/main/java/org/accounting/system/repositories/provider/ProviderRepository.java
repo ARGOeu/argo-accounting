@@ -1,9 +1,6 @@
 package org.accounting.system.repositories.provider;
 
-import com.mongodb.client.model.Aggregates;
-import com.mongodb.client.model.Filters;
-import com.mongodb.client.model.UpdateOptions;
-import com.mongodb.client.model.Updates;
+import com.mongodb.client.model.*;
 import io.quarkus.mongodb.panache.PanacheQuery;
 import io.quarkus.oidc.TokenIntrospection;
 import io.quarkus.panache.common.Page;
@@ -221,4 +218,90 @@ public class ProviderRepository extends ProviderModulator {
 
         return precedence.access;
     }
+
+    public PanacheQuery<Provider> fetchSystemProviders(int page, int size) {
+
+        //TODO We have to create an index for the following query
+        var eqAccessControl = Aggregates.match(Filters.or(
+                Filters.and(Filters.eq("roleAccessControls.who", tokenIntrospection.getJsonObject().getString(key)),
+                        Filters.eq("roleAccessControls.roles.collections_access_permissions.collection", Collection.Provider.name()),
+                        Filters.eq("roleAccessControls.roles.collections_access_permissions.access_permissions.operation", Operation.READ.name()),
+                        Filters.eq("roleAccessControls.roles.collections_access_permissions.access_permissions.access_type", AccessType.ALWAYS.name())),
+
+                Filters.and(Filters.eq("providers.roleAccessControls.who", tokenIntrospection.getJsonObject().getString(key)),
+                        Filters.eq("providers.roleAccessControls.roles.collections_access_permissions.collection", Collection.Provider.name()),
+                        Filters.eq("providers.roleAccessControls.roles.collections_access_permissions.access_permissions.operation", Operation.READ.name()),
+                        Filters.eq("providers.roleAccessControls.roles.collections_access_permissions.access_permissions.access_type", AccessType.ALWAYS.name())))
+        );
+
+        var unwind = Aggregates
+                .unwind("$providers");
+
+        var replaceRoot = Aggregates
+                .replaceRoot("$providers");
+        var group =Aggregates.group( "$_id", Accumulators.first("name","$name"),Accumulators.first("website","$website"),
+                Accumulators.first("abbreviation","$abbreviation"),Accumulators.first("logo","$logo"));
+
+        var providers= getMongoCollection("Project")
+                .aggregate(List.of(eqAccessControl,  unwind,eqAccessControl, replaceRoot,group, Aggregates.skip(size * (page)), Aggregates.limit(size)),  Provider.class)
+                .into(new ArrayList<>());
+
+        Document count = getMongoCollection("Project")
+                .aggregate(List.of(eqAccessControl,unwind,eqAccessControl,replaceRoot,group,Aggregates.count()))
+                .first();
+
+        var projectionQuery = new MongoQuery<Provider>();
+
+        projectionQuery.list = providers;
+        projectionQuery.index = page;
+        projectionQuery.size = size;
+        projectionQuery.count = count == null ? 0L : Long.parseLong(count.get("count").toString());
+        projectionQuery.page = Page.of(page, size);
+
+        return projectionQuery;
+
+    }
+    public PanacheQuery<Provider> searchProviders(Bson searchDoc,int page, int size) {
+
+        //TODO We have to create an index for the following query
+        var eqAccessControl = Aggregates.match(Filters.or(
+                Filters.and(Filters.eq("roleAccessControls.who", tokenIntrospection.getJsonObject().getString(key)),
+                        Filters.eq("roleAccessControls.roles.collections_access_permissions.collection", Collection.Provider.name()),
+                        Filters.eq("roleAccessControls.roles.collections_access_permissions.access_permissions.operation", Operation.READ.name()),
+                        Filters.eq("roleAccessControls.roles.collections_access_permissions.access_permissions.access_type", AccessType.ALWAYS.name())),
+
+                Filters.and(Filters.eq("providers.roleAccessControls.who", tokenIntrospection.getJsonObject().getString(key)),
+                        Filters.eq("providers.roleAccessControls.roles.collections_access_permissions.collection", Collection.Provider.name()),
+                        Filters.eq("providers.roleAccessControls.roles.collections_access_permissions.access_permissions.operation", Operation.READ.name()),
+                        Filters.eq("providers.roleAccessControls.roles.collections_access_permissions.access_permissions.access_type", AccessType.ALWAYS.name())))
+        );
+
+        var unwind = Aggregates
+                .unwind("$providers");
+
+        var replaceRoot = Aggregates
+                .replaceRoot("$providers");
+        var group =Aggregates.group( "$_id", Accumulators.first("name","$name"),Accumulators.first("website","$website"),
+                Accumulators.first("abbreviation","$abbreviation"),Accumulators.first("logo","$logo"));
+
+        var providers= getMongoCollection("Project")
+                .aggregate(List.of(eqAccessControl,  unwind,eqAccessControl, replaceRoot,group,Aggregates.match(searchDoc), Aggregates.skip(size * (page)), Aggregates.limit(size)),  Provider.class)
+                .into(new ArrayList<>());
+
+        Document count = getMongoCollection("Project")
+                .aggregate(List.of(eqAccessControl,unwind,eqAccessControl,replaceRoot,group, Aggregates.match(searchDoc),Aggregates.count()))
+                .first();
+
+        var projectionQuery = new MongoQuery<Provider>();
+
+        projectionQuery.list = providers;
+        projectionQuery.index = page;
+        projectionQuery.size = size;
+        projectionQuery.count = count == null ? 0L : Long.parseLong(count.get("count").toString());
+        projectionQuery.page = Page.of(page, size);
+
+        return projectionQuery;
+
+    }
+
 }
