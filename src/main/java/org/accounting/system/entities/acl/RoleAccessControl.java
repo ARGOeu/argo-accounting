@@ -12,13 +12,13 @@ public class RoleAccessControl extends AccessControl {
     /**
      * The {@link #roles permissions} component is a set of {@link Role roles}.
      */
-    private Set<String> roles;
+    private Set<Role> roles;
 
-    public Set<String> getRoles() {
+    public Set<Role> getRoles() {
         return roles;
     }
 
-    public void setRoles(Set<String> roles) {
+    public void setRoles(Set<Role> roles) {
         this.roles = roles;
     }
 }

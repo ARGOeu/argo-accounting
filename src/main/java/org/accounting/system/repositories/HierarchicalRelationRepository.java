@@ -10,7 +10,6 @@ import io.quarkus.panache.common.Page;
 import liquibase.repackaged.org.apache.commons.collections4.CollectionUtils;
 import org.accounting.system.entities.HierarchicalRelation;
 import org.accounting.system.entities.projections.HierarchicalRelationProjection;
-import org.accounting.system.entities.projections.InstallationProjection;
 import org.accounting.system.entities.projections.MetricProjection;
 import org.accounting.system.entities.projections.MongoQuery;
 import org.accounting.system.repositories.installation.InstallationRepository;
@@ -22,7 +21,12 @@ import org.bson.types.ObjectId;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 @ApplicationScoped
@@ -69,143 +73,15 @@ public class HierarchicalRelationRepository extends AbstractAccessModulator<Hier
     }
 
 
-    public HierarchicalRelation findByPath(final String id){
+    public HierarchicalRelation findByPath(final String id) {
 
         var document = findById(id);
 
-        if( document == null ) {
+        if (document == null) {
             return document;
         }
 
         return build(document, find(Document.parse(Filters.regex("_id", id + "[.\\s]").toBsonDocument().toJson())).list());
-    }
-
-    public PanacheQuery<InstallationProjection> findInstallationsByProjectId(String project, String from, String localField, String foreignField, String as, int page, int size, Class<InstallationProjection> projection){
-
-        Bson eq = Aggregates.match(Filters.regex("project", project));
-
-        Bson lookup = Aggregates.lookup(from, localField, foreignField, as);
-
-
-        List<InstallationProjection> projections = installationRepository
-                .getMongoCollection()
-                .aggregate(List
-                        .of(lookup, eq,  Aggregates.skip(size * (page)), Aggregates.limit(size)), InstallationProjection.class).into(new ArrayList<>());
-
-        var projectionQuery = new MongoQuery<InstallationProjection>();
-
-        Document count = installationRepository
-                .getMongoCollection()
-                .aggregate(List
-                        .of(eq, Aggregates.count())).first();
-
-        projectionQuery.list = projections;
-        projectionQuery.index = page;
-        projectionQuery.size = size;
-        projectionQuery.count = count == null ? 0L : Long.parseLong(count.get("count").toString());
-        projectionQuery.page = Page.of(page, size);
-
-        return projectionQuery;
-    }
-
-    public PanacheQuery<InstallationProjection> findInstallationsByProject(String project, String from, String localField, String foreignField, String as, int page, int size, Class<InstallationProjection> projection){
-
-        Bson eq = Aggregates.match(Filters.eq("project", project));
-
-        Bson lookup = Aggregates.lookup(from, localField, foreignField, as);
-
-
-        List<InstallationProjection> projections = installationRepository
-                .getMongoCollection()
-                .aggregate(List
-                        .of(lookup, eq,  Aggregates.skip(size * (page)), Aggregates.limit(size)), InstallationProjection.class).into(new ArrayList<>());
-
-        var projectionQuery = new MongoQuery<InstallationProjection>();
-
-        Document count = installationRepository
-                .getMongoCollection()
-                .aggregate(List
-                        .of(eq, Aggregates.count())).first();
-
-        projectionQuery.list = projections;
-        projectionQuery.index = page;
-        projectionQuery.size = size;
-        projectionQuery.count = count == null ? 0L : Long.parseLong(count.get("count").toString());
-        projectionQuery.page = Page.of(page, size);
-
-        return projectionQuery;
-    }
-
-
-    public List<InstallationProjection>  findInstallationsOfProjects(List<String> projects, String from, String localField, String foreignField, String as){
-
-        Bson eq = Aggregates.match(Filters.in("project", projects));
-
-        Bson lookup = Aggregates.lookup(from, localField, foreignField, as);
-
-
-     return  installationRepository
-                .getMongoCollection()
-                .aggregate(List
-                        .of(lookup, eq), InstallationProjection.class).into(new ArrayList<>());
-
-    }
-
-    public List<InstallationProjection> findInstallationsOfProviders(List<String>providers, String from, String localField, String foreignField, String as){
-
-        Bson eq = Aggregates.match(Filters.in("organisation", providers));
-
-        Bson lookup = Aggregates.lookup(from, localField, foreignField, as);
-
-
-        return installationRepository
-                .getMongoCollection()
-                .aggregate(List
-                        .of(lookup, eq), InstallationProjection.class).into(new ArrayList<>());
-    }
-
-    public PanacheQuery<InstallationProjection> findInstallationsByProvider(String project, String provider, String from, String localField, String foreignField, String as, int page, int size, Class<InstallationProjection> projection){
-
-        Bson eq = Aggregates.match(Filters.and(Filters.eq("project", project), Filters.eq("organisation", provider)));
-
-        Bson lookup = Aggregates.lookup(from, localField, foreignField, as);
-
-
-        List<InstallationProjection> projections = installationRepository
-                .getMongoCollection()
-                .aggregate(List
-                        .of(lookup, eq,  Aggregates.skip(size * (page)), Aggregates.limit(size)), InstallationProjection.class).into(new ArrayList<>());
-
-        var projectionQuery = new MongoQuery<InstallationProjection>();
-
-        Document count = installationRepository
-                .getMongoCollection()
-                .aggregate(List
-                        .of(eq, Aggregates.count())).first();
-
-        projectionQuery.list = projections;
-        projectionQuery.index = page;
-        projectionQuery.size = size;
-        projectionQuery.count = count == null ? 0L : Long.parseLong(count.get("count").toString());
-        projectionQuery.page = Page.of(page, size);
-
-        return projectionQuery;
-    }
-
-
-    public List<InstallationProjection> findInstallationsByProvider(String project, String provider, String from, String localField, String foreignField, String as){
-
-        Bson eq = Aggregates.match(Filters.and(Filters.eq("project", project), Filters.eq("organisation", provider)));
-
-        Bson lookup = Aggregates.lookup(from, localField, foreignField, as);
-
-
-        return installationRepository
-                .getMongoCollection()
-                .aggregate(List
-                        .of(lookup, eq), InstallationProjection.class).into(new ArrayList<>());
-
-
     }
 
     public PanacheQuery<MetricProjection> findByExternalId(final String externalId, int page, int size) {

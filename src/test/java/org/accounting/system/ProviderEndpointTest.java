@@ -15,16 +15,19 @@ import org.accounting.system.dtos.provider.ProviderResponseDto;
 import org.accounting.system.dtos.provider.UpdateProviderRequestDto;
 import org.accounting.system.endpoints.ProviderEndpoint;
 import org.accounting.system.mappers.ProviderMapper;
-import org.accounting.system.repositories.acl.AccessControlRepository;
 import org.accounting.system.repositories.client.ClientAccessAlwaysRepository;
+import org.accounting.system.repositories.project.ProjectAccessAlwaysRepository;
 import org.accounting.system.repositories.provider.ProviderRepository;
 import org.accounting.system.services.ProjectService;
+import org.accounting.system.services.SystemAdminService;
 import org.accounting.system.services.client.ClientService;
 import org.accounting.system.util.Utility;
+import org.accounting.system.wiremock.ProjectWireMockServer;
 import org.accounting.system.wiremock.ProviderWireMockServer;
 import org.eclipse.microprofile.rest.client.inject.RestClient;
 import org.json.simple.parser.ParseException;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 
@@ -40,11 +43,15 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 @TestProfile(AccountingSystemTestProfile.class)
 @TestHTTPEndpoint(ProviderEndpoint.class)
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
+@QuarkusTestResource(ProjectWireMockServer.class)
 @QuarkusTestResource(ProviderWireMockServer.class)
 public class ProviderEndpointTest {
 
     @Inject
     ProviderRepository providerRepository;
+
+    @Inject
+    SystemAdminService systemAdminService;
 
     @Inject
     @RestClient
@@ -60,11 +67,10 @@ public class ProviderEndpointTest {
     ProjectService projectService;
 
     @Inject
-    AccessControlRepository accessControlRepository;
-
-    @Inject
     ClientAccessAlwaysRepository clientAccessAlwaysRepository;
 
+    @Inject
+    ProjectAccessAlwaysRepository projectAccessAlwaysRepository;
 
     KeycloakTestClient keycloakClient = new KeycloakTestClient();
 
@@ -77,9 +83,20 @@ public class ProviderEndpointTest {
 
         providerRepository.persistOrUpdate(ProviderMapper.INSTANCE.eoscProvidersToProviders(response.results));
 
-        clientService.register(utility.getIdFromToken(keycloakClient.getAccessToken("admin").split("\\.")[1]), "admin", "admin@email.com");
+        var sub = utility.getIdFromToken(keycloakClient.getAccessToken("admin").split("\\.")[1]);
+
+        clientService.register(sub, "admin", "admin@email.com");
 
         clientAccessAlwaysRepository.assignRolesToRegisteredClient(utility.getIdFromToken(keycloakClient.getAccessToken("creator").split("\\.")[1]), Set.of("collection_owner"));
+    }
+
+    @BeforeEach
+    public void before() throws ParseException {
+
+        projectAccessAlwaysRepository.deleteAll();
+
+        String sub = utility.getIdFromToken(keycloakClient.getAccessToken("admin").split("\\.")[1]);
+        systemAdminService.accessListOfProjects(Set.of("777536"), sub);
     }
 
     @Test
@@ -314,10 +331,6 @@ public class ProviderEndpointTest {
 
         createProvider(request, "admin");
 
-        String sub = utility.getIdFromToken(keycloakClient.getAccessToken("admin").split("\\.")[1]);
-
-        accessControlRepository.accessListOfProjects(Set.of("777536"), sub);
-
         projectService.associateProjectWithProviders("777536", Set.of("delete-provider-id-prohibited"));
 
         var response = given()
@@ -395,10 +408,6 @@ public class ProviderEndpointTest {
         request.website = "update-provider-website-prohibited";
 
         createProvider(request, "admin");
-
-        String sub = utility.getIdFromToken(keycloakClient.getAccessToken("admin").split("\\.")[1]);
-
-        accessControlRepository.accessListOfProjects(Set.of("777536"), sub);
 
         projectService.associateProjectWithProviders("777536", Set.of("update-provider-id-prohibited"));
 

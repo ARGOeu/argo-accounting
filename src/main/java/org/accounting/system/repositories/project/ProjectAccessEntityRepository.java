@@ -4,8 +4,6 @@ import io.quarkus.mongodb.panache.PanacheQuery;
 import org.accounting.system.entities.Project;
 import org.accounting.system.entities.acl.RoleAccessControl;
 import org.accounting.system.entities.projections.MetricProjection;
-import org.accounting.system.enums.Collection;
-import org.accounting.system.enums.Operation;
 import org.accounting.system.repositories.HierarchicalRelationRepository;
 import org.accounting.system.repositories.modulators.AccessControlModulator;
 import org.accounting.system.repositories.modulators.AccessEntityModulator;
@@ -57,12 +55,6 @@ public class ProjectAccessEntityRepository extends AccessEntityModulator<Project
     public PanacheQuery<MetricProjection> fetchAllMetrics(String id, int page, int size){
 
         return hierarchicalRelationRepository.findByExternalId(id, page, size);
-    }
-
-
-    public boolean accessibility(String projectId, Collection collection, Operation operation){
-
-        return projectAccessControlRepository.accessibility(projectId, collection, operation);
     }
 
     @Override

@@ -55,101 +55,7 @@
         </ext:createIndex>
     </changeSet>
 
-<!--    <changeSet id="3" author="accounting-system">-->
-<!--        <ext:createCollection collectionName="Metric">-->
-<!--            <ext:options>-->
-<!--                {-->
-<!--                validator: {-->
-<!--                $jsonSchema: {-->
-<!--                bsonType: "object",-->
-<!--                required: ["metric_definition_id ", "resource_id", "value", "time_period_start", "time_period_end"],-->
-<!--                properties: {-->
-<!--                metric_definition_id: {-->
-<!--                bsonType: "string",-->
-<!--                description: "The Metric Definition to be assigned"-->
-<!--                },-->
-<!--                resource_id: {-->
-<!--                bsonType: "string",-->
-<!--                description: "Unique Identifier from the resource"-->
-<!--                },-->
-<!--                value: {-->
-<!--                bsonType: "double",-->
-<!--                description: "Value of the metric for the given period"-->
-<!--                },-->
-<!--                time_period_start: {-->
-<!--                bsonType: "date",-->
-<!--                description: "Timestamp of the starting date time (Zulu timestamp)"-->
-<!--                },-->
-<!--                time_period_end: {-->
-<!--                bsonType: "date",-->
-<!--                description: "Timestamp of the end date time (Zulu timestamp)"-->
-<!--                }-->
-<!--                }-->
-<!--                }-->
-<!--                },-->
-<!--                validationAction: "warn",-->
-<!--                validationLevel: "strict"-->
-<!--                }-->
-<!--            </ext:options>-->
-<!--        </ext:createCollection>-->
-<!--    </changeSet>-->
-
-    <!--    <changeSet id="4" author="accounting-system">-->
-    <!--        <ext:createCollection collectionName="Role">-->
-    <!--            <ext:options>-->
-    <!--                {-->
-    <!--                validator: {-->
-    <!--                $jsonSchema: {-->
-    <!--                bsonType: "object",-->
-    <!--                required: ["name"],-->
-    <!--                properties: {-->
-    <!--                name: {-->
-    <!--                bsonType: "string",-->
-    <!--                description: "The Role name"-->
-    <!--                },-->
-    <!--                description: {-->
-    <!--                bsonType: "string",-->
-    <!--                description: "The role description explains the operations a user or a service is expected to perform"-->
-    <!--                },-->
-    <!--                collections_access_permissions: {-->
-    <!--                bsonType: "object",-->
-    <!--                required: ["collection", "access_permissions"],-->
-    <!--                properties: {-->
-    <!--                access_permissions: {-->
-    <!--                bsonType: "array",-->
-    <!--                description: "The access_permissions upon a Collection that have been assigned to that role",-->
-    <!--                items: {-->
-    <!--                bsonType: "object",-->
-    <!--                required: ["operation", "access_type"],-->
-    <!--                properties: {-->
-    <!--                operation: {-->
-    <!--                enum: [ "CREATE", "UPDATE", "DELETE", "READ"],-->
-    <!--                description: "The operation attribute can only be one of the the available API operations"-->
-    <!--                },-->
-    <!--                access_type: {-->
-    <!--                enum: [ "ALWAYS", "NEVER", "ENTITY"],-->
-    <!--                description: "The access_type attribute can only be one of the the available access types"-->
-    <!--                }-->
-    <!--                }-->
-    <!--                }-->
-    <!--                },-->
-    <!--                collection: {-->
-    <!--                enum: [ "MetricDefinition", "Metric"],-->
-    <!--                description: "Can only be one of the the available collections"-->
-    <!--                }-->
-    <!--                }-->
-    <!--                }-->
-    <!--                }-->
-    <!--                }-->
-    <!--                },-->
-    <!--                validationAction: "warn",-->
-    <!--                validationLevel: "strict"-->
-    <!--                }-->
-    <!--            </ext:options>-->
-    <!--        </ext:createCollection>-->
-    <!--    </changeSet>-->
-
-    <changeSet id="5" author="accounting-system">
+    <changeSet id="3" author="accounting-system">
         <ext:createIndex collectionName="Role">
             <ext:keys>
                 { name: 1}
@@ -160,7 +66,7 @@
         </ext:createIndex>
     </changeSet>
 
-    <changeSet id="6" author="accounting-system">
+    <changeSet id="4" author="accounting-system">
         <ext:insertMany collectionName="Role">
             <ext:documents>
                 [
@@ -255,7 +161,7 @@
         </ext:insertMany>
     </changeSet>
 
-    <changeSet id="7" author="accounting-system">
+    <changeSet id="5" author="accounting-system">
         <ext:insertMany collectionName="Role">
             <ext:documents>
                 [
@@ -297,7 +203,7 @@
         </ext:insertMany>
     </changeSet>
 
-    <changeSet id="10" author="accounting-system">
+    <changeSet id="6" author="accounting-system">
         <ext:createIndex collectionName="Installation">
             <ext:keys>
                 { project: 1, organisation: 1, installation: 1}
@@ -308,7 +214,7 @@
         </ext:createIndex>
     </changeSet>
 
-    <changeSet id="11" author="accounting-system">
+    <changeSet id="7" author="accounting-system">
         <ext:createIndex collectionName="Metric">
             <ext:keys>
                 { resource_id: 1, metric_definition_id: 1, time_period_start: 1, time_period_end: 1}
@@ -319,7 +225,7 @@
         </ext:createIndex>
     </changeSet>
 
-    <changeSet id="12" author="accounting-system">
+    <changeSet id="8" author="accounting-system">
         <ext:insertOne collectionName="Role">
             <ext:document>
                 {
@@ -329,10 +235,6 @@
                 collections_access_permissions: [
                 {
                 access_permissions: [
-                {
-                operation: "REGISTER",
-                access_type: "ALWAYS"
-                },
                 {
                 operation: "ASSOCIATE",
                 access_type: "ALWAYS"
@@ -412,7 +314,7 @@
         </ext:insertOne>
     </changeSet>
 
-    <changeSet id="13" author="accounting-system">
+    <changeSet id="9" author="accounting-system">
         <ext:insertOne collectionName="Role">
             <ext:document>
                 {
@@ -481,7 +383,7 @@
     </changeSet>
 
 
-    <changeSet id="14" author="accounting-system">
+    <changeSet id="10" author="accounting-system">
         <ext:insertMany collectionName="Role">
             <ext:documents>
                 [
@@ -538,7 +440,7 @@
         </ext:insertMany>
     </changeSet>
 
-    <changeSet id="15" author="accounting-system">
+    <changeSet id="11" author="accounting-system">
         <ext:insertOne collectionName="Role">
             <ext:document>
                 {
@@ -578,7 +480,7 @@
         </ext:insertOne>
     </changeSet>
 
-    <changeSet id="16" author="accounting-system">
+    <changeSet id="12" author="accounting-system">
         <ext:insertMany collectionName="Role">
             <ext:documents>
                 [
@@ -615,7 +517,7 @@
     </changeSet>
 
 
-    <changeSet id="17" author="accounting-system">
+    <changeSet id="13" author="accounting-system">
         <ext:insertOne collectionName="Role">
             <ext:document>
                 {
@@ -649,25 +551,14 @@
         </ext:insertOne>
     </changeSet>
 
-    <changeSet id="18" author="accounting-system">
-        <ext:createIndex collectionName="RoleAccessControl">
+    <changeSet id="14" author="accounting-system">
+        <ext:createIndex collectionName="HierarchicalRelation">
             <ext:keys>
-                { who: 1, collection: 1, entity: 1}
+                { externalId: 1}
             </ext:keys>
             <ext:options>
-                {unique: true, name: "unique_access_control_entry"}
+                {unique: false, name: "hierarchical_relation_external_id"}
             </ext:options>
         </ext:createIndex>
-    </changeSet>
-
-    <changeSet id="19" author="accounting-system">
-    <ext:createIndex collectionName="RoleAccessControl">
-        <ext:keys>
-            { who: 1, collection: 1}
-        </ext:keys>
-        <ext:options>
-            {unique: false, name: "unique_who_entry"}
-        </ext:options>
-    </ext:createIndex>
     </changeSet>
 </databaseChangeLog>

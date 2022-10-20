@@ -2,13 +2,15 @@ package org.accounting.system.entities.installation;
 
 import lombok.EqualsAndHashCode;
 import org.accounting.system.entities.Entity;
+import org.bson.codecs.pojo.annotations.BsonId;
 import org.bson.codecs.pojo.annotations.BsonProperty;
 import org.bson.types.ObjectId;
 
 @EqualsAndHashCode(onlyExplicitlyIncluded = true, callSuper = false)
 public class Installation extends Entity {
 
-    private ObjectId id;
+    @BsonId
+    private String id;
 
     @EqualsAndHashCode.Include
     @BsonProperty("project")
@@ -28,11 +30,11 @@ public class Installation extends Entity {
     @BsonProperty("unit_of_access")
     private ObjectId unitOfAccess;
 
-    public ObjectId getId() {
+    public String getId() {
         return id;
     }
 
-    public void setId(ObjectId id) {
+    public void setId(String id) {
         this.id = id;
     }
 
@@ -74,9 +76,5 @@ public class Installation extends Entity {
 
     public void setProject(String project) {
         this.project = project;
-    }
-
-    public String convertIdToStr(){
-        return this.id.toString();
     }
 }

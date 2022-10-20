@@ -1,11 +1,15 @@
-package org.accounting.system.dtos.project;
+package org.accounting.system.entities.projections;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import org.bson.codecs.pojo.annotations.BsonProperty;
 import org.eclipse.microprofile.openapi.annotations.enums.SchemaType;
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
 
+import java.util.ArrayList;
+import java.util.List;
+
 @Schema(name="ProjectResponse", description="An object represents a Project.")
-public class ProjectResponseDto {
+public class ProjectProjection {
 
     @Schema(
             type = SchemaType.STRING,
@@ -41,6 +45,7 @@ public class ProjectResponseDto {
             example = "2018-12-31."
     )
     @JsonProperty("start_date")
+    @BsonProperty("start_date")
     public String startDate;
 
     @Schema(
@@ -50,6 +55,7 @@ public class ProjectResponseDto {
             example = "2023-06-30."
     )
     @JsonProperty("end_date")
+    @BsonProperty("end_date")
     public String endDate;
 
     @Schema(
@@ -59,7 +65,20 @@ public class ProjectResponseDto {
             example = "H2020-EINFRA-2017."
     )
     @JsonProperty("call_identifier")
+    @BsonProperty("call_identifier")
     public String callIdentifier;
+
+    @Schema(
+            type = SchemaType.ARRAY,
+            implementation = ProviderProjection.class,
+            description = "The Providers associated with a Project."
+    )
+    @JsonProperty("providers")
+    public List<ProviderProjection> providers;
+
+    public ProjectProjection(){
+        providers = new ArrayList<>();
+    }
 
     public String getId() {
         return id;

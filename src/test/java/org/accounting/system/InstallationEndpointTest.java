@@ -21,10 +21,10 @@ import org.accounting.system.repositories.acl.AccessControlRepository;
 import org.accounting.system.repositories.client.ClientAccessAlwaysRepository;
 import org.accounting.system.repositories.installation.InstallationRepository;
 import org.accounting.system.repositories.metricdefinition.MetricDefinitionRepository;
-import org.accounting.system.repositories.project.ProjectAccessAlwaysRepository;
-import org.accounting.system.repositories.project.ProjectModulator;
+import org.accounting.system.repositories.project.ProjectRepository;
 import org.accounting.system.repositories.provider.ProviderRepository;
 import org.accounting.system.services.ReadPredefinedTypesService;
+import org.accounting.system.services.SystemAdminService;
 import org.accounting.system.services.client.ClientService;
 import org.accounting.system.util.Utility;
 import org.accounting.system.wiremock.ProjectWireMockServer;
@@ -67,10 +67,13 @@ public class InstallationEndpointTest {
     ReadPredefinedTypesService readPredefinedTypesService;
 
     @Inject
-    ProjectAccessAlwaysRepository projectAccessAlwaysRepository;
+    ProjectRepository projectRepository;
 
     @Inject
     AccessControlRepository accessControlRepository;
+
+    @Inject
+    SystemAdminService systemAdminService;
 
     @Inject
     @RestClient
@@ -104,22 +107,16 @@ public class InstallationEndpointTest {
     @BeforeEach
     public void before() throws ParseException {
 
-        installationRepository.deleteAll();
         metricDefinitionRepository.deleteAll();
         accessControlRepository.deleteAll();
-        projectAccessAlwaysRepository.deleteAll();
-
-        //We are going to register the EOSC-hub project from OpenAire API
-        projectAccessAlwaysRepository.save("777536", ProjectModulator.openAire());
-
-        //We are going to register the EGI-ACE project from OpenAire API
-        projectAccessAlwaysRepository.save("101017567", ProjectModulator.openAire());
-
-        projectAccessAlwaysRepository.associateProjectWithProviders("777536", Set.of("grnet"));
+        projectRepository.deleteAll();
 
         String sub = utility.getIdFromToken(keycloakClient.getAccessToken("admin").split("\\.")[1]);
 
-        accessControlRepository.accessListOfProjects(Set.of("777536", "101017567"), sub);
+        //We are going to register the EGI-ACE and EOSC-hub project from OpenAire API
+        systemAdminService.accessListOfProjects(Set.of("777536", "101017567"), sub);
+
+        projectRepository.associateProjectWithProviders("777536", Set.of("grnet"));
     }
 
     @Test
@@ -837,8 +834,8 @@ public class InstallationEndpointTest {
                 .extract()
                 .as(InstallationResponseDto.class);
 
-        assertEquals(requestForUpdating.project, updatedInstallation.project);
-        assertEquals(requestForUpdating.organisation, updatedInstallation.organisation);
+        assertEquals(request.project, updatedInstallation.project);
+        assertEquals(request.organisation, updatedInstallation.organisation);
         assertEquals(requestForUpdating.infrastructure, updatedInstallation.infrastructure);
         assertEquals(requestForUpdating.installation, updatedInstallation.installation);
         assertEquals(requestForUpdating.unitOfAccess, updatedInstallation.metricDefinition.id);

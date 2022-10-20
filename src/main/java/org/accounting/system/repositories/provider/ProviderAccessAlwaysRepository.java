@@ -20,9 +20,4 @@ public class ProviderAccessAlwaysRepository extends AccessAlwaysModulator<Provid
 
         return hierarchicalRelationRepository.findByExternalId(id, page, size);
     }
-
-    public boolean accessibility(String projectId, String providerId){
-
-        return true;
-    }
 }

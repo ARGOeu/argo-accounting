@@ -25,8 +25,8 @@ import org.accounting.system.dtos.metricdefinition.MetricDefinitionRequestDto;
 import org.accounting.system.dtos.metricdefinition.MetricDefinitionResponseDto;
 import org.accounting.system.dtos.pagination.PageResource;
 import org.accounting.system.dtos.project.AssociateProjectProviderRequestDto;
-import org.accounting.system.dtos.project.ProjectResponseDto;
 import org.accounting.system.endpoints.ProjectEndpoint;
+import org.accounting.system.entities.projections.ProjectProjection;
 import org.accounting.system.enums.ApiMessage;
 import org.accounting.system.mappers.ProviderMapper;
 import org.accounting.system.repositories.acl.AccessControlRepository;
@@ -34,9 +34,10 @@ import org.accounting.system.repositories.client.ClientAccessAlwaysRepository;
 import org.accounting.system.repositories.installation.InstallationRepository;
 import org.accounting.system.repositories.metric.MetricRepository;
 import org.accounting.system.repositories.metricdefinition.MetricDefinitionRepository;
-import org.accounting.system.repositories.project.ProjectAccessAlwaysRepository;
+import org.accounting.system.repositories.project.ProjectRepository;
 import org.accounting.system.repositories.provider.ProviderRepository;
 import org.accounting.system.services.ReadPredefinedTypesService;
+import org.accounting.system.services.SystemAdminService;
 import org.accounting.system.services.client.ClientService;
 import org.accounting.system.util.Utility;
 import org.accounting.system.wiremock.ProjectWireMockServer;
@@ -84,7 +85,10 @@ public class ProjectAutorizationTest {
     AccessControlRepository accessControlRepository;
 
     @Inject
-    ProjectAccessAlwaysRepository projectAccessAlwaysRepository;
+    SystemAdminService systemAdminService;
+
+    @Inject
+    ProjectRepository projectRepository;
 
     @Inject
     MetricRepository metricRepository;
@@ -121,15 +125,15 @@ public class ProjectAutorizationTest {
 
     @BeforeEach
     public void before() throws ParseException {
-        installationRepository.deleteAll();
+
         metricDefinitionRepository.deleteAll();
-        projectAccessAlwaysRepository.deleteAll();
+        projectRepository.deleteAll();
         metricRepository.deleteAll();
 
         accessControlRepository.deleteAll();
 
         String sub = utility.getIdFromToken(keycloakClient.getAccessToken("admin").split("\\.")[1]);
-        accessControlRepository.accessListOfProjects(Set.of("777536"), sub);
+        systemAdminService.accessListOfProjects(Set.of("777536"), sub);
     }
 
     @Test
@@ -148,7 +152,7 @@ public class ProjectAutorizationTest {
 
         // initially the client project_admin has no access to 777536
         given()
-                .post("/{id}", "777536")
+                .get("/{id}", "777536")
                 .then()
                 .assertThat()
                 .statusCode(403)
@@ -176,12 +180,12 @@ public class ProjectAutorizationTest {
         // client project_admin has now access Project 777536
 
         var project = given()
-                .post("/{id}", "777536")
+                .get("/{id}", "777536")
                 .then()
                 .assertThat()
                 .statusCode(200)
                 .extract()
-                .as(ProjectResponseDto.class);
+                .as(ProjectProjection.class);
 
         assertEquals(project.id, "777536");
         assertEquals(project.acronym, "EOSC-hub");
@@ -203,42 +207,7 @@ public class ProjectAutorizationTest {
                     @UserInfo(key = "email", value = "project_admin@example.org")
             }
     )
-    public void saveProjectForbidden(){
-
-        var informativeResponse = given()
-                .post("/{id}", "777536")
-                .then()
-                .assertThat()
-                .statusCode(403)
-                .extract()
-                .as(InformativeResponse.class);
-
-        assertEquals(ApiMessage.UNAUTHORIZED_CLIENT.message, informativeResponse.message);
-    }
-
-    @Test
-    @TestSecurity(user = "project_admin")
-    @OidcSecurity(introspectionRequired = true,
-            introspection = {
-                    @TokenIntrospection(key = "voperson_id", value = "project_admin@example.org"),
-                    @TokenIntrospection(key = "sub", value = "project_admin@example.org")
-            },
-            userinfo = {
-                    @UserInfo(key = "name", value = "project_admin"),
-                    @UserInfo(key = "email", value = "project_admin@example.org")
-            }
-    )
     public void associateProjectWithProvidersForbidden(){
-
-        given()
-                .auth()
-                .oauth2(getAccessToken("admin"))
-                .post("/{id}", "777536")
-                .then()
-                .assertThat()
-                .statusCode(200)
-                .extract()
-                .as(ProjectResponseDto.class);
 
         var associateProjectProviderRequestDto = new AssociateProjectProviderRequestDto();
 
@@ -258,6 +227,28 @@ public class ProjectAutorizationTest {
     }
 
     @Test
+    public void associateProjectWithProvidersNotFound(){
+
+        var associateProjectProviderRequestDto = new AssociateProjectProviderRequestDto();
+
+        associateProjectProviderRequestDto.providers = Set.of("not_found");
+
+        var informativeResponse = given()
+                .auth()
+                .oauth2(getAccessToken("admin"))
+                .contentType(ContentType.JSON)
+                .body(associateProjectProviderRequestDto)
+                .post("/{id}/associate", "777536")
+                .then()
+                .assertThat()
+                .statusCode(404)
+                .extract()
+                .as(InformativeResponse.class);
+
+        assertEquals("There is no Provider with the following id: not_found", informativeResponse.message);
+    }
+
+    @Test
     @TestSecurity(user = "project_admin")
     @OidcSecurity(introspectionRequired = true,
             introspection = {
@@ -271,17 +262,7 @@ public class ProjectAutorizationTest {
     )
     public void metricsUnderAProject(){
 
-        given()
-                .auth()
-                .oauth2(getAccessToken("admin"))
-                .post("/{id}", "777536")
-                .then()
-                .assertThat()
-                .statusCode(200)
-                .extract()
-                .as(ProjectResponseDto.class);
-
-        projectAccessAlwaysRepository.associateProjectWithProviders("777536", Set.of("grnet"));
+        projectRepository.associateProjectWithProviders("777536", Set.of("grnet"));
 
         //Registering an installation
         Mockito.when(readPredefinedTypesService.searchForUnitType(any())).thenReturn(Optional.of("SECOND"));
@@ -359,9 +340,7 @@ public class ProjectAutorizationTest {
     )
     public void metricsUnderAProvider(){
 
-        registerProjectAuth("777536", "admin");
-
-        projectAccessAlwaysRepository.associateProjectWithProviders("777536", Set.of("grnet"));
+        projectRepository.associateProjectWithProviders("777536", Set.of("grnet"));
 
         var metricDefinitionResponse = createMetricDefinition("admin");
 
@@ -430,9 +409,7 @@ public class ProjectAutorizationTest {
     )
     public void metricsUnderAnInstallation(){
 
-        registerProjectAuth("777536", "admin");
-
-        projectAccessAlwaysRepository.associateProjectWithProviders("777536", Set.of("grnet"));
+        projectRepository.associateProjectWithProviders("777536", Set.of("grnet"));
 
         // admin grant Provider Access to provider_admin@example.org
         grantProviderAccess("777536", "grnet", "admin","provider_admin@example.org");
@@ -513,7 +490,6 @@ public class ProjectAutorizationTest {
                 .extract()
                 .as(ClientResponseDto.class);
 
-
         //provider_admin grants access to installationadmin to manage the Provider Installation
         grantInstallationAccess(installation.id, client.id);
 
@@ -526,20 +502,6 @@ public class ProjectAutorizationTest {
         var installationAdminMetricsPagination = installationAdminMetrics.body().as(PageResource.class);
 
         assertEquals(1, installationAdminMetricsPagination.getTotalElements());
-    }
-
-    private void registerProjectAuth(String project, String user){
-
-        given()
-                .auth()
-                .oauth2(getAccessToken(user))
-                .basePath("accounting-system/projects")
-                .post("/{id}", project)
-                .then()
-                .assertThat()
-                .statusCode(200)
-                .extract()
-                .as(ProjectResponseDto.class);
     }
 
     private void grantProviderAccess(String project, String provider, String user, String who){

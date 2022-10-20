@@ -2,8 +2,8 @@ package org.accounting.system.endpoints;
 
 import io.quarkus.oidc.TokenIntrospection;
 import io.quarkus.security.Authenticated;
-import org.accounting.system.repositories.acl.AccessControlRepository;
 import org.accounting.system.repositories.client.ClientRepository;
+import org.accounting.system.services.SystemAdminService;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.eclipse.microprofile.openapi.annotations.Operation;
 
@@ -22,7 +22,7 @@ import java.util.Set;
 public class SystemAdminEndpoint {
 
     @Inject
-    AccessControlRepository accessControlRepository;
+    SystemAdminService systemAdminService;
 
     @Inject
     TokenIntrospection tokenIntrospection;
@@ -44,7 +44,7 @@ public class SystemAdminEndpoint {
 
         clientRepository.isSystemAdmin(id);
 
-        accessControlRepository.accessListOfProjects(projects, id);
+        systemAdminService.accessListOfProjects(projects, id);
 
         return Response.ok().build();
     }

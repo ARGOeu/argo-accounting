@@ -28,10 +28,10 @@ import org.accounting.system.repositories.acl.AccessControlRepository;
 import org.accounting.system.repositories.client.ClientAccessAlwaysRepository;
 import org.accounting.system.repositories.installation.InstallationRepository;
 import org.accounting.system.repositories.metricdefinition.MetricDefinitionRepository;
-import org.accounting.system.repositories.project.ProjectAccessAlwaysRepository;
-import org.accounting.system.repositories.project.ProjectModulator;
+import org.accounting.system.repositories.project.ProjectRepository;
 import org.accounting.system.repositories.provider.ProviderRepository;
 import org.accounting.system.services.ReadPredefinedTypesService;
+import org.accounting.system.services.SystemAdminService;
 import org.accounting.system.services.client.ClientService;
 import org.accounting.system.util.Utility;
 import org.accounting.system.wiremock.ProjectWireMockServer;
@@ -74,10 +74,13 @@ public class InstallationAuthorizationTest {
     ReadPredefinedTypesService readPredefinedTypesService;
 
     @Inject
-    ProjectAccessAlwaysRepository projectAccessAlwaysRepository;
+    ProjectRepository projectRepository;
 
     @Inject
     AccessControlRepository accessControlRepository;
+
+    @Inject
+    SystemAdminService systemAdminService;
 
     @Inject
     @RestClient
@@ -112,19 +115,17 @@ public class InstallationAuthorizationTest {
 
     @BeforeEach
     public void before() throws ParseException {
-        installationRepository.deleteAll();
+
         metricDefinitionRepository.deleteAll();
         accessControlRepository.deleteAll();
-        projectAccessAlwaysRepository.deleteAll();
+        projectRepository.deleteAll();
 
         String sub = utility.getIdFromToken(keycloakClient.getAccessToken("admin").split("\\.")[1]);
 
-        accessControlRepository.accessListOfProjects(Set.of("777536"), sub);
-
         //We are going to register the EOSC-hub project from OpenAire API
-        projectAccessAlwaysRepository.save("777536", ProjectModulator.openAire());
+        systemAdminService.accessListOfProjects(Set.of("777536"), sub);
 
-        projectAccessAlwaysRepository.associateProjectWithProviders("777536", Set.of("grnet", "sites"));
+        projectRepository.associateProjectWithProviders("777536", Set.of("grnet", "sites"));
     }
 
     @Test

@@ -3,18 +3,20 @@ package org.accounting.system.validators;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.vavr.control.Try;
 import org.accounting.system.constraints.AccessInstallation;
+import org.accounting.system.entities.HierarchicalRelation;
 import org.accounting.system.enums.Collection;
 import org.accounting.system.enums.Operation;
 import org.accounting.system.exceptions.CustomValidationException;
+import org.accounting.system.repositories.HierarchicalRelationRepository;
 import org.accounting.system.repositories.installation.InstallationRepository;
 import org.accounting.system.repositories.project.ProjectRepository;
 import org.accounting.system.repositories.provider.ProviderRepository;
 import org.accounting.system.util.Utility;
-import org.bson.types.ObjectId;
 
 import javax.enterprise.inject.spi.CDI;
 import javax.validation.ConstraintValidator;
 import javax.validation.ConstraintValidatorContext;
+import java.util.regex.Pattern;
 
 /**
  * This {@link AccessInstallationValidator} defines the logic to validate the {@link AccessInstallation}.
@@ -41,27 +43,28 @@ public class AccessInstallationValidator implements ConstraintValidator<AccessIn
 
         var installationRepository = CDI.current().select(InstallationRepository.class).get();
 
+        var hierarchicalRelationRepository = CDI.current().select(HierarchicalRelationRepository.class).get();
+
+        var hierarchicalRelationOptional = hierarchicalRelationRepository.find("externalId", installationId).firstResultOptional();
+
         var utility = CDI.current().select(Utility.class).get();
 
         utility.setAccessToken();
 
+        var hierarchicalRelation = hierarchicalRelationOptional.orElseThrow(()-> new CustomValidationException("There is no Installation with the following id: "+installationId, HttpResponseStatus.NOT_FOUND));
 
-        Try
-                .run(()->installationRepository.findByIdOptional(new ObjectId(installationId)).orElseThrow(()->new CustomValidationException("There is no Installation with the following id: "+installationId, HttpResponseStatus.NOT_FOUND)))
-                .getOrElseThrow(()->new CustomValidationException("There is no Installation with the following id: "+installationId, HttpResponseStatus.NOT_FOUND));
-
-        var installation = installationRepository.findById(new ObjectId(installationId));
+        var ids = hierarchicalRelation.id.split(Pattern.quote(HierarchicalRelation.PATH_SEPARATOR));
 
         var projectRepository = CDI.current().select(ProjectRepository.class).get();
 
         var providerRepository = CDI.current().select(ProviderRepository.class).get();
 
         Boolean access = Try
-                .of(()->projectRepository.accessibility(installation.getProject(), collection, operation))
+                .of(()->projectRepository.accessibility(ids[0], collection, operation))
                 .mapTry(projectAccess-> {
 
                     if(!projectAccess){
-                        return providerRepository.accessibility(installation.getProject(), installation.getOrganisation(), collection, operation);
+                        return providerRepository.accessibility(ids[0], ids[1], collection, operation);
                     }
 
                     return projectAccess;
@@ -69,7 +72,7 @@ public class AccessInstallationValidator implements ConstraintValidator<AccessIn
                 .mapTry(providerAccess->{
 
                     if(!providerAccess){
-                        return installationRepository.accessibility(installation.getProject(), installation.getOrganisation(), installationId, collection, operation);
+                        return installationRepository.accessibility(ids[0], ids[1], installationId, collection, operation);
                     }
 
                     return providerAccess;

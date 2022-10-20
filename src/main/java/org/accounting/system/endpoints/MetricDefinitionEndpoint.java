@@ -9,7 +9,6 @@ import org.accounting.system.dtos.metricdefinition.MetricDefinitionResponseDto;
 import org.accounting.system.dtos.metricdefinition.UpdateMetricDefinitionRequestDto;
 import org.accounting.system.dtos.pagination.PageResource;
 import org.accounting.system.enums.AccessType;
-import org.accounting.system.enums.ApiMessage;
 import org.accounting.system.enums.Collection;
 import org.accounting.system.enums.Operation;
 import org.accounting.system.interceptors.annotations.AccessPermission;
@@ -37,8 +36,9 @@ import org.json.simple.parser.ParseException;
 
 import javax.inject.Inject;
 import javax.validation.Valid;
+import javax.validation.constraints.Max;
+import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
-import javax.ws.rs.BadRequestException;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.DefaultValue;
@@ -216,14 +216,11 @@ public class MetricDefinitionEndpoint {
     @Produces(value = MediaType.APPLICATION_JSON)
     @AccessPermission(collection = Collection.MetricDefinition, operation = Operation.READ)
     public Response getAll(@Parameter(name = "page", in = QUERY,
-            description = "Indicates the page number. Page number must be >= 1.") @DefaultValue("1") @QueryParam("page") int page,
+            description = "Indicates the page number. Page number must be >= 1.") @DefaultValue("1") @Min(value = 1, message = "Page number must be >= 1.") @QueryParam("page") int page,
                            @Parameter(name = "size", in = QUERY,
-                                   description = "The page size.") @DefaultValue("10") @QueryParam("size") int size,
+                                   description = "The page size.") @DefaultValue("10") @Min(value = 1, message = "Page size must be between 1 and 100.")
+                           @Max(value = 100, message = "Page size must be between 1 and 100.") @QueryParam("size") int size,
                            @Context UriInfo uriInfo) {
-
-        if (page < 1) {
-            throw new BadRequestException(ApiMessage.PAGE_NUMBER.message);
-        }
 
         return Response.ok().entity(metricDefinitionService.findAllMetricDefinitionsPageable(page - 1, size, uriInfo)).build();
     }
@@ -1019,13 +1016,11 @@ public class MetricDefinitionEndpoint {
 
 
     ) String json, @Parameter(name = "page", in = QUERY,
-            description = "Indicates the page number. Page number must be >= 1.") @DefaultValue("1") @QueryParam("page") int page,
+            description = "Indicates the page number. Page number must be >= 1.") @DefaultValue("1") @Min(value = 1, message = "Page number must be >= 1.") @QueryParam("page") int page,
                            @Parameter(name = "size", in = QUERY,
-                                   description = "The page size.") @DefaultValue("10") @QueryParam("size") int size, @Context UriInfo uriInfo) throws NoSuchFieldException, ParseException {
+                                   description = "The page size.") @DefaultValue("10") @Min(value = 1, message = "Page size must be between 1 and 100.")
+                           @Max(value = 100, message = "Page size must be between 1 and 100.") @QueryParam("size") int size, @Context UriInfo uriInfo) throws NoSuchFieldException, ParseException {
 
-        if (page < 1) {
-            throw new BadRequestException(ApiMessage.PAGE_NUMBER.message);
-        }
         var list = metricDefinitionService.searchMetricDefinition(json, requestInformation.getAccessType().equals(AccessType.ALWAYS), page - 1, size, uriInfo);
 
       return Response.ok().entity(list).build();

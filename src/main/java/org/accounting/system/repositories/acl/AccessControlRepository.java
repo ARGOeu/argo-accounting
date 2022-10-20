@@ -1,7 +1,5 @@
 package org.accounting.system.repositories.acl;
 
-import io.quarkus.mongodb.panache.PanacheQuery;
-import io.quarkus.panache.common.Page;
 import org.accounting.system.entities.acl.AccessControl;
 import org.accounting.system.entities.acl.RoleAccessControl;
 import org.accounting.system.enums.Collection;
@@ -11,7 +9,6 @@ import org.bson.types.ObjectId;
 import javax.enterprise.context.ApplicationScoped;
 import java.util.List;
 import java.util.Optional;
-import java.util.Set;
 
 /**
  * This repository {@link AccessControlRepository} encapsulates the logic required to access
@@ -22,6 +19,7 @@ import java.util.Set;
  */
 @ApplicationScoped
 public class AccessControlRepository extends AbstractAccessModulator<RoleAccessControl, ObjectId> {
+
 
 //    /**
 //     * Returns a specific Collection entity to which a client may has {permission} access.
@@ -64,29 +62,6 @@ public class AccessControlRepository extends AbstractAccessModulator<RoleAccessC
         return optional;
    }
 
-    /**
-     * Executes a query to retrieve all Access Controls that have been created for the given entity id.
-     *
-     * @param id The entity for which permissions will be returned.
-     * @param collection The collection that the entity belongs to.
-     */
-    public PanacheQuery<RoleAccessControl> findAllByEntityAndCollection(String id, Collection collection, int page, int size){
-
-        return find("entity = ?1 and collection = ?2", id, collection).page(Page.of(page, size));
-    }
-
-    /**
-     * Executes a query to retrieve all Access Controls that have been created for the given entity id and user.
-     *
-     * @param who The user for whom permissions will be returned.
-     * @param id The entity for which permissions will be returned.
-     * @param collection The collection that the entity belongs to.
-     */
-    public PanacheQuery<RoleAccessControl> findAllByWhoAndEntityAndCollection(String who,String id, Collection collection){
-
-        return find("who = ?1 and entity = ?2 and collection = ?3",who, id, collection);
-    }
-
 
     /**
      * Returns a specific Collection entity to which a client may has access.
@@ -98,25 +73,6 @@ public class AccessControlRepository extends AbstractAccessModulator<RoleAccessC
     public List<RoleAccessControl> findByWhoAndCollection(String who, Collection collection) {
 
         return find("who = ?1 and collection = ?2 ", who, collection).list();
-    }
-
-    public void accessListOfProjects(Set<String> projects, String clientId){
-
-        projects.stream().forEach(project->{
-
-            try {
-                RoleAccessControl accessControl = new RoleAccessControl();
-                accessControl.setRoles(Set.of("project_admin"));
-                accessControl.setCollection(Collection.Project);
-                accessControl.setEntity(project);
-                accessControl.setWho(clientId);
-                accessControl.setCreatorId(clientId);
-
-                persist(accessControl);
-            } catch (Exception e){
-                //acl already exists, so try to insert other projects
-            }
-        });
     }
 
 //    /**

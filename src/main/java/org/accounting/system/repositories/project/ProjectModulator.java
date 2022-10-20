@@ -6,10 +6,7 @@ import org.accounting.system.clients.ProjectClient;
 import org.accounting.system.entities.Project;
 import org.accounting.system.entities.acl.RoleAccessControl;
 import org.accounting.system.entities.projections.HierarchicalRelationProjection;
-import org.accounting.system.entities.projections.InstallationProjection;
 import org.accounting.system.entities.projections.MetricProjection;
-import org.accounting.system.enums.Collection;
-import org.accounting.system.enums.Operation;
 import org.accounting.system.mappers.ProjectMapper;
 import org.accounting.system.repositories.modulators.AbstractModulator;
 
@@ -25,6 +22,9 @@ public class ProjectModulator extends AbstractModulator<Project, String, RoleAcc
 
     @Inject
     ProjectAccessEntityRepository projectAccessEntityRepository;
+
+    @Inject
+    ProjectRepository projectRepository;
 
     @Inject
     ProjectAccessAlwaysRepository projectAccessAlwaysRepository;
@@ -45,7 +45,7 @@ public class ProjectModulator extends AbstractModulator<Project, String, RoleAcc
 
     public void associateProjectWithProviders(String projectId, Set<String> providerIds){
 
-        projectAccessAlwaysRepository.associateProjectWithProviders(projectId, providerIds);
+        projectRepository.associateProjectWithProviders(projectId, providerIds);
 
 
 //        switch (getRequestInformation().getAccessType()){
@@ -62,7 +62,7 @@ public class ProjectModulator extends AbstractModulator<Project, String, RoleAcc
 
     public void dissociateProviderFromProject(String projectId, Set<String> providerIds){
 
-        projectAccessAlwaysRepository.dissociateProviderFromProject(projectId, providerIds);
+        projectRepository.dissociateProviderFromProject(projectId, providerIds);
 
 
 //        switch (getRequestInformation().getAccessType()){
@@ -90,20 +90,6 @@ public class ProjectModulator extends AbstractModulator<Project, String, RoleAcc
 //        }
     }
 
-    public PanacheQuery<InstallationProjection> lookupInstallations(String from, String localField, String foreignField, String as, int page, int size, Class<InstallationProjection> projection) {
-
-        return projectAccessAlwaysRepository.lookupInstallations(from, localField, foreignField, as, page, size, projection);
-
-//        switch (getRequestInformation().getAccessType()){
-//            case ALWAYS:
-//                return projectAccessAlwaysRepository.lookupInstallations(from, localField, foreignField, as, page, size, projection);
-//            case ENTITY:
-//                return projectAccessEntityRepository.lookupInstallations(from, localField, foreignField, as, page, size, projection);
-//            default:
-//                throw new ForbiddenException(ApiMessage.NO_PERMISSION.message);
-//        }
-    }
-
     public PanacheQuery<MetricProjection> fetchAllMetrics(String id, int page, int size){
 
         return projectAccessAlwaysRepository.fetchAllMetrics(id, page, size);
@@ -116,20 +102,6 @@ public class ProjectModulator extends AbstractModulator<Project, String, RoleAcc
 //                return projectAccessEntityRepository.fetchAllMetrics(id, page, size);
 //            default:
 //                throw new ForbiddenException(ApiMessage.NO_PERMISSION.message);
-//        }
-    }
-
-    public boolean accessibility(String projectId, Collection collection, Operation operation){
-
-        return projectAccessEntityRepository.accessibility(projectId, collection, operation);
-
-//        switch (accessType){
-//            case ALWAYS:
-//                return projectAccessAlwaysRepository.accessibility(projectId);
-//            case ENTITY:
-//                return projectAccessEntityRepository.accessibility(projectId, collection, operation);
-//            default:
-//                return false;
 //        }
     }
 

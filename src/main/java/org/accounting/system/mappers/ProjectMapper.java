@@ -2,7 +2,6 @@ package org.accounting.system.mappers;
 
 import org.accounting.system.beans.RequestInformation;
 import org.accounting.system.clients.responses.openaire.OpenAireProject;
-import org.accounting.system.dtos.project.ProjectResponseDto;
 import org.accounting.system.entities.Project;
 import org.apache.commons.lang3.StringUtils;
 import org.mapstruct.AfterMapping;
@@ -12,7 +11,6 @@ import org.mapstruct.MappingTarget;
 import org.mapstruct.factory.Mappers;
 
 import javax.enterprise.inject.spi.CDI;
-import java.util.List;
 import java.util.Objects;
 
 /**
@@ -30,10 +28,6 @@ public interface ProjectMapper {
     @Mapping(target = "endDate", expression = "java(Objects.nonNull(project.response.results.result.get(project.response.header.total.value-1).metadata.entity.project.endDate) ? project.response.results.result.get(project.response.header.total.value-1).metadata.entity.project.endDate.value : StringUtils.EMPTY)")
     @Mapping(target = "callIdentifier", expression = "java(Objects.nonNull(project.response.results.result.get(project.response.header.total.value-1).metadata.entity.project.callIdentifier) ? project.response.results.result.get(project.response.header.total.value-1).metadata.entity.project.callIdentifier.value : StringUtils.EMPTY)")
     Project openAireResponseToProject(OpenAireProject project);
-
-    ProjectResponseDto projectToDto(Project project);
-
-    List<ProjectResponseDto> projectsToDto(List<Project> project);
 
     @AfterMapping
     default void setCreatorId(OpenAireProject source, @MappingTarget Project project) {
