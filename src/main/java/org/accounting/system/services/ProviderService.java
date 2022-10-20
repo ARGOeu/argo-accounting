@@ -1,5 +1,6 @@
 package org.accounting.system.services;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import io.quarkus.mongodb.panache.PanacheQuery;
 import org.accounting.system.dtos.acl.role.RoleAccessControlRequestDto;
 import org.accounting.system.dtos.acl.role.RoleAccessControlResponseDto;
@@ -195,13 +196,6 @@ public class ProviderService implements RoleAccessControlService {
         return new PageResource<>(projectionQuery, InstallationMapper.INSTANCE.installationProjectionsToResponse(projectionQuery.list()), uriInfo);
     }
 
-    public  PageResource< ProviderResponseDto> searchProvider(String json, int page, int size, UriInfo uriInfo) throws  NoSuchFieldException, org.json.simple.parser.ParseException {
-
-        Bson query=queryParser.parseFile(json);
-        PanacheQuery< Provider> projectionQuery = providerRepository.search(query,page,size);
-        return new PageResource<>(projectionQuery, ProviderMapper.INSTANCE.providersToResponse(projectionQuery.list()), uriInfo);
-    }
-
     @Override
     public void grantPermission(String who, RoleAccessControlRequestDto request, String... id) {
 
@@ -277,6 +271,19 @@ public class ProviderService implements RoleAccessControlService {
         response.roles = optional.get().getRoles().stream().map(Role::getName).collect(Collectors.toSet());
 
         return response;
+    }
+    public  PageResource< ProviderResponseDto> searchProviders(String json, int page, int size, UriInfo uriInfo) throws  NoSuchFieldException, org.json.simple.parser.ParseException {
+
+        Bson query=queryParser.parseFile(json);
+        PanacheQuery< Provider> projectionQuery = providerRepository.searchProviders(query,page,size);
+        return new PageResource<>(projectionQuery, ProviderMapper.INSTANCE.providersToResponse(projectionQuery.list()), uriInfo);
+    }
+
+    public PageResource<ProviderResponseDto> getSystemProviders(int page, int size, UriInfo uriInfo)  {
+
+        var projectionQuery = providerRepository.fetchSystemProviders(page, size);
+
+        return new PageResource<>(projectionQuery, ProviderMapper.INSTANCE.providersToResponse(projectionQuery.list()), uriInfo);
     }
 
     @Override

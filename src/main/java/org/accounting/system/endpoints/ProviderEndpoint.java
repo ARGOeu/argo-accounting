@@ -386,7 +386,7 @@ public class ProviderEndpoint {
         return Response.ok().entity(response).build();
     }
 
-    @Tag(name = "Search")
+    @Tag(name = "Provider")
     @org.eclipse.microprofile.openapi.annotations.Operation(
             summary = "Search",
             description = "Search")
@@ -395,7 +395,7 @@ public class ProviderEndpoint {
             description = "The corresponding Providers.",
             content = @Content(schema = @Schema(
                     type = SchemaType.ARRAY,
-                    implementation = ProviderResponseDto.class)))
+                    implementation = PageableProviderResponseDto.class)))
     @APIResponse(
             responseCode = "401",
             description = "Client has not been authenticated.",
@@ -436,54 +436,60 @@ public class ProviderEndpoint {
                     description = "The page size.") @DefaultValue("10") @Min(value = 1, message = "Page size must be between 1 and 100.")
             @Max(value = 100, message = "Page size must be between 1 and 100.") @QueryParam("size") int size, @Context UriInfo uriInfo) throws ParseException, NoSuchFieldException, org.json.simple.parser.ParseException, JsonProcessingException {
 
-        var response = providerService.searchProvider(json, page - 1, size, uriInfo);
+        var response = providerService.searchProviders(json, page - 1, size, uriInfo);
 
         return Response.ok().entity(response).build();
     }
 
+    @Tag(name = "Provider")
+    @org.eclipse.microprofile.openapi.annotations.Operation(
+            summary = "get all the assigned providers",
+            description = "Get All assigned Providers")
+    @APIResponse(
+            responseCode = "200",
+            description = "The corresponding Providers.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.ARRAY,
+                    implementation = PageableProviderResponseDto.class)))
+    @APIResponse(
+            responseCode = "401",
+            description = "Client has not been authenticated.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "403",
+            description = "The authenticated client is not permitted to perform the requested operation.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "500",
+            description = "Internal Server Errors.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @SecurityRequirement(name = "Authentication")
 
-//    @Tag(name = "Provider")
-//    @org.eclipse.microprofile.openapi.annotations.Operation(
-//            summary = "Returns all Access Control entries that have been created for Provider collection.",
-//            description = "Returns all Access Control entries that have been created for Provider collection.")
-//    @APIResponse(
-//            responseCode = "200",
-//            description = "The corresponding Access Control entries.",
-//            content = @Content(schema = @Schema(
-//                    type = SchemaType.ARRAY,
-//                    implementation = PermissionAccessControlResponseDto.class)))
-//    @APIResponse(
-//            responseCode = "401",
-//            description = "Client has not been authenticated.",
-//            content = @Content(schema = @Schema(
-//                    type = SchemaType.OBJECT,
-//                    implementation = InformativeResponse.class)))
-//    @APIResponse(
-//            responseCode = "403",
-//            description = "The authenticated client is not permitted to perform the requested operation.",
-//            content = @Content(schema = @Schema(
-//                    type = SchemaType.OBJECT,
-//                    implementation = InformativeResponse.class)))
-//    @APIResponse(
-//            responseCode = "500",
-//            description = "Internal Server Errors.",
-//            content = @Content(schema = @Schema(
-//                    type = SchemaType.OBJECT,
-//                    implementation = InformativeResponse.class)))
-//    @SecurityRequirement(name = "Authentication")
-//
-//    @GET
-//    @Path("/acl")
-//    @Produces(value = MediaType.APPLICATION_JSON)
-//    @AccessPermission(collection = Collection.Provider, operation = ACL)
-//    public Response getAllAccessControl(){
-//
-//        var response = accessControlService.fetchAllPermissions(providerRepository);
-//
-//        return Response.ok().entity(response).build();
-//    }
+    @GET
+    @Path("/assigned")
+    @Produces(value = MediaType.APPLICATION_JSON)
+    @Consumes(value = MediaType.APPLICATION_JSON)
 
+    public Response getProvidersAssigned(
+            @Valid @NotNull(message = "The request body is empty.") @RequestBody(content = @Content(
+                    schema = @Schema(implementation = String.class),
+                    mediaType = MediaType.APPLICATION_JSON))
+            @Parameter(name = "page", in = QUERY,
+                    description = "Indicates the page number. Page number must be >= 1.") @DefaultValue("1") @Min(value = 1, message = "Page number must be >= 1.") @QueryParam("page") int page,
+            @Parameter(name = "size", in = QUERY,
+                    description = "The page size.") @DefaultValue("10") @Min(value = 1, message = "Page size must be between 1 and 100.")
+            @Max(value = 100, message = "Page size must be between 1 and 100.") @QueryParam("size") int size, @Context UriInfo uriInfo) throws ParseException, NoSuchFieldException, org.json.simple.parser.ParseException, JsonProcessingException {
 
+        var response = providerService.getSystemProviders( page - 1, size, uriInfo);
+
+        return Response.ok().entity(response).build();
+    }
 
 public static class PageableProviderResponseDto extends PageResource<ProviderResponseDto> {
 
