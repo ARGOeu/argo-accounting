@@ -9,6 +9,7 @@ import org.accounting.system.dtos.acl.role.RoleAccessControlResponseDto;
 import org.accounting.system.dtos.acl.role.RoleAccessControlUpdateDto;
 import org.accounting.system.dtos.installation.InstallationResponseDto;
 import org.accounting.system.dtos.pagination.PageResource;
+import org.accounting.system.entities.Project;
 import org.accounting.system.entities.authorization.Role;
 import org.accounting.system.entities.projections.HierarchicalRelationProjection;
 import org.accounting.system.entities.projections.InstallationProjection;
@@ -24,12 +25,14 @@ import org.accounting.system.repositories.project.ProjectRepository;
 import org.accounting.system.services.acl.RoleAccessControlService;
 import org.accounting.system.services.authorization.RoleService;
 import org.accounting.system.util.QueryParser;
+import org.bson.conversions.Bson;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 import javax.ws.rs.NotFoundException;
 import javax.ws.rs.core.UriInfo;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -111,18 +114,12 @@ public class ProjectService implements RoleAccessControlService {
 
         return new PageResource<>(projectionQuery, InstallationMapper.INSTANCE.installationProjectionsToResponse(projectionQuery.list()), uriInfo);
     }
+    public  PageResource<ProjectProjection> searchProject(String json, int page, int size, UriInfo uriInfo) throws  NoSuchFieldException, org.json.simple.parser.ParseException {
+        Bson query=queryParser.parseFile(json, true, new ArrayList<>(), Project.class);
 
-//    public  PageResource<String> searchProject(String json, int page, int size, UriInfo uriInfo) throws  NoSuchFieldException, org.json.simple.parser.ParseException {
-//
-//        var ids=accessControlRepository.findByWhoAndCollection(tokenIntrospection.getJsonObject().getString(id),Collection.Project).stream().filter(projects ->
-//                roleService.hasRoleAccess(projects.getRoles(), Collection.Project, Operation.READ)).map(projects -> projects.getEntity()).collect(Collectors.toList());
-//        Bson query=queryParser.parseFile(json, false, ids, Project.class);
-//
-//        PanacheQuery<Project> projectionQuery = projectRepository.search(query,page,size);
-//        return new PageResource<>(projectionQuery, projectToJson(projectionQuery.list().stream().map(Project::getId).collect(Collectors.toList())), uriInfo);
-//
-//    }
-
+        PanacheQuery<ProjectProjection> projectionQuery = projectRepository.searchProjects(query,page,size);
+        return new PageResource<>(projectionQuery, projectionQuery.list(), uriInfo);
+    }
     public PageResource<ProjectProjection> getAll(int page, int size, UriInfo uriInfo) throws NoSuchFieldException, org.json.simple.parser.ParseException, JsonProcessingException {
 
        var projectionQuery = projectRepository.fetchAll(page, size);

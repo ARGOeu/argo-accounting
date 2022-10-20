@@ -431,47 +431,47 @@ If the operation is successful, you get a list of projects
 
 ```
 {
-   "size_of_page": 2,
-   "number_of_page": 1,
-   "total_elements": 2,
-   "total_pages": 1,
-   "content": [
-       {
-           "project_id": "5R44NS032194-03",
-           "acronym": "",
-           "title": "TRAJECTORY MODIFICATION IN CHRONIC STROKE PATIENTS",
-           "providers": []
-       },
-       {
-           "project_id": "750802",
-           "acronym": "El_CapiTun",
-           "title": "An elastocapillary-enabled self-tunable microfluidic chip",
-           "providers": [
-               {
-                   "provider_id": "grnet",
-                   "name": "National Infrastructures for Research and Technology",
-                   "installations": []
-               },
-               {
-                   "provider_id": "osmooc",
-                   "name": "Open Science MOOC",
-                   "installations": []
-               },
-               {
-                   "provider_id": "sites",
-                   "name": "Swedish Infrastructure for Ecosystem Science",
-                   "installations": [
-                       {
-                           "installation_id": "62da5f68d3d2e80761293830",
-                           "installation": "GRNET-KNS-1",
-                           "infrastructure": "okeanos-knossos-1"
-                       }
-                   ]
-               }
-           ]
-       }
-   ],
-   "links": []
+    "size_of_page": 1,
+    "number_of_page": 1,
+    "total_elements": 1,
+    "total_pages": 1,
+    "content": [
+        {
+            "id": "655710",
+            "acronym": "CONRICONF",
+            "title": "Contentious Rights: A Comparative Study of International Human Rights Norms and their Effects on Domestic Social Conflict",
+            "start_date": "2016-01-17",
+            "end_date": "2020-02-08",
+            "call_identifier": "H2020-MSCA-IF-2014",
+            "providers": [
+                {
+                    "id": "msw",
+                    "name": "MyScienceWork",
+                    "website": "https://www.mysciencework.com",
+                    "abbreviation": "MSW",
+                    "logo": "https://www.mysciencework.com/bundles/home/images/logo-secondary-medium.png?202012111405-56",
+                    "installations": [
+                        {
+                            "id": "635111fcbc140d44766be86b",
+                            "infrastructure": "okeanos-knossos-5",
+                            "installation": "GRNET-KNS-5",
+                            "unit_of_access": "635111dabc140d44766be86a"
+                        }
+                    ]
+                },
+                {
+                    "id": "meeo",
+                    "name": "Meteorological Environmental Earth Observation",
+                    "website": "https://www.meeo.it/",
+                    "abbreviation": "MEEO",
+                    "logo": "https://www.meeo.it/wp-content/uploads/2020/09/logo-meeo-dark2.svg",
+                    "installations": []
+                }
+            ]
+        }
+    ],
+    "links": []
+}
 
 ```
 

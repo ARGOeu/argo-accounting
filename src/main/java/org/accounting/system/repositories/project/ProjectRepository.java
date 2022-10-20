@@ -8,6 +8,7 @@ import io.quarkus.mongodb.panache.PanacheQuery;
 import io.quarkus.oidc.TokenIntrospection;
 import io.quarkus.panache.common.Page;
 import org.accounting.system.entities.HierarchicalRelation;
+import org.accounting.system.entities.Project;
 import org.accounting.system.entities.acl.RoleAccessControl;
 import org.accounting.system.entities.authorization.Role;
 import org.accounting.system.entities.projections.InstallationProjection;
@@ -310,5 +311,34 @@ public class ProjectRepository extends ProjectModulator {
         var update = new Document("$pull", fields);
 
         getMongoCollection().updateOne(query, update);
+    }
+
+    public PanacheQuery<ProjectProjection> searchProjects(Bson searchDoc, int page, int size) {
+
+        //TODO We have to create an index for the following query
+        var eqAccessControl = Aggregates
+                .match(Filters
+                        .and(searchDoc,Filters.eq("roleAccessControls.who", tokenIntrospection.getJsonObject().getString(key)),
+                                Filters.eq("roleAccessControls.roles.collections_access_permissions.collection", Collection.Project.name()),
+                                Filters.eq("roleAccessControls.roles.collections_access_permissions.access_permissions.operation", Operation.READ.name()),
+                                Filters.eq("roleAccessControls.roles.collections_access_permissions.access_permissions.access_type", AccessType.ALWAYS.name())));
+
+        var projects = getMongoCollection()
+                .aggregate(List.of(eqAccessControl, Aggregates.skip(size * (page)), Aggregates.limit(size)), ProjectProjection.class)
+                .into(new ArrayList<>());
+
+        Document count = getMongoCollection()
+                .aggregate(List.of(eqAccessControl, Aggregates.count()))
+                .first();
+
+        var projectionQuery = new MongoQuery<ProjectProjection>();
+
+        projectionQuery.list = projects;
+        projectionQuery.index = page;
+        projectionQuery.size = size;
+        projectionQuery.count = count == null ? 0L : Long.parseLong(count.get("count").toString());
+        projectionQuery.page = Page.of(page, size);
+
+        return projectionQuery;
     }
 }
