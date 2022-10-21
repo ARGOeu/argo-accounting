@@ -151,7 +151,7 @@ public class InstallationRepository {
                 .first();
     }
 
-    public Optional<List<Installation>> fetchInstallationProviders(String projectID, String providerID){
+    public List<Installation> fetchInstallationProviders(String projectID, String providerID){
 
         var project = Aggregates
                 .match(Filters.eq("_id", projectID));
@@ -168,10 +168,10 @@ public class InstallationRepository {
 
         var replaceRootToInstallation = Aggregates.replaceRoot("$installations");
 
-        return Optional.of(projectRepository
+        return projectRepository
                 .getMongoCollection()
                 .aggregate(List.of(project, unwind, provider, replaceRoot, unwindInstallations, replaceRootToInstallation), Installation.class)
-                .into(new ArrayList<>()));
+                .into(new ArrayList<>());
     }
 
     public void deleteInstallation(String projectID, String providerID, String installationID){
