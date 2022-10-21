@@ -30,6 +30,7 @@ import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 import javax.ws.rs.NotFoundException;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -187,12 +188,16 @@ public class ProjectRepository extends ProjectModulator {
 
     public void associateProjectWithProviders(String projectId, Set<String> providerIds){
 
-        if(!fetchProjectProviders(projectId).isEmpty()){
+        var providerIdsToSet = new HashSet<>(providerIds);
 
-            throw new ConflictException("There are Providers associated with Project : "+projectId);
-        }
+        var existingIds = fetchProjectProviders(projectId)
+                .stream()
+                .map(Provider::getId)
+                .collect(Collectors.toSet());
 
-        var providers = providerIds
+        providerIdsToSet.removeAll(existingIds);
+
+        var providers = providerIdsToSet
                 .stream()
                 .map(ThrowingFunction.sneaky(id-> {
 
@@ -216,7 +221,10 @@ public class ProjectRepository extends ProjectModulator {
 
     public void setProjectProviders(String projectId, Set<Provider> providers){
 
-        var update = Updates.set("providers", providers);
+        var providersToList = new ArrayList<>();
+        providersToList.addAll(providers);
+
+        var update = Updates.addEachToSet("providers", providersToList);
 
         var eq = Filters.eq("_id",  projectId);
 
