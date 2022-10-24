@@ -352,3 +352,4 @@ public class InstallationService implements RoleAccessControlService {
     }
 
 }
+
