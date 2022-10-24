@@ -1,14 +1,20 @@
 package org.accounting.system.repositories.metric;
 
+import com.mongodb.client.model.Aggregates;
+import com.mongodb.client.model.Filters;
 import io.quarkus.mongodb.panache.PanacheMongoRepository;
 import io.quarkus.mongodb.panache.PanacheQuery;
 import io.quarkus.panache.common.Page;
 import io.quarkus.panache.common.Sort;
 import org.accounting.system.entities.Metric;
+import org.accounting.system.entities.projections.MetricProjection;
+import org.accounting.system.entities.projections.MongoQuery;
 import org.bson.Document;
+import org.bson.conversions.Bson;
 import org.bson.types.ObjectId;
 
 import javax.enterprise.context.ApplicationScoped;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -68,21 +74,23 @@ public class MetricRepository extends MetricModulator {
 
         return find("metricDefinitionId", Sort.by("metricDefinitionId"), metricDefinitionId).page(Page.of(page, size));
     }
+    public MongoQuery<MetricProjection> searchMetrics(Bson searchDoc,List<String> installationsIds,int page, int size) {
+        var installations=Aggregates.match(Filters.in("resource_id",installationsIds));
+        var metrics= getMongoCollection()
+                .aggregate(List.of(installations,Aggregates.match(searchDoc),Aggregates.skip(size * (page)), Aggregates.limit(size)),MetricProjection.class)
+                .into(new ArrayList<>());
+        Document count = getMongoCollection()
+                .aggregate(List.of(installations,Aggregates.match(searchDoc),Aggregates.count()))
+                .first();
+        var projectionQuery = new MongoQuery<MetricProjection>();
 
-    public List<Metric> findMetricsOfInstallations(List<String> installationsIds) {
-   
-       var queries=installationsIds.stream().map(id -> {
-                    Document regQuery = new Document();
-                    regQuery.append("$regex", id);
-                    Document findQuery = new Document();
-                 return   findQuery.append("resource_id", regQuery);
-                    //queries.add(findQuery);
-                }
-        ).collect(Collectors.toList());
+        projectionQuery.list = metrics;
+        projectionQuery.index = page;
+        projectionQuery.size = size;
+        projectionQuery.count = count == null ? 0L : Long.parseLong(count.get("count").toString());
+        projectionQuery.page = Page.of(page, size);
 
-        Document findAll = new Document();
-        findAll.append("$or", queries);
-        return find(findAll).stream().collect(Collectors.toList());
+        return projectionQuery;
     }
 
 }

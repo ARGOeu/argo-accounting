@@ -26,10 +26,7 @@ import org.eclipse.microprofile.config.inject.ConfigProperty;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -411,6 +408,52 @@ public class InstallationRepository {
 
     }
 
+    public List<String> fetchAllInstallationIds() {
+
+        var eqAccessControl =Aggregates.match(Filters.or(
+                Filters.and(Filters.eq("roleAccessControls.who", tokenIntrospection.getJsonObject().getString(key)),
+                        Filters.eq("roleAccessControls.roles.collections_access_permissions.collection", Collection.Installation.name()),
+                        Filters.eq("roleAccessControls.roles.collections_access_permissions.access_permissions.operation", Operation.READ.name()),
+                        Filters.eq("roleAccessControls.roles.collections_access_permissions.access_permissions.access_type", AccessType.ALWAYS.name())),
+
+                Filters.and(Filters.eq("providers.roleAccessControls.who", tokenIntrospection.getJsonObject().getString(key)),
+                        Filters.eq("providers.roleAccessControls.roles.collections_access_permissions.collection", Collection.Installation.name()),
+                        Filters.eq("providers.roleAccessControls.roles.collections_access_permissions.access_permissions.operation", Operation.READ.name()),
+                        Filters.eq("providers.roleAccessControls.roles.collections_access_permissions.access_permissions.access_type", AccessType.ALWAYS.name())),
+
+                Filters.and(Filters.eq("providers.installations.roleAccessControls.who", tokenIntrospection.getJsonObject().getString(key)),
+                        Filters.eq("providers.installations.roleAccessControls.roles.collections_access_permissions.collection", Collection.Installation.name()),
+                        Filters.eq("providers.installations.roleAccessControls.roles.collections_access_permissions.access_permissions.operation", Operation.READ.name()),
+                        Filters.eq("providers.installations.roleAccessControls.roles.collections_access_permissions.access_permissions.access_type", AccessType.ALWAYS.name()))));
+
+        var unwind = Aggregates
+                .unwind("$providers");
+
+        var replaceRoot = Aggregates
+                .replaceRoot("$providers");
+        var unwindOptions = new UnwindOptions();
+        var unwindInstallations = Aggregates.unwind("$providers.installations",unwindOptions.preserveNullAndEmptyArrays(Boolean.FALSE));
+
+        var replaceRootToInstallation = Aggregates.replaceRoot("$installations");
+        var concat=  new Document("$concat", Arrays.asList(
+                "$project",".","$organisation",".","$_id"));
+
+       var project=Aggregates.project(new Document("path",concat));
+       var exclude=Aggregates.project(Projections.exclude("_id"));
+        var group =Aggregates.group( "$_id", Accumulators.push("path", "$path"));
+        var optional = Optional.ofNullable(projectRepository.getMongoCollection()
+                .aggregate(List.of(eqAccessControl, unwind,unwindInstallations,eqAccessControl,replaceRoot,replaceRootToInstallation,project,exclude, group))
+                .first());
+
+        if(optional.isPresent()){
+            return optional.get().getList("path", String.class);
+        } else{
+            return Collections.emptyList();
+            }
+
+
+
+    }
 
     public PanacheQuery<InstallationProjection> searchInstallations(Bson searchDoc, int page, int size) {
 

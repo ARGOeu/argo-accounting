@@ -55,7 +55,8 @@ public class HierarchicalRelationService {
         metric.setInstallation(storedInstallation.getInstallation());
 
         metric.setInfrastructure(storedInstallation.getInfrastructure());
-
+        metric.setProjectId(storedInstallation.getProject());
+        metric.setInstallationId(storedInstallation.getId());
         try{
             metricRepository.persist(metric);
         } catch (MongoWriteException e) {

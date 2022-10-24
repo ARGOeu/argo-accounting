@@ -81,20 +81,38 @@ public class MetricProjection {
     @Schema(
             type = SchemaType.STRING,
             implementation = String.class,
-            description = "Installation name.",
-            example = "GRNET-KNS"
+            description = "Installation ID.",
+            example = "62b30abeed03ea0023b9c6f5"
     )
-    @JsonProperty("installation")
-    private String installation;
-
+    @JsonProperty("installation_id")
+    @BsonProperty("installation_id")
+    private String installationId;
     @Schema(
             type = SchemaType.STRING,
             implementation = String.class,
-            description = "Infrastructure name.",
-            example = "Okeanos-knossos"
+            description = "Project ID.",
+            example = "111111"
     )
-    @JsonProperty("infrastructure")
-    private String infrastructure;
+
+    @JsonProperty("project_id")
+    @BsonProperty("project_id")
+    private String projectId;
+
+    public String getInstallationId() {
+        return installationId;
+    }
+
+    public void setInstallationId(String installationId) {
+        this.installationId = installationId;
+    }
+
+    public String getProjectId() {
+        return projectId;
+    }
+
+    public void setProjectId(String projectId) {
+        this.projectId = projectId;
+    }
 
     public ObjectId getId() {
         return id;
@@ -150,21 +168,5 @@ public class MetricProjection {
 
     public void setProvider(String provider) {
         this.provider = provider;
-    }
-
-    public String getInstallation() {
-        return installation;
-    }
-
-    public void setInstallation(String installation) {
-        this.installation = installation;
-    }
-
-    public String getInfrastructure() {
-        return infrastructure;
-    }
-
-    public void setInfrastructure(String infrastructure) {
-        this.infrastructure = infrastructure;
     }
 }

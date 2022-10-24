@@ -1,8 +1,10 @@
 package org.accounting.system.entities;
+
 import lombok.EqualsAndHashCode;
 import lombok.ToString;
-import org.bson.types.ObjectId;
 import org.bson.codecs.pojo.annotations.BsonProperty;
+import org.bson.types.ObjectId;
+
 import java.time.Instant;
 
 /**
@@ -38,6 +40,10 @@ public class Metric extends Entity {
     private String installation;
 
     private String infrastructure;
+    @BsonProperty("project_id")
+    private String projectId;
+    @BsonProperty("installation_id")
+   private String installationId;
 
     public String getResourceId() {
         return resourceId;
@@ -117,5 +123,21 @@ public class Metric extends Entity {
 
     public void setInfrastructure(String infrastructure) {
         this.infrastructure = infrastructure;
+    }
+
+    public String getProjectId() {
+        return projectId;
+    }
+
+    public void setProjectId(String projectId) {
+        this.projectId = projectId;
+    }
+
+    public String getInstallationId() {
+        return installationId;
+    }
+
+    public void setInstallationId(String installationId) {
+        this.installationId = installationId;
     }
 }
