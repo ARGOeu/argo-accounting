@@ -211,7 +211,9 @@ public class MetricDefinitionEndpoint {
                            @Max(value = 100, message = "Page size must be between 1 and 100.") @QueryParam("size") int size,
                            @Context UriInfo uriInfo) {
 
-        return Response.ok().entity(metricDefinitionService.findAllMetricDefinitionsPageable(page - 1, size, uriInfo)).build();
+        var serverInfo = new ResteasyUriInfo(serverUrl.concat(basePath).concat(uriInfo.getPath()), basePath);
+
+        return Response.ok().entity(metricDefinitionService.findAllMetricDefinitionsPageable(page - 1, size, serverInfo)).build();
     }
 
     @Tag(name = "Metric Definition")
@@ -600,7 +602,9 @@ public class MetricDefinitionEndpoint {
                                    description = "The page size.") @DefaultValue("10") @Min(value = 1, message = "Page size must be between 1 and 100.")
                            @Max(value = 100, message = "Page size must be between 1 and 100.") @QueryParam("size") int size, @Context UriInfo uriInfo) throws NoSuchFieldException, ParseException {
 
-        var list = metricDefinitionService.searchMetricDefinition(json, requestInformation.getAccessType().equals(AccessType.ALWAYS), page - 1, size, uriInfo);
+        var serverInfo = new ResteasyUriInfo(serverUrl.concat(basePath).concat(uriInfo.getPath()), basePath);
+
+        var list = metricDefinitionService.searchMetricDefinition(json, requestInformation.getAccessType().equals(AccessType.ALWAYS), page - 1, size, serverInfo);
 
       return Response.ok().entity(list).build();
 

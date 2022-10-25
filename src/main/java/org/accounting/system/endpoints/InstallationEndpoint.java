@@ -700,7 +700,9 @@ public class InstallationEndpoint {
             @Max(value = 100, message = "Page size must be between 1 and 100.") @QueryParam("size") int size,
             @Context UriInfo uriInfo) {
 
-        var response = installationService.fetchAllPermissions(page - 1, size, uriInfo,installationId);
+        var serverInfo = new ResteasyUriInfo(serverUrl.concat(basePath).concat(uriInfo.getPath()), basePath);
+
+        var response = installationService.fetchAllPermissions(page - 1, size, serverInfo,installationId);
 
         return Response.ok().entity(response).build();
     }
@@ -1008,9 +1010,11 @@ public class InstallationEndpoint {
                     description = "The inclusive end date for the query in the format YYYY-MM-DD. Cannot be before start.") @QueryParam("end") String end,
             @Context UriInfo uriInfo) {
 
+        var serverInfo = new ResteasyUriInfo(serverUrl.concat(basePath).concat(uriInfo.getPath()), basePath);
+
         var installation = installationService.fetchInstallation(installationId);
 
-        var response = metricService.fetchAllMetrics(installation.getProject() + HierarchicalRelation.PATH_SEPARATOR + installation.getOrganisation() + HierarchicalRelation.PATH_SEPARATOR + installationId, page - 1, size, uriInfo, start, end);
+        var response = metricService.fetchAllMetrics(installation.getProject() + HierarchicalRelation.PATH_SEPARATOR + installation.getOrganisation() + HierarchicalRelation.PATH_SEPARATOR + installationId, page - 1, size, serverInfo, start, end);
 
         return Response.ok().entity(response).build();
     }
@@ -1114,11 +1118,12 @@ public class InstallationEndpoint {
             @Context UriInfo uriInfo
     ) throws ParseException, NoSuchFieldException, org.json.simple.parser.ParseException, JsonProcessingException {
 
+        var serverInfo = new ResteasyUriInfo(serverUrl.concat(basePath).concat(uriInfo.getPath()), basePath);
 
         if (json.equals("")) {
             throw new BadRequestException("not empty body permitted");
         }
-        var response= installationService.searchInstallation(json, page - 1, size, uriInfo);
+        var response= installationService.searchInstallation(json, page - 1, size, serverInfo);
        return Response.ok(response).build();
 
 
@@ -1168,7 +1173,9 @@ public class InstallationEndpoint {
                     description = "The page size.") @DefaultValue("10") @Min(value = 1, message = "Page size must be between 1 and 100.")
             @Max(value = 100, message = "Page size must be between 1 and 100.") @QueryParam("size") int size, @Context UriInfo uriInfo) throws ParseException, NoSuchFieldException, org.json.simple.parser.ParseException, JsonProcessingException {
 
-        var response = installationService.getAllInstallations( page - 1, size, uriInfo);
+        var serverInfo = new ResteasyUriInfo(serverUrl.concat(basePath).concat(uriInfo.getPath()), basePath);
+
+        var response = installationService.getAllInstallations( page - 1, size, serverInfo);
 
         return Response.ok().entity(response).build();
     }
