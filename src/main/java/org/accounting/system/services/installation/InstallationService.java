@@ -14,7 +14,6 @@ import org.accounting.system.entities.HierarchicalRelation;
 import org.accounting.system.entities.authorization.Role;
 import org.accounting.system.entities.installation.Installation;
 import org.accounting.system.entities.projections.InstallationProjection;
-import org.accounting.system.entities.projections.MetricProjection;
 import org.accounting.system.exceptions.ConflictException;
 import org.accounting.system.mappers.AccessControlMapper;
 import org.accounting.system.mappers.InstallationMapper;
@@ -212,16 +211,6 @@ public class InstallationService implements RoleAccessControlService {
 
         return MetricMapper.INSTANCE.metricToResponse(metric);
     }
-
-    public PageResource<MetricProjection> fetchAllMetrics(String id, int page, int size, UriInfo uriInfo){
-
-        var installation = fetchInstallation(id);
-
-        var projection = hierarchicalRelationRepository.findByExternalId(installation.getProject() + HierarchicalRelation.PATH_SEPARATOR + installation.getOrganisation() + HierarchicalRelation.PATH_SEPARATOR + id, page, size);
-
-        return new PageResource<>(projection, projection.list(), uriInfo);
-    }
-
 
     @Override
     public void grantPermission(String who, RoleAccessControlRequestDto request, String... id) {

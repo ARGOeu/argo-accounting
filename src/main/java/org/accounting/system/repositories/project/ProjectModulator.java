@@ -1,10 +1,8 @@
 package org.accounting.system.repositories.project;
 
 import com.pivovarit.function.ThrowingBiFunction;
-import io.quarkus.mongodb.panache.PanacheQuery;
 import org.accounting.system.clients.ProjectClient;
 import org.accounting.system.entities.Project;
-import org.accounting.system.entities.projections.MetricProjection;
 import org.accounting.system.mappers.ProjectMapper;
 import org.accounting.system.repositories.modulators.AbstractModulator;
 
@@ -41,11 +39,6 @@ public class ProjectModulator extends AbstractModulator<Project, String> {
     public void dissociateProviderFromProject(String projectId, Set<String> providerIds){
 
         projectRepository.dissociateProviderFromProject(projectId, providerIds);
-    }
-
-    public PanacheQuery<MetricProjection> fetchAllMetrics(String id, int page, int size){
-
-        return projectAccessAlwaysRepository.fetchAllMetrics(id, page, size);
     }
 
     @Override

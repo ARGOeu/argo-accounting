@@ -13,11 +13,13 @@ import org.accounting.system.dtos.installation.InstallationResponseDto;
 import org.accounting.system.dtos.pagination.PageResource;
 import org.accounting.system.dtos.project.AssociateProjectProviderRequestDto;
 import org.accounting.system.dtos.project.DissociateProjectProviderRequestDto;
+import org.accounting.system.entities.HierarchicalRelation;
 import org.accounting.system.entities.projections.MetricProjection;
 import org.accounting.system.entities.projections.ProjectProjection;
 import org.accounting.system.enums.Collection;
 import org.accounting.system.repositories.client.ClientRepository;
 import org.accounting.system.services.HierarchicalRelationService;
+import org.accounting.system.services.MetricService;
 import org.accounting.system.services.ProjectService;
 import org.accounting.system.services.ProviderService;
 import org.accounting.system.services.authorization.RoleService;
@@ -88,6 +90,9 @@ public class ProjectEndpoint {
     @Inject
     RoleService roleService;
 
+    @Inject
+    MetricService metricService;
+
     @Tag(name = "Metric")
     @Operation(
             summary = "Returns all Metrics under a specific Project.",
@@ -137,9 +142,13 @@ public class ProjectEndpoint {
             @Parameter(name = "size", in = QUERY,
                     description = "The page size.") @DefaultValue("10") @Min(value = 1, message = "Page size must be between 1 and 100.")
             @Max(value = 100, message = "Page size must be between 1 and 100.") @QueryParam("size") int size,
+            @Parameter(name = "start", in = QUERY, example = "2020-01-01",
+                    description = "The inclusive start date for the query in the format YYYY-MM-DD. Cannot be after end.")  @QueryParam("start") String start,
+            @Parameter(name = "end", in = QUERY, example = "2020-12-31",
+                    description = "The inclusive end date for the query in the format YYYY-MM-DD. Cannot be before start.") @QueryParam("end") String end,
             @Context UriInfo uriInfo) {
 
-        var response = projectService.fetchAllMetrics(id, page - 1, size, uriInfo);
+        var response = metricService.fetchAllMetrics(id, page - 1, size, uriInfo, start, end);
 
         return Response.ok().entity(response).build();
     }
@@ -198,9 +207,13 @@ public class ProjectEndpoint {
             @Parameter(name = "size", in = QUERY,
                     description = "The page size.") @DefaultValue("10") @Min(value = 1, message = "Page size must be between 1 and 100.")
             @Max(value = 100, message = "Page size must be between 1 and 100.") @QueryParam("size") int size,
+            @Parameter(name = "start", in = QUERY, example = "2020-01-01",
+                    description = "The inclusive start date for the query in the format YYYY-MM-DD. Cannot be after end.")  @QueryParam("start") String start,
+            @Parameter(name = "end", in = QUERY, example = "2020-12-31",
+                    description = "The inclusive end date for the query in the format YYYY-MM-DD. Cannot be before start.") @QueryParam("end") String end,
             @Context UriInfo uriInfo) {
 
-        var response = providerService.fetchAllMetrics(projectId, providerId, page - 1, size, uriInfo);
+        var response = metricService.fetchAllMetrics(projectId + HierarchicalRelation.PATH_SEPARATOR + providerId, page - 1, size, uriInfo, start, end);
 
         return Response.ok().entity(response).build();
     }

@@ -9,6 +9,7 @@ import org.accounting.system.enums.Collection;
 import org.accounting.system.enums.Operation;
 import org.accounting.system.repositories.client.ClientRepository;
 import org.accounting.system.services.MetricDefinitionService;
+import org.apache.commons.validator.GenericValidator;
 import org.bson.types.ObjectId;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.json.simple.JSONObject;
@@ -18,6 +19,10 @@ import org.json.simple.parser.ParseException;
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 import javax.ws.rs.BadRequestException;
+import java.time.Instant;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Base64;
@@ -121,6 +126,31 @@ public class Utility {
         requestInformation.setSubjectOfToken(tokenIntrospection.getJsonObject().getString(id));
 
         return clientRepository.getClientRoles(vopersonId);
+    }
+
+    public static boolean isDate(String... values){
+
+        if(Arrays.stream(values).allMatch(value->GenericValidator.isDate(value, "yyyy-MM-dd", true))){
+            return true;
+        } else{
+            throw new BadRequestException("The date format must be as follows YYYY-MM-DD");
+        }
+    }
+
+    public static Instant stringToInstant(String date){
+
+        LocalDate localDateStart = LocalDate.parse(date);
+        LocalDateTime localDateTimeStart = localDateStart.atStartOfDay();
+        return localDateTimeStart.toInstant(ZoneOffset.UTC);
+    }
+
+    public static boolean isBefore(String start, String end){
+
+        if(stringToInstant(start).isBefore(stringToInstant(end))){
+            return true;
+        } else{
+            throw new BadRequestException("start cannot be after end.");
+        }
     }
 
     public void setAccessToken(){

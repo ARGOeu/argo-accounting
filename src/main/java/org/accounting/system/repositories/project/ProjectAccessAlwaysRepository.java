@@ -1,12 +1,9 @@
 package org.accounting.system.repositories.project;
 
 import com.pivovarit.function.ThrowingBiFunction;
-import io.quarkus.mongodb.panache.PanacheQuery;
 import org.accounting.system.clients.ProjectClient;
 import org.accounting.system.entities.Project;
-import org.accounting.system.entities.projections.MetricProjection;
 import org.accounting.system.exceptions.ConflictException;
-import org.accounting.system.repositories.HierarchicalRelationRepository;
 import org.accounting.system.repositories.modulators.AccessAlwaysModulator;
 import org.eclipse.microprofile.rest.client.inject.RestClient;
 
@@ -21,9 +18,6 @@ public class ProjectAccessAlwaysRepository extends AccessAlwaysModulator<Project
     @RestClient
     ProjectClient projectClient;
 
-    @Inject
-    HierarchicalRelationRepository hierarchicalRelationRepository;
-
     public Project save(String id, ThrowingBiFunction<String, ProjectClient, Project, NotFoundException> retrieveFromOpenAire){
 
         findByIdOptional(id).ifPresent(project -> {throw new ConflictException("The Project with id {"+project.getId()+"} has already been registered.");});
@@ -33,11 +27,5 @@ public class ProjectAccessAlwaysRepository extends AccessAlwaysModulator<Project
         persistOrUpdate(project);
 
         return project;
-    }
-    public PanacheQuery<MetricProjection> fetchAllMetrics(String id, int page, int size){
-
-        var projection = hierarchicalRelationRepository.findByExternalId(id, page, size);
-
-        return projection;
     }
 }

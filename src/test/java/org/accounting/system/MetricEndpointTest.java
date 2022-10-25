@@ -21,6 +21,7 @@ import org.accounting.system.dtos.metric.MetricResponseDto;
 import org.accounting.system.dtos.metric.UpdateMetricRequestDto;
 import org.accounting.system.dtos.metricdefinition.MetricDefinitionRequestDto;
 import org.accounting.system.dtos.metricdefinition.MetricDefinitionResponseDto;
+import org.accounting.system.dtos.pagination.PageResource;
 import org.accounting.system.endpoints.MetricEndpoint;
 import org.accounting.system.mappers.ProviderMapper;
 import org.accounting.system.repositories.client.ClientAccessAlwaysRepository;
@@ -256,8 +257,8 @@ public class MetricEndpointTest {
         //then execute a request for creating a metric
 
         var requestForMetric = new MetricRequestDto();
-        requestForMetric.start = "2024-01-05T09:15:07Z";
-        requestForMetric.end = "2022-01-05T09:13:07Z";
+        requestForMetric.start = "2020-01-05T09:15:07Z";
+        requestForMetric.end = "2020-01-05T09:13:07Z";
         requestForMetric.value = 10.8;
         requestForMetric.metricDefinitionId = metricDefinitionResponse.id;
 
@@ -292,8 +293,8 @@ public class MetricEndpointTest {
         //then execute a request for creating a metric
 
         var requestForMetric = new MetricRequestDto();
-        requestForMetric.start = "2024-01-05T09:15:07Z";
-        requestForMetric.end = "2024-01-05T09:15:07Z";
+        requestForMetric.start = "2020-01-05T09:15:07Z";
+        requestForMetric.end = "2020-01-05T09:15:07Z";
         requestForMetric.value = 10.8;
         requestForMetric.metricDefinitionId = metricDefinitionResponse.id;
 
@@ -307,6 +308,42 @@ public class MetricEndpointTest {
                 .as(InformativeResponse.class);
 
         assertEquals("Timestamp of the starting date time cannot be equal to Timestamp of the end date time.", informativeResponse.message);
+    }
+
+    @Test
+    public void createMetricStartIsAfterCurrentDate() {
+
+        //first create a metric definition
+
+        Mockito.when(readPredefinedTypesService.searchForUnitType(any())).thenReturn(Optional.of("SECOND"));
+        Mockito.when(readPredefinedTypesService.searchForMetricType(any())).thenReturn(Optional.of("Aggregated"));
+        var requestForMetricDefinition = new MetricDefinitionRequestDto();
+
+        requestForMetricDefinition.metricName = "metric";
+        requestForMetricDefinition.metricDescription = "description";
+        requestForMetricDefinition.unitType = "SECOND";
+        requestForMetricDefinition.metricType = "Aggregated";
+
+        var metricDefinitionResponse = createMetricDefinition(requestForMetricDefinition, "admin");
+
+        //then execute a request for creating a metric
+
+        var requestForMetric = new MetricRequestDto();
+        requestForMetric.start = "2023-01-05T09:15:07Z";
+        requestForMetric.end = "2023-01-05T09:19:07Z";
+        requestForMetric.value = 10.8;
+        requestForMetric.metricDefinitionId = metricDefinitionResponse.id;
+
+        var response = assignMetric("admin", requestForMetric, new ArrayList<>());
+
+        var informativeResponse = response
+                .then()
+                .assertThat()
+                .statusCode(400)
+                .extract()
+                .as(InformativeResponse.class);
+
+        assertEquals("Timestamp cannot be after the current date-time.", informativeResponse.message);
     }
 
     @Test
@@ -376,8 +413,8 @@ public class MetricEndpointTest {
         var metricDefinitionResponse = createMetricDefinition(requestForMetricDefinition, "admin");
 
         var requestForMetric = new MetricRequestDto();
-        requestForMetric.start = "2024-01-05T09:15:07Z";
-        requestForMetric.end = "2024-01-05T09:18:07Z";
+        requestForMetric.start = "2020-01-05T09:15:07Z";
+        requestForMetric.end = "2020-01-05T09:18:07Z";
         requestForMetric.value = 10.8;
         requestForMetric.metricDefinitionId = metricDefinitionResponse.id;
 
@@ -407,6 +444,127 @@ public class MetricEndpointTest {
     }
 
     @Test
+    public void fetchInstallationMetricsDateFiltering() {
+
+        projectRepository.associateProjectWithProviders("777536", Set.of("grnet"));
+
+        var installationId = assignMetricsToSpecificInstallation();
+
+        var getMetricPageable = given()
+                .basePath("accounting-system/installations")
+                .auth()
+                .oauth2(getAccessToken("admin"))
+                .queryParam("start", "2019-01-01")
+                .queryParam("end", "2019-12-31")
+                .get("/{installation_id}/metrics", installationId)
+                .then()
+                .assertThat()
+                .statusCode(200)
+                .extract()
+                .as(PageResource.class);
+
+        assertEquals(1, getMetricPageable.getTotalElements());
+
+        var startCannotBeforeEndError = given()
+                .basePath("accounting-system/installations")
+                .auth()
+                .oauth2(getAccessToken("admin"))
+                .queryParam("start", "2019-12-01")
+                .queryParam("end", "2019-01-31")
+                .get("/{installation_id}/metrics", installationId)
+                .then()
+                .assertThat()
+                .statusCode(400)
+                .extract()
+                .as(InformativeResponse.class);
+
+        assertEquals("start cannot be after end.", startCannotBeforeEndError.message);
+
+        var dateFormatError = given()
+                .basePath("accounting-system/installations")
+                .auth()
+                .oauth2(getAccessToken("admin"))
+                .queryParam("start", "xxxxx")
+                .queryParam("end", "2019-01-31")
+                .get("/{installation_id}/metrics", installationId)
+                .then()
+                .assertThat()
+                .statusCode(400)
+                .extract()
+                .as(InformativeResponse.class);
+
+        assertEquals("The date format must be as follows YYYY-MM-DD", dateFormatError.message);
+
+        var dateFormatError1 = given()
+                .basePath("accounting-system/installations")
+                .auth()
+                .oauth2(getAccessToken("admin"))
+                .queryParam("start", "2019-31-25")
+                .queryParam("end", "2019-12-31")
+                .get("/{installation_id}/metrics", installationId)
+                .then()
+                .assertThat()
+                .statusCode(400)
+                .extract()
+                .as(InformativeResponse.class);
+
+        assertEquals("The date format must be as follows YYYY-MM-DD", dateFormatError1.message);
+    }
+
+    @Test
+    public void fetchMetricsDateFiltering() {
+
+        projectRepository.associateProjectWithProviders("777536", Set.of("grnet"));
+
+        assignMetricsToSpecificInstallation();
+
+        var getProjectMetricPageable = given()
+                .basePath("accounting-system/projects")
+                .auth()
+                .oauth2(getAccessToken("admin"))
+                .queryParam("start", "2020-01-01")
+                .queryParam("end", "2020-12-31")
+                .get("/{project_id}/metrics", "777536")
+                .then()
+                .assertThat()
+                .statusCode(200)
+                .extract()
+                .as(PageResource.class);
+
+        assertEquals(1, getProjectMetricPageable.getTotalElements());
+
+        var getProviderMetricPageable = given()
+                .basePath("accounting-system/projects")
+                .auth()
+                .oauth2(getAccessToken("admin"))
+                .queryParam("start", "2021-01-01")
+                .queryParam("end", "2021-12-31")
+                .get("/{project_id}/providers/{provider_id}/metrics", "777536", "grnet")
+                .then()
+                .assertThat()
+                .statusCode(200)
+                .extract()
+                .as(PageResource.class);
+
+        assertEquals(1, getProviderMetricPageable.getTotalElements());
+
+        var getProviderMetricPageable1 = given()
+                .basePath("accounting-system/projects")
+                .auth()
+                .oauth2(getAccessToken("admin"))
+                .queryParam("start", "2022-01-01")
+                .queryParam("end", "2022-12-31")
+                .get("/{project_id}/providers/{provider_id}/metrics", "777536", "grnet")
+                .then()
+                .assertThat()
+                .statusCode(200)
+                .extract()
+                .as(PageResource.class);
+
+        assertEquals(0, getProviderMetricPageable1.getTotalElements());
+    }
+
+    @Test
     public void deleteMetricNotAuthenticated() {
 
         var notAuthenticatedResponse = given()
@@ -433,8 +591,8 @@ public class MetricEndpointTest {
         var metricDefinitionResponse = createMetricDefinition(requestForMetricDefinition, "admin");
 
         var requestForMetric = new MetricRequestDto();
-        requestForMetric.start = "2024-01-05T09:15:07Z";
-        requestForMetric.end = "2024-01-05T09:18:07Z";
+        requestForMetric.start = "2020-01-05T09:15:07Z";
+        requestForMetric.end = "2020-01-05T09:18:07Z";
         requestForMetric.value = 10.8;
         requestForMetric.metricDefinitionId = metricDefinitionResponse.id;
 
@@ -988,8 +1146,8 @@ public class MetricEndpointTest {
 
         // create a metric
         var requestForMetric = new MetricRequestDto();
-        requestForMetric.start = "2022-01-05T09:13:07Z";
-        requestForMetric.end = "2022-01-05T09:14:07Z";
+        requestForMetric.start = "2020-01-05T09:13:07Z";
+        requestForMetric.end = "2020-01-05T09:14:07Z";
         requestForMetric.value = 10.8;
         requestForMetric.metricDefinitionId = createdMetricDefinition.id;
 
@@ -1007,8 +1165,8 @@ public class MetricEndpointTest {
         // update an existing metric
         var updateMetricRequest = new UpdateMetricRequestDto();
 
-        updateMetricRequest.start = "2023-01-05T09:13:07Z";
-        updateMetricRequest.end = "2024-01-05T09:14:07Z";
+        updateMetricRequest.start = "2022-01-05T09:13:07Z";
+        updateMetricRequest.end = "2022-01-05T09:14:07Z";
         updateMetricRequest.value = 15.8;
         updateMetricRequest.metricDefinitionId = createdMetricDefinition1.id;
 
@@ -1135,6 +1293,17 @@ public class MetricEndpointTest {
                 .post("/{installationId}/metrics", installation.id);
     }
 
+    private io.restassured.response.Response assignMetric(String user, MetricRequestDto body, String installationId){
+
+        return given()
+                .auth()
+                .oauth2(getAccessToken(user))
+                .basePath("accounting-system/installations")
+                .body(body)
+                .contentType(ContentType.JSON)
+                .post("/{installationId}/metrics", installationId);
+    }
+
     private InstallationResponseDto createInstallation(InstallationRequestDto request, String user){
 
         return given()
@@ -1165,6 +1334,71 @@ public class MetricEndpointTest {
                 .statusCode(201)
                 .extract()
                 .as(MetricDefinitionResponseDto.class);
+    }
+
+    private String assignMetricsToSpecificInstallation(){
+
+        Mockito.when(readPredefinedTypesService.searchForUnitType(any())).thenReturn(Optional.of("SECOND"));
+        Mockito.when(readPredefinedTypesService.searchForMetricType(any())).thenReturn(Optional.of("Aggregated"));
+        var requestForMetricDefinition = new MetricDefinitionRequestDto();
+
+        requestForMetricDefinition.metricName = "metric";
+        requestForMetricDefinition.metricDescription = "description";
+        requestForMetricDefinition.unitType = "SECOND";
+        requestForMetricDefinition.metricType = "Aggregated";
+
+        var metricDefinitionResponse = createMetricDefinition(requestForMetricDefinition, "admin");
+
+        var requestForMetric = new MetricRequestDto();
+        requestForMetric.start = "2021-01-05T09:15:07Z";
+        requestForMetric.end = "2021-01-05T09:18:07Z";
+        requestForMetric.value = 10.8;
+        requestForMetric.metricDefinitionId = metricDefinitionResponse.id;
+
+        var request= new InstallationRequestDto();
+
+        request.project = "777536";
+        request.organisation = "grnet";
+        request.infrastructure = "okeanos-knossos";
+        request.installation = "SECOND";
+        request.unitOfAccess = metricDefinitionResponse.id;
+
+        var installation = createInstallation(request, "admin");
+
+        var response = assignMetric("admin", requestForMetric, installation.id);
+
+        response
+                .then()
+                .assertThat()
+                .statusCode(201);
+
+        var requestForMetric1 = new MetricRequestDto();
+        requestForMetric1.start = "2020-01-05T09:15:07Z";
+        requestForMetric1.end = "2020-01-05T09:18:07Z";
+        requestForMetric1.value = 15;
+        requestForMetric1.metricDefinitionId = metricDefinitionResponse.id;
+
+        var response1 = assignMetric("admin", requestForMetric1, installation.id);
+
+        response1
+                .then()
+                .assertThat()
+                .statusCode(201);
+
+        var requestForMetric2 = new MetricRequestDto();
+        requestForMetric2.start = "2019-01-05T09:15:07Z";
+        requestForMetric2.end = "2019-01-05T09:18:07Z";
+        requestForMetric2.value = 20;
+        requestForMetric2.metricDefinitionId = metricDefinitionResponse.id;
+
+        var response2 = assignMetric("admin", requestForMetric2, installation.id);
+
+        response2
+                .then()
+                .assertThat()
+                .statusCode(201);
+
+        return installation.id;
     }
 
     protected String getAccessToken(String userName) {

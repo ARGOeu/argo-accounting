@@ -9,6 +9,7 @@ import io.quarkus.panache.common.Sort;
 import org.accounting.system.entities.Metric;
 import org.accounting.system.entities.projections.MetricProjection;
 import org.accounting.system.entities.projections.MongoQuery;
+import org.accounting.system.util.Utility;
 import org.bson.Document;
 import org.bson.conversions.Bson;
 import org.bson.types.ObjectId;
@@ -74,6 +75,7 @@ public class MetricRepository extends MetricModulator {
 
         return find("metricDefinitionId", Sort.by("metricDefinitionId"), metricDefinitionId).page(Page.of(page, size));
     }
+
     public MongoQuery<MetricProjection> searchMetrics(Bson searchDoc,List<String> installationsIds,int page, int size) {
         var installations=Aggregates.match(Filters.in("resource_id",installationsIds));
         var metrics= getMongoCollection()
@@ -93,4 +95,53 @@ public class MetricRepository extends MetricModulator {
         return projectionQuery;
     }
 
+    public PanacheQuery<MetricProjection> findByExternalId(final String externalId, int page, int size) {
+        //Bson regex = Aggregates.match(Filters.regex("resource_id", externalId + "[.\\s]"));
+        Bson regex = Aggregates.match(Filters.regex("resource_id", "\\b" + externalId + "\\b"+"(?![-])"));
+
+        List<MetricProjection> projections = getMongoCollection()
+                .aggregate(List
+                        .of(regex,  Aggregates.skip(size * (page)),Aggregates.limit(size)), MetricProjection.class).into(new ArrayList<>());
+
+        Document count = getMongoCollection()
+                .aggregate(List
+                        .of(regex, Aggregates.count())).first();
+
+        var projectionQuery = new MongoQuery<MetricProjection>();
+
+        projectionQuery.list = projections;
+        projectionQuery.index = page;
+        projectionQuery.size = size;
+        projectionQuery.count = count == null ? 0L : Long.parseLong(count.get("count").toString());
+        projectionQuery.page = Page.of(page, size);
+
+        return projectionQuery;
+    }
+
+    public PanacheQuery<MetricProjection> findByExternalId(final String externalId, int page, int size, String start, String end) {
+
+        //Bson regex = Aggregates.match(Filters.regex("resource_id", externalId + "[.\\s]"));
+        Bson regex = Aggregates.match(Filters.and
+                (Filters.regex("resource_id", "\\b" + externalId + "\\b"+"(?![-])"),
+                        Filters.and(Filters.gte("time_period_start", Utility.stringToInstant(start)), Filters.lte("time_period_start", Utility.stringToInstant(end))),
+                                Filters.and(Filters.gte("time_period_end", Utility.stringToInstant(start)), Filters.lte("time_period_end", Utility.stringToInstant(end)))));
+
+        List<MetricProjection> projections = getMongoCollection()
+                .aggregate(List
+                        .of(regex,  Aggregates.skip(size * (page)),Aggregates.limit(size)), MetricProjection.class).into(new ArrayList<>());
+
+        Document count = getMongoCollection()
+                .aggregate(List
+                        .of(regex, Aggregates.count())).first();
+
+        var projectionQuery = new MongoQuery<MetricProjection>();
+
+        projectionQuery.list = projections;
+        projectionQuery.index = page;
+        projectionQuery.size = size;
+        projectionQuery.count = count == null ? 0L : Long.parseLong(count.get("count").toString());
+        projectionQuery.page = Page.of(page, size);
+
+        return projectionQuery;
+    }
 }

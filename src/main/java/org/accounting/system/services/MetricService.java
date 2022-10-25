@@ -1,13 +1,12 @@
 package org.accounting.system.services;
 
 import com.mongodb.MongoWriteException;
-import com.mongodb.client.model.Filters;
+import io.quarkus.mongodb.panache.PanacheQuery;
 import io.quarkus.oidc.TokenIntrospection;
 import org.accounting.system.dtos.metric.MetricResponseDto;
 import org.accounting.system.dtos.metric.UpdateMetricRequestDto;
 import org.accounting.system.dtos.pagination.PageResource;
 import org.accounting.system.endpoints.MetricEndpoint;
-import org.accounting.system.entities.HierarchicalRelation;
 import org.accounting.system.entities.Metric;
 import org.accounting.system.entities.projections.MetricProjection;
 import org.accounting.system.exceptions.ConflictException;
@@ -18,7 +17,8 @@ import org.accounting.system.repositories.metric.MetricRepository;
 import org.accounting.system.services.authorization.RoleService;
 import org.accounting.system.services.installation.InstallationService;
 import org.accounting.system.util.QueryParser;
-import org.bson.Document;
+import org.accounting.system.util.Utility;
+import org.apache.commons.lang3.ObjectUtils;
 import org.bson.conversions.Bson;
 import org.bson.types.ObjectId;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
@@ -111,18 +111,7 @@ public class MetricService {
     public boolean delete(String metricId, String installationId){
 
         // first delete Metric from Metric Collection
-        var deletedFromMetricCollection = metricRepository.deleteById(new ObjectId(metricId));
-
-        // then delete Metric ID from HierarchicalRelation collection
-        var installation = installationService.fetchInstallation(installationId);
-
-        Bson filter = Filters.in("metrics", new ObjectId(metricId));
-        Bson query = new Document().append("_id", installation.getProject() + HierarchicalRelation.PATH_SEPARATOR + installation.getOrganisation() + HierarchicalRelation.PATH_SEPARATOR + installationId);
-        Bson update = new Document("$pull", filter);
-
-        hierarchicalRelationRepository.getMongoCollection().updateOne(query, update);
-
-        return deletedFromMetricCollection;
+        return metricRepository.deleteById(new ObjectId(metricId));
     }
 
     /**
@@ -155,8 +144,8 @@ public class MetricService {
             throw new BadRequestException("Timestamp of the starting date time cannot be equal to Timestamp of the end date time.");
         }
 
-        if(request.end !=null && request.start!=null && Instant.parse(request.start).isAfter(Instant.parse(request.end))){
-            throw new BadRequestException("Timestamp of the starting date time cannot be after of Timestamp of the end date time.");
+        if((request.start!=null && Instant.parse(request.start).isAfter(Instant.now())) || (request.end!=null && Instant.parse(request.end).isAfter(Instant.now()))){
+            throw new BadRequestException("Timestamp cannot be after the current date-time.");
         }
 
         if(request.start !=null && request.end ==null && Instant.parse(request.start).equals(metric.getEnd())){
@@ -197,4 +186,16 @@ public class MetricService {
         return new PageResource<>(metrics, metrics.list(), uriInfo);
     }
 
+    public PageResource<MetricProjection> fetchAllMetrics(String id, int page, int size, UriInfo uriInfo, String start, String end){
+
+        PanacheQuery<MetricProjection> projection;
+
+        if(ObjectUtils.allNotNull(start, end) && Utility.isDate(start, end) && Utility.isBefore(start, end)) {
+            projection = metricRepository.findByExternalId(id, page, size, start, end);
+        } else{
+            projection = metricRepository.findByExternalId(id, page, size);
+        }
+
+        return new PageResource<>(projection, projection.list(), uriInfo);
+    }
 }
