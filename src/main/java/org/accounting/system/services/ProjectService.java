@@ -15,6 +15,7 @@ import org.accounting.system.exceptions.ConflictException;
 import org.accounting.system.mappers.AccessControlMapper;
 import org.accounting.system.mappers.InstallationMapper;
 import org.accounting.system.repositories.authorization.RoleRepository;
+import org.accounting.system.repositories.client.ClientAccessAlwaysRepository;
 import org.accounting.system.repositories.project.ProjectRepository;
 import org.accounting.system.services.acl.RoleAccessControlService;
 import org.accounting.system.util.QueryParser;
@@ -39,6 +40,9 @@ public class ProjectService implements RoleAccessControlService {
 
     @Inject
     QueryParser queryParser;
+
+    @Inject
+    ClientAccessAlwaysRepository clientAccessAlwaysRepository;
 
     /**
      * This method correlates the given Providers with a specific Project and creates an hierarchical structure with root
@@ -106,6 +110,10 @@ public class ProjectService implements RoleAccessControlService {
         accessControl.setRoles(roleRepository.getRolesByName(request.roles));
 
         projectRepository.insertNewRoleAccessControl(projectID, accessControl);
+
+        if(request.roles.contains("project_admin")){
+            clientAccessAlwaysRepository.assignRolesToRegisteredClient(who, Set.of("provider_creator", "metric_definition_creator"));
+        }
     }
 
     @Override

@@ -23,6 +23,7 @@ import org.accounting.system.services.MetricService;
 import org.accounting.system.services.ProjectService;
 import org.accounting.system.services.ProviderService;
 import org.accounting.system.services.authorization.RoleService;
+import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.eclipse.microprofile.openapi.annotations.Operation;
 import org.eclipse.microprofile.openapi.annotations.enums.SchemaType;
 import org.eclipse.microprofile.openapi.annotations.enums.SecuritySchemeIn;
@@ -36,6 +37,7 @@ import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
 import org.eclipse.microprofile.openapi.annotations.security.SecurityRequirement;
 import org.eclipse.microprofile.openapi.annotations.security.SecurityScheme;
 import org.eclipse.microprofile.openapi.annotations.tags.Tag;
+import org.jboss.resteasy.specimpl.ResteasyUriInfo;
 
 import javax.inject.Inject;
 import javax.validation.Valid;
@@ -93,6 +95,12 @@ public class ProjectEndpoint {
     @Inject
     MetricService metricService;
 
+    @ConfigProperty(name = "quarkus.resteasy.path")
+    String basePath;
+
+    @ConfigProperty(name = "server.url")
+    String serverUrl;
+
     @Tag(name = "Metric")
     @Operation(
             summary = "Returns all Metrics under a specific Project.",
@@ -148,7 +156,9 @@ public class ProjectEndpoint {
                     description = "The inclusive end date for the query in the format YYYY-MM-DD. Cannot be before start.") @QueryParam("end") String end,
             @Context UriInfo uriInfo) {
 
-        var response = metricService.fetchAllMetrics(id, page - 1, size, uriInfo, start, end);
+        var serverInfo = new ResteasyUriInfo(serverUrl.concat(basePath).concat(uriInfo.getPath()), basePath);
+
+        var response = metricService.fetchAllMetrics(id, page - 1, size, serverInfo, start, end);
 
         return Response.ok().entity(response).build();
     }
@@ -213,7 +223,9 @@ public class ProjectEndpoint {
                     description = "The inclusive end date for the query in the format YYYY-MM-DD. Cannot be before start.") @QueryParam("end") String end,
             @Context UriInfo uriInfo) {
 
-        var response = metricService.fetchAllMetrics(projectId + HierarchicalRelation.PATH_SEPARATOR + providerId, page - 1, size, uriInfo, start, end);
+        var serverInfo = new ResteasyUriInfo(serverUrl.concat(basePath).concat(uriInfo.getPath()), basePath);
+
+        var response = metricService.fetchAllMetrics(projectId + HierarchicalRelation.PATH_SEPARATOR + providerId, page - 1, size, serverInfo, start, end);
 
         return Response.ok().entity(response).build();
     }
@@ -555,7 +567,9 @@ public class ProjectEndpoint {
             @Max(value = 100, message = "Page size must be between 1 and 100.") @QueryParam("size") int size,
             @Context UriInfo uriInfo) {
 
-        return Response.ok().entity(projectService.getInstallationsByProject(projectId, page - 1, size, uriInfo)).build();
+        var serverInfo = new ResteasyUriInfo(serverUrl.concat(basePath).concat(uriInfo.getPath()), basePath);
+
+        return Response.ok().entity(projectService.getInstallationsByProject(projectId, page - 1, size, serverInfo)).build();
     }
 
     @Tag(name = "Project")
@@ -816,7 +830,9 @@ public class ProjectEndpoint {
             @Max(value = 100, message = "Page size must be between 1 and 100.") @QueryParam("size") int size,
                                         @Context UriInfo uriInfo){
 
-        var response = projectService.fetchAllPermissions( page - 1, size, uriInfo, projectId);
+        var serverInfo = new ResteasyUriInfo(serverUrl.concat(basePath).concat(uriInfo.getPath()), basePath);
+
+        var response = projectService.fetchAllPermissions( page - 1, size, serverInfo, projectId);
 
         return Response.ok().entity(response).build();
     }
@@ -976,7 +992,9 @@ public class ProjectEndpoint {
             @Max(value = 100, message = "Page size must be between 1 and 100.") @QueryParam("size") int size,
             @Context UriInfo uriInfo) {
 
-        return Response.ok().entity(providerService.findInstallationsByProvider(projectId, providerId, page - 1, size, uriInfo)).build();
+        var serverInfo = new ResteasyUriInfo(serverUrl.concat(basePath).concat(uriInfo.getPath()), basePath);
+
+        return Response.ok().entity(providerService.findInstallationsByProvider(projectId, providerId, page - 1, size, serverInfo)).build();
     }
 
     @Tag(name = "Provider")
@@ -1278,7 +1296,9 @@ public class ProjectEndpoint {
             @Max(value = 100, message = "Page size must be between 1 and 100.") @QueryParam("size") int size,
             @Context UriInfo uriInfo){
 
-        var response = providerService.fetchAllPermissions(page - 1, size, uriInfo, projectId, providerId);
+        var serverInfo = new ResteasyUriInfo(serverUrl.concat(basePath).concat(uriInfo.getPath()), basePath);
+
+        var response = providerService.fetchAllPermissions(page - 1, size, serverInfo, projectId, providerId);
 
         return Response.ok().entity(response).build();
     }
@@ -1375,11 +1395,12 @@ public class ProjectEndpoint {
             @Context UriInfo uriInfo
     ) throws ParseException, NoSuchFieldException, org.json.simple.parser.ParseException, JsonProcessingException {
 
+        var serverInfo = new ResteasyUriInfo(serverUrl.concat(basePath).concat(uriInfo.getPath()), basePath);
 
         if(json.equals("")){
             throw  new BadRequestException("not empty body permitted");
         }
-        var results=projectService.searchProject(json, page - 1, size, uriInfo);
+        var results=projectService.searchProject(json, page - 1, size, serverInfo);
 
         return Response.ok().entity(results).build();
     }
@@ -1442,7 +1463,9 @@ public class ProjectEndpoint {
             @Context UriInfo uriInfo
     ) throws ParseException, NoSuchFieldException, org.json.simple.parser.ParseException, JsonProcessingException {
 
-        var results= projectService.getAll( page - 1, size, uriInfo);
+        var serverInfo = new ResteasyUriInfo(serverUrl.concat(basePath).concat(uriInfo.getPath()), basePath);
+
+        var results= projectService.getAll( page - 1, size, serverInfo);
 
         return Response.ok().entity(results).build();
     }

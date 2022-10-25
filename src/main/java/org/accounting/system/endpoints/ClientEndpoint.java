@@ -26,6 +26,7 @@ import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
 import org.eclipse.microprofile.openapi.annotations.security.SecurityRequirement;
 import org.eclipse.microprofile.openapi.annotations.security.SecurityScheme;
 import org.eclipse.microprofile.openapi.annotations.tags.Tag;
+import org.jboss.resteasy.specimpl.ResteasyUriInfo;
 
 import javax.inject.Inject;
 import javax.validation.Valid;
@@ -71,6 +72,12 @@ public class ClientEndpoint {
 
     @ConfigProperty(name = "key.to.retrieve.id.from.access.token")
     String key;
+
+    @ConfigProperty(name = "quarkus.resteasy.path")
+    String basePath;
+
+    @ConfigProperty(name = "server.url")
+    String serverUrl;
 
 
     @Tag(name = "Client")
@@ -148,7 +155,9 @@ public class ClientEndpoint {
                              @Max(value = 100, message = "Page size must be between 1 and 100.") @QueryParam("size") int size,
                              @Context UriInfo uriInfo){
 
-        return Response.ok().entity(clientService.findAllClientsPageable(page-1, size, uriInfo)).build();
+        var serverInfo = new ResteasyUriInfo(serverUrl.concat(basePath).concat(uriInfo.getPath()), basePath);
+
+        return Response.ok().entity(clientService.findAllClientsPageable(page-1, size, serverInfo)).build();
     }
 
     @Tag(name = "Client")

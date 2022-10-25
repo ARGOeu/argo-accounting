@@ -436,7 +436,9 @@ public class ProviderEndpoint {
                     description = "The page size.") @DefaultValue("10") @Min(value = 1, message = "Page size must be between 1 and 100.")
             @Max(value = 100, message = "Page size must be between 1 and 100.") @QueryParam("size") int size, @Context UriInfo uriInfo) throws ParseException, NoSuchFieldException, org.json.simple.parser.ParseException, JsonProcessingException {
 
-        var response = providerService.searchProviders(json, page - 1, size, uriInfo);
+        var serverInfo = new ResteasyUriInfo(serverUrl.concat(basePath).concat(uriInfo.getPath()), basePath);
+
+        var response = providerService.searchProviders(json, page - 1, size, serverInfo);
 
         return Response.ok().entity(response).build();
     }
@@ -486,7 +488,9 @@ public class ProviderEndpoint {
                     description = "The page size.") @DefaultValue("10") @Min(value = 1, message = "Page size must be between 1 and 100.")
             @Max(value = 100, message = "Page size must be between 1 and 100.") @QueryParam("size") int size, @Context UriInfo uriInfo) throws ParseException, NoSuchFieldException, org.json.simple.parser.ParseException, JsonProcessingException {
 
-        var response = providerService.getSystemProviders( page - 1, size, uriInfo);
+        var serverInfo = new ResteasyUriInfo(serverUrl.concat(basePath).concat(uriInfo.getPath()), basePath);
+
+        var response = providerService.getSystemProviders( page - 1, size, serverInfo);
 
         return Response.ok().entity(response).build();
     }
