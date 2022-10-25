@@ -166,10 +166,29 @@ Success Response `200 OK`
 You can tune the default values by using the query parameters page and size as shown in the example below.
 
 ```
-GET /accounting-system/providers?page=2&size=15
+GET /accounting-system/accounting-system/projects/{project_id}/metrics?page=2&size=15
 ```
 
-The above request returns the second page which contains 15 Metrics.
+The above request returns the second page which contains 15 Metrics. 
+
+In conclusion, the aforementioned request returns all the metrics to which the client has access in a project. The range of metrics can be limited by using date filters.
+
+#### Date Filtering
+
+You can limit the range of metrics by using the following URL parameters:
+
+- start
+- end
+
+For example, if you want to retrieve metrics whose `time_period_start` and `time_period_end` are in the date range [2020-01-01 to 2020-12-31], you can execute the following request:
+
+```
+GET /accounting-system/accounting-system/projects/{project_id}/metrics?start=2020-01-01&end=2020-12-31
+
+Authorization: Bearer {token}
+```
+
+Bear in mind that both parameters should be in the format `YYYY-MM-DD` and `start` cannot be after `end`.
 
 ### [GET] - Collecting Metrics from specific Provider
 
@@ -183,6 +202,24 @@ Authorization: Bearer {token}
 
 By default, the first page of 10 Metrics under that Provider will be returned. Of course, You can tune the default values by using the query parameters page and size.
 
+In conclusion, the aforementioned request returns all the metrics to which the client has access in a specific Provider. The range of metrics can be limited by using date filters.
+
+#### Date Filtering
+
+You can limit the range of metrics by using the following URL parameters:
+
+- start
+- end
+
+For example, if you want to retrieve metrics whose `time_period_start` and `time_period_end` are in the date range [2020-01-01 to 2020-12-31], you can execute the following request:
+
+```
+GET /accounting-system/projects/{project_id}/providers/{provider_id}/metrics?start=2020-01-01&end=2020-12-31
+
+Authorization: Bearer {token}
+```
+
+Bear in mind that both parameters should be in the format `YYYY-MM-DD` and `start` cannot be after `end`.
 
 ### [GET] - Collecting Metrics from specific Installation
 
@@ -196,6 +233,25 @@ Authorization: Bearer {token}
 ```
 
 By default, the first page of 10 Metrics under that Installation will be returned. Of course, You can tune the default values by using the query parameters page and size.
+
+In conclusion, the aforementioned request returns all the metrics to which the client has access in a particular Installation. The range of metrics can be limited by using date filters.
+
+#### Date Filtering
+
+You can limit the range of metrics by using the following URL parameters:
+
+- start
+- end
+
+For example, if you want to retrieve metrics whose `time_period_start` and `time_period_end` are in the date range [2020-01-01 to 2020-12-31], you can execute the following request:
+
+```
+GET /accounting-system/installations/{installation_id}/metrics?start=2020-01-01&end=2020-12-31
+
+Authorization: Bearer {token}
+```
+
+Bear in mind that both parameters should be in the format `YYYY-MM-DD` and `start` cannot be after `end`.
 
 ### Errors
 

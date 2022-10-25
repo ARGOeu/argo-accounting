@@ -10,7 +10,6 @@ import org.accounting.system.dtos.pagination.PageResource;
 import org.accounting.system.entities.Project;
 import org.accounting.system.entities.authorization.Role;
 import org.accounting.system.entities.projections.InstallationProjection;
-import org.accounting.system.entities.projections.MetricProjection;
 import org.accounting.system.entities.projections.ProjectProjection;
 import org.accounting.system.exceptions.ConflictException;
 import org.accounting.system.mappers.AccessControlMapper;
@@ -41,7 +40,6 @@ public class ProjectService implements RoleAccessControlService {
     @Inject
     QueryParser queryParser;
 
-
     /**
      * This method correlates the given Providers with a specific Project and creates an hierarchical structure with root
      * the given Project and children the given Providers.
@@ -53,13 +51,6 @@ public class ProjectService implements RoleAccessControlService {
     public void associateProjectWithProviders(String projectId, Set<String> providerIds){
 
         projectRepository.associateProjectWithProviders(projectId, providerIds);
-    }
-
-    public PageResource<MetricProjection> fetchAllMetrics(String id, int page, int size, UriInfo uriInfo){
-
-        var projection = projectRepository.fetchAllMetrics(id, page, size);
-
-        return new PageResource<>(projection, projection.list(), uriInfo);
     }
 
     /**

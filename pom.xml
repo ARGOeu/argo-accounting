@@ -28,6 +28,7 @@
     <type.tools.version>0.6.3</type.tools.version>
     <jacoco.version>0.8.8</jacoco.version>
     <wiremock.version>2.33.2</wiremock.version>
+    <commons.validator.version>1.7</commons.validator.version>
   </properties>
   <dependencyManagement>
     <dependencies>
@@ -184,6 +185,11 @@
       <groupId>net.jodah</groupId>
       <artifactId>typetools</artifactId>
       <version>${type.tools.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>commons-validator</groupId>
+      <artifactId>commons-validator</artifactId>
+      <version>${commons.validator.version}</version>
     </dependency>
     <dependency>
       <groupId>com.github.tomakehurst</groupId>

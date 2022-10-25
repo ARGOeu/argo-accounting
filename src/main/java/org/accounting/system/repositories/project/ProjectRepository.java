@@ -212,8 +212,8 @@ public class ProjectRepository extends ProjectModulator {
                     HierarchicalRelation project = new HierarchicalRelation(projectId, RelationType.PROJECT);
                     HierarchicalRelation hprovider = new HierarchicalRelation(provider.getId(), project, RelationType.PROVIDER);
 
-                    hierarchicalRelationRepository.save(project, null);
-                    hierarchicalRelationRepository.save(hprovider, null);
+                    hierarchicalRelationRepository.save(project);
+                    hierarchicalRelationRepository.save(hprovider);
                 });
 
         setProjectProviders(projectId, providers);

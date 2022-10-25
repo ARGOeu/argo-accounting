@@ -9,10 +9,8 @@ import org.accounting.system.dtos.pagination.PageResource;
 import org.accounting.system.dtos.provider.ProviderRequestDto;
 import org.accounting.system.dtos.provider.ProviderResponseDto;
 import org.accounting.system.dtos.provider.UpdateProviderRequestDto;
-import org.accounting.system.entities.HierarchicalRelation;
 import org.accounting.system.entities.authorization.Role;
 import org.accounting.system.entities.projections.InstallationProjection;
-import org.accounting.system.entities.projections.MetricProjection;
 import org.accounting.system.entities.provider.Provider;
 import org.accounting.system.exceptions.ConflictException;
 import org.accounting.system.mappers.AccessControlMapper;
@@ -175,13 +173,6 @@ public class ProviderService implements RoleAccessControlService {
         if(Objects.isNull(entity.getCreatorId())){
             throw new ForbiddenException("You cannot access a Provider which derives from EOSC-Portal.");
         }
-    }
-
-    public PageResource<MetricProjection> fetchAllMetrics(String projectId, String providerId, int page, int size, UriInfo uriInfo){
-
-        var projection = providerRepository.fetchAllMetrics(projectId + HierarchicalRelation.PATH_SEPARATOR + providerId, page, size);
-
-        return new PageResource<>(projection, projection.list(), uriInfo);
     }
 
     public PageResource<InstallationResponseDto> findInstallationsByProvider(String projectId, String providerId, int page, int size, UriInfo uriInfo){

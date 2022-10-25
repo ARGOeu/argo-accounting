@@ -65,10 +65,6 @@ public class HierarchicalRelationService {
                     request.metricDefinitionId, request.start, request.end));
         }
 
-        hierarchicalRelationRepository.save(project, null);
-        hierarchicalRelationRepository.save(provider, null);
-        hierarchicalRelationRepository.save(installation, metric.getId());
-
         return metric;
     }
 

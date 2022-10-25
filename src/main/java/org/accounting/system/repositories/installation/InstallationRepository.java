@@ -199,11 +199,11 @@ public class InstallationRepository {
 
         HierarchicalRelation provider = new HierarchicalRelation(request.organisation, project, RelationType.PROVIDER);
 
-        HierarchicalRelation hinstallation = new HierarchicalRelation(installation.getId().toString(), provider, RelationType.INSTALLATION);
+        HierarchicalRelation hinstallation = new HierarchicalRelation(installation.getId(), provider, RelationType.INSTALLATION);
 
-        hierarchicalRelationRepository.save(project, null);
-        hierarchicalRelationRepository.save(provider, null);
-        hierarchicalRelationRepository.save(hinstallation, null);
+        hierarchicalRelationRepository.save(project);
+        hierarchicalRelationRepository.save(provider);
+        hierarchicalRelationRepository.save(hinstallation);
 
         return installation;
     }

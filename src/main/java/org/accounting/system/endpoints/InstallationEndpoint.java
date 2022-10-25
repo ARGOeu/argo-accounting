@@ -16,6 +16,7 @@ import org.accounting.system.dtos.metric.MetricRequestDto;
 import org.accounting.system.dtos.metric.MetricResponseDto;
 import org.accounting.system.dtos.metric.UpdateMetricRequestDto;
 import org.accounting.system.dtos.pagination.PageResource;
+import org.accounting.system.entities.HierarchicalRelation;
 import org.accounting.system.entities.projections.MetricProjection;
 import org.accounting.system.enums.Collection;
 import org.accounting.system.repositories.client.ClientRepository;
@@ -1001,12 +1002,19 @@ public class InstallationEndpoint {
             @Parameter(name = "size", in = QUERY,
                     description = "The page size.") @DefaultValue("10") @Min(value = 1, message = "Page size must be between 1 and 100.")
             @Max(value = 100, message = "Page size must be between 1 and 100.") @QueryParam("size") int size,
+            @Parameter(name = "start", in = QUERY, example = "2020-01-01",
+                    description = "The inclusive start date for the query in the format YYYY-MM-DD. Cannot be after end.")  @QueryParam("start") String start,
+            @Parameter(name = "end", in = QUERY, example = "2020-12-31",
+                    description = "The inclusive end date for the query in the format YYYY-MM-DD. Cannot be before start.") @QueryParam("end") String end,
             @Context UriInfo uriInfo) {
 
-        var response = installationService.fetchAllMetrics(installationId, page - 1, size, uriInfo);
+        var installation = installationService.fetchInstallation(installationId);
+
+        var response = metricService.fetchAllMetrics(installation.getProject() + HierarchicalRelation.PATH_SEPARATOR + installation.getOrganisation() + HierarchicalRelation.PATH_SEPARATOR + installationId, page - 1, size, uriInfo, start, end);
 
         return Response.ok().entity(response).build();
     }
+
     @Tag(name = "Installation")
     @org.eclipse.microprofile.openapi.annotations.Operation(
             operationId = "search-installation",

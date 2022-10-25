@@ -34,19 +34,32 @@ public class ValidateStartEndTimestampValidator implements ConstraintValidator<V
             throw new CustomValidationException("time_period_end may not be empty.", HttpResponseStatus.BAD_REQUEST);
         }
 
+        Instant start;
+
+        Instant end;
+
         try{
-            Instant.parse(request.start);
+            start = Instant.parse(request.start);
         } catch (Exception e){
             throw new CustomValidationException("time_period_start must be a valid zulu timestamp. found: "+request.start, HttpResponseStatus.BAD_REQUEST);
         }
 
         try{
-            Instant.parse(request.end);
+            end = Instant.parse(request.end);
         } catch (Exception e){
             throw new CustomValidationException("time_period_end must be a valid zulu timestamp. found: "+request.end, HttpResponseStatus.BAD_REQUEST);
         }
 
-        if(Instant.parse(request.start).isAfter(Instant.parse(request.end))){
+        if(start.isAfter(Instant.now()) || end.isAfter(Instant.now())){
+
+            throw new CustomValidationException("Timestamp cannot be after the current date-time.", HttpResponseStatus.BAD_REQUEST);
+        }
+
+        if( start.equals(end)){
+            throw new CustomValidationException("Timestamp of the starting date time cannot be equal to Timestamp of the end date time.", HttpResponseStatus.BAD_REQUEST);
+        }
+
+        if(start.isAfter(end)){
             throw new CustomValidationException("Timestamp of the starting date time cannot be after of Timestamp of the end date time.", HttpResponseStatus.BAD_REQUEST);
         } else if(Instant.parse(request.start).equals(Instant.parse(request.end))){
             throw new CustomValidationException("Timestamp of the starting date time cannot be equal to Timestamp of the end date time.", HttpResponseStatus.BAD_REQUEST);
