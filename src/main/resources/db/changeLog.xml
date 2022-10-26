@@ -485,7 +485,7 @@
             <ext:documents>
                 [
                 {
-                system: false,
+                system: true,
                 name: "metric_definition_creator",
                 description: "metric_definition_creator can create new Metric Definitions, and read all Metric Definitions but can update and delete only the entities it created.",
                 collections_access_permissions: [
