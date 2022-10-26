@@ -29,24 +29,6 @@ When clients register to the system, they can perform the following actions :
 
 By default, in the accounting system the following roles exist and can be assigned to the registered client.
 
-### Metric Definition Creator
-
-Metric Definition Creator can perform the following actions :
-
-- Create metric definitions
-- Read all the metric definitions
-- Update/Delete their  created metric definitions
-
-| Collection       	| Create 	| Update 	| Delete 	| Read   	|
-|------------------	|--------	|--------	|--------	|--------	|
-| MetricDefinition 	| Always 	| Entity <sup>*</sup> 	| Entity <sup>**</sup> 	| Always 	|
-
-<sup>*</sup> You cannot update an existing Metric Definition, if there are Metrics assigned to it.
-<br/>
-<sup>**</sup> You cannot delete an existing Metric Definition, if there are Metrics assigned to it.
-<br/>
-<br/>
-
 ### Project Admin
 
 Project admin role, has  full access  on the projects it is assigned and can perform all actions on the projects as well as the providers, installations and metrics that are assigned to these projects.
@@ -83,11 +65,23 @@ Project admin role, has  full access  on the projects it is assigned and can per
 |------------------	|--------	|--------	|--------	|--------	| -------- |
 | Provider      	| Always 	| Entity <sup>**</sup>	| Entity <sup>***</sup>	| Always 	| Always <sup>*</sup> |
 
+- Create metric definitions
+- Read all the metric definitions
+- Update/Delete their created metric definitions
+
+| Collection       	| Create 	| Update 	| Delete 	| Read   	|
+|------------------	|--------	|--------	|--------	|--------	|
+| MetricDefinition 	| Always 	| Entity <sup>****</sup> 	| Entity <sup>*****</sup> 	| Always 	|
+
 <sup>*</sup> You can always perform that action on a particular Project
 <br/>
 <sup>**</sup> You cannot update an existing Provider, if it belongs to a Project.
 <br/>
 <sup>***</sup> You cannot delete an existing Provider, if it belongs to a Project.
+<br/>
+<sup>****</sup> You cannot update an existing Metric Definition, if there are Metrics assigned to it.
+<br/>
+<sup>*****</sup> You cannot delete an existing Metric Definition, if there are Metrics assigned to it.
 <br/>
 <br/>
 
