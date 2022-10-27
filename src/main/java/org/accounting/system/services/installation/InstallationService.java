@@ -21,6 +21,7 @@ import org.accounting.system.mappers.MetricMapper;
 import org.accounting.system.repositories.HierarchicalRelationRepository;
 import org.accounting.system.repositories.authorization.RoleRepository;
 import org.accounting.system.repositories.installation.InstallationRepository;
+import org.accounting.system.repositories.metric.MetricRepository;
 import org.accounting.system.repositories.provider.ProviderRepository;
 import org.accounting.system.services.HierarchicalRelationService;
 import org.accounting.system.services.acl.RoleAccessControlService;
@@ -30,6 +31,7 @@ import org.bson.conversions.Bson;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
+import javax.ws.rs.ForbiddenException;
 import javax.ws.rs.NotFoundException;
 import javax.ws.rs.core.UriInfo;
 import java.util.ArrayList;
@@ -52,6 +54,9 @@ public class InstallationService implements RoleAccessControlService {
 
     @Inject
     RoleRepository roleRepository;
+
+    @Inject
+    MetricRepository metricRepository;
 
     @Inject
     HierarchicalRelationRepository hierarchicalRelationRepository;
@@ -84,6 +89,13 @@ public class InstallationService implements RoleAccessControlService {
      * @return If the operation is successful or not.
      */
     public void delete(String installationId) {
+
+        if(!metricRepository
+                .findFirstByInstallationId(installationId)
+                .isEmpty()){
+
+            throw new ForbiddenException("Deleting an Installation is not allowed if there are Metrics assigned to it.");
+        }
 
         var installation = fetchInstallationProjection(installationId);
 

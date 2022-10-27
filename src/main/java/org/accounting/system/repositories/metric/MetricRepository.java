@@ -144,4 +144,8 @@ public class MetricRepository extends MetricModulator {
 
         return projectionQuery;
     }
+
+    public Optional<Metric> findFirstByInstallationId(String installationId){
+        return find("installation_id", installationId).firstResultOptional();
+    }
 }
