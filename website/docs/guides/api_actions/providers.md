@@ -1,7 +1,7 @@
 ---
 id: provider
 title: Manage Providers
-sidebar_position: 2
+sidebar_position: 3
 ---
 
 This is a guide that refers to a Provider.

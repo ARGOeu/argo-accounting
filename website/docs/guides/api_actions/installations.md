@@ -1,7 +1,7 @@
 ---
 id: installation
 title: Manage Installations
-sidebar_position: 3
+sidebar_position: 4
 ---
 
 This is a guide that refers to an Installation. An Installation refers to a specific instance or part of a resource/service that is allocated to a specific Project by one Provider. If you are permitted to act on one or ore Installations, via this guide you can see all the options you have .
