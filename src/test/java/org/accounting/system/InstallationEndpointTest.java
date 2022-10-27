@@ -13,12 +13,12 @@ import org.accounting.system.clients.responses.eoscportal.Total;
 import org.accounting.system.dtos.InformativeResponse;
 import org.accounting.system.dtos.installation.InstallationRequestDto;
 import org.accounting.system.dtos.installation.InstallationResponseDto;
+import org.accounting.system.dtos.metric.MetricRequestDto;
 import org.accounting.system.dtos.metricdefinition.MetricDefinitionRequestDto;
 import org.accounting.system.dtos.metricdefinition.MetricDefinitionResponseDto;
 import org.accounting.system.endpoints.InstallationEndpoint;
 import org.accounting.system.mappers.ProviderMapper;
 import org.accounting.system.repositories.client.ClientAccessAlwaysRepository;
-import org.accounting.system.repositories.installation.InstallationRepository;
 import org.accounting.system.repositories.metricdefinition.MetricDefinitionRepository;
 import org.accounting.system.repositories.project.ProjectRepository;
 import org.accounting.system.repositories.provider.ProviderRepository;
@@ -52,9 +52,6 @@ import static org.mockito.ArgumentMatchers.any;
 @QuarkusTestResource(ProviderWireMockServer.class)
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 public class InstallationEndpointTest {
-
-    @Inject
-    InstallationRepository installationRepository;
 
     @Inject
     MetricDefinitionRepository metricDefinitionRepository;
@@ -488,6 +485,71 @@ public class InstallationEndpointTest {
                 .as(InformativeResponse.class);
 
         assertEquals("Installation has been deleted successfully.", deleteResponse.message);
+    }
+
+    @Test
+    public void deleteInstallationNotAllowed(){
+
+        Mockito.when(readPredefinedTypesService.searchForUnitType(any())).thenReturn(Optional.of("SECOND"));
+        Mockito.when(readPredefinedTypesService.searchForMetricType(any())).thenReturn(Optional.of("Aggregated"));
+        var requestForMetricDefinition = new MetricDefinitionRequestDto();
+
+        requestForMetricDefinition.metricName = "metric";
+        requestForMetricDefinition.metricDescription = "description";
+        requestForMetricDefinition.unitType = "SECOND";
+        requestForMetricDefinition.metricType = "Aggregated";
+
+        var metricDefinitionResponse = createMetricDefinition(requestForMetricDefinition, "admin");
+
+        var request= new InstallationRequestDto();
+
+        request.project = "777536";
+        request.organisation = "grnet";
+        request.infrastructure = "okeanos-knossos";
+        request.installation = "SECOND";
+        request.unitOfAccess = metricDefinitionResponse.id;
+
+        var response = createInstallation(request, "admin");
+
+        var requestForMetric = new MetricRequestDto();
+        requestForMetric.start = "2020-01-05T09:15:07Z";
+        requestForMetric.end = "2020-01-05T09:18:07Z";
+        requestForMetric.value = 10.8;
+        requestForMetric.metricDefinitionId = metricDefinitionResponse.id;
+
+        given()
+                .auth()
+                .oauth2(getAccessToken("admin"))
+                .basePath("accounting-system/installations")
+                .body(requestForMetric)
+                .contentType(ContentType.JSON)
+                .post("/{installationId}/metrics", response.id);
+
+        var requestForMetric1 = new MetricRequestDto();
+        requestForMetric1.start = "2021-01-05T09:15:07Z";
+        requestForMetric1.end = "2021-01-05T09:18:07Z";
+        requestForMetric1.value = 10.8;
+        requestForMetric1.metricDefinitionId = metricDefinitionResponse.id;
+
+        given()
+                .auth()
+                .oauth2(getAccessToken("admin"))
+                .basePath("accounting-system/installations")
+                .body(requestForMetric1)
+                .contentType(ContentType.JSON)
+                .post("/{installationId}/metrics", response.id);
+
+        var deleteResponse = given()
+                .auth()
+                .oauth2(getAccessToken("admin"))
+                .delete("/{id}", response.id)
+                .then()
+                .assertThat()
+                .statusCode(403)
+                .extract()
+                .as(InformativeResponse.class);
+
+        assertEquals("Deleting an Installation is not allowed if there are Metrics assigned to it.", deleteResponse.message);
     }
 
     @Test

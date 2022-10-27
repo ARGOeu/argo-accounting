@@ -43,7 +43,7 @@ public class Metric extends Entity {
     @BsonProperty("project_id")
     private String projectId;
     @BsonProperty("installation_id")
-   private String installationId;
+    private String installationId;
 
     public String getResourceId() {
         return resourceId;
