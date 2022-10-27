@@ -122,7 +122,7 @@ Authorization: Bearer {token}
 
 You can update a part or all attributes of the Metric Definition. The empty or null values are ignored.
 
-### [DELETE] - Delete a Metric Definition
+### [DELETE]  - Delete a Metric Definition
 
 You can only delete a Metric Definition that does not have any Metrics assigned to it. If the Metric Definition has no Metrics, you can safely delete it.
 
@@ -145,7 +145,52 @@ Success Response `200 OK`
 ```
 
 
+### [GET]  - Fetch all Metric Definitions
 
+You can fetch all Metric Definitions, that exist to the accounting system.
+
+A list of Metric Definitions can be fetched by executing the following request:
+
+```
+GET /accounting-system/metric-definitions
+
+Authorization: Bearer {token}
+```
+
+If the operation is successful, you get the following response:
+
+```
+{
+  "size_of_page": 3,
+  "number_of_page": 1,
+  "total_elements": 3,
+  "total_pages": 1,
+  "content": [
+    {
+      "metric_definition_id": "6360c5d63b4ae429c92409d7",
+      "metric_name": "number_of_active_users",
+      "metric_description": "Number of active users",
+      "unit_type": "#",
+      "metric_type": "aggregated"
+    },
+    {
+      "metric_definition_id": "6360c7ad3b4ae429c92409dd",
+      "metric_name": "number_of_inactive_users",
+      "metric_description": "Number of inactive users",
+      "unit_type": "#",
+      "metric_type": "aggregated"
+    },
+    {
+      "metric_definition_id": "6360c88c3b4ae429c92409de",
+      "metric_name": "number_of_users_deleted",
+      "metric_description": "Number of deleted users",
+      "unit_type": "s",
+      "metric_type": "count"
+    }
+  ],
+  "links": []
+}
+```
 
 ### [POST] - Search for Metric Definitions
  

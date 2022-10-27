@@ -8,13 +8,13 @@ import java.util.Arrays;
 import java.util.List;
 
 public enum Operator {
-    AND("and"){
+    AND("and","AND"){
         @Override
         public Bson execute(ArrayList<Bson> bsons) {
             return Filters.and(bsons);
         }
     },
-    OR("or"){
+    OR("or","OR"){
         @Override
         public Bson execute(ArrayList<Bson> bsons) {
             return Filters.or(bsons);
@@ -22,14 +22,22 @@ public enum Operator {
     };
 
     public final String label;
-    Operator(String value) {
+    public final String displayValue;
+
+    Operator(String value,String display) {
 
         label = value;
+        displayValue=display;
     }
     public String getLabel(){
         return label;
 
     }
+
+    public String getDisplayValue() {
+        return displayValue;
+    }
+
     public static Operator getEnumNameForValue(String value){
         List<Operator> values = Arrays.asList(Operator.values());
         for(Operator op:values){
