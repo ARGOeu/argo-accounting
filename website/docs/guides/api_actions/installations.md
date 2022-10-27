@@ -1,7 +1,7 @@
 ---
 id: installation
 title: Manage Installations
-sidebar_position: 2
+sidebar_position: 3
 ---
 
 This is a guide that refers to an Installation. An Installation refers to a specific instance or part of a resource/service that is allocated to a specific Project by one Provider. If you are permitted to act on one or ore Installations, via this guide you can see all the options you have .
@@ -22,7 +22,7 @@ In case the user is assigned with any other role, he can operate according to th
 
 ### GET Installation's details 
 <details>
-You can get Installation's details.Apply a request to the Accounting Service API.
+You can get the details of the Installation.Apply a request to the Accounting Service API.
 <b> For more details,how to syntax the request,see <a href="https://argoeu.github.io/argo-accounting/docs/api/installation#get---fetch-an-existing-installation">here</a></b>
 </details>
 
@@ -30,13 +30,13 @@ You can get Installation's details.Apply a request to the Accounting Service API
 ### UPDATE the Installation
 <details>
 You can update the Installation.Apply a request to the Accounting Service API,providing the new values of the Installation's properties.
-<b> For more details,how to syntax the request,see <a href="https://argoeu.github.io/argo-accounting/docs/api/installation#patch---update-an-existing-installation">here</a></b>
+<b> For more details,how to syntax the request,see <a href="https://argoeu.github.io/argo-accounting/docs/api/installation#patch---update-an-existing-installation">here.</a></b>
 </details>
 
 ### DELETE the Installation
 <details>
 You can delete the Installation.Apply a request to the Accounting Service API.If Metrics are assigned to the Installation,no DELETE action can take place.In this case,you need to delete all the assigned Metrics.
-<b> For more details,how to syntax the request,see <a href="https://argoeu.github.io/argo-accounting/docs/api/installation#delete---delete-an-existing-installation">here</a></b>
+<b> For more details,how to syntax the request,see <a href="https://argoeu.github.io/argo-accounting/docs/api/installation#delete---delete-an-existing-installation">here.</a></b>
 </details>
 
 ### ASSIGN Metrics,to the Installation

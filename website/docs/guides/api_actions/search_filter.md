@@ -93,7 +93,7 @@ Query on end period:
 {
   "type":"query",
   "field": "time_period_end" ,
-  "value":"2022-01-02T00:00:00Z",
+  "values":"2022-01-02T00:00:00Z",
   "operand": "lt"  
 }
 
@@ -110,7 +110,7 @@ Now these two queries should be combined in a filter as:
     {
       "type": "query",
       "field": "time_period_start",
-      "value": "2022-01-01T00:00:00Z",
+      "values": "2022-01-01T00:00:00Z",
       "operand": "gt"
     },
     {
