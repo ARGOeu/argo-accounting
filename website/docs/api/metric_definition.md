@@ -144,6 +144,82 @@ Success Response `200 OK`
 }
 ```
 
+
+
+
+### [POST] - Search for Metric Definitions
+ 
+You can search on Installations, to find the ones corresponding to the given search criteria. Metric Definitions can be searched by executing the following request:
+ 
+``` 
+POST accounting-system/metric-definition/search
+Content-Type: application/json
+```
+#### Example 1: 
+```
+{
+  "type": "query",
+  "field": "metric_type",
+  "values": "count",
+  "operand": "eq"
+}
+```
+
+#### Example 2: 
+
+```
+{
+  "type": "filter",
+  "operator": "OR",
+  "criteria": [
+    {
+      "type": "query",
+      "field": "metric_name",
+      "values": "mdname1",
+      "operand": "eq"
+    },
+    {
+      "type": "filter",
+      "operator": "AND",
+      "criteria": [
+        {
+          "type": "query",
+          "field": "metric_type",
+          "values": "count",
+          "operand": "eq"
+        },
+        {
+          "type": "query",
+          "field": "unit_type",
+          "values": "#",
+          "operand": "eq"
+        }
+      ]
+    }
+    
+```
+ 
+The context of the request should be a json object. The syntax of the json object , is described <b> <a href="https://argoeu.github.io/argo-accounting/docs/guides/search_filter">here</a></b>
+If the operation is successful, you get a list of metrics, for example:
+```
+{
+    "size_of_page": 1,
+    "number_of_page": 1,
+    "total_elements": 1,
+    "total_pages": 1,
+    "content": [
+        {
+            "metric_definition_id": "6360c7ad3b4ae429c92409dd",
+            "metric_name": "cpu",
+            "metric_description": "CPU metric definition",
+            "unit_type": "#",
+            "metric_type": "aggregated"
+        }
+    ],
+    "links": []
+}
+```
+
 ### Errors
 
 Please refer to section [Errors](./api_errors) to see all possible Errors.

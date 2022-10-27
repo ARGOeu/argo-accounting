@@ -508,7 +508,7 @@ public class MetricDefinitionEndpoint {
         return Response.ok().entity(json).build();
     }
 
-    @Tag(name = "Search Metric Definition")
+    @Tag(name = "Metric Definition")
     @org.eclipse.microprofile.openapi.annotations.Operation(
             operationId = "search-metric-definition",
             summary = "Searches a new Metric Definition.",
