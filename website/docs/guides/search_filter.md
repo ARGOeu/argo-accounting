@@ -1,7 +1,7 @@
 ---
 id: search-filter
 title: Syntax a search filter
-sidebar_position: 1
+sidebar_position: 2
 ---
 ### Syntax a search filter
 
@@ -41,7 +41,7 @@ The syntax should be as:
 
 ```
 
-### Example 1: Search on a collection's field
+### Example 1: Search on a specific field, of the collection
 You search for metrics , that the start period is after 01-01-2022. The syntax of the query should be : 
 
 ```
@@ -80,7 +80,7 @@ The syntax should be as:
 
 ```
 
-### Example 2: Search on a combinations of 2 fields, of the collection
+#### Example 2: Search on a combination of 2 fields, of the collection
 You search for metrics , that the start period is after 01-01-2022 AND the end period if before 01-02-2022. The syntax of the filter should be : 
 
 At first 2 subqueries should be created to define the criterio on each field. 
@@ -136,7 +136,7 @@ Now these two queries should be combined in a filter as:
 ```
 
 
-### Example 2: Search on a multiple fields, of the collection
+#### Example 3: Search on a multiple fields, of the collection
 You search for metrics , that  start period is after 01-01-2022 and the end period if before 01-02-2022,  OR the value is greater than 1000. The syntax of the filter should be  as : 
 
 The filter to search for   start period is after 01-01-2022 and the end period if before 01-02-2022, if defined as in the Example 2.
@@ -160,7 +160,7 @@ So now we need to combine these search criteria in a filter as:
   "criteria": [
  {
   "type":"query",
-  "field": "value" ,
+  "field": "value" 
   "values":"1000.0",
   "operand": "gt"  
 },
