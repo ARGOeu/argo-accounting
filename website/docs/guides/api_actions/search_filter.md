@@ -1,7 +1,7 @@
 ---
 id: search-filter
 title: Syntax a search filter
-sidebar_position: 5
+sidebar_position: 6
 ---
 ### Syntax a search filter
 

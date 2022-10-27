@@ -9,7 +9,7 @@ This is a guide that refers to an Installation. An Installation refers to a spec
 ### Before you start
 
 You can manage an Installation assigned to a specific Project and Provider.<br/>
-**1.** Register to the Accounting Service.
+**1.** Register to the Accounting Service.<br/>
 **2.** Contact the administrator of the Project or the administrator of the Project's Provider,that this Installation is associated with,to assign you one or more roles on the Installation.
 
 **ΝΟΤΕ** <br/>
@@ -37,44 +37,6 @@ You can update the Installation.Apply a request to the Accounting Service API,pr
 <details>
 You can delete the Installation.Apply a request to the Accounting Service API.If Metrics are assigned to the Installation,no DELETE action can take place.In this case,you need to delete all the assigned Metrics.
 <b> For more details,how to syntax the request,see <a href="https://argoeu.github.io/argo-accounting/docs/api/installation#delete---delete-an-existing-installation">here.</a></b>
-</details>
-
-### ASSIGN Metrics,to the Installation
-<details>
-You can assign one or more Metrics to the Installation.Apply a request to the Accounting Service API.In order to successfully assign a Metric you need to provide a MetricDefinition id,a start and an end period timestamp and a value.
-<b> For more details,how to syntax the request,see <a href="https://argoeu.github.io/argo-accounting/docs/api/metric#post---create-a-new-metric">here</a></b>
-</details>
-
-### GET details of specific Metric,assigned to the Installation
-<details>
-You can get the details of a specific Metric,assigned to the Installation.Apply a request to the Accounting Service API.
-<b> For more details,how to syntax the request,see <a href="https://argoeu.github.io/argo-accounting/docs/api/metric#get---fetch-an-existing-metric">here</a></b>
-</details>
-
-### UPDATE a specific Metric,assigned to the Installation
-<details>
-You can update the details of a Metrics, assigned to the Installation. Apply a request to the Accounting Service API.In order to successfully update a specific Metric you need to provide the new properties' values of the Metric.
-<b> For more details,how to syntax the request,see <a href="https://argoeu.github.io/argo-accounting/docs/api/metric#patch---update-an-existing-metric">here</a></b>
-</details>
-
-### DELETE a specific Metric,assigned to the Installation
-<details>
-You can delete a Metric,assigned to the Installation. Apply a request to the Accounting Service API.
-<b> For more details,how to syntax the request,see <a href="https://argoeu.github.io/argo-accounting/docs/api/metric#delete---delete-an-existing-metric">here</a></b>
-</details>
-
-### FETCH all Metrics,assigned to the Installation
-<details>
-You can fetch all Metrics,assigned to the Installation.Apply a request to the Accounting Service API.
-<b> For more details,how to syntax the request,see <a href="https://argoeu.github.io/argo-accounting/docs/api/collect_metrics#get---collecting-metrics-from-specific-installation">here</a></b>
-</details>
-
-### SEARCH Metrics,assigned to the Installation
-<details>
-You can search for specific Metric/Metrics assigned to the Installation,that matches one or more criteria.You can define search criteria on each field of the <b><a href="https://argoeu.github.io/argo-accounting/docs/api/metric">Metrics Collection</a></b> or a combination of search criteria on more than one fields. You can search for Metrics by Metric Definition id, value, period or a combination of them. 
-Apply a request to the Accounting Service API.You need to provide the search criteria in a specific
-<b><a href="https://argoeu.github.io/argo-accounting/docs/guides/search-filter">  syntax</a></b> . 
-<b> For more details,how to syntax the request,see <a href="https://argoeu.github.io/argo-accounting/docs/api/metric#post---search-for-metrics">here</a></b>
 </details>
 
 ---
