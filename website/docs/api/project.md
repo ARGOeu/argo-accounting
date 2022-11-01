@@ -377,7 +377,7 @@ Content-Type: application/json
 }
 ```
 
-The context of the request should be a json object. The syntax of the json object , is described <b> <a href="https://argoeu.github.io/argo-accounting/docs/guides/search_filter">here</a></b>
+The context of the request should be a json object. The syntax of the json object , is described <b> <a href="https://argoeu.github.io/argo-accounting/docs/guides/search-filter">here</a></b>
  
 If the operation is successful, you get a list of projects
 
