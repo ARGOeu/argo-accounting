@@ -56,7 +56,7 @@ You search for metrics , that the start period is after 01-01-2022. The syntax o
 ```
 
 
-### 1.  Search on multiple fields
+### 2.  Search on multiple fields
 
 A more complex search can be performed, combining 2 or more fields of the collection . You need to syntax a search filter, in a json format, and provide it as body in the search request. 
 The fields that need to be defined , in order the syntax to be valid are: 
@@ -80,7 +80,7 @@ The syntax should be as:
 
 ```
 
-### Example 2: Search on a 2 collection's fields
+### Example 2: Search on a combinations of 2 fields, of the collection
 You search for metrics , that the start period is after 01-01-2022 AND the end period if before 01-02-2022. The syntax of the filter should be : 
 
 At first 2 subqueries should be created to define the criterio on each field. 
@@ -136,7 +136,7 @@ Now these two queries should be combined in a filter as:
 ```
 
 
-### Example 2: Search on a multiple collection's fields
+### Example 2: Search on a multiple fields, of the collection
 You search for metrics , that  start period is after 01-01-2022 and the end period if before 01-02-2022,  OR the value is greater than 1000. The syntax of the filter should be  as : 
 
 The filter to search for   start period is after 01-01-2022 and the end period if before 01-02-2022, if defined as in the Example 2.

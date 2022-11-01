@@ -201,7 +201,6 @@ Success Response `200 OK`
            "abbreviation": "ELIXIR Belgium",
            "logo": "https://www.elixir-belgium.org/sites/default/files/logo.jpg"
        },
-       {
            "id": "cyi",
            "name": "The Cyprus Institute",
            "website": "https://www.cyi.ac.cy/",
@@ -377,7 +376,7 @@ Content-Type: application/json
 ```
 
 
-The context of the request should be a json object. The syntax of the json object , is described <b> <a href="https://argoeu.github.io/argo-accounting/docs/guides/search_filter">here</a></b>
+The context of the request should be a json object. The syntax of the json object , is described <b> <a href="https://argoeu.github.io/argo-accounting/docs/guides/search-filter">here</a></b>
  
 If the operation is successful, you get a list of providers
 ```
