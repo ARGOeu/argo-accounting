@@ -131,6 +131,107 @@ Success Response `200 OK`
 }
 ```
 
+### [POST] - Search for Metrics
+ 
+You can search on Metrics, to find the ones corresponding to the given search criteria. Metrics  can be searched by executing the following request:
+ 
+``` 
+POST accounting-system/metrics/search
+Content-Type: application/json
+```
+#### Example 1: 
+```
+{
+  "type": "query",
+  "field": "time_period_start",
+  "values": "2022-01-05T09:13:07Z",
+  "operand": "gte"
+}
+```
+
+#### Example 2: 
+
+```
+{
+  "type": "filter",
+  "operator": "OR",
+  "criteria": [
+    {
+      "type": "query",
+      "field": "value",
+      "values": 60,
+      "operand": lt
+    },
+    {
+      "type": "filter",
+      "operator": "AND",
+      "criteria": [
+        {
+          "type": "query",
+          "field": "time_period_start",
+          "values": "2019-01-05T09:13:07Z",
+          "operand": "gte"
+        },
+        {
+          "type": "query",
+          "field": "time_period_end",
+          "values": "2023-10-05T09:15:07Z",
+          "operand": "lt"
+        }
+      ]
+    }
+  ]
+}
+```
+ 
+The context of the request should be a json object. The syntax of the json object , is described <b> <a href="https://argoeu.github.io/argo-accounting/docs/guides/search_filter">here</a></b>
+If the operation is successful, you get a list of metrics, for example:
+```
+{
+    "size_of_page": 3,
+    "number_of_page": 1,
+    "total_elements": 3,
+    "total_pages": 1,
+    "content": [
+        {
+            "id": "6360c6283b4ae429c92409d9",
+            "metric_definition_id": "6360c5d63b4ae429c92409d7",
+            "time_period_start": "2020-04-05T09:13:07Z",
+            "time_period_end": "2020-10-08T09:13:07Z",
+            "value": 1000.0,
+            "project": "El_CapiTun",
+            "provider": "meeo",
+            "installation_id": "6360c5f23b4ae429c92409d8",
+            "project_id": "750802"
+        },
+        {
+            "id": "6360c6543b4ae429c92409dc",
+            "metric_definition_id": "6360c5d63b4ae429c92409d7",
+            "time_period_start": "2022-01-05T09:13:07Z",
+            "time_period_end": "2022-02-08T09:13:07Z",
+            "value": 1000.0,
+            "project": "El_CapiTun",
+            "provider": "meeo",
+            "installation_id": "6360c5f23b4ae429c92409d8",
+            "project_id": "750802"
+        },
+        {
+            "id": "6360c63a3b4ae429c92409db",
+            "metric_definition_id": "6360c5d63b4ae429c92409d7",
+            "time_period_start": "2022-04-05T09:13:07Z",
+            "time_period_end": "2022-10-08T09:13:07Z",
+            "value": 1000.0,
+            "project": "El_CapiTun",
+            "provider": "meeo",
+            "installation_id": "6360c5f23b4ae429c92409d8",
+            "project_id": "750802"
+        }
+    ],
+    "links": []
+}
+```
+
+
 ### Errors
 
 Please refer to section [Errors](./api_errors) to see all possible Errors.

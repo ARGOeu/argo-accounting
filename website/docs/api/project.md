@@ -343,6 +343,7 @@ You can search on Projects, to find the ones corresponding to the given search c
 POST accounting-system/projects/search
 Content-Type: application/json
 
+
 ```
 #### Example 1: 
 ```
@@ -376,56 +377,7 @@ Content-Type: application/json
 }
 ```
 
-
-
- 
-The context of the request can be a json object of type ‘query’ or ‘filter’. 
-‘query’ defines a criterion in a specific field of the project. 
- 
-‘query’ can be expressed as a json object :
-```
-{
-  "type":string,
-  "field": string ,
-  "values":primitive,
-  "operand": string  
-}
-```
- 
-In the ‘query’ element we need to define the following properties: 
- 
- 
-| Field          	| Description   	                      | 
-|------------------	|---------------------------------------- |
-| type                  | The type of the search and it’s value is ‘query’ |
-| field | The field of the collection on which we search |
-| values | The value of the equation , and it can be of any type depending on the type of the field we search |
-| operand | The equation we want to apply on the field in order to search results. it’s value can be {eq, neq, lt, lte, gt, gte} |
-
- 
-__Example 1__ defines a search on field title. The ‘query’ searches for projects that have title="Functional and Molecular Characterisation of Breast Cancer Stem Cells"
-‘filter’ defines multiple criteria and the way they are combined . A filter can include criteria of ‘filter’ or ‘query’ types.
-‘filter’ can be expressed as a json object :
-```
-{
-  "type":string,
-  "operator": string ,
-  criteria:array of ‘query’ or ‘filter’ elements
-}
-```
- 
-In the ‘query’ element we need to define the following properties: 
-
-| Field          	| Description   	                      | 
-|------------------	|---------------------------------------- |
-| type | The type of the search and it’s value is ‘filter’ |
-| operator | The operation on which the elements in the criteria will be combined. it’s values is AND or OR  |
-| criteria | The specific subqueries that will be matched by the operator. criteria is an array of objects of ‘query’ or ‘filter’ type |
-
- 
-__Example 2__ defines a ‘filter’ containing criteria both of filter and query type. The ‘filter’ searches for  projects  that have 
-title="TRAJECTORY MODIFICATION IN CHRONIC STROKE PATIENTS"
- OR acronym=’El_CapiTun’
+The context of the request should be a json object. The syntax of the json object , is described <b> <a href="https://argoeu.github.io/argo-accounting/docs/guides/search_filter">here</a></b>
  
 If the operation is successful, you get a list of projects
 
