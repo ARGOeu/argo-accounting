@@ -4,10 +4,13 @@ import com.mongodb.MongoWriteException;
 import io.quarkus.mongodb.panache.PanacheQuery;
 import io.quarkus.panache.common.Page;
 import org.accounting.system.beans.RequestInformation;
+import org.accounting.system.dtos.authorization.CollectionAccessPermissionDto;
 import org.accounting.system.dtos.authorization.request.RoleRequestDto;
 import org.accounting.system.dtos.authorization.response.RoleResponseDto;
 import org.accounting.system.dtos.authorization.update.UpdateRoleRequestDto;
 import org.accounting.system.dtos.pagination.PageResource;
+import org.accounting.system.entities.authorization.AccessPermission;
+import org.accounting.system.entities.authorization.CollectionPermission;
 import org.accounting.system.entities.authorization.Role;
 import org.accounting.system.enums.AccessType;
 import org.accounting.system.enums.Collection;
@@ -21,9 +24,14 @@ import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 import javax.ws.rs.NotFoundException;
 import javax.ws.rs.core.UriInfo;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
+import java.util.function.BinaryOperator;
 import java.util.stream.Collectors;
+
+import static java.util.Comparator.comparing;
+import static java.util.stream.Collectors.groupingBy;
 
 @ApplicationScoped
 public class RoleService {
@@ -188,4 +196,31 @@ public class RoleService {
         return RoleMapper.INSTANCE.roleToResponse(role);
     }
 
+    public Set<CollectionAccessPermissionDto> mergeRoles(Set<Role> roles){
+
+        var permissions = new ArrayList<CollectionPermission>();
+
+       roles
+                .stream()
+                .flatMap(role->role.getCollectionsAccessPermissions().stream())
+                .collect(groupingBy(collectionPermission -> collectionPermission.collection))
+                .forEach((key, value) -> {
+                    var accessPermissions = new ArrayList<AccessPermission>();
+                    value
+                            .stream()
+                            .flatMap(collectionPermission -> collectionPermission.accessPermissions.stream())
+                            .collect(groupingBy(accessPermission -> accessPermission.operation))
+                            .forEach((key1, value1) -> {
+                                var toBeAdded= value1.stream().reduce(BinaryOperator.minBy(comparing(accessPermission -> accessPermission.accessType.precedence)));
+                                accessPermissions.add(toBeAdded.get());
+                            });
+
+                    var collectionPermission = new CollectionPermission();
+                    collectionPermission.accessPermissions = accessPermissions;
+                    collectionPermission.collection = key;
+                    permissions.add(collectionPermission);
+                });
+
+       return RoleMapper.INSTANCE.collectionPermissionsToDto(permissions);
+    }
 }

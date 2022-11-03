@@ -15,7 +15,7 @@ import org.accounting.system.dtos.project.AssociateProjectProviderRequestDto;
 import org.accounting.system.dtos.project.DissociateProjectProviderRequestDto;
 import org.accounting.system.entities.HierarchicalRelation;
 import org.accounting.system.entities.projections.MetricProjection;
-import org.accounting.system.entities.projections.ProjectProjection;
+import org.accounting.system.entities.projections.normal.ProjectProjection;
 import org.accounting.system.enums.Collection;
 import org.accounting.system.repositories.client.ClientRepository;
 import org.accounting.system.services.HierarchicalRelationService;

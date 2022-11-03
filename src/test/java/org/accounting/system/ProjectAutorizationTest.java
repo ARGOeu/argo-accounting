@@ -26,7 +26,7 @@ import org.accounting.system.dtos.metricdefinition.MetricDefinitionResponseDto;
 import org.accounting.system.dtos.pagination.PageResource;
 import org.accounting.system.dtos.project.AssociateProjectProviderRequestDto;
 import org.accounting.system.endpoints.ProjectEndpoint;
-import org.accounting.system.entities.projections.ProjectProjection;
+import org.accounting.system.entities.projections.normal.ProjectProjection;
 import org.accounting.system.enums.ApiMessage;
 import org.accounting.system.mappers.ProviderMapper;
 import org.accounting.system.repositories.client.ClientAccessAlwaysRepository;

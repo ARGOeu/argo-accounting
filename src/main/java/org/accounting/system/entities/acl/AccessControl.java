@@ -2,7 +2,6 @@ package org.accounting.system.entities.acl;
 
 import lombok.EqualsAndHashCode;
 import org.accounting.system.entities.Entity;
-import org.bson.types.ObjectId;
 
 /**
  * An access control (AC) is a list of rules that specifies which clients are granted access to particular entities.
@@ -10,8 +9,6 @@ import org.bson.types.ObjectId;
 
 @EqualsAndHashCode(onlyExplicitlyIncluded = true, callSuper = true)
 public abstract class AccessControl extends Entity {
-
-    private ObjectId id;
 
     /**
      *{@link #getWho() who} is the id of a client that the AccessControl grants access.
@@ -25,13 +22,5 @@ public abstract class AccessControl extends Entity {
 
     public void setWho(String who) {
         this.who = who;
-    }
-
-    public ObjectId getId() {
-        return id;
-    }
-
-    public void setId(ObjectId id) {
-        this.id = id;
     }
 }

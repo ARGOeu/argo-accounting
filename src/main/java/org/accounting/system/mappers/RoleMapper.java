@@ -1,6 +1,7 @@
 package org.accounting.system.mappers;
 
 import org.accounting.system.beans.RequestInformation;
+import org.accounting.system.dtos.authorization.CollectionAccessPermissionDto;
 import org.accounting.system.dtos.authorization.request.RoleRequestDto;
 import org.accounting.system.dtos.authorization.response.RoleResponseDto;
 import org.accounting.system.dtos.authorization.update.UpdateCollectionAccessPermissionDto;
@@ -32,6 +33,10 @@ public interface RoleMapper {
     RoleMapper INSTANCE = Mappers.getMapper( RoleMapper.class );
 
     List<RoleResponseDto> rolesToResponse(List<Role> roles);
+
+    Set<RoleResponseDto> rolesToResponse(Set<Role> roles);
+
+    Set<CollectionAccessPermissionDto> collectionPermissionsToDto(List<CollectionPermission> permissions);
 
     Set<CollectionPermission> updateCollectionPermissionToCollectionPermission(Set<UpdateCollectionAccessPermissionDto> permissions);
 

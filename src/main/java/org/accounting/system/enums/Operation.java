@@ -22,8 +22,5 @@ public enum Operation {
     ASSIGN_ROLE,
     DETACH_ROLE,
     ASSOCIATE,
-    DISSOCIATE,
-    REGISTER,
-    ACCESS_PROVIDER,
-    ACCESS_INSTALLATION;
+    DISSOCIATE;
 }

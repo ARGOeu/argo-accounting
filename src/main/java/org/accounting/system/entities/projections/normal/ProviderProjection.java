@@ -1,13 +1,15 @@
-package org.accounting.system.entities.projections;
+package org.accounting.system.entities.projections.normal;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import org.eclipse.microprofile.openapi.annotations.enums.SchemaType;
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
 
 import java.util.ArrayList;
 import java.util.List;
 
-@Schema(name="ProviderProjectionResponse", description="An object represents a Provider.")
+@Schema(name="ProviderProjectionResponse", description="An object represents a Provider containing the Installations assigned to it.")
+@JsonPropertyOrder({"id", "name", "website", "abbreviation", "logo", "installations" })
 public class ProviderProjection {
 
     @Schema(
@@ -61,6 +63,6 @@ public class ProviderProjection {
 
     public ProviderProjection(){
 
-        installations = new ArrayList<>();
+        this.installations = new ArrayList<>();
     }
 }

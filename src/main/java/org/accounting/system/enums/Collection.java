@@ -28,7 +28,7 @@ public enum Collection {
     Project{
         @Override
         public Set<Operation> availableOperations() {
-            return Set.of(Operation.ASSOCIATE, Operation.DISSOCIATE, Operation.REGISTER, Operation.READ, Operation.ACL);
+            return Set.of(Operation.ASSOCIATE, Operation.DISSOCIATE, Operation.READ, Operation.ACL);
         }
     },
     Provider{

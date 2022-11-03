@@ -10,7 +10,8 @@ import org.accounting.system.dtos.pagination.PageResource;
 import org.accounting.system.entities.Project;
 import org.accounting.system.entities.authorization.Role;
 import org.accounting.system.entities.projections.InstallationProjection;
-import org.accounting.system.entities.projections.ProjectProjection;
+import org.accounting.system.entities.projections.normal.ProjectProjection;
+import org.accounting.system.entities.projections.permissions.ProjectProjectionWithPermissions;
 import org.accounting.system.exceptions.ConflictException;
 import org.accounting.system.mappers.AccessControlMapper;
 import org.accounting.system.mappers.InstallationMapper;
@@ -89,6 +90,13 @@ public class ProjectService implements RoleAccessControlService {
        var projectionQuery = projectRepository.fetchAll(page, size);
 
        return new PageResource<>(projectionQuery, projectionQuery.list(), uriInfo);
+    }
+
+    public PageResource<ProjectProjectionWithPermissions> getClientPermissions(int page, int size, UriInfo uriInfo){
+
+        var projectionQuery = projectRepository.fetchClientPermissions(page, size);
+
+        return new PageResource<>(projectionQuery, projectionQuery.list(), uriInfo);
     }
 
     @Override
