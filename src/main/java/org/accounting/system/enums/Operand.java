@@ -9,7 +9,7 @@ import java.util.regex.Pattern;
 
 public enum Operand {
 
-    EQ("eq"){
+    EQ("eq","=="){
         @Override
         public Bson execute(String field, Object value) {
             if(value instanceof String){
@@ -19,31 +19,31 @@ public enum Operand {
             }
         }
     },
-    LT("lt"){
+    LT("lt","<"){
         @Override
         public Bson execute(String field, Object value) {
             return Filters.lt(field, value);
         }
     },
-    LTE("lte"){
+    LTE("lte","<="){
         @Override
         public Bson execute(String field, Object value) {
             return Filters.lte(field, value);
         }
     },
-    GT("gt"){
+    GT("gt",">"){
         @Override
         public Bson execute(String field, Object value) {
             return Filters.gt(field, value);
         }
     },
-    GTE("gte"){
+    GTE("gte",">="){
         @Override
         public Bson execute(String field, Object value) {
             return Filters.gte(field, value);
         }
     },
-    NEQ("neq"){
+    NEQ("neq","!="){
         @Override
         public Bson execute(String field, Object value) {
             return Filters.ne(field, value);
@@ -53,14 +53,22 @@ public enum Operand {
 
 
     public final String label;
-    Operand(String value) {
+    public final String displayValue;
+
+    Operand(String value,String display) {
 
         label = value;
+        displayValue=display;
     }
     public String getLabel(){
         return label;
 
     }
+
+    public String getDisplayValue() {
+        return displayValue;
+    }
+
     public static Operand getEnumNameForValue(String value){
         List<Operand> values = Arrays.asList(Operand.values());
         for(Operand op:values){
@@ -78,4 +86,6 @@ public enum Operand {
         Pattern pattern = Pattern.compile(patternString, Pattern.CASE_INSENSITIVE);
         return Filters.eq(fieldName, pattern);
     }
+
+
 }

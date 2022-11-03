@@ -61,26 +61,6 @@ public class ProviderProjectionWithPermissions {
     public String logo;
 
     @Schema(
-            type = SchemaType.STRING,
-            implementation = String.class,
-            description = "The Project ID.",
-            example = "447535"
-    )
-    @JsonProperty("project_id")
-    @BsonProperty("project_id")
-    public String projectId;
-
-    @Schema(
-            type = SchemaType.STRING,
-            implementation = String.class,
-            description = "The Project acronym.",
-            example = "EGI-ACE"
-    )
-    @JsonProperty("project_acronym")
-    @BsonProperty("project_acronym")
-    public String projectAcronym;
-
-    @Schema(
             type = SchemaType.ARRAY,
             implementation = ProjectionInstallationWithPermissions.class,
             description = "The Installation associated with a Provider."

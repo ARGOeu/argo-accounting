@@ -17,16 +17,8 @@ The fields that need to be defined , in order the syntax to be valid are:
 |------------------	|---------------------------------------- |
 | type             	| The type of the search . In the case the search is a combination of fields of the collection ,  it’s value is ‘query’ |
 | field         	|  The field of the collection on which we search
-| value         	| The value of the equation , and it can be of any type depending on the type of the field we search
+| values         	| The value of the equation , and it can be of any type depending on the type of the field we search
 | operand      	| The equation we want to apply on the field in order to search results. it’s value can be {eq, neq, lt, lte, gt, gte}
-
-
- type
-The type of the search and it’s value is ‘filter’
-operator
-The operation on which the elements in the criteria will be combined. it’s values is AND or OR 
-criteria
-The specific subqueries that will be matched by the operator. criteria is an array of objects of ‘query’ or ‘filter’ type
 
 
 The syntax should be as: 
@@ -34,9 +26,11 @@ The syntax should be as:
 ```
 {
   "type":string,
-  "operator": string ,
-  criteria:array of ‘query’ or ‘filter’ elements
+  "field": string ,
+  "values":primitive,
+  "operand": string  
 }
+
 
 
 ```
@@ -75,7 +69,7 @@ The syntax should be as:
 {
   "type":string,
   "operator": string ,
-  criteria:array of ‘query’ or ‘filter’ elements
+  "criteria":array of ‘query’ or ‘filter’ elements
 }
 
 ```
