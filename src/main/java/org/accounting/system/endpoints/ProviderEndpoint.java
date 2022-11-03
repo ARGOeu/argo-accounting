@@ -8,6 +8,7 @@ import org.accounting.system.dtos.pagination.PageResource;
 import org.accounting.system.dtos.provider.ProviderRequestDto;
 import org.accounting.system.dtos.provider.ProviderResponseDto;
 import org.accounting.system.dtos.provider.UpdateProviderRequestDto;
+import org.accounting.system.entities.projections.ProviderProjectionWithProjectInfo;
 import org.accounting.system.enums.Collection;
 import org.accounting.system.enums.Operation;
 import org.accounting.system.interceptors.annotations.AccessPermission;
@@ -394,7 +395,7 @@ public class ProviderEndpoint {
             responseCode = "200",
             description = "The corresponding Providers.",
             content = @Content(schema = @Schema(
-                    type = SchemaType.ARRAY,
+                    type = SchemaType.OBJECT,
                     implementation = PageableProviderResponseDto.class)))
     @APIResponse(
             responseCode = "401",
@@ -445,14 +446,14 @@ public class ProviderEndpoint {
 
     @Tag(name = "Provider")
     @org.eclipse.microprofile.openapi.annotations.Operation(
-            summary = "get all the assigned providers",
+            summary = "Get all the assigned providers",
             description = "Get All assigned Providers")
     @APIResponse(
             responseCode = "200",
             description = "The corresponding Providers.",
             content = @Content(schema = @Schema(
-                    type = SchemaType.ARRAY,
-                    implementation = PageableProviderResponseDto.class)))
+                    type = SchemaType.OBJECT,
+                    implementation = ProviderProjectionWithProjectInfo.class)))
     @APIResponse(
             responseCode = "401",
             description = "Client has not been authenticated.",
@@ -474,14 +475,12 @@ public class ProviderEndpoint {
     @SecurityRequirement(name = "Authentication")
 
     @GET
-    @Path("/assigned")
+    @Path("/all")
     @Produces(value = MediaType.APPLICATION_JSON)
     @Consumes(value = MediaType.APPLICATION_JSON)
 
     public Response getProvidersAssigned(
-            @Valid @NotNull(message = "The request body is empty.") @RequestBody(content = @Content(
-                    schema = @Schema(implementation = String.class),
-                    mediaType = MediaType.APPLICATION_JSON))
+
             @Parameter(name = "page", in = QUERY,
                     description = "Indicates the page number. Page number must be >= 1.") @DefaultValue("1") @Min(value = 1, message = "Page number must be >= 1.") @QueryParam("page") int page,
             @Parameter(name = "size", in = QUERY,
@@ -495,21 +494,35 @@ public class ProviderEndpoint {
         return Response.ok().entity(response).build();
     }
 
-public static class PageableProviderResponseDto extends PageResource<ProviderResponseDto> {
+    public static class PageableProviderResponseDto extends PageResource<ProviderResponseDto> {
 
-    private List<ProviderResponseDto> content;
+        private List<ProviderResponseDto> content;
 
-    @Override
-    public List<ProviderResponseDto> getContent() {
-        return content;
+        @Override
+        public List<ProviderResponseDto> getContent() {
+            return content;
+        }
+
+        @Override
+        public void setContent(List<ProviderResponseDto> content) {
+            this.content = content;
+        }
+
     }
 
-    @Override
-    public void setContent(List<ProviderResponseDto> content) {
-        this.content = content;
+    public static class PageableProviderProjectionWithProjectInfo extends PageResource<ProviderProjectionWithProjectInfo> {
+
+        private List<ProviderProjectionWithProjectInfo> content;
+
+        @Override
+        public List<ProviderProjectionWithProjectInfo> getContent() {
+            return content;
+        }
+
+        @Override
+        public void setContent(List<ProviderProjectionWithProjectInfo> content) {
+            this.content = content;
+        }
+
     }
-
-}
-
-
 }

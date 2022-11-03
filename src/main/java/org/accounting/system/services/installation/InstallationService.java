@@ -237,7 +237,7 @@ public class InstallationService implements RoleAccessControlService {
 
         if(optional.isPresent()){
 
-            throw new ConflictException("There is a Provider Access Control for the client : "+who);
+            throw new ConflictException("There is an Installation Access Control for the client : "+who);
         }
 
         var accessControl = AccessControlMapper.INSTANCE.requestToRoleAccessControl(request);

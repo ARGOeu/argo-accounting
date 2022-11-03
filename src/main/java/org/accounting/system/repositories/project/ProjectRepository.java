@@ -12,7 +12,10 @@ import org.accounting.system.entities.acl.RoleAccessControl;
 import org.accounting.system.entities.authorization.Role;
 import org.accounting.system.entities.projections.InstallationProjection;
 import org.accounting.system.entities.projections.MongoQuery;
-import org.accounting.system.entities.projections.ProjectProjection;
+import org.accounting.system.entities.projections.normal.ProjectProjection;
+import org.accounting.system.entities.projections.permissions.ProjectProjectionWithPermissions;
+import org.accounting.system.entities.projections.permissions.ProjectionInstallationWithPermissions;
+import org.accounting.system.entities.projections.permissions.ProviderProjectionWithPermissions;
 import org.accounting.system.entities.provider.Provider;
 import org.accounting.system.enums.AccessType;
 import org.accounting.system.enums.Collection;
@@ -22,6 +25,7 @@ import org.accounting.system.exceptions.ConflictException;
 import org.accounting.system.repositories.HierarchicalRelationRepository;
 import org.accounting.system.repositories.installation.InstallationRepository;
 import org.accounting.system.repositories.provider.ProviderRepository;
+import org.accounting.system.services.authorization.RoleService;
 import org.bson.Document;
 import org.bson.conversions.Bson;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
@@ -50,6 +54,9 @@ public class ProjectRepository extends ProjectModulator {
 
     @Inject
     TokenIntrospection tokenIntrospection;
+
+    @Inject
+    RoleService roleService;
 
     @ConfigProperty(name = "key.to.retrieve.id.from.access.token")
     String key;
@@ -339,6 +346,61 @@ public class ProjectRepository extends ProjectModulator {
                 .first();
 
         var projectionQuery = new MongoQuery<ProjectProjection>();
+
+        projectionQuery.list = projects;
+        projectionQuery.index = page;
+        projectionQuery.size = size;
+        projectionQuery.count = count == null ? 0L : Long.parseLong(count.get("count").toString());
+        projectionQuery.page = Page.of(page, size);
+
+        return projectionQuery;
+    }
+
+    public PanacheQuery<ProjectProjectionWithPermissions> fetchClientPermissions(int page, int size){
+
+        var eqAccessControl =Aggregates.match(Filters.or(
+                Filters.and(Filters.eq("roleAccessControls.who", tokenIntrospection.getJsonObject().getString(key)),
+                        Filters.eq("roleAccessControls.roles.collections_access_permissions.collection", Collection.Installation.name()),
+                        Filters.eq("roleAccessControls.roles.collections_access_permissions.access_permissions.operation", Operation.READ.name()),
+                        Filters.eq("roleAccessControls.roles.collections_access_permissions.access_permissions.access_type", AccessType.ALWAYS.name())),
+
+                Filters.and(Filters.eq("providers.roleAccessControls.who", tokenIntrospection.getJsonObject().getString(key)),
+                        Filters.eq("providers.roleAccessControls.roles.collections_access_permissions.collection", Collection.Installation.name()),
+                        Filters.eq("providers.roleAccessControls.roles.collections_access_permissions.access_permissions.operation", Operation.READ.name()),
+                        Filters.eq("providers.roleAccessControls.roles.collections_access_permissions.access_permissions.access_type", AccessType.ALWAYS.name())),
+
+                Filters.and(Filters.eq("providers.installations.roleAccessControls.who", tokenIntrospection.getJsonObject().getString(key)),
+                        Filters.eq("providers.installations.roleAccessControls.roles.collections_access_permissions.collection", Collection.Installation.name()),
+                        Filters.eq("providers.installations.roleAccessControls.roles.collections_access_permissions.access_permissions.operation", Operation.READ.name()),
+                        Filters.eq("providers.installations.roleAccessControls.roles.collections_access_permissions.access_permissions.access_type", AccessType.ALWAYS.name()))));
+
+        var projects= projectRepository.getMongoCollection()
+                .aggregate(List.of(eqAccessControl, Aggregates.skip(size * (page)), Aggregates.limit(size)),  ProjectProjectionWithPermissions.class)
+                .into(new ArrayList<>());
+
+        Document count = projectRepository.getMongoCollection()
+                .aggregate(List.of(eqAccessControl,Aggregates.count()))
+                .first();
+
+        for(ProjectProjectionWithPermissions project: projects){
+
+            project.roleAccessControls.removeIf(roleAccessControl -> !roleAccessControl.getWho().equals(tokenIntrospection.getJsonObject().getString(key)));
+            project.permissions = roleService.mergeRoles(project.roleAccessControls.stream().flatMap(acl->acl.getRoles().stream()).collect(Collectors.toSet()));
+
+            for (ProviderProjectionWithPermissions provider: project.providers){
+
+                provider.roleAccessControls.removeIf(roleAccessControl -> !roleAccessControl.getWho().equals(tokenIntrospection.getJsonObject().getString(key)));
+                provider.permissions = roleService.mergeRoles(provider.roleAccessControls.stream().flatMap(acl->acl.getRoles().stream()).collect(Collectors.toSet()));
+
+                for (ProjectionInstallationWithPermissions installation: provider.installations){
+
+                    installation.roleAccessControls.removeIf(roleAccessControl -> !roleAccessControl.getWho().equals(tokenIntrospection.getJsonObject().getString(key)));
+                    installation.permissions = roleService.mergeRoles(installation.roleAccessControls.stream().flatMap(acl->acl.getRoles().stream()).collect(Collectors.toSet()));
+                }
+            }
+        }
+
+        var projectionQuery = new MongoQuery<ProjectProjectionWithPermissions>();
 
         projectionQuery.list = projects;
         projectionQuery.index = page;

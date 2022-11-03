@@ -1,13 +1,24 @@
-package org.accounting.system.entities.projections;
+package org.accounting.system.entities.projections.permissions;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonPropertyOrder;
+import org.accounting.system.dtos.authorization.CollectionAccessPermissionDto;
+import org.accounting.system.entities.acl.RoleAccessControl;
 import org.bson.codecs.pojo.annotations.BsonProperty;
 import org.bson.types.ObjectId;
 import org.eclipse.microprofile.openapi.annotations.enums.SchemaType;
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
 
-@Schema(name="InstallationProjectionResponse", description="An object represents the stored Installation.")
-public class ProjectionInstallation {
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
+@Schema(name="InstallationPermissionResponse", description="An object represents the stored Installation. " +
+        "It also encloses the client's permissions upon that Installation, if any.")
+@JsonPropertyOrder({"id", "infrastructure", "installation", "unit_of_access", "permissions" })
+public class ProjectionInstallationWithPermissions {
 
     @Schema(
             type = SchemaType.STRING,
@@ -44,4 +55,14 @@ public class ProjectionInstallation {
     @JsonProperty("unit_of_access")
     @BsonProperty("unit_of_access")
     public ObjectId unitOfAccess;
+
+    @JsonIgnore
+    public List<RoleAccessControl> roleAccessControls;
+
+    public Set<CollectionAccessPermissionDto> permissions;
+
+    public ProjectionInstallationWithPermissions() {
+        this.roleAccessControls = new ArrayList<>();
+        this.permissions = new HashSet<>();
+    }
 }

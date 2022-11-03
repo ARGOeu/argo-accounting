@@ -1,6 +1,10 @@
 package org.accounting.system.repositories.provider;
 
-import com.mongodb.client.model.*;
+import com.mongodb.client.model.Accumulators;
+import com.mongodb.client.model.Aggregates;
+import com.mongodb.client.model.Filters;
+import com.mongodb.client.model.UpdateOptions;
+import com.mongodb.client.model.Updates;
 import io.quarkus.mongodb.panache.PanacheQuery;
 import io.quarkus.oidc.TokenIntrospection;
 import io.quarkus.panache.common.Page;
@@ -8,6 +12,7 @@ import org.accounting.system.entities.acl.RoleAccessControl;
 import org.accounting.system.entities.authorization.Role;
 import org.accounting.system.entities.projections.InstallationProjection;
 import org.accounting.system.entities.projections.MongoQuery;
+import org.accounting.system.entities.projections.ProviderProjectionWithProjectInfo;
 import org.accounting.system.entities.provider.Provider;
 import org.accounting.system.enums.AccessType;
 import org.accounting.system.enums.Collection;
@@ -20,6 +25,7 @@ import org.eclipse.microprofile.config.inject.ConfigProperty;
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -219,7 +225,7 @@ public class ProviderRepository extends ProviderModulator {
         return precedence.access;
     }
 
-    public PanacheQuery<Provider> fetchSystemProviders(int page, int size) {
+    public PanacheQuery<ProviderProjectionWithProjectInfo> fetchSystemProviders(int page, int size) {
 
         //TODO We have to create an index for the following query
         var eqAccessControl = Aggregates.match(Filters.or(
@@ -236,21 +242,20 @@ public class ProviderRepository extends ProviderModulator {
 
         var unwind = Aggregates
                 .unwind("$providers");
-
         var replaceRoot = Aggregates
-                .replaceRoot("$providers");
-        var group =Aggregates.group( "$_id", Accumulators.first("name","$name"),Accumulators.first("website","$website"),
-                Accumulators.first("abbreviation","$abbreviation"),Accumulators.first("logo","$logo"));
+                .replaceRoot(new Document("$mergeObjects", Arrays.asList(new Document("project_id", "$_id").append("project_acronym", "$acronym"), "$providers")));
 
-        var providers= getMongoCollection("Project")
-                .aggregate(List.of(eqAccessControl,  unwind,eqAccessControl, replaceRoot,group, Aggregates.skip(size * (page)), Aggregates.limit(size)),  Provider.class)
+        var providers= projectRepository
+                .getMongoCollection()
+                .aggregate(List.of(eqAccessControl, unwind, eqAccessControl, replaceRoot, Aggregates.skip(size * (page)), Aggregates.limit(size)),  ProviderProjectionWithProjectInfo.class)
                 .into(new ArrayList<>());
 
-        Document count = getMongoCollection("Project")
-                .aggregate(List.of(eqAccessControl,unwind,eqAccessControl,replaceRoot,group,Aggregates.count()))
+        Document count = projectRepository
+                .getMongoCollection()
+                .aggregate(List.of(eqAccessControl,unwind,eqAccessControl,replaceRoot,Aggregates.count()))
                 .first();
 
-        var projectionQuery = new MongoQuery<Provider>();
+        var projectionQuery = new MongoQuery<ProviderProjectionWithProjectInfo>();
 
         projectionQuery.list = providers;
         projectionQuery.index = page;

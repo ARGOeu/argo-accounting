@@ -11,6 +11,7 @@ import org.accounting.system.dtos.provider.ProviderResponseDto;
 import org.accounting.system.dtos.provider.UpdateProviderRequestDto;
 import org.accounting.system.entities.authorization.Role;
 import org.accounting.system.entities.projections.InstallationProjection;
+import org.accounting.system.entities.projections.ProviderProjectionWithProjectInfo;
 import org.accounting.system.entities.provider.Provider;
 import org.accounting.system.exceptions.ConflictException;
 import org.accounting.system.mappers.AccessControlMapper;
@@ -265,11 +266,11 @@ public class ProviderService implements RoleAccessControlService {
         return new PageResource<>(projectionQuery, ProviderMapper.INSTANCE.providersToResponse(projectionQuery.list()), uriInfo);
     }
 
-    public PageResource<ProviderResponseDto> getSystemProviders(int page, int size, UriInfo uriInfo)  {
+    public PageResource<ProviderProjectionWithProjectInfo> getSystemProviders(int page, int size, UriInfo uriInfo)  {
 
         var projectionQuery = providerRepository.fetchSystemProviders(page, size);
 
-        return new PageResource<>(projectionQuery, ProviderMapper.INSTANCE.providersToResponse(projectionQuery.list()), uriInfo);
+        return new PageResource<>(projectionQuery, projectionQuery.list(), uriInfo);
     }
 
     @Override

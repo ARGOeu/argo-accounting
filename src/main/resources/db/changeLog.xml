@@ -303,11 +303,48 @@
                 {
                 access_permissions: [
                 {
+                operation: "CREATE",
+                access_type: "ALWAYS"
+                },
+                {
+                operation: "UPDATE",
+                access_type: "ENTITY"
+                },
+                {
+                operation: "DELETE",
+                access_type: "ENTITY"
+                },
+                {
+                operation: "READ",
+                access_type: "ALWAYS"
+                },
+                {
                 operation: "ACL",
                 access_type: "ALWAYS"
                 }
                 ],
                 collection: "Provider"
+                },
+                {
+                access_permissions: [
+                {
+                operation: "CREATE",
+                access_type: "ALWAYS"
+                },
+                {
+                operation: "UPDATE",
+                access_type: "ENTITY"
+                },
+                {
+                operation: "DELETE",
+                access_type: "ENTITY"
+                },
+                {
+                operation: "READ",
+                access_type: "ALWAYS"
+                }
+                ],
+                collection: "MetricDefinition"
                 }]
                 }
             </ext:document>

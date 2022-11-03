@@ -9,10 +9,12 @@ import org.accounting.system.dtos.authorization.request.AssignRoleRequestDto;
 import org.accounting.system.dtos.authorization.request.DetachRoleRequestDto;
 import org.accounting.system.dtos.client.ClientResponseDto;
 import org.accounting.system.dtos.pagination.PageResource;
+import org.accounting.system.entities.projections.permissions.ProjectProjectionWithPermissions;
 import org.accounting.system.enums.Collection;
 import org.accounting.system.enums.Operation;
 import org.accounting.system.interceptors.annotations.AccessPermission;
 import org.accounting.system.repositories.client.ClientRepository;
+import org.accounting.system.services.ProjectService;
 import org.accounting.system.services.client.ClientService;
 import org.apache.commons.lang3.StringUtils;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
@@ -69,6 +71,9 @@ public class ClientEndpoint {
 
     @Inject
     UserInfo userInfo;
+
+    @Inject
+    ProjectService projectService;
 
     @ConfigProperty(name = "key.to.retrieve.id.from.access.token")
     String key;
@@ -298,6 +303,40 @@ public class ClientEndpoint {
         return Response.ok().entity(response).build();
     }
 
+    @Tag(name = "Client")
+    @org.eclipse.microprofile.openapi.annotations.Operation(
+            summary = "Returns the client permissions.",
+            description = "This operation returns the client's permissions upon different Projects, Providers, and Installations. By default, the first page of 10 Projects will be returned. " +
+                    "You can tune the default values by using the query parameters page and size.")
+    @APIResponse(
+            responseCode = "200",
+            description = "Client Permissions.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = PageableProjectWithPermissions.class)))
+    @APIResponse(
+            responseCode = "500",
+            description = "Internal Server Errors.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+
+    @GET
+    @Path("/me")
+    @Produces(value = MediaType.APPLICATION_JSON)
+    @AccessPermission(collection = Collection.Client, operation = Operation.READ)
+    public Response getClientPermissions(@Parameter(name = "page", in = QUERY,
+            description = "Indicates the page number. Page number must be >= 1.") @DefaultValue("1") @Min(value = 1, message = "Page number must be >= 1.") @QueryParam("page") int page,
+                               @Parameter(name = "size", in = QUERY,
+                                       description = "The page size.") @DefaultValue("10") @Min(value = 1, message = "Page size must be between 1 and 100.")
+                               @Max(value = 100, message = "Page size must be between 1 and 100.") @QueryParam("size") int size,
+                               @Context UriInfo uriInfo){
+
+        var serverInfo = new ResteasyUriInfo(serverUrl.concat(basePath).concat(uriInfo.getPath()), basePath);
+
+        return Response.ok().entity(projectService.getClientPermissions(page-1, size, serverInfo)).build();
+    }
+
     public static class PageableClientResponseDto extends PageResource<ClientResponseDto> {
 
         private List<ClientResponseDto> content;
@@ -309,6 +348,21 @@ public class ClientEndpoint {
 
         @Override
         public void setContent(List<ClientResponseDto> content) {
+            this.content = content;
+        }
+    }
+
+    public static class PageableProjectWithPermissions extends PageResource<ProjectProjectionWithPermissions> {
+
+        private List<ProjectProjectionWithPermissions> content;
+
+        @Override
+        public List<ProjectProjectionWithPermissions> getContent() {
+            return content;
+        }
+
+        @Override
+        public void setContent(List<ProjectProjectionWithPermissions> content) {
             this.content = content;
         }
     }
