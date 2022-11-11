@@ -7,11 +7,11 @@ sidebar_position: 1
 
 ### Steps to Register into Accounting Service
 
-**_1. Authenticate yourself_**
-First you need to authenticate yourself to Accounting Service API. Instructions are provided <b><a href="https://argoeu.github.io/argo-accounting/docs/authentication/authenticating_clients">here</a></b>
-Once you gain an access token, copy it 
-**_2. Register yourself_**
-Then you need to apply a request to the api, in order to register yourself. <b> For more details, how to syntax the request, see <a href="https://argoeu.github.io/argo-accounting/docs/api/client#post---client-registration">here</a></b>
+**_1. Authenticate yourself_** <br/>
+First you need to authenticate yourself to EOSC Core Infrastructure Proxy. Instructions are provided <b><a href="https://argoeu.github.io/argo-accounting/docs/authentication/authenticating_clients">here</a></b><br/>
+Once you gain an access token, copy it  <br/>
+**_2. Register yourself_** <br/>
+Then you need to apply a request to the Accounting Service API, in order to register yourself. <b> For more details, how to syntax the request, see <a href="https://argoeu.github.io/argo-accounting/docs/api/client#post---client-registration">here</a></b>.<br/>
 
 Once you register the Accounting Service, you can perform the follow actions: 
 
