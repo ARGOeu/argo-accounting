@@ -6,10 +6,13 @@ import io.quarkus.mongodb.panache.PanacheMongoRepository;
 import io.quarkus.mongodb.panache.PanacheQuery;
 import io.quarkus.panache.common.Page;
 import io.quarkus.panache.common.Sort;
+import io.vavr.collection.Array;
 import org.accounting.system.entities.Metric;
 import org.accounting.system.entities.projections.MetricProjection;
 import org.accounting.system.entities.projections.MongoQuery;
 import org.accounting.system.util.Utility;
+import org.apache.commons.lang3.ObjectUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.bson.Document;
 import org.bson.conversions.Bson;
 import org.bson.types.ObjectId;
@@ -118,13 +121,21 @@ public class MetricRepository extends MetricModulator {
         return projectionQuery;
     }
 
-    public PanacheQuery<MetricProjection> findByExternalId(final String externalId, int page, int size, String start, String end) {
+    public PanacheQuery<MetricProjection> findByExternalId(final String externalId, int page, int size, String start, String end, String metricDefinitionId) {
 
-        //Bson regex = Aggregates.match(Filters.regex("resource_id", externalId + "[.\\s]"));
-        Bson regex = Aggregates.match(Filters.and
-                (Filters.regex("resource_id", "\\b" + externalId + "\\b"+"(?![-])"),
-                        Filters.and(Filters.gte("time_period_start", Utility.stringToInstant(start)), Filters.lte("time_period_start", Utility.stringToInstant(end))),
-                                Filters.and(Filters.gte("time_period_end", Utility.stringToInstant(start)), Filters.lte("time_period_end", Utility.stringToInstant(end)))));
+        var filters = Array.of(Filters.regex("resource_id", "\\b" + externalId + "\\b"+"(?![-])"));
+
+        if(ObjectUtils.allNotNull(start, end) && Utility.isDate(start, end) && Utility.isBefore(start, end)) {
+            filters = filters.append(Filters.and(Filters.gte("time_period_start", Utility.stringToInstant(start)), Filters.lte("time_period_start", Utility.stringToInstant(end))));
+            filters = filters.append(Filters.and(Filters.gte("time_period_end", Utility.stringToInstant(start)), Filters.lte("time_period_end", Utility.stringToInstant(end))));
+        }
+
+        if(StringUtils.isNotEmpty(metricDefinitionId)){
+
+            filters = filters.append(Filters.eq("metric_definition_id", metricDefinitionId));
+        }
+
+        Bson regex = Aggregates.match(Filters.and(filters));
 
         List<MetricProjection> projections = getMongoCollection()
                 .aggregate(List

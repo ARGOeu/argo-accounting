@@ -18,6 +18,7 @@ import org.accounting.system.entities.projections.MetricProjection;
 import org.accounting.system.entities.projections.normal.ProjectProjection;
 import org.accounting.system.enums.Collection;
 import org.accounting.system.repositories.client.ClientRepository;
+import org.accounting.system.repositories.metricdefinition.MetricDefinitionRepository;
 import org.accounting.system.services.HierarchicalRelationService;
 import org.accounting.system.services.MetricService;
 import org.accounting.system.services.ProjectService;
@@ -150,6 +151,8 @@ public class ProjectEndpoint {
             @Parameter(name = "size", in = QUERY,
                     description = "The page size.") @DefaultValue("10") @Min(value = 1, message = "Page size must be between 1 and 100.")
             @Max(value = 100, message = "Page size must be between 1 and 100.") @QueryParam("size") int size,
+            @Parameter(name = "metric-definition-id", in = QUERY, example = "507f1f77bcf86cd799439011",
+                    description = "The Metric Definition that the Metrics are related to.")  @QueryParam("metric-definition-id") @NotFoundEntity(repository = MetricDefinitionRepository.class, message = "There is no Metric Definition with the following id:") String metricDefinitionId,
             @Parameter(name = "start", in = QUERY, example = "2020-01-01",
                     description = "The inclusive start date for the query in the format YYYY-MM-DD. Cannot be after end.")  @QueryParam("start") String start,
             @Parameter(name = "end", in = QUERY, example = "2020-12-31",
@@ -158,7 +161,58 @@ public class ProjectEndpoint {
 
         var serverInfo = new ResteasyUriInfo(serverUrl.concat(basePath).concat(uriInfo.getPath()), basePath);
 
-        var response = metricService.fetchAllMetrics(id, page - 1, size, serverInfo, start, end);
+        var response = metricService.fetchAllMetrics(id, page - 1, size, serverInfo, start, end, metricDefinitionId);
+
+        return Response.ok().entity(response).build();
+    }
+
+    @Tag(name = "Project")
+    @Operation(
+            summary = "Returns Project's Metric Definitions.",
+            description = "This operation is responsible for returning Project's Metric Definitions. " +
+                    "By default, the first page of 10 Metric Definitions will be returned. " +
+                    "You can tune the default values by using the query parameters page and size.")
+    @APIResponse(
+            responseCode = "200",
+            description = "All Project's Metric Definitions.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = MetricDefinitionEndpoint.PageableMetricDefinitionResponseDto.class)))
+    @APIResponse(
+            responseCode = "401",
+            description = "Client has not been authenticated.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "500",
+            description = "Internal Server Errors.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @SecurityRequirement(name = "Authentication")
+
+    @GET
+    @Path("/{project_id}/metric-definitions")
+    @Produces(value = MediaType.APPLICATION_JSON)
+    public Response getAllProjectMetricDefinitions(
+            @Parameter(
+                    description = "Τhe Project id.",
+                    required = true,
+                    example = "704029",
+                    schema = @Schema(type = SchemaType.STRING))
+            @PathParam("project_id")
+            @Valid
+            @AccessProject(collection = Collection.Metric, operation = READ) String id,
+            @Parameter(name = "page", in = QUERY,
+                    description = "Indicates the page number. Page number must be >= 1.") @DefaultValue("1") @Min(value = 1, message = "Page number must be >= 1.") @QueryParam("page") int page,
+            @Parameter(name = "size", in = QUERY,
+                    description = "The page size.") @DefaultValue("10") @Min(value = 1, message = "Page size must be between 1 and 100.")
+            @Max(value = 100, message = "Page size must be between 1 and 100.") @QueryParam("size") int size, @Context UriInfo uriInfo) {
+
+        var serverInfo = new ResteasyUriInfo(serverUrl.concat(basePath).concat(uriInfo.getPath()), basePath);
+
+        var response = projectService.fetchAllMetricDefinitions(id, page - 1, size, serverInfo);
 
         return Response.ok().entity(response).build();
     }
@@ -217,6 +271,8 @@ public class ProjectEndpoint {
             @Parameter(name = "size", in = QUERY,
                     description = "The page size.") @DefaultValue("10") @Min(value = 1, message = "Page size must be between 1 and 100.")
             @Max(value = 100, message = "Page size must be between 1 and 100.") @QueryParam("size") int size,
+            @Parameter(name = "metric-definition-id", in = QUERY, example = "507f1f77bcf86cd799439011",
+                    description = "The Metric Definition that the Metrics are related to.")  @QueryParam("metric-definition-id") @NotFoundEntity(repository = MetricDefinitionRepository.class, message = "There is no Metric Definition with the following id:") String metricDefinitionId,
             @Parameter(name = "start", in = QUERY, example = "2020-01-01",
                     description = "The inclusive start date for the query in the format YYYY-MM-DD. Cannot be after end.")  @QueryParam("start") String start,
             @Parameter(name = "end", in = QUERY, example = "2020-12-31",
@@ -225,7 +281,63 @@ public class ProjectEndpoint {
 
         var serverInfo = new ResteasyUriInfo(serverUrl.concat(basePath).concat(uriInfo.getPath()), basePath);
 
-        var response = metricService.fetchAllMetrics(projectId + HierarchicalRelation.PATH_SEPARATOR + providerId, page - 1, size, serverInfo, start, end);
+        var response = metricService.fetchAllMetrics(projectId + HierarchicalRelation.PATH_SEPARATOR + providerId, page - 1, size, serverInfo, start, end, metricDefinitionId);
+
+        return Response.ok().entity(response).build();
+    }
+
+    @Tag(name = "Provider")
+    @Operation(
+            summary = "Returns Provider's Metric Definitions.",
+            description = "This operation is responsible for returning Provider's Metric Definitions. " +
+                    "By default, the first page of 10 Metric Definitions will be returned. " +
+                    "You can tune the default values by using the query parameters page and size.")
+    @APIResponse(
+            responseCode = "200",
+            description = "All Provider's Metric Definitions.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = MetricDefinitionEndpoint.PageableMetricDefinitionResponseDto.class)))
+    @APIResponse(
+            responseCode = "401",
+            description = "Client has not been authenticated.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "500",
+            description = "Internal Server Errors.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @SecurityRequirement(name = "Authentication")
+
+    @GET
+    @Path("/{project_id}/providers/{provider_id}/metric-definitions")
+    @Produces(value = MediaType.APPLICATION_JSON)
+    @AccessProvider(collection = Collection.Metric, operation = READ)
+    public Response getAllProviderMetricDefinitions(
+            @Parameter(
+                    description = "Τhe Project id to which the Provider belongs.",
+                    required = true,
+                    example = "704029",
+                    schema = @Schema(type = SchemaType.STRING))
+            @PathParam("project_id") String projectId,
+            @Parameter(
+                    description = "Τhe Provider id with which you can request all the Metrics that have been assigned to it.",
+                    required = true,
+                    example = "grnet",
+                    schema = @Schema(type = SchemaType.STRING))
+            @PathParam("provider_id") String providerId,
+            @Parameter(name = "page", in = QUERY,
+                    description = "Indicates the page number. Page number must be >= 1.") @DefaultValue("1") @Min(value = 1, message = "Page number must be >= 1.") @QueryParam("page") int page,
+            @Parameter(name = "size", in = QUERY,
+                    description = "The page size.") @DefaultValue("10") @Min(value = 1, message = "Page size must be between 1 and 100.")
+            @Max(value = 100, message = "Page size must be between 1 and 100.") @QueryParam("size") int size, @Context UriInfo uriInfo) {
+
+        var serverInfo = new ResteasyUriInfo(serverUrl.concat(basePath).concat(uriInfo.getPath()), basePath);
+
+        var response = providerService.fetchAllMetricDefinitions(projectId, providerId, page - 1, size, serverInfo);
 
         return Response.ok().entity(response).build();
     }

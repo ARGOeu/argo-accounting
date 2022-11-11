@@ -1,5 +1,6 @@
 package org.accounting.system.repositories.project;
 
+import com.mongodb.client.model.Accumulators;
 import com.mongodb.client.model.Aggregates;
 import com.mongodb.client.model.Filters;
 import com.mongodb.client.model.Updates;
@@ -8,6 +9,7 @@ import io.quarkus.mongodb.panache.PanacheQuery;
 import io.quarkus.oidc.TokenIntrospection;
 import io.quarkus.panache.common.Page;
 import org.accounting.system.entities.HierarchicalRelation;
+import org.accounting.system.entities.MetricDefinition;
 import org.accounting.system.entities.acl.RoleAccessControl;
 import org.accounting.system.entities.authorization.Role;
 import org.accounting.system.entities.projections.InstallationProjection;
@@ -24,6 +26,7 @@ import org.accounting.system.enums.RelationType;
 import org.accounting.system.exceptions.ConflictException;
 import org.accounting.system.repositories.HierarchicalRelationRepository;
 import org.accounting.system.repositories.installation.InstallationRepository;
+import org.accounting.system.repositories.metric.MetricRepository;
 import org.accounting.system.repositories.provider.ProviderRepository;
 import org.accounting.system.services.authorization.RoleService;
 import org.bson.Document;
@@ -57,6 +60,9 @@ public class ProjectRepository extends ProjectModulator {
 
     @Inject
     RoleService roleService;
+
+    @Inject
+    MetricRepository metricRepository;
 
     @ConfigProperty(name = "key.to.retrieve.id.from.access.token")
     String key;
@@ -403,6 +409,42 @@ public class ProjectRepository extends ProjectModulator {
         var projectionQuery = new MongoQuery<ProjectProjectionWithPermissions>();
 
         projectionQuery.list = projects;
+        projectionQuery.index = page;
+        projectionQuery.size = size;
+        projectionQuery.count = count == null ? 0L : Long.parseLong(count.get("count").toString());
+        projectionQuery.page = Page.of(page, size);
+
+        return projectionQuery;
+    }
+
+    public PanacheQuery<MetricDefinition> fetchAllMetricDefinitions(String id, int page, int size){
+
+        var eq = Aggregates
+                .match(Filters.eq("project_id", id));
+
+        var addField = new Document("$addFields", new Document("metric_definition_id", new Document("$toObjectId", "$metric_definition_id")));
+
+        var group = Aggregates.group("_id", Accumulators.addToSet("metric_definition_id","$metric_definition_id"));
+
+        var lookup = Aggregates.lookup("MetricDefinition", "metric_definition_id", "_id", "metric_definition_id");
+
+        var unwind = Aggregates.unwind("$metric_definition_id");
+
+        var replaceRoot = Aggregates.replaceRoot("$metric_definition_id");
+
+        var metricDefinitions = metricRepository
+                .getMongoCollection()
+                .aggregate(List.of(eq, addField, group, Aggregates.skip(size * (page)), Aggregates.limit(size), lookup, unwind, replaceRoot), MetricDefinition.class)
+                .into(new ArrayList<>());
+
+        Document count = metricRepository
+                .getMongoCollection()
+                .aggregate(List.of(eq, addField, group, unwind, Aggregates.count()))
+                .first();
+
+        var projectionQuery = new MongoQuery<MetricDefinition>();
+
+        projectionQuery.list = metricDefinitions;
         projectionQuery.index = page;
         projectionQuery.size = size;
         projectionQuery.count = count == null ? 0L : Long.parseLong(count.get("count").toString());

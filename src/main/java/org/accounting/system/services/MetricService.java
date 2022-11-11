@@ -1,7 +1,6 @@
 package org.accounting.system.services;
 
 import com.mongodb.MongoWriteException;
-import io.quarkus.mongodb.panache.PanacheQuery;
 import io.quarkus.oidc.TokenIntrospection;
 import org.accounting.system.dtos.metric.MetricResponseDto;
 import org.accounting.system.dtos.metric.UpdateMetricRequestDto;
@@ -17,8 +16,6 @@ import org.accounting.system.repositories.metric.MetricRepository;
 import org.accounting.system.services.authorization.RoleService;
 import org.accounting.system.services.installation.InstallationService;
 import org.accounting.system.util.QueryParser;
-import org.accounting.system.util.Utility;
-import org.apache.commons.lang3.ObjectUtils;
 import org.bson.conversions.Bson;
 import org.bson.types.ObjectId;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
@@ -186,15 +183,9 @@ public class MetricService {
         return new PageResource<>(metrics, metrics.list(), uriInfo);
     }
 
-    public PageResource<MetricProjection> fetchAllMetrics(String id, int page, int size, UriInfo uriInfo, String start, String end){
+    public PageResource<MetricProjection> fetchAllMetrics(String id, int page, int size, UriInfo uriInfo, String start, String end, String metricDefinitionId){
 
-        PanacheQuery<MetricProjection> projection;
-
-        if(ObjectUtils.allNotNull(start, end) && Utility.isDate(start, end) && Utility.isBefore(start, end)) {
-            projection = metricRepository.findByExternalId(id, page, size, start, end);
-        } else{
-            projection = metricRepository.findByExternalId(id, page, size);
-        }
+        var projection = metricRepository.findByExternalId(id, page, size, start, end, metricDefinitionId);
 
         return new PageResource<>(projection, projection.list(), uriInfo);
     }
