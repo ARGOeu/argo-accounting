@@ -1,7 +1,7 @@
 ---
 id: metric_definition
 title: Manage Metric Definitions
-sidebar_position: 5
+sidebar_position: 6
 ---
 
 
