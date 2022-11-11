@@ -8,6 +8,7 @@ import com.mongodb.client.model.Updates;
 import io.quarkus.mongodb.panache.PanacheQuery;
 import io.quarkus.oidc.TokenIntrospection;
 import io.quarkus.panache.common.Page;
+import org.accounting.system.entities.MetricDefinition;
 import org.accounting.system.entities.acl.RoleAccessControl;
 import org.accounting.system.entities.authorization.Role;
 import org.accounting.system.entities.projections.InstallationProjection;
@@ -17,6 +18,7 @@ import org.accounting.system.entities.provider.Provider;
 import org.accounting.system.enums.AccessType;
 import org.accounting.system.enums.Collection;
 import org.accounting.system.enums.Operation;
+import org.accounting.system.repositories.metric.MetricRepository;
 import org.accounting.system.repositories.project.ProjectRepository;
 import org.bson.Document;
 import org.bson.conversions.Bson;
@@ -48,6 +50,9 @@ public class ProviderRepository extends ProviderModulator {
 
     @Inject
     ProjectRepository projectRepository;
+
+    @Inject
+    MetricRepository metricRepository;
 
     @Inject
     TokenIntrospection tokenIntrospection;
@@ -309,4 +314,39 @@ public class ProviderRepository extends ProviderModulator {
 
     }
 
+    public PanacheQuery<MetricDefinition> fetchAllMetricDefinitions(String projectId, String providerId, int page, int size){
+
+        var eq = Aggregates
+                .match(Filters.and(Filters.eq("project_id", projectId), Filters.eq("provider", providerId)));
+
+        var addField = new Document("$addFields", new Document("metric_definition_id", new Document("$toObjectId", "$metric_definition_id")));
+
+        var group = Aggregates.group("_id", Accumulators.addToSet("metric_definition_id","$metric_definition_id"));
+
+        var lookup = Aggregates.lookup("MetricDefinition", "metric_definition_id", "_id", "metric_definition_id");
+
+        var unwind = Aggregates.unwind("$metric_definition_id");
+
+        var replaceRoot = Aggregates.replaceRoot("$metric_definition_id");
+
+        var metricDefinitions = metricRepository
+                .getMongoCollection()
+                .aggregate(List.of(eq, addField, group, Aggregates.skip(size * (page)), Aggregates.limit(size), lookup, unwind, replaceRoot), MetricDefinition.class)
+                .into(new ArrayList<>());
+
+        Document count = metricRepository
+                .getMongoCollection()
+                .aggregate(List.of(eq, addField, group, unwind, Aggregates.count()))
+                .first();
+
+        var projectionQuery = new MongoQuery<MetricDefinition>();
+
+        projectionQuery.list = metricDefinitions;
+        projectionQuery.index = page;
+        projectionQuery.size = size;
+        projectionQuery.count = count == null ? 0L : Long.parseLong(count.get("count").toString());
+        projectionQuery.page = Page.of(page, size);
+
+        return projectionQuery;
+    }
 }

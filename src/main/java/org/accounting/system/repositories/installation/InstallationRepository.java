@@ -1,11 +1,18 @@
 package org.accounting.system.repositories.installation;
 
-import com.mongodb.client.model.*;
+import com.mongodb.client.model.Accumulators;
+import com.mongodb.client.model.Aggregates;
+import com.mongodb.client.model.Filters;
+import com.mongodb.client.model.Projections;
+import com.mongodb.client.model.UnwindOptions;
+import com.mongodb.client.model.UpdateOptions;
+import com.mongodb.client.model.Updates;
 import io.quarkus.mongodb.panache.PanacheQuery;
 import io.quarkus.oidc.TokenIntrospection;
 import io.quarkus.panache.common.Page;
 import org.accounting.system.dtos.installation.InstallationRequestDto;
 import org.accounting.system.entities.HierarchicalRelation;
+import org.accounting.system.entities.MetricDefinition;
 import org.accounting.system.entities.acl.RoleAccessControl;
 import org.accounting.system.entities.authorization.Role;
 import org.accounting.system.entities.installation.Installation;
@@ -18,6 +25,7 @@ import org.accounting.system.enums.RelationType;
 import org.accounting.system.exceptions.ConflictException;
 import org.accounting.system.mappers.InstallationMapper;
 import org.accounting.system.repositories.HierarchicalRelationRepository;
+import org.accounting.system.repositories.metric.MetricRepository;
 import org.accounting.system.repositories.project.ProjectRepository;
 import org.bson.Document;
 import org.bson.conversions.Bson;
@@ -26,7 +34,12 @@ import org.eclipse.microprofile.config.inject.ConfigProperty;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
@@ -40,6 +53,9 @@ public class InstallationRepository {
 
     @Inject
     ProjectRepository projectRepository;
+
+    @Inject
+    MetricRepository metricRepository;
 
     @Inject
     TokenIntrospection tokenIntrospection;
@@ -360,6 +376,7 @@ public class InstallationRepository {
 
         return precedence.access;
     }
+
     public PanacheQuery<InstallationProjection> fetchAllInstallations(int page, int size) {
 
         var eqAccessControl =Aggregates.match(Filters.or(
@@ -447,12 +464,9 @@ public class InstallationRepository {
 
         if(optional.isPresent()){
             return optional.get().getList("path", String.class);
-        } else{
+        } else {
             return Collections.emptyList();
-            }
-
-
-
+        }
     }
 
     public PanacheQuery<InstallationProjection> searchInstallations(Bson searchDoc, int page, int size) {
@@ -500,6 +514,41 @@ public class InstallationRepository {
         projectionQuery.page = Page.of(page, size);
 
         return projectionQuery;
+    }
 
+    public PanacheQuery<MetricDefinition> fetchAllMetricDefinitions(String id, int page, int size){
+
+        var eq = Aggregates
+                .match(Filters.eq("installation_id", id));
+
+        var addField = new Document("$addFields", new Document("metric_definition_id", new Document("$toObjectId", "$metric_definition_id")));
+
+        var group = Aggregates.group("_id", Accumulators.addToSet("metric_definition_id","$metric_definition_id"));
+
+        var lookup = Aggregates.lookup("MetricDefinition", "metric_definition_id", "_id", "metric_definition_id");
+
+        var unwind = Aggregates.unwind("$metric_definition_id");
+
+        var replaceRoot = Aggregates.replaceRoot("$metric_definition_id");
+
+        var metricDefinitions = metricRepository
+                .getMongoCollection()
+                .aggregate(List.of(eq, addField, group, Aggregates.skip(size * (page)), Aggregates.limit(size), lookup, unwind, replaceRoot), MetricDefinition.class)
+                .into(new ArrayList<>());
+
+        Document count = metricRepository
+                .getMongoCollection()
+                .aggregate(List.of(eq, addField, group, unwind, Aggregates.count()))
+                .first();
+
+        var projectionQuery = new MongoQuery<MetricDefinition>();
+
+        projectionQuery.list = metricDefinitions;
+        projectionQuery.index = page;
+        projectionQuery.size = size;
+        projectionQuery.count = count == null ? 0L : Long.parseLong(count.get("count").toString());
+        projectionQuery.page = Page.of(page, size);
+
+        return projectionQuery;
     }
 }

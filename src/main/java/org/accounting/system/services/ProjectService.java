@@ -6,6 +6,7 @@ import org.accounting.system.dtos.acl.role.RoleAccessControlRequestDto;
 import org.accounting.system.dtos.acl.role.RoleAccessControlResponseDto;
 import org.accounting.system.dtos.acl.role.RoleAccessControlUpdateDto;
 import org.accounting.system.dtos.installation.InstallationResponseDto;
+import org.accounting.system.dtos.metricdefinition.MetricDefinitionResponseDto;
 import org.accounting.system.dtos.pagination.PageResource;
 import org.accounting.system.entities.Project;
 import org.accounting.system.entities.authorization.Role;
@@ -15,6 +16,7 @@ import org.accounting.system.entities.projections.permissions.ProjectProjectionW
 import org.accounting.system.exceptions.ConflictException;
 import org.accounting.system.mappers.AccessControlMapper;
 import org.accounting.system.mappers.InstallationMapper;
+import org.accounting.system.mappers.MetricDefinitionMapper;
 import org.accounting.system.repositories.authorization.RoleRepository;
 import org.accounting.system.repositories.client.ClientAccessAlwaysRepository;
 import org.accounting.system.repositories.project.ProjectRepository;
@@ -97,6 +99,13 @@ public class ProjectService implements RoleAccessControlService {
         var projectionQuery = projectRepository.fetchClientPermissions(page, size);
 
         return new PageResource<>(projectionQuery, projectionQuery.list(), uriInfo);
+    }
+
+    public PageResource<MetricDefinitionResponseDto> fetchAllMetricDefinitions(String id, int page, int size, UriInfo uriInfo){
+
+        var projection = projectRepository.fetchAllMetricDefinitions(id, page, size);
+
+        return new PageResource<>(projection, MetricDefinitionMapper.INSTANCE.metricDefinitionsToResponse(projection.list()), uriInfo);
     }
 
     @Override

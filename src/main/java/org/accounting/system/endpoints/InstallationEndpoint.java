@@ -21,11 +21,13 @@ import org.accounting.system.entities.projections.MetricProjection;
 import org.accounting.system.enums.Collection;
 import org.accounting.system.repositories.client.ClientRepository;
 import org.accounting.system.repositories.metric.MetricRepository;
+import org.accounting.system.repositories.metricdefinition.MetricDefinitionRepository;
 import org.accounting.system.services.HierarchicalRelationService;
 import org.accounting.system.services.MetricService;
 import org.accounting.system.services.authorization.RoleService;
 import org.accounting.system.services.installation.InstallationService;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
+import org.eclipse.microprofile.openapi.annotations.Operation;
 import org.eclipse.microprofile.openapi.annotations.enums.SchemaType;
 import org.eclipse.microprofile.openapi.annotations.enums.SecuritySchemeIn;
 import org.eclipse.microprofile.openapi.annotations.enums.SecuritySchemeType;
@@ -1004,6 +1006,8 @@ public class InstallationEndpoint {
             @Parameter(name = "size", in = QUERY,
                     description = "The page size.") @DefaultValue("10") @Min(value = 1, message = "Page size must be between 1 and 100.")
             @Max(value = 100, message = "Page size must be between 1 and 100.") @QueryParam("size") int size,
+            @Parameter(name = "metric-definition-id", in = QUERY, example = "507f1f77bcf86cd799439011",
+                    description = "The Metric Definition that the Metrics are related to.")  @QueryParam("metric-definition-id") @NotFoundEntity(repository = MetricDefinitionRepository.class, message = "There is no Metric Definition with the following id:") String metricDefinitionId,
             @Parameter(name = "start", in = QUERY, example = "2020-01-01",
                     description = "The inclusive start date for the query in the format YYYY-MM-DD. Cannot be after end.")  @QueryParam("start") String start,
             @Parameter(name = "end", in = QUERY, example = "2020-12-31",
@@ -1014,7 +1018,56 @@ public class InstallationEndpoint {
 
         var installation = installationService.fetchInstallation(installationId);
 
-        var response = metricService.fetchAllMetrics(installation.getProject() + HierarchicalRelation.PATH_SEPARATOR + installation.getOrganisation() + HierarchicalRelation.PATH_SEPARATOR + installationId, page - 1, size, serverInfo, start, end);
+        var response = metricService.fetchAllMetrics(installation.getProject() + HierarchicalRelation.PATH_SEPARATOR + installation.getOrganisation() + HierarchicalRelation.PATH_SEPARATOR + installationId, page - 1, size, serverInfo, start, end, metricDefinitionId);
+
+        return Response.ok().entity(response).build();
+    }
+
+    @Tag(name = "Installation")
+    @Operation(
+            summary = "Returns Installation's Metric Definitions.",
+            description = "This operation is responsible for returning Installation's Metric Definitions. " +
+                    "By default, the first page of 10 Metric Definitions will be returned. " +
+                    "You can tune the default values by using the query parameters page and size.")
+    @APIResponse(
+            responseCode = "200",
+            description = "All Installation's Metric Definitions.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = MetricDefinitionEndpoint.PageableMetricDefinitionResponseDto.class)))
+    @APIResponse(
+            responseCode = "401",
+            description = "Client has not been authenticated.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "500",
+            description = "Internal Server Errors.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @SecurityRequirement(name = "Authentication")
+
+    @GET
+    @Path("/{installation_id}/metric-definitions")
+    @Produces(value = MediaType.APPLICATION_JSON)
+    public Response getAllInstallationMetricDefinitions(
+            @Parameter(
+                    description = "Τhe Installation id.",
+                    required = true,
+                    example = "507f1f77bcf86cd799439011",
+                    schema = @Schema(type = SchemaType.STRING))
+            @PathParam("installation_id") @Valid @AccessInstallation(collection = Collection.Metric, operation = READ) String id,
+            @Parameter(name = "page", in = QUERY,
+                    description = "Indicates the page number. Page number must be >= 1.") @DefaultValue("1") @Min(value = 1, message = "Page number must be >= 1.") @QueryParam("page") int page,
+            @Parameter(name = "size", in = QUERY,
+                    description = "The page size.") @DefaultValue("10") @Min(value = 1, message = "Page size must be between 1 and 100.")
+            @Max(value = 100, message = "Page size must be between 1 and 100.") @QueryParam("size") int size, @Context UriInfo uriInfo) {
+
+        var serverInfo = new ResteasyUriInfo(serverUrl.concat(basePath).concat(uriInfo.getPath()), basePath);
+
+        var response = installationService.fetchAllMetricDefinitions(id, page - 1, size, serverInfo);
 
         return Response.ok().entity(response).build();
     }

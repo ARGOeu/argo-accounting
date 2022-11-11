@@ -5,6 +5,7 @@ import org.accounting.system.dtos.acl.role.RoleAccessControlRequestDto;
 import org.accounting.system.dtos.acl.role.RoleAccessControlResponseDto;
 import org.accounting.system.dtos.acl.role.RoleAccessControlUpdateDto;
 import org.accounting.system.dtos.installation.InstallationResponseDto;
+import org.accounting.system.dtos.metricdefinition.MetricDefinitionResponseDto;
 import org.accounting.system.dtos.pagination.PageResource;
 import org.accounting.system.dtos.provider.ProviderRequestDto;
 import org.accounting.system.dtos.provider.ProviderResponseDto;
@@ -16,6 +17,7 @@ import org.accounting.system.entities.provider.Provider;
 import org.accounting.system.exceptions.ConflictException;
 import org.accounting.system.mappers.AccessControlMapper;
 import org.accounting.system.mappers.InstallationMapper;
+import org.accounting.system.mappers.MetricDefinitionMapper;
 import org.accounting.system.mappers.ProviderMapper;
 import org.accounting.system.repositories.authorization.RoleRepository;
 import org.accounting.system.repositories.provider.ProviderRepository;
@@ -297,5 +299,12 @@ public class ProviderService implements RoleAccessControlService {
                 .collect(Collectors.toList());
 
         return new PageResource<>(panacheQuery, responses, uriInfo);
+    }
+
+    public PageResource<MetricDefinitionResponseDto> fetchAllMetricDefinitions(String projectId, String providerId, int page, int size, UriInfo uriInfo){
+
+        var projection = providerRepository.fetchAllMetricDefinitions(projectId, providerId, page, size);
+
+        return new PageResource<>(projection, MetricDefinitionMapper.INSTANCE.metricDefinitionsToResponse(projection.list()), uriInfo);
     }
 }

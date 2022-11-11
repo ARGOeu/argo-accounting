@@ -10,6 +10,7 @@ import io.restassured.RestAssured;
 import io.restassured.config.JsonConfig;
 import io.restassured.http.ContentType;
 import io.restassured.path.json.config.JsonPathConfig;
+import io.vavr.collection.Array;
 import org.accounting.system.clients.ProviderClient;
 import org.accounting.system.clients.responses.eoscportal.Response;
 import org.accounting.system.clients.responses.eoscportal.Total;
@@ -562,6 +563,55 @@ public class MetricEndpointTest {
                 .as(PageResource.class);
 
         assertEquals(0, getProviderMetricPageable1.getTotalElements());
+    }
+
+    @Test
+    public void fetchMetricsMetricDefinitionFiltering() {
+
+        projectRepository.associateProjectWithProviders("777536", Set.of("grnet"));
+
+        var array = assignMetricsToSpecificInstallationMultipleMetricDefinitions();
+
+        var getProjectMetricPageable = given()
+                .basePath("accounting-system/projects")
+                .auth()
+                .oauth2(getAccessToken("admin"))
+                .get("/{project_id}/metrics", "777536")
+                .then()
+                .assertThat()
+                .statusCode(200)
+                .extract()
+                .as(PageResource.class);
+
+        assertEquals(3, getProjectMetricPageable.getTotalElements());
+
+        var getProviderMetricPageable = given()
+                .basePath("accounting-system/projects")
+                .auth()
+                .oauth2(getAccessToken("admin"))
+                .queryParam("metric-definition-id", array.get(1))
+                .get("/{project_id}/providers/{provider_id}/metrics", "777536", "grnet")
+                .then()
+                .assertThat()
+                .statusCode(200)
+                .extract()
+                .as(PageResource.class);
+
+        assertEquals(2, getProviderMetricPageable.getTotalElements());
+
+        var getProviderMetricPageable1 = given()
+                .basePath("accounting-system/projects")
+                .auth()
+                .oauth2(getAccessToken("admin"))
+                .queryParam("metric-definition-id", array.get(0))
+                .get("/{project_id}/providers/{provider_id}/metrics", "777536", "grnet")
+                .then()
+                .assertThat()
+                .statusCode(200)
+                .extract()
+                .as(PageResource.class);
+
+        assertEquals(1, getProviderMetricPageable1.getTotalElements());
     }
 
     @Test
@@ -1399,6 +1449,82 @@ public class MetricEndpointTest {
                 .statusCode(201);
 
         return installation.id;
+    }
+
+    private Array<String> assignMetricsToSpecificInstallationMultipleMetricDefinitions(){
+
+        Mockito.when(readPredefinedTypesService.searchForUnitType(any())).thenReturn(Optional.of("SECOND"));
+        Mockito.when(readPredefinedTypesService.searchForMetricType(any())).thenReturn(Optional.of("Aggregated"));
+        var requestForMetricDefinition = new MetricDefinitionRequestDto();
+
+        requestForMetricDefinition.metricName = "metric";
+        requestForMetricDefinition.metricDescription = "description";
+        requestForMetricDefinition.unitType = "SECOND";
+        requestForMetricDefinition.metricType = "Aggregated";
+
+        var metricDefinitionResponse = createMetricDefinition(requestForMetricDefinition, "admin");
+
+        Mockito.when(readPredefinedTypesService.searchForUnitType(any())).thenReturn(Optional.of("KG"));
+        Mockito.when(readPredefinedTypesService.searchForMetricType(any())).thenReturn(Optional.of("count"));
+        var requestForMetricDefinition1 = new MetricDefinitionRequestDto();
+
+        requestForMetricDefinition1.metricName = "metric";
+        requestForMetricDefinition1.metricDescription = "description";
+        requestForMetricDefinition1.unitType = "KG";
+        requestForMetricDefinition1.metricType = "count";
+
+        var metricDefinitionResponse1 = createMetricDefinition(requestForMetricDefinition1, "admin");
+
+        var requestForMetric = new MetricRequestDto();
+        requestForMetric.start = "2021-01-05T09:15:07Z";
+        requestForMetric.end = "2021-01-05T09:18:07Z";
+        requestForMetric.value = 10.8;
+        requestForMetric.metricDefinitionId = metricDefinitionResponse.id;
+
+        var request= new InstallationRequestDto();
+
+        request.project = "777536";
+        request.organisation = "grnet";
+        request.infrastructure = "okeanos-knossos";
+        request.installation = "SECOND";
+        request.unitOfAccess = metricDefinitionResponse.id;
+
+        var installation = createInstallation(request, "admin");
+
+        var response = assignMetric("admin", requestForMetric, installation.id);
+
+        response
+                .then()
+                .assertThat()
+                .statusCode(201);
+
+        var requestForMetric1 = new MetricRequestDto();
+        requestForMetric1.start = "2020-01-05T09:15:07Z";
+        requestForMetric1.end = "2020-01-05T09:18:07Z";
+        requestForMetric1.value = 15;
+        requestForMetric1.metricDefinitionId = metricDefinitionResponse1.id;
+
+        var response1 = assignMetric("admin", requestForMetric1, installation.id);
+
+        response1
+                .then()
+                .assertThat()
+                .statusCode(201);
+
+        var requestForMetric2 = new MetricRequestDto();
+        requestForMetric2.start = "2019-01-05T09:15:07Z";
+        requestForMetric2.end = "2019-01-05T09:18:07Z";
+        requestForMetric2.value = 20;
+        requestForMetric2.metricDefinitionId = metricDefinitionResponse1.id;
+
+        var response2 = assignMetric("admin", requestForMetric2, installation.id);
+
+        response2
+                .then()
+                .assertThat()
+                .statusCode(201);
+
+        return Array.of(metricDefinitionResponse.id, metricDefinitionResponse1.id);
     }
 
     protected String getAccessToken(String userName) {
