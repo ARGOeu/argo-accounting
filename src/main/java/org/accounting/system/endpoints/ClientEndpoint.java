@@ -310,7 +310,7 @@ public class ClientEndpoint {
                     "You can tune the default values by using the query parameters page and size.")
     @APIResponse(
             responseCode = "200",
-            description = "Client Permissions.",
+            description = "Client's Permissions.",
             content = @Content(schema = @Schema(
                     type = SchemaType.OBJECT,
                     implementation = PageableProjectWithPermissions.class)))

@@ -3,9 +3,9 @@ package org.accounting.system.entities.projections.permissions;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
+import lombok.EqualsAndHashCode;
 import org.accounting.system.dtos.authorization.CollectionAccessPermissionDto;
 import org.accounting.system.entities.acl.RoleAccessControl;
-import org.bson.codecs.pojo.annotations.BsonProperty;
 import org.eclipse.microprofile.openapi.annotations.enums.SchemaType;
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
 
@@ -17,6 +17,7 @@ import java.util.Set;
 @Schema(name="ProviderPermissionResponse", description="An object represents a Providers containing the Installations assigned to it. " +
         "It also encloses the client's permissions upon that Provider, if any.")
 @JsonPropertyOrder({"id", "name", "website", "abbreviation", "logo", "project_id", "project_acronym", "permissions", "installations" })
+@EqualsAndHashCode(onlyExplicitlyIncluded = true)
 public class ProviderProjectionWithPermissions {
 
     @Schema(
@@ -26,6 +27,7 @@ public class ProviderProjectionWithPermissions {
             example = "sites"
     )
     @JsonProperty("id")
+    @EqualsAndHashCode.Include
     public String id;
     @Schema(
             type = SchemaType.STRING,

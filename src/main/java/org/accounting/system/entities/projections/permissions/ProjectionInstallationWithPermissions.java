@@ -3,6 +3,7 @@ package org.accounting.system.entities.projections.permissions;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
+import lombok.EqualsAndHashCode;
 import org.accounting.system.dtos.authorization.CollectionAccessPermissionDto;
 import org.accounting.system.entities.acl.RoleAccessControl;
 import org.bson.codecs.pojo.annotations.BsonProperty;
@@ -18,6 +19,7 @@ import java.util.Set;
 @Schema(name="InstallationPermissionResponse", description="An object represents the stored Installation. " +
         "It also encloses the client's permissions upon that Installation, if any.")
 @JsonPropertyOrder({"id", "infrastructure", "installation", "unit_of_access", "permissions" })
+@EqualsAndHashCode(onlyExplicitlyIncluded = true)
 public class ProjectionInstallationWithPermissions {
 
     @Schema(
@@ -27,6 +29,7 @@ public class ProjectionInstallationWithPermissions {
             example = "507f1f77bcf86cd799439011"
     )
     @JsonProperty("id")
+    @EqualsAndHashCode.Include
     public String id;
 
     @Schema(
