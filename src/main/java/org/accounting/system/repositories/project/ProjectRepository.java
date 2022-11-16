@@ -406,6 +406,47 @@ public class ProjectRepository extends ProjectModulator {
             }
         }
 
+        for(ProjectProjectionWithPermissions project: projects){
+
+            if(project.permissions.isEmpty()){
+
+                var copyProviders = new ArrayList<>(project.providers);
+
+                for (ProviderProjectionWithPermissions provider: project.providers){
+
+                    if(provider.permissions.isEmpty() && provider.installations.stream().allMatch(installation->installation.permissions.isEmpty())){
+                           copyProviders.remove(provider);
+                    }
+                }
+
+            project.providers = copyProviders;
+
+            }
+        }
+
+        for(ProjectProjectionWithPermissions project: projects){
+
+            if(project.permissions.isEmpty()){
+
+                for (ProviderProjectionWithPermissions provider: project.providers){
+
+                    if(provider.permissions.isEmpty()){
+
+                        var copyInstallations = new ArrayList<>(provider.installations);
+
+                        for (ProjectionInstallationWithPermissions installation: provider.installations){
+
+                            if(installation.permissions.isEmpty()){
+                                copyInstallations.remove(installation);
+                            }
+                        }
+
+                        provider.installations = copyInstallations;
+                    }
+                }
+            }
+        }
+
         var projectionQuery = new MongoQuery<ProjectProjectionWithPermissions>();
 
         projectionQuery.list = projects;
