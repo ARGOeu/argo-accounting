@@ -26,6 +26,7 @@ import org.accounting.system.services.HierarchicalRelationService;
 import org.accounting.system.services.MetricService;
 import org.accounting.system.services.authorization.RoleService;
 import org.accounting.system.services.installation.InstallationService;
+import org.accounting.system.util.AccountingUriInfo;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.eclipse.microprofile.openapi.annotations.Operation;
 import org.eclipse.microprofile.openapi.annotations.enums.SchemaType;
@@ -40,7 +41,6 @@ import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
 import org.eclipse.microprofile.openapi.annotations.security.SecurityRequirement;
 import org.eclipse.microprofile.openapi.annotations.security.SecurityScheme;
 import org.eclipse.microprofile.openapi.annotations.tags.Tag;
-import org.jboss.resteasy.specimpl.ResteasyUriInfo;
 
 import javax.inject.Inject;
 import javax.validation.Valid;
@@ -84,7 +84,7 @@ import static org.eclipse.microprofile.openapi.annotations.enums.ParameterIn.QUE
 
 public class InstallationEndpoint {
 
-    @ConfigProperty(name = "quarkus.resteasy.path")
+    @ConfigProperty(name = "quarkus.resteasy-reactive.path")
     String basePath;
 
     @ConfigProperty(name = "server.url")
@@ -157,7 +157,7 @@ public class InstallationEndpoint {
     @AccessProvider(collection = Collection.Installation, operation = CREATE)
     public Response save(InstallationRequestDto installationRequestDto, @Context UriInfo uriInfo) {
 
-        var serverInfo = new ResteasyUriInfo(serverUrl.concat(basePath).concat(uriInfo.getPath()), basePath);
+        var serverInfo = new AccountingUriInfo(serverUrl.concat(basePath).concat(uriInfo.getPath()));
 
         var belongs = hierarchicalRelationService.providerBelongsToProject(installationRequestDto.project, installationRequestDto.organisation);
 
@@ -702,9 +702,9 @@ public class InstallationEndpoint {
             @Max(value = 100, message = "Page size must be between 1 and 100.") @QueryParam("size") int size,
             @Context UriInfo uriInfo) {
 
-        var serverInfo = new ResteasyUriInfo(serverUrl.concat(basePath).concat(uriInfo.getPath()), basePath);
+        var serverInfo = new AccountingUriInfo(serverUrl.concat(basePath).concat(uriInfo.getPath()));
 
-        var response = installationService.fetchAllPermissions(page - 1, size, serverInfo,installationId);
+        var response = installationService.fetchAllPermissions(page - 1, size, serverInfo, installationId);
 
         return Response.ok().entity(response).build();
     }
@@ -767,7 +767,7 @@ public class InstallationEndpoint {
             @AccessInstallation(collection = Collection.Metric, operation = CREATE) String installationId,
             @Valid @NotNull(message = "The request body is empty.") MetricRequestDto metricRequestDto, @Context UriInfo uriInfo) {
 
-        var serverInfo = new ResteasyUriInfo(serverUrl.concat(basePath).concat(uriInfo.getPath()), basePath);
+        var serverInfo = new AccountingUriInfo(serverUrl.concat(basePath).concat(uriInfo.getPath()));
 
         var response = installationService.assignMetric(installationId, metricRequestDto);
 
@@ -1014,7 +1014,7 @@ public class InstallationEndpoint {
                     description = "The inclusive end date for the query in the format YYYY-MM-DD. Cannot be before start.") @QueryParam("end") String end,
             @Context UriInfo uriInfo) {
 
-        var serverInfo = new ResteasyUriInfo(serverUrl.concat(basePath).concat(uriInfo.getPath()), basePath);
+        var serverInfo = new AccountingUriInfo(serverUrl.concat(basePath).concat(uriInfo.getPath()));
 
         var installation = installationService.fetchInstallation(installationId);
 
@@ -1065,7 +1065,7 @@ public class InstallationEndpoint {
                     description = "The page size.") @DefaultValue("10") @Min(value = 1, message = "Page size must be between 1 and 100.")
             @Max(value = 100, message = "Page size must be between 1 and 100.") @QueryParam("size") int size, @Context UriInfo uriInfo) {
 
-        var serverInfo = new ResteasyUriInfo(serverUrl.concat(basePath).concat(uriInfo.getPath()), basePath);
+        var serverInfo = new AccountingUriInfo(serverUrl.concat(basePath).concat(uriInfo.getPath()));
 
         var response = installationService.fetchAllMetricDefinitions(id, page - 1, size, serverInfo);
 
@@ -1171,7 +1171,7 @@ public class InstallationEndpoint {
             @Context UriInfo uriInfo
     ) throws ParseException, NoSuchFieldException, org.json.simple.parser.ParseException, JsonProcessingException {
 
-        var serverInfo = new ResteasyUriInfo(serverUrl.concat(basePath).concat(uriInfo.getPath()), basePath);
+        var serverInfo = new AccountingUriInfo(serverUrl.concat(basePath).concat(uriInfo.getPath()));
 
         if (json.equals("")) {
             throw new BadRequestException("not empty body permitted");
@@ -1226,7 +1226,7 @@ public class InstallationEndpoint {
                     description = "The page size.") @DefaultValue("10") @Min(value = 1, message = "Page size must be between 1 and 100.")
             @Max(value = 100, message = "Page size must be between 1 and 100.") @QueryParam("size") int size, @Context UriInfo uriInfo) throws ParseException, NoSuchFieldException, org.json.simple.parser.ParseException, JsonProcessingException {
 
-        var serverInfo = new ResteasyUriInfo(serverUrl.concat(basePath).concat(uriInfo.getPath()), basePath);
+        var serverInfo = new AccountingUriInfo(serverUrl.concat(basePath).concat(uriInfo.getPath()));
 
         var response = installationService.getAllInstallations( page - 1, size, serverInfo);
 

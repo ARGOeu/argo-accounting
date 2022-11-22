@@ -15,6 +15,7 @@ import org.accounting.system.interceptors.annotations.AccessPermission;
 import org.accounting.system.repositories.metricdefinition.MetricDefinitionRepository;
 import org.accounting.system.services.MetricDefinitionService;
 import org.accounting.system.services.ReadPredefinedTypesService;
+import org.accounting.system.util.AccountingUriInfo;
 import org.accounting.system.util.Utility;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.eclipse.microprofile.openapi.annotations.enums.SchemaType;
@@ -29,7 +30,6 @@ import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
 import org.eclipse.microprofile.openapi.annotations.security.SecurityRequirement;
 import org.eclipse.microprofile.openapi.annotations.security.SecurityScheme;
 import org.eclipse.microprofile.openapi.annotations.tags.Tag;
-import org.jboss.resteasy.specimpl.ResteasyUriInfo;
 import org.json.simple.parser.ParseException;
 
 import javax.inject.Inject;
@@ -66,7 +66,7 @@ import static org.eclipse.microprofile.openapi.annotations.enums.ParameterIn.QUE
 
 public class MetricDefinitionEndpoint {
 
-    @ConfigProperty(name = "quarkus.resteasy.path")
+    @ConfigProperty(name = "quarkus.resteasy-reactive.path")
     String basePath;
 
     @ConfigProperty(name = "server.url")
@@ -162,7 +162,7 @@ public class MetricDefinitionEndpoint {
     @AccessPermission(collection = Collection.MetricDefinition, operation = Operation.CREATE)
     public Response save(@Valid @NotNull(message = "The request body is empty.") MetricDefinitionRequestDto metricDefinitionRequestDto, @Context UriInfo uriInfo) {
 
-        var serverInfo = new ResteasyUriInfo(serverUrl.concat(basePath).concat(uriInfo.getPath()), basePath);
+        var serverInfo = new AccountingUriInfo(serverUrl.concat(basePath).concat(uriInfo.getPath()));
 
         utility.exist(metricDefinitionRequestDto);
 
@@ -211,7 +211,7 @@ public class MetricDefinitionEndpoint {
                            @Max(value = 100, message = "Page size must be between 1 and 100.") @QueryParam("size") int size,
                            @Context UriInfo uriInfo) {
 
-        var serverInfo = new ResteasyUriInfo(serverUrl.concat(basePath).concat(uriInfo.getPath()), basePath);
+        var serverInfo = new AccountingUriInfo(serverUrl.concat(basePath).concat(uriInfo.getPath()));
 
         return Response.ok().entity(metricDefinitionService.findAllMetricDefinitionsPageable(page - 1, size, serverInfo)).build();
     }
@@ -602,7 +602,7 @@ public class MetricDefinitionEndpoint {
                                    description = "The page size.") @DefaultValue("10") @Min(value = 1, message = "Page size must be between 1 and 100.")
                            @Max(value = 100, message = "Page size must be between 1 and 100.") @QueryParam("size") int size, @Context UriInfo uriInfo) throws NoSuchFieldException, ParseException {
 
-        var serverInfo = new ResteasyUriInfo(serverUrl.concat(basePath).concat(uriInfo.getPath()), basePath);
+        var serverInfo = new AccountingUriInfo(serverUrl.concat(basePath).concat(uriInfo.getPath()));
 
         var list = metricDefinitionService.searchMetricDefinition(json, requestInformation.getAccessType().equals(AccessType.ALWAYS), page - 1, size, serverInfo);
 

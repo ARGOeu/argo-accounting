@@ -320,7 +320,7 @@ public class ProviderEndpointTest {
     }
 
     @Test
-    public void deleteProviderBelongsToProjectProhibited() throws ParseException {
+    public void deleteProviderBelongsToProjectProhibited() {
 
         var request= new ProviderRequestDto();
         request.id = "delete-provider-id-prohibited";
@@ -386,6 +386,7 @@ public class ProviderEndpointTest {
         var response = given()
                 .auth()
                 .oauth2(getAccessToken("admin"))
+                .body(provider)
                 .patch("/{id}", provider.id)
                 .then()
                 .assertThat()
@@ -397,7 +398,7 @@ public class ProviderEndpointTest {
     }
 
     @Test
-    public void updateProviderBelongsToProjectProhibited() throws ParseException {
+    public void updateProviderBelongsToProjectProhibited() {
 
         var request= new ProviderRequestDto();
 

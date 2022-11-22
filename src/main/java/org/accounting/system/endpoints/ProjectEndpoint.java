@@ -24,6 +24,7 @@ import org.accounting.system.services.MetricService;
 import org.accounting.system.services.ProjectService;
 import org.accounting.system.services.ProviderService;
 import org.accounting.system.services.authorization.RoleService;
+import org.accounting.system.util.AccountingUriInfo;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.eclipse.microprofile.openapi.annotations.Operation;
 import org.eclipse.microprofile.openapi.annotations.enums.SchemaType;
@@ -38,7 +39,6 @@ import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
 import org.eclipse.microprofile.openapi.annotations.security.SecurityRequirement;
 import org.eclipse.microprofile.openapi.annotations.security.SecurityScheme;
 import org.eclipse.microprofile.openapi.annotations.tags.Tag;
-import org.jboss.resteasy.specimpl.ResteasyUriInfo;
 
 import javax.inject.Inject;
 import javax.validation.Valid;
@@ -96,7 +96,7 @@ public class ProjectEndpoint {
     @Inject
     MetricService metricService;
 
-    @ConfigProperty(name = "quarkus.resteasy.path")
+    @ConfigProperty(name = "quarkus.resteasy-reactive.path")
     String basePath;
 
     @ConfigProperty(name = "server.url")
@@ -159,7 +159,7 @@ public class ProjectEndpoint {
                     description = "The inclusive end date for the query in the format YYYY-MM-DD. Cannot be before start.") @QueryParam("end") String end,
             @Context UriInfo uriInfo) {
 
-        var serverInfo = new ResteasyUriInfo(serverUrl.concat(basePath).concat(uriInfo.getPath()), basePath);
+        var serverInfo = new AccountingUriInfo(serverUrl.concat(basePath).concat(uriInfo.getPath()));
 
         var response = metricService.fetchAllMetrics(id, page - 1, size, serverInfo, start, end, metricDefinitionId);
 
@@ -210,7 +210,7 @@ public class ProjectEndpoint {
                     description = "The page size.") @DefaultValue("10") @Min(value = 1, message = "Page size must be between 1 and 100.")
             @Max(value = 100, message = "Page size must be between 1 and 100.") @QueryParam("size") int size, @Context UriInfo uriInfo) {
 
-        var serverInfo = new ResteasyUriInfo(serverUrl.concat(basePath).concat(uriInfo.getPath()), basePath);
+        var serverInfo = new AccountingUriInfo(serverUrl.concat(basePath).concat(uriInfo.getPath()));
 
         var response = projectService.fetchAllMetricDefinitions(id, page - 1, size, serverInfo);
 
@@ -279,7 +279,7 @@ public class ProjectEndpoint {
                     description = "The inclusive end date for the query in the format YYYY-MM-DD. Cannot be before start.") @QueryParam("end") String end,
             @Context UriInfo uriInfo) {
 
-        var serverInfo = new ResteasyUriInfo(serverUrl.concat(basePath).concat(uriInfo.getPath()), basePath);
+        var serverInfo = new AccountingUriInfo(serverUrl.concat(basePath).concat(uriInfo.getPath()));
 
         var response = metricService.fetchAllMetrics(projectId + HierarchicalRelation.PATH_SEPARATOR + providerId, page - 1, size, serverInfo, start, end, metricDefinitionId);
 
@@ -335,7 +335,7 @@ public class ProjectEndpoint {
                     description = "The page size.") @DefaultValue("10") @Min(value = 1, message = "Page size must be between 1 and 100.")
             @Max(value = 100, message = "Page size must be between 1 and 100.") @QueryParam("size") int size, @Context UriInfo uriInfo) {
 
-        var serverInfo = new ResteasyUriInfo(serverUrl.concat(basePath).concat(uriInfo.getPath()), basePath);
+        var serverInfo = new AccountingUriInfo(serverUrl.concat(basePath).concat(uriInfo.getPath()));
 
         var response = providerService.fetchAllMetricDefinitions(projectId, providerId, page - 1, size, serverInfo);
 
@@ -679,7 +679,7 @@ public class ProjectEndpoint {
             @Max(value = 100, message = "Page size must be between 1 and 100.") @QueryParam("size") int size,
             @Context UriInfo uriInfo) {
 
-        var serverInfo = new ResteasyUriInfo(serverUrl.concat(basePath).concat(uriInfo.getPath()), basePath);
+        var serverInfo = new AccountingUriInfo(serverUrl.concat(basePath).concat(uriInfo.getPath()));
 
         return Response.ok().entity(projectService.getInstallationsByProject(projectId, page - 1, size, serverInfo)).build();
     }
@@ -942,7 +942,7 @@ public class ProjectEndpoint {
             @Max(value = 100, message = "Page size must be between 1 and 100.") @QueryParam("size") int size,
                                         @Context UriInfo uriInfo){
 
-        var serverInfo = new ResteasyUriInfo(serverUrl.concat(basePath).concat(uriInfo.getPath()), basePath);
+        var serverInfo = new AccountingUriInfo(serverUrl.concat(basePath).concat(uriInfo.getPath()));
 
         var response = projectService.fetchAllPermissions( page - 1, size, serverInfo, projectId);
 
@@ -1104,7 +1104,7 @@ public class ProjectEndpoint {
             @Max(value = 100, message = "Page size must be between 1 and 100.") @QueryParam("size") int size,
             @Context UriInfo uriInfo) {
 
-        var serverInfo = new ResteasyUriInfo(serverUrl.concat(basePath).concat(uriInfo.getPath()), basePath);
+        var serverInfo = new AccountingUriInfo(serverUrl.concat(basePath).concat(uriInfo.getPath()));
 
         return Response.ok().entity(providerService.findInstallationsByProvider(projectId, providerId, page - 1, size, serverInfo)).build();
     }
@@ -1408,7 +1408,7 @@ public class ProjectEndpoint {
             @Max(value = 100, message = "Page size must be between 1 and 100.") @QueryParam("size") int size,
             @Context UriInfo uriInfo){
 
-        var serverInfo = new ResteasyUriInfo(serverUrl.concat(basePath).concat(uriInfo.getPath()), basePath);
+        var serverInfo = new AccountingUriInfo(serverUrl.concat(basePath).concat(uriInfo.getPath()));
 
         var response = providerService.fetchAllPermissions(page - 1, size, serverInfo, projectId, providerId);
 
@@ -1507,7 +1507,7 @@ public class ProjectEndpoint {
             @Context UriInfo uriInfo
     ) throws ParseException, NoSuchFieldException, org.json.simple.parser.ParseException, JsonProcessingException {
 
-        var serverInfo = new ResteasyUriInfo(serverUrl.concat(basePath).concat(uriInfo.getPath()), basePath);
+        var serverInfo = new AccountingUriInfo(serverUrl.concat(basePath).concat(uriInfo.getPath()));
 
         if(json.equals("")){
             throw  new BadRequestException("not empty body permitted");
@@ -1575,7 +1575,7 @@ public class ProjectEndpoint {
             @Context UriInfo uriInfo
     ) throws ParseException, NoSuchFieldException, org.json.simple.parser.ParseException, JsonProcessingException {
 
-        var serverInfo = new ResteasyUriInfo(serverUrl.concat(basePath).concat(uriInfo.getPath()), basePath);
+        var serverInfo = new AccountingUriInfo(serverUrl.concat(basePath).concat(uriInfo.getPath()));
 
         var results= projectService.getAll( page - 1, size, serverInfo);
 

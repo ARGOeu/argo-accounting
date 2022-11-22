@@ -768,6 +768,7 @@ public class RoleEndpointTest {
         var error = given()
                 .auth()
                 .oauth2(getAccessToken("admin"))
+                .body(request)
                 .patch("/{id}", role.id)
                 .then()
                 .assertThat()
