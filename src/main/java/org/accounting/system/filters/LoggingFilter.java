@@ -16,6 +16,7 @@ import java.io.IOException;
 public class LoggingFilter implements ContainerRequestFilter, ContainerResponseFilter {
 
     private static final Logger LOG = Logger.getLogger(LoggingFilter.class);
+
     @Context
     UriInfo info;
 

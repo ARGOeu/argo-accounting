@@ -14,6 +14,7 @@ import org.accounting.system.enums.Operation;
 import org.accounting.system.interceptors.annotations.AccessPermission;
 import org.accounting.system.repositories.provider.ProviderRepository;
 import org.accounting.system.services.ProviderService;
+import org.accounting.system.util.AccountingUriInfo;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.eclipse.microprofile.openapi.annotations.enums.SchemaType;
 import org.eclipse.microprofile.openapi.annotations.enums.SecuritySchemeIn;
@@ -27,7 +28,6 @@ import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
 import org.eclipse.microprofile.openapi.annotations.security.SecurityRequirement;
 import org.eclipse.microprofile.openapi.annotations.security.SecurityScheme;
 import org.eclipse.microprofile.openapi.annotations.tags.Tag;
-import org.jboss.resteasy.specimpl.ResteasyUriInfo;
 
 import javax.inject.Inject;
 import javax.validation.Valid;
@@ -64,7 +64,7 @@ import static org.eclipse.microprofile.openapi.annotations.enums.ParameterIn.QUE
 
 public class ProviderEndpoint {
 
-    @ConfigProperty(name = "quarkus.resteasy.path")
+    @ConfigProperty(name = "quarkus.resteasy-reactive.path")
     String basePath;
 
     @ConfigProperty(name = "server.url")
@@ -129,7 +129,7 @@ public class ProviderEndpoint {
                         @Max(value = 100, message = "Page size must be between 1 and 100.") @QueryParam("size") int size,
                         @Context UriInfo uriInfo) {
 
-        var serverInfo = new ResteasyUriInfo(serverUrl.concat(basePath).concat(uriInfo.getPath()), basePath);
+        var serverInfo = new AccountingUriInfo(serverUrl.concat(basePath).concat(uriInfo.getPath()));
 
         var providers = providerService.findAllProvidersPageable(page - 1, size, serverInfo);
 
@@ -186,7 +186,7 @@ public class ProviderEndpoint {
     @AccessPermission(collection = Collection.Provider, operation = Operation.CREATE)
     public Response save(@Valid @NotNull(message = "The request body is empty.") ProviderRequestDto providerRequestDto, @Context UriInfo uriInfo) {
 
-        var serverInfo = new ResteasyUriInfo(serverUrl.concat(basePath).concat(uriInfo.getPath()), basePath);
+        var serverInfo = new AccountingUriInfo(serverUrl.concat(basePath).concat(uriInfo.getPath()));
 
         providerService.existById(providerRequestDto.id);
         providerService.existByName(providerRequestDto.name);
@@ -437,7 +437,7 @@ public class ProviderEndpoint {
                     description = "The page size.") @DefaultValue("10") @Min(value = 1, message = "Page size must be between 1 and 100.")
             @Max(value = 100, message = "Page size must be between 1 and 100.") @QueryParam("size") int size, @Context UriInfo uriInfo) throws ParseException, NoSuchFieldException, org.json.simple.parser.ParseException, JsonProcessingException {
 
-        var serverInfo = new ResteasyUriInfo(serverUrl.concat(basePath).concat(uriInfo.getPath()), basePath);
+        var serverInfo = new AccountingUriInfo(serverUrl.concat(basePath).concat(uriInfo.getPath()));
 
         var response = providerService.searchProviders(json, page - 1, size, serverInfo);
 
@@ -487,7 +487,7 @@ public class ProviderEndpoint {
                     description = "The page size.") @DefaultValue("10") @Min(value = 1, message = "Page size must be between 1 and 100.")
             @Max(value = 100, message = "Page size must be between 1 and 100.") @QueryParam("size") int size, @Context UriInfo uriInfo) throws ParseException, NoSuchFieldException, org.json.simple.parser.ParseException, JsonProcessingException {
 
-        var serverInfo = new ResteasyUriInfo(serverUrl.concat(basePath).concat(uriInfo.getPath()), basePath);
+        var serverInfo = new AccountingUriInfo(serverUrl.concat(basePath).concat(uriInfo.getPath()));
 
         var response = providerService.getSystemProviders( page - 1, size, serverInfo);
 

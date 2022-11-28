@@ -73,7 +73,7 @@ public class MetricDefinitionEndpointTest {
     }
 
     @BeforeEach
-    public void each() throws ParseException {
+    public void each(){
         metricDefinitionRepository.deleteAll();
     }
 
@@ -385,6 +385,7 @@ public class MetricDefinitionEndpointTest {
         var response = given()
                 .auth()
                 .oauth2(getAccessToken("admin"))
+                .body(request)
                 .patch("/{id}", metricDefinition.id)
                 .then()
                 .assertThat()

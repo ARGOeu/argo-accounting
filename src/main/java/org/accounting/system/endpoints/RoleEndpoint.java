@@ -12,6 +12,7 @@ import org.accounting.system.enums.Operation;
 import org.accounting.system.interceptors.annotations.AccessPermission;
 import org.accounting.system.repositories.authorization.RoleRepository;
 import org.accounting.system.services.authorization.RoleService;
+import org.accounting.system.util.AccountingUriInfo;
 import org.accounting.system.util.Utility;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.eclipse.microprofile.openapi.annotations.enums.SchemaType;
@@ -24,7 +25,6 @@ import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
 import org.eclipse.microprofile.openapi.annotations.security.SecurityRequirement;
 import org.eclipse.microprofile.openapi.annotations.security.SecurityScheme;
 import org.eclipse.microprofile.openapi.annotations.tags.Tag;
-import org.jboss.resteasy.specimpl.ResteasyUriInfo;
 
 import javax.inject.Inject;
 import javax.validation.Valid;
@@ -60,7 +60,7 @@ import static org.eclipse.microprofile.openapi.annotations.enums.ParameterIn.QUE
 
 public class RoleEndpoint {
 
-    @ConfigProperty(name = "quarkus.resteasy.path")
+    @ConfigProperty(name = "quarkus.resteasy-reactive.path")
     String basePath;
 
     @ConfigProperty(name = "server.url")
@@ -132,7 +132,7 @@ public class RoleEndpoint {
 
         utility.collectionHasTheAppropriatePermissions(roleRequestDto);
 
-        UriInfo serverInfo = new ResteasyUriInfo(serverUrl.concat(basePath).concat(uriInfo.getPath()), basePath);
+        UriInfo serverInfo = new AccountingUriInfo(serverUrl.concat(basePath).concat(uriInfo.getPath()));
 
         var response = roleService.save(roleRequestDto);
 
@@ -229,7 +229,7 @@ public class RoleEndpoint {
                              @Max(value = 100, message = "Page size must be between 1 and 100.") @QueryParam("size") int size,
                              @Context UriInfo uriInfo){
 
-        var serverInfo = new ResteasyUriInfo(serverUrl.concat(basePath).concat(uriInfo.getPath()), basePath);
+        var serverInfo = new AccountingUriInfo(serverUrl.concat(basePath).concat(uriInfo.getPath()));
 
         return Response.ok().entity(roleService.findAllRolesPageable(page-1, size, serverInfo)).build();
     }

@@ -3,6 +3,7 @@ package org.accounting.system.endpoints;
 import io.quarkus.security.Authenticated;
 import org.accounting.system.dtos.InformativeResponse;
 import org.accounting.system.services.MetricService;
+import org.accounting.system.util.AccountingUriInfo;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.eclipse.microprofile.openapi.annotations.enums.SchemaType;
 import org.eclipse.microprofile.openapi.annotations.enums.SecuritySchemeIn;
@@ -16,14 +17,18 @@ import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
 import org.eclipse.microprofile.openapi.annotations.security.SecurityRequirement;
 import org.eclipse.microprofile.openapi.annotations.security.SecurityScheme;
 import org.eclipse.microprofile.openapi.annotations.tags.Tag;
-import org.jboss.resteasy.specimpl.ResteasyUriInfo;
 
 import javax.inject.Inject;
 import javax.validation.Valid;
 import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
-import javax.ws.rs.*;
+import javax.ws.rs.Consumes;
+import javax.ws.rs.DefaultValue;
+import javax.ws.rs.POST;
+import javax.ws.rs.Path;
+import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
@@ -46,7 +51,7 @@ public class MetricEndpoint {
     @Inject
     MetricService metricService;
 
-    @ConfigProperty(name = "quarkus.resteasy.path")
+    @ConfigProperty(name = "quarkus.resteasy-reactive.path")
     String basePath;
 
     @ConfigProperty(name = "server.url")
@@ -157,7 +162,7 @@ public class MetricEndpoint {
                                    description = "The page size.") @DefaultValue("10") @Min(value = 1, message = "Page size must be between 1 and 100.")
                            @Max(value = 100, message = "Page size must be between 1 and 100.")  @QueryParam("size") int size, @Context UriInfo uriInfo) throws NoSuchFieldException, ParseException, org.json.simple.parser.ParseException {
 
-        var serverInfo = new ResteasyUriInfo(serverUrl.concat(basePath).concat(uriInfo.getPath()), basePath);
+        var serverInfo = new AccountingUriInfo(serverUrl.concat(basePath).concat(uriInfo.getPath()));
 
         var list=metricService.searchMetrics(json, page - 1, size, serverInfo);
         return Response.ok().entity(list).build();
