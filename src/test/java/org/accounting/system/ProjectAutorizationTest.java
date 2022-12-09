@@ -127,6 +127,23 @@ public class ProjectAutorizationTest {
     }
 
     @Test
+    public void clientPermissions(){
+
+        var page = given()
+                .auth()
+                .oauth2(getAccessToken("admin"))
+                .basePath("accounting-system/clients")
+                .get("/me")
+                .then()
+                .assertThat()
+                .statusCode(200)
+                .extract()
+                .as(PageResource.class);
+
+        assertEquals(1, page.getTotalElements());
+    }
+
+    @Test
     @TestSecurity(user = "project_admin")
     @OidcSecurity(introspectionRequired = true,
             introspection = {
