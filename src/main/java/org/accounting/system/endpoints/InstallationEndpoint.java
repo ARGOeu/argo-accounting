@@ -1261,6 +1261,5 @@ public class InstallationEndpoint {
         public void setContent(List<MetricProjection> content) {
             this.content = content;
         }
-
     }
 }
