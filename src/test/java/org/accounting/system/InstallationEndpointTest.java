@@ -288,27 +288,6 @@ public class InstallationEndpointTest {
 
         assertEquals("organisation may not be empty.", responseNoOrganisation.message);
 
-        var requestNoInfrastructure= new InstallationRequestDto();
-
-        requestNoInfrastructure.project = "777536";
-        requestNoInfrastructure.organisation = "grnet";
-        requestNoInfrastructure.installation = "SECOND";
-        requestNoInfrastructure.unitOfAccess = metricDefinitionResponse.id;
-
-        InformativeResponse responseNoInfrastructure = given()
-                .auth()
-                .oauth2(getAccessToken("admin"))
-                .body(requestNoInfrastructure)
-                .contentType(ContentType.JSON)
-                .post()
-                .then()
-                .assertThat()
-                .statusCode(400)
-                .extract()
-                .as(InformativeResponse.class);
-
-        assertEquals("infrastructure may not be empty.", responseNoInfrastructure.message);
-
         var requestNoInstallation= new InstallationRequestDto();
 
         requestNoInstallation.project = "777536";
