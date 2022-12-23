@@ -32,8 +32,7 @@ InstallationRequestDto {
             type = SchemaType.STRING,
             implementation = String.class,
             description = "Short name of Infrastructure.",
-            example = "okeanos-knossos",
-            required = true
+            example = "okeanos-knossos"
     )
     @JsonProperty("infrastructure")
     public String infrastructure;

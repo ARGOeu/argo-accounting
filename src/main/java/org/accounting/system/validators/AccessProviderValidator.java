@@ -124,11 +124,7 @@ public class AccessProviderValidator implements ConstraintValidator<AccessProvid
             throw new CustomValidationException("organisation may not be empty.", HttpResponseStatus.BAD_REQUEST);
         }
 
-        if(StringUtils.isEmpty(request.infrastructure)){
-
-            throw new CustomValidationException("infrastructure may not be empty.", HttpResponseStatus.BAD_REQUEST);
-        }
-
+    
         if(StringUtils.isEmpty(request.installation)){
 
             throw new CustomValidationException("installation may not be empty.", HttpResponseStatus.BAD_REQUEST);
