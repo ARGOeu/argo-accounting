@@ -197,8 +197,8 @@ public class InstallationService implements RoleAccessControlService {
 
         InstallationMapper.INSTANCE.updateInstallationFromDto(request, installation);
 
-        if (!StringUtils.isAllBlank(installation.getProject(), installation.getOrganisation(), installation.getInstallation())) {
-            installationRepository.exist(installation.getProject(), installation.getOrganisation(), installation.getInstallation());
+        if (StringUtils.isNoneEmpty( request.installation)) {
+            installationRepository.exist(installation.getProject(), installation.getOrganisation(), request.installation);
         }
 
         installationRepository.updateInstallation(ids[0], ids[1], ids[2], installation);
