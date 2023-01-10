@@ -743,50 +743,6 @@ public class InstallationEndpointTest {
 
         assertEquals("There is no Metric Definition with the following id: 507f1f77bcf86cd799439011", informativeResponse.message);
     }
-
-    @Test
-    public void updateInstallationNoProvider() {
-
-        Mockito.when(readPredefinedTypesService.searchForUnitType(any())).thenReturn(Optional.of("SECOND"));
-        Mockito.when(readPredefinedTypesService.searchForMetricType(any())).thenReturn(Optional.of("Aggregated"));
-        var requestForMetricDefinition = new MetricDefinitionRequestDto();
-
-        requestForMetricDefinition.metricName = "metric";
-        requestForMetricDefinition.metricDescription = "description";
-        requestForMetricDefinition.unitType = "SECOND";
-        requestForMetricDefinition.metricType = "Aggregated";
-
-        var metricDefinitionResponse = createMetricDefinition(requestForMetricDefinition, "admin");
-
-        var request= new InstallationRequestDto();
-
-        request.project = "777536";
-        request.organisation = "grnet";
-        request.infrastructure = "okeanos-knossos";
-        request.installation = "SECOND";
-        request.unitOfAccess = metricDefinitionResponse.id;
-
-        var installation = createInstallation(request, "admin");
-
-        var requestForUpdating= new InstallationRequestDto();
-
-        requestForUpdating.organisation = "GRNET";
-
-        var informativeResponse = given()
-                .auth()
-                .oauth2(getAccessToken("admin"))
-                .body(requestForUpdating)
-                .contentType(ContentType.JSON)
-                .patch("/{id}", installation.id)
-                .then()
-                .assertThat()
-                .statusCode(404)
-                .extract()
-                .as(InformativeResponse.class);
-
-        assertEquals("There is no Provider with the following id: GRNET", informativeResponse.message);
-    }
-
     @Test
     public void updateInstallationPartial() {
 
@@ -828,7 +784,6 @@ public class InstallationEndpointTest {
                 .extract()
                 .as(InstallationResponseDto.class);
 
-        assertEquals(request.project, updatedInstallation.project);
         assertEquals(request.organisation, updatedInstallation.organisation);
         assertEquals(requestForUpdating.infrastructure, updatedInstallation.infrastructure);
         assertEquals(requestForUpdating.installation, updatedInstallation.installation);
@@ -873,8 +828,6 @@ public class InstallationEndpointTest {
 
         var requestForUpdating= new InstallationRequestDto();
 
-        requestForUpdating.project = "101017567";
-        requestForUpdating.organisation = "sites";
         requestForUpdating.infrastructure = "okeanos-knossos-test";
         requestForUpdating.installation = "installation-test";
         requestForUpdating.unitOfAccess = metricDefinitionResponse1.id;
@@ -891,8 +844,6 @@ public class InstallationEndpointTest {
                 .extract()
                 .as(InstallationResponseDto.class);
 
-        assertEquals(request.project, updatedInstallation.project);
-        assertEquals(request.organisation, updatedInstallation.organisation);
         assertEquals(requestForUpdating.infrastructure, updatedInstallation.infrastructure);
         assertEquals(requestForUpdating.installation, updatedInstallation.installation);
         assertEquals(requestForUpdating.unitOfAccess, updatedInstallation.metricDefinition.id);
@@ -935,8 +886,6 @@ public class InstallationEndpointTest {
 
         var requestForUpdating = new InstallationRequestDto();
 
-        requestForUpdating.project = "777536";
-        requestForUpdating.organisation = "grnet";
         requestForUpdating.infrastructure = "okeanos-knossos";
         requestForUpdating.installation = "GRNET-KNS";
         requestForUpdating.unitOfAccess = metricDefinitionResponse1.id;
@@ -953,7 +902,7 @@ public class InstallationEndpointTest {
                 .extract()
                 .as(InformativeResponse.class);
 
-        assertEquals("There is an Installation with the following combination : {"+requestForUpdating.project+", "+requestForUpdating.organisation+", "+requestForUpdating.installation+"}. Its id is "+installation.id, informativeResponse.message);
+        assertEquals("There is an Installation with the following combination : {777536, grnet, "+requestForUpdating.installation+"}. Its id is "+installation.id, informativeResponse.message);
     }
 
     private InstallationResponseDto createInstallation(InstallationRequestDto request, String user){

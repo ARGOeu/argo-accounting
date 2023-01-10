@@ -330,8 +330,8 @@ public class MetricEndpointTest {
         //then execute a request for creating a metric
 
         var requestForMetric = new MetricRequestDto();
-        requestForMetric.start = "2023-01-05T09:15:07Z";
-        requestForMetric.end = "2023-01-05T09:19:07Z";
+        requestForMetric.start = "3023-01-05T09:15:07Z";
+        requestForMetric.end = "3023-01-05T09:19:07Z";
         requestForMetric.value = 10.8;
         requestForMetric.metricDefinitionId = metricDefinitionResponse.id;
 

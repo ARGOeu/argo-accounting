@@ -10,28 +10,6 @@ import org.eclipse.microprofile.openapi.annotations.media.Schema;
 
 @Schema(name="UpdateInstallationRequest", description="An object represents a request for updating an existing Installation.")
 public class UpdateInstallationRequestDto {
-
-    @Schema(
-            type = SchemaType.STRING,
-            implementation = String.class,
-            description = "The Project that this Installation belongs to.",
-            example = "447535",
-            required = true
-    )
-    @NotFoundEntity(repository = ProjectRepository.class, id = String.class, message = "There is no Project with the following id:")
-    @JsonProperty("project")
-    public String project;
-
-    @Schema(
-            type = SchemaType.STRING,
-            implementation = String.class,
-            description = "The Provider that this Installation belongs to.",
-            example = "GRNET"
-    )
-    @JsonProperty("organisation")
-    @NotFoundEntity(repository = ProviderRepository.class, id = String.class, message = "There is no Provider with the following id:")
-    public String organisation;
-
     @Schema(
             type = SchemaType.STRING,
             implementation = String.class,
