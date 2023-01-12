@@ -5,6 +5,7 @@ import io.quarkus.oidc.UserInfo;
 import io.quarkus.security.Authenticated;
 import org.accounting.system.constraints.NotFoundEntity;
 import org.accounting.system.dtos.InformativeResponse;
+import org.accounting.system.dtos.authorization.CollectionAccessPermissionDto;
 import org.accounting.system.dtos.authorization.request.AssignRoleRequestDto;
 import org.accounting.system.dtos.authorization.request.DetachRoleRequestDto;
 import org.accounting.system.dtos.client.ClientResponseDto;
@@ -335,6 +336,32 @@ public class ClientEndpoint {
         var serverInfo = new AccountingUriInfo(serverUrl.concat(basePath).concat(uriInfo.getPath()));
 
         return Response.ok().entity(projectService.getClientPermissions(page-1, size, serverInfo)).build();
+    }
+
+    @Tag(name = "Client")
+    @org.eclipse.microprofile.openapi.annotations.Operation(
+            summary = "Returns the client general permissions.",
+            description = "This operation returns the client's permissions upon different Accounting Service collections.")
+    @APIResponse(
+            responseCode = "200",
+            description = "Client's General Permissions.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.ARRAY,
+                    implementation = CollectionAccessPermissionDto.class)))
+    @APIResponse(
+            responseCode = "500",
+            description = "Internal Server Errors.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+
+    @GET
+    @Path("/general-permissions")
+    @Produces(value = MediaType.APPLICATION_JSON)
+    @AccessPermission(collection = Collection.Client, operation = Operation.READ)
+    public Response getClientGeneralPermissions(){
+
+        return Response.ok().entity(clientService.getGeneralPermissions()).build();
     }
 
     public static class PageableClientResponseDto extends PageResource<ClientResponseDto> {

@@ -1,14 +1,18 @@
 package org.accounting.system.services.client;
 
 import io.quarkus.mongodb.panache.PanacheQuery;
+import io.quarkus.oidc.TokenIntrospection;
 import io.quarkus.panache.common.Page;
+import org.accounting.system.dtos.authorization.CollectionAccessPermissionDto;
 import org.accounting.system.dtos.client.ClientResponseDto;
 import org.accounting.system.dtos.pagination.PageResource;
 import org.accounting.system.entities.client.Client;
 import org.accounting.system.mappers.ClientMapper;
 import org.accounting.system.repositories.authorization.RoleRepository;
 import org.accounting.system.repositories.client.ClientRepository;
+import org.accounting.system.services.authorization.RoleService;
 import org.apache.commons.lang3.StringUtils;
+import org.eclipse.microprofile.config.inject.ConfigProperty;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
@@ -17,6 +21,7 @@ import javax.ws.rs.NotFoundException;
 import javax.ws.rs.core.UriInfo;
 import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 @ApplicationScoped
 public class ClientService {
@@ -26,6 +31,16 @@ public class ClientService {
 
     @Inject
     RoleRepository roleRepository;
+
+    @Inject
+    RoleService roleService;
+
+    @Inject
+    TokenIntrospection tokenIntrospection;
+
+    @ConfigProperty(name = "key.to.retrieve.id.from.access.token")
+    String key;
+
 
     /**
      * This method extracts specific information regarding the client from access token and stores it into the
@@ -112,5 +127,17 @@ public class ClientService {
         var client = clientRepository.detachRolesFromRegisteredClient(clientId, roles);
 
         return ClientMapper.INSTANCE.clientToResponse(client);
+    }
+
+    public Set<CollectionAccessPermissionDto> getGeneralPermissions(){
+
+        var roleNames = clientRepository.getClientRoles(tokenIntrospection.getJsonObject().getString(key));
+
+        var roles = roleNames
+                .stream()
+                .map(roleName->roleService.getRoleByName(roleName))
+                .collect(Collectors.toSet());
+
+        return roleService.mergeRoles(roles);
     }
 }

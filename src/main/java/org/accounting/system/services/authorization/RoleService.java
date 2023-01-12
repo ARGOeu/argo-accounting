@@ -118,9 +118,14 @@ public class RoleService {
         return precedence;
     }
 
-    public void checkIfRoleExists(String roleName){
+    public Role checkIfRoleExists(String roleName){
 
-        roleRepository.getRoleByName(roleName).orElseThrow(()->new NotFoundException("There is no Role with name : "+roleName));
+        return roleRepository.getRoleByName(roleName).orElseThrow(()->new NotFoundException("There is no Role with name : "+roleName));
+    }
+
+    public Role getRoleByName(String name){
+
+        return checkIfRoleExists(name);
     }
 
     /**

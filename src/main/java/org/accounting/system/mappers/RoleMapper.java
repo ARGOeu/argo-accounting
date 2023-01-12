@@ -38,6 +38,8 @@ public interface RoleMapper {
 
     Set<CollectionAccessPermissionDto> collectionPermissionsToDto(List<CollectionPermission> permissions);
 
+    Set<CollectionAccessPermissionDto> collectionPermissionsSetToDto(Set<CollectionPermission> permissions);
+
     Set<CollectionPermission> updateCollectionPermissionToCollectionPermission(Set<UpdateCollectionAccessPermissionDto> permissions);
 
     Role requestToRole(RoleRequestDto request);
