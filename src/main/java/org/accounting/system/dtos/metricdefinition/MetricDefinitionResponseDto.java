@@ -55,6 +55,15 @@ public class MetricDefinitionResponseDto {
     @JsonProperty("metric_type")
     public String metricType;
 
+    @Schema(
+            type = SchemaType.STRING,
+            implementation = String.class,
+            description = "The client's voperson_id who has created the Metric Definition.",
+            example = "ee4r4fffff368faa27442e7@grnet.account"
+    )
+    @JsonProperty("creator_id")
+    public String creatorId;
+
     public String getId() {
         return id;
     }
