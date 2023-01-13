@@ -47,4 +47,13 @@ public class ProviderResponseDto {
     )
     @JsonProperty("logo")
     public String logo;
+
+    @Schema(
+            type = SchemaType.STRING,
+            implementation = String.class,
+            description = "The client's voperson_id who has created the Provider.",
+            example = "ee4r4fffff368faa27442e7@grnet.account"
+    )
+    @JsonProperty("creator_id")
+    public String creatorId;
 }

@@ -30,6 +30,7 @@ public interface ProviderMapper {
 
     Provider requestToProvider(ProviderRequestDto request);
 
+    @Mapping(target = "creatorId", expression = "java(StringUtils.isNotEmpty(provider.getCreatorId()) ? provider.getCreatorId() : StringUtils.EMPTY)")
     ProviderResponseDto providerToResponse(Provider provider);
 
     @Mapping(target = "id", expression = "java(StringUtils.isNotEmpty(request.id) ? request.id : provider.getId())")
