@@ -536,7 +536,7 @@ public class MetricDefinitionEndpointTest {
 
         var metricDefinitionToBeUpdated = new MetricDefinitionRequestDto();
 
-        metricDefinitionToBeUpdated.metricName = "METRIC";
+        metricDefinitionToBeUpdated.metricName = "metric";
 
         Mockito.when(readPredefinedTypesService.searchForUnitType(any())).thenReturn(Optional.empty());
         Mockito.when(readPredefinedTypesService.searchForMetricType(any())).thenReturn(Optional.empty());
@@ -553,7 +553,7 @@ public class MetricDefinitionEndpointTest {
                 .extract()
                 .as(InformativeResponse.class);
 
-        assertEquals("There is a Metric Definition with unit type "+request1.unitType+" and name "+metricDefinitionToBeUpdated.metricName+". Its id is "+metricDefinition.getId().toString(), informativeResponse.message);
+        assertEquals("The combination of unit_type and metric_name should be unique. A Metric Definition with that combination has already been created.", informativeResponse.message);
     }
 
     @Test
