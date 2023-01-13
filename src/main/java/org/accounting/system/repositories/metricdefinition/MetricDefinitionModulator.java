@@ -7,7 +7,6 @@ import org.accounting.system.entities.MetricDefinition;
 import org.accounting.system.exceptions.ConflictException;
 import org.accounting.system.mappers.MetricDefinitionMapper;
 import org.accounting.system.repositories.modulators.AbstractModulator;
-import org.apache.commons.lang3.StringUtils;
 import org.bson.types.ObjectId;
 
 import javax.inject.Inject;
@@ -34,10 +33,6 @@ public class MetricDefinitionModulator extends AbstractModulator<MetricDefinitio
         MetricDefinition entity = findById(id);
 
         MetricDefinitionMapper.INSTANCE.updateMetricDefinitionFromDto(request, entity);
-
-        if(!StringUtils.isAllBlank(request.metricName, request.unitType)){
-            exist(entity.getUnitType(), entity.getMetricName());
-        }
 
         return super.updateEntity(entity, id);
     }
