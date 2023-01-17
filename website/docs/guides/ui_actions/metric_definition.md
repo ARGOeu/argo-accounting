@@ -4,7 +4,7 @@ title: Metric Definition
 sidebar_position: 1
 ---
 
-Please refer to Metric Definition <a href="https://argoeu.github.io/argo-accounting/docs/api/metric_definition">collection</a> for more details.
+Please refer to Metric Definition [collection](/docs/api/metric_definition.md) for more details.
 To manage the Metric Definitions via a website, please visit the Metric Definition tab on the <a href="https://accounting.eosc-portal.eu/metrics-definitions">Accounting User Interface</a>.
 
 ### Create a Metric Definition
