@@ -26,6 +26,9 @@ A cron job, which runs every day at 12 am, collects the Providers and stores the
 
 If the Provider is not registered in the EOSC Resource Catalogue, the API offers the functionality to create a new one. Below, we will describe the available operations regarding the Provider that you can interact with.
 
+**Bear in mind that** the Provider response contains the property `creator_id`. If the `creator_id` is empty, the Provider comes from the EOSC Resource Catalogue.
+Otherwise, it was generated through the Accounting Service.
+
 ### [POST] - Create a new Provider
 
 You can submit a new Provider by executing the following POST request:
@@ -41,21 +44,22 @@ Authorization: Bearer {token}
   "name" : "National Infrastructures for Research and Technology",
   "website" : "https://www.grnet.gr/",
   "abbreviation" : "GRNET",
-"logo": : "https://grnet.gr/wp-content/uploads/sites/13/2016/04/GRNET_Logo_Transparent-e1431694322566-1.png"
+  "logo": : "https://grnet.gr/wp-content/uploads/sites/13/2016/04/GRNET_Logo_Transparent-e1431694322566-1.png"
 }
 ```
 
 The response is the stored Provider:
 
-Success Response `200 OK`
+Success Response `201 OK`
 
 ```
 {
-"id" : "grnet",
-"name" : "National Infrastructures for Research and Technology",
-"website" : "https://www.grnet.gr/",
-"abbreviation" : "GRNET",
-"logo": : "https://grnet.gr/wp-content/uploads/sites/13/2016/04/GRNET_Logo_Transparent-e1431694322566-1.png"
+  "id" : "grnet",
+  "name" : "National Infrastructures for Research and Technology",
+  "website" : "https://www.grnet.gr/",
+  "abbreviation" : "GRNET",
+  "logo": : "https://grnet.gr/wp-content/uploads/sites/13/2016/04/GRNET_Logo_Transparent-e1431694322566-1.png",
+  "creator_id": "115143399384cc3177df5377691ccdbb284cb245fad1c@aai.eosc-portal.eu"
 }
 ```
 
@@ -133,7 +137,8 @@ Success Response `200 OK`
    "name": "Open Science MOOC",
    "website": "https://opensciencemooc.eu/",
    "abbreviation": "OSMOOC",
-   "logo": "https://opensciencemooc.eu/assets/img/osm/osm-logo.png"
+   "logo": "https://opensciencemooc.eu/assets/img/osm/osm-logo.png",
+   "creator_id": "115143399384cc3177df5377691ccdbb284cb245fad1c@aai.eosc-portal.eu"
 }
 ```
 
@@ -171,104 +176,119 @@ Success Response `200 OK`
            "name": "Open Biomedical Engineering e-platform for Innovation through Education",
            "website": "http://ubora-biomedical.org/",
            "abbreviation": "UBORA",
-           "logo": "http://ubora-biomedical.org/wp-content/uploads/2017/01/UBORA-Logo-Final-JPEGb.jpg"
+           "logo": "http://ubora-biomedical.org/wp-content/uploads/2017/01/UBORA-Logo-Final-JPEGb.jpg",
+           "creator_id": ""
        },
        {
            "id": "bioexcel",
            "name": "BioExcel Centre of Excellence",
            "website": "https://bioexcel.eu/",
            "abbreviation": "BIOEXCEL",
-           "logo": "https://bioexcel.eu/wp-content/uploads/2017/02/Bioexcell_logo_payoff_1080px_transp.png"
+           "logo": "https://bioexcel.eu/wp-content/uploads/2017/02/Bioexcell_logo_payoff_1080px_transp.png",
+           "creator_id": ""
        },
        {
            "id": "surf-nl",
            "name": "SURF",
            "website": "https://www.surf.nl/",
            "abbreviation": "SURF",
-           "logo": "https://www.surf.nl/themes/surf/logo.svg"
+           "logo": "https://www.surf.nl/themes/surf/logo.svg",
+           "creator_id": ""
        },
        {
            "id": "emso_eric",
            "name": "European Multidisciplinary Seafloor and water column Observatory",
            "website": "http://emso.eu",
            "abbreviation": "EMSO ERIC",
-           "logo": "http://emso.eu/wp-content/uploads/2018/03/logo-w-300.png"
+           "logo": "http://emso.eu/wp-content/uploads/2018/03/logo-w-300.png",
+           "creator_id": ""
        },
        {
            "id": "elixir-belgium",
            "name": "ELIXIR Belgium",
            "website": "https://www.elixir-belgium.org/",
            "abbreviation": "ELIXIR Belgium",
-           "logo": "https://www.elixir-belgium.org/sites/default/files/logo.jpg"
+           "logo": "https://www.elixir-belgium.org/sites/default/files/logo.jpg",
+           "creator_id": ""
        },
            "id": "cyi",
            "name": "The Cyprus Institute",
            "website": "https://www.cyi.ac.cy/",
            "abbreviation": "CyI",
-           "logo": "https://numismatics-medieval.dioptra.cyi.ac.cy/sites/default/files/CyI.png"
+           "logo": "https://numismatics-medieval.dioptra.cyi.ac.cy/sites/default/files/CyI.png",
+           "creator_id": ""
        },
        {
            "id": "uni-freiburg",
            "name": "University of Freiburg",
            "website": "https://www.uni-freiburg.de",
            "abbreviation": "UNI FREIBURG",
-           "logo": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSH9gnjhQ5503SSs1_6E8Rr7UITWeacwmm3u3rK1eSdLQiKdywpqQ&s"
+           "logo": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSH9gnjhQ5503SSs1_6E8Rr7UITWeacwmm3u3rK1eSdLQiKdywpqQ&s",
+           "creator_id": ""
        },
        {
            "id": "dcc-uk",
            "name": "Digital Curation Centre",
            "website": "https://www.dcc.ac.uk/",
            "abbreviation": "DMPonline",
-           "logo": "https://arts.unimelb.edu.au/__data/assets/image/0009/2913867/DDC2019.jpg"
+           "logo": "https://arts.unimelb.edu.au/__data/assets/image/0009/2913867/DDC2019.jpg",
+           "creator_id": ""
        },
        {
            "id": "cloudferro",
            "name": "CloudFerro",
            "website": "https://cloudferro.com/",
            "abbreviation": "CloudFerro",
-           "logo": "https://cf2.cloudferro.com:8080/94d2acacf10346a18c289981f4d0bd33:cloudferro_cms/static/img/cloudferro-logo.svg"
+           "logo": "https://cf2.cloudferro.com:8080/94d2acacf10346a18c289981f4d0bd33:cloudferro_cms/static/img/cloudferro-logo.svg",
+           "creator_id": ""
        },
        {
            "id": "psnc",
            "name": "Poznan Supercomputing and Networking Center",
            "website": "https://www.psnc.pl/",
            "abbreviation": "PSNC",
-           "logo": "https://www.psnc.pl/files/PSNC_logo_.svg"
+           "logo": "https://www.psnc.pl/files/PSNC_logo_.svg",
+           "creator_id": ""
        },
        {
            "id": "forschungsdaten",
            "name": "Forschungsdaten.info",
            "website": "https://www.forschungsdaten.info/praxis-kompakt/english-pages/",
            "abbreviation": "forschungsdaten",
-           "logo": "https://www.forschungsdaten.info/typo3temp/secure_downloads/99679/0/ba8ae03722cb4bfb8baa63cfb1ab045bb7a03c78/csm_logo_long_seeblau100_af47d6577b.png"
+           "logo": "https://www.forschungsdaten.info/typo3temp/secure_downloads/99679/0/ba8ae03722cb4bfb8baa63cfb1ab045bb7a03c78/csm_logo_long_seeblau100_af47d6577b.png",
+           "creator_id": ""
        },
        {
            "id": "umg-br",
            "name": "University of Minas Gerais",
            "website": "https://ufmg.br/",
            "abbreviation": "UMG",
-           "logo": "https://upload.wikimedia.org/wikipedia/commons/thumb/2/2d/Symbolfumg.jpg/375px-Symbolfumg.jpg"
+           "logo": "https://upload.wikimedia.org/wikipedia/commons/thumb/2/2d/Symbolfumg.jpg/375px-Symbolfumg.jpg",
+           "creator_id": ""
        },
        {
            "id": "coard",
            "name": "Collaborative Open Access Research and Development",
            "website": "https://coard.community/",
            "abbreviation": "COARD",
-           "logo": "https://images.squarespace-cdn.com/content/v1/5f44f92bd523407260108ba6/1598444273981-CRFZ1SC35B9VTRNT0QUS/Coard+logo%402x.png"
+           "logo": "https://images.squarespace-cdn.com/content/v1/5f44f92bd523407260108ba6/1598444273981-CRFZ1SC35B9VTRNT0QUS/Coard+logo%402x.png",
+           "creator_id": ""
        },
        {
            "id": "erasmusmc",
            "name": "Erasmus Medical Center",
            "website": "https://www.erasmusmc.nl/",
            "abbreviation": "Erasmus MC",
-           "logo": "https://seeklogo.com/images/E/Erasmus_MC-logo-B857CA0725-seeklogo.com.png"
+           "logo": "https://seeklogo.com/images/E/Erasmus_MC-logo-B857CA0725-seeklogo.com.png",
+           "creator_id": ""
        },
        {
            "id": "osmooc",
            "name": "Open Science MOOC",
            "website": "https://opensciencemooc.eu/",
            "abbreviation": "OSMOOC",
-           "logo": "https://opensciencemooc.eu/assets/img/osm/osm-logo.png"
+           "logo": "https://opensciencemooc.eu/assets/img/osm/osm-logo.png",
+           "creator_id": ""
        }
    ],
    "links": [

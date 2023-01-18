@@ -11,9 +11,8 @@ If you are permitted to act on one or more Projects, via this guide you can see 
 
 ### Before you start 
 
-You can manage a Project.<br/>
-**1.** Register to Accounting Service.<br/>
-**2.** Contact the system administrator, to assign you one or more roles on the Project. 
+**1.** [Register](/docs/guides/register.md) to Accounting Service.<br/>
+**2.** [Contact](/docs/authorization/assigning_roles.md) the system administrator, to assign you one or more roles on the Project. 
 
 
 **ΝΟΤΕ** <br/>
