@@ -53,7 +53,8 @@ Success Response `201 CREATED`
         "metric_name": "lalala",
         "metric_description": "Number of users",
         "unit_type": "#",
-        "metric_type": "aggregated"
+        "metric_type": "aggregated",
+        "creator_id": "115143399384cc3177df5377691ccdbb284cb245fad1c@aai.eosc-portal.eu"
     }
 }
 ```
