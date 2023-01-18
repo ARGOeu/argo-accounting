@@ -16,13 +16,18 @@ curl http://localhost:8080/accounting-system/metric-definitions
    -H "Authorization: Bearer {token}"
 ```
 
-There is an ancillary web page at `{accounting_system_host}` where you can identify yourself. 
+There is an ancillary web page at [Accounting Service](https://accounting.devel.argo.grnet.gr) where you can identify yourself. 
 
 ![Login Page](assets/accounting_system_web_page.png)
 
-This page is responsible for :
--   redirecting a user to EOSC Core Infrastructure Proxy in order to be authenticated
-    ![Login Page](assets/aai_login_page.png)    
+To proceed, please click on `EOSC Core Infrastructure Proxy`. Then, click the `Authorise` button.
 
--   displaying the obtained token
-    ![Login Page](assets/obtained_token.png)    
+![Authorise Button](assets/authorise_button.png)
+
+Subsequently, choose your preferred Account to authenticate yourself.
+
+![Login Page](assets/aai_login_page.png)    
+
+Upon successful login, the obtained token is displayed.
+
+![Login Page](assets/obtained_token.png)    
