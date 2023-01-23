@@ -195,36 +195,63 @@ If the operation is successful, you get a list of metrics, for example:
     "content": [
         {
             "id": "6360c6283b4ae429c92409d9",
-            "metric_definition_id": "6360c5d63b4ae429c92409d7",
             "time_period_start": "2020-04-05T09:13:07Z",
             "time_period_end": "2020-10-08T09:13:07Z",
             "value": 1000.0,
             "project": "El_CapiTun",
             "provider": "meeo",
             "installation_id": "6360c5f23b4ae429c92409d8",
-            "project_id": "750802"
+            "project_id": "750802",
+             "metric_definition": [
+                {
+                    "creatorId": "54e083ba3a928819926f31c14dcd4c5a5249fb801d1e5e64b6e83896102e1a6f@aai.eosc-portal.eu",
+                    "id": "63d0e2c471b9a53f199a46b0",
+                    "metricName": "TB/YEAR",
+                    "metricDescription": "Terrabyte Per Year",
+                    "unitType": "TB/year",
+                    "metricType": "count"
+                }
+            ]
         },
         {
             "id": "6360c6543b4ae429c92409dc",
-            "metric_definition_id": "6360c5d63b4ae429c92409d7",
             "time_period_start": "2022-01-05T09:13:07Z",
             "time_period_end": "2022-02-08T09:13:07Z",
             "value": 1000.0,
             "project": "El_CapiTun",
             "provider": "meeo",
             "installation_id": "6360c5f23b4ae429c92409d8",
-            "project_id": "750802"
+            "project_id": "750802",
+             "metric_definition": [
+                {
+                    "creatorId": "54e083ba3a928819926f31c14dcd4c5a5249fb801d1e5e64b6e83896102e1a6f@aai.eosc-portal.eu",
+                    "id": "63d0e2c471b9a53f199a46b0",
+                    "metricName": "TB/YEAR",
+                    "metricDescription": "Terrabyte Per Year",
+                    "unitType": "TB/year",
+                    "metricType": "count"
+                }
+            ]
         },
         {
             "id": "6360c63a3b4ae429c92409db",
-            "metric_definition_id": "6360c5d63b4ae429c92409d7",
             "time_period_start": "2022-04-05T09:13:07Z",
             "time_period_end": "2022-10-08T09:13:07Z",
             "value": 1000.0,
             "project": "El_CapiTun",
             "provider": "meeo",
             "installation_id": "6360c5f23b4ae429c92409d8",
-            "project_id": "750802"
+            "project_id": "750802",
+             "metric_definition": [
+                {
+                    "creatorId": "54e083ba3a928819926f31c14dcd4c5a5249fb801d1e5e64b6e83896102e1a6f@aai.eosc-portal.eu",
+                    "id": "63d0e2c471b9a53f199a46b0",
+                    "metricName": "TB/YEAR",
+                    "metricDescription": "Terrabyte Per Year",
+                    "unitType": "TB/year",
+                    "metricType": "count"
+                }
+            ]
         }
     ],
     "links": []

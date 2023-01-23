@@ -1,12 +1,15 @@
 package org.accounting.system.entities.projections;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import org.accounting.system.entities.MetricDefinition;
 import org.bson.codecs.pojo.annotations.BsonProperty;
 import org.bson.types.ObjectId;
 import org.eclipse.microprofile.openapi.annotations.enums.SchemaType;
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
 
 import java.time.Instant;
+import java.util.List;
+
 
 @Schema(name="Metric", description="An object represents the stored Metric. It also contains the hierarchical structure in which it belongs.")
 public class MetricProjection {
@@ -20,17 +23,7 @@ public class MetricProjection {
     @JsonProperty("id")
     private ObjectId id;
 
-    @Schema(
-            type = SchemaType.STRING,
-            implementation = String.class,
-            description = "Metric Definition ID.",
-            example = "507f1f77bcf86cd799439011"
-    )
-    @JsonProperty("metric_definition_id")
-    @BsonProperty("metric_definition_id")
-    private String metricDefinitionId;
-
-    @Schema(
+   @Schema(
             type = SchemaType.STRING,
             implementation = Instant.class,
             description = "Timestamp of the starting date time.",
@@ -98,6 +91,19 @@ public class MetricProjection {
     @BsonProperty("project_id")
     private String projectId;
 
+   @JsonProperty("metric_definition")
+   @BsonProperty("metric_definition")
+
+    private List<MetricDefinition> metricDefinition;
+
+    public List<MetricDefinition> getMetricDefinition() {
+        return metricDefinition;
+    }
+
+    public void setMetricDefinition(List<MetricDefinition> metricDefinition) {
+        this.metricDefinition = metricDefinition;
+    }
+
     public String getInstallationId() {
         return installationId;
     }
@@ -120,16 +126,9 @@ public class MetricProjection {
 
     public void setId(ObjectId id) {
         this.id = id;
-    }
-
-    public String getMetricDefinitionId() {
-        return metricDefinitionId;
-    }
-
-    public void setMetricDefinitionId(String metricDefinitionId) {
-        this.metricDefinitionId = metricDefinitionId;
-    }
-
+    }//    public String getMetricDefinitionId() {
+//        return metricDefinitionId;
+//    }
     public Instant getStart() {
         return start;
     }
@@ -169,4 +168,6 @@ public class MetricProjection {
     public void setProvider(String provider) {
         this.provider = provider;
     }
+
+
 }
