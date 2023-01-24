@@ -6,17 +6,17 @@ sidebar_position: 2
 
 Metrics are measures of quantitative assessment commonly used for assessing, comparing, and tracking usage or performance of a service. They are the main indicators.
 
-A metric definition is the way to represent and describe the type of the metrics.  A Metric Definition consists of the metadata describing a Metric. The client can interact through several operations with the API in order to create, update, delete or fetch a Metric Definition. The aforementioned operations are described below.
+A metric definition is the way to represent and describe the type of the metrics. A Metric Definition consists of the metadata describing a Metric. The client can interact through several operations with the API in order to create, update, delete or fetch a Metric Definition. The aforementioned operations are described below.
 
 The Metric Definition can be expressed by the following structure:
 
 | Field          	| Description   	                      | 
 |------------------	|---------------------------------------- |
-| id             	| Metric Definition unique id             |
-| metric_name      	| Metric Name to be used for presentation |
-| metric_description      	| Short Description of how the metric is collected |
-| unit_type      	| Predefined List of Unit Types |
-| metric_type      	| Predefined List of Metric Types |
+| id             	| A unique identifier             |
+| metric_name      	| Name to be used for describing a Metric |
+| metric_description      	| Short Description of a Metric Definition |
+| [unit_type](./unit_type.md)      	| Expresses and measures physical quantities used in various infrastructures, service providers, and projects.|
+| metric_type      	| Defines how the physical quantities have been collected |
 
 ### [POST] - Create a Metric Definition
 
@@ -30,10 +30,10 @@ Content-type: application/json
 Authorization: Bearer {token}
 
 {
-"metric_name" : "number_of_users",
-"metric_description" : "Number of users",
-"unit_type" : "#",
-"metric_type" : "aggregated"
+    "metric_name" : "number_of_users",
+    "metric_description" : "Number of users",
+    "unit_type" : "#",
+    "metric_type" : "aggregated"
 }
 ```
 
@@ -43,12 +43,12 @@ Success Response `201 CREATED`
 
 ```
 {
-  "metric_definition_id": "61dc142f6a278e43e8d6b3be",
-  "metric_name" : "number_of_users",
-  "metric_description" : "Number of users",
-  "unit_type" : "#",
-  "metric_type" : "aggregated",
-  "creator_id": "115143399384cc3177df5377691ccdbb284cb245fad1c@aai.eosc-portal.eu"
+    "metric_definition_id": "61dc142f6a278e43e8d6b3be",
+    "metric_name" : "number_of_users",
+    "metric_description" : "Number of users",
+    "unit_type" : "#",
+    "metric_type" : "aggregated",
+    "creator_id": "115143399384cc3177df5377691ccdbb284cb245fad1c@aai.eosc-portal.eu"
 }
 ```
 
@@ -67,25 +67,19 @@ The response returned to the client is the following:
 Success Response `200 OK`
 ```
 {
-  "id" : "61dff744ba5b5f60791bd09d",
-  "metric_name" : "number_of_users",
-  "metric_description" : "Number of users",
-  "unit_type" : "#",
-  "metric_type" : "aggregated"
+    "id" : "61dff744ba5b5f60791bd09d",
+    "metric_name" : "number_of_users",
+    "metric_description" : "Number of users",
+    "unit_type" : "#",
+    "metric_type" : "aggregated"
 }
-```
-
-In order to get all records, the following request should be executed:
-
-```
-GET /accounting-system/metric-definitions
-
-Authorization: Bearer {token}
 ```
 
 ### [PATCH] - Update a Metric Definition
 
 The client can update a Metric Definition using the following PATCH request. The URL should be filled in with the metric definition id to be updated.
+
+Bear in mind that you cannot update an existing Metric Definition if there are Metrics assigned to it.
 
 ```
 PATCH /accounting-system/metric-definitions/{metric_definition_id}
@@ -94,7 +88,7 @@ Content-type: application/json
 Authorization: Bearer {token}
 
 {
-  attributes_to_be_updated
+    attributes_to_be_updated
 }
 ```
 
@@ -104,7 +98,7 @@ Success Response `200 OK`
 
 ```
 {
-   "updated_entity"
+    "updated_entity"
 }
 ```
 
@@ -117,7 +111,7 @@ Content-type: application/json
 Authorization: Bearer {token}
 
 {  
-"metric_type": "metric_type_to_be_updated"
+    "metric_type": "metric_type_to_be_updated"
 }
 ```
 
@@ -130,7 +124,7 @@ You can only delete a Metric Definition that does not have any Metrics assigned 
 Metric Definition can be deleted by executing the following request:
 
 ```
-DELETE /accounting-system/metric-definitions/{metric-definition-id}
+DELETE /accounting-system/metric-definitions/{metric_definition_id}
 
 Authorization: Bearer {token}
 ```
@@ -146,11 +140,10 @@ Success Response `200 OK`
 ```
 
 
-### [GET]  - Fetch all Metric Definitions
+### [GET]  - Fetch all the Metric Definitions
 
-You can fetch all Metric Definitions, that exist to the accounting system.
+You can also fetch all the Metric Definitions that exist to the accounting system.
 
-A list of Metric Definitions can be fetched by executing the following request:
 
 ```
 GET /accounting-system/metric-definitions

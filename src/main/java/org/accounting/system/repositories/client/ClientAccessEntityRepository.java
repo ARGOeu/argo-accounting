@@ -1,19 +1,14 @@
 package org.accounting.system.repositories.client;
 
 import org.accounting.system.entities.client.Client;
-import org.accounting.system.repositories.modulators.AccessControlModulator;
-import org.accounting.system.repositories.modulators.AccessEntityModulator;
+import org.accounting.system.repositories.modulators.AccessibleModulator;
 
 import javax.enterprise.context.ApplicationScoped;
-import javax.inject.Inject;
 import javax.ws.rs.ForbiddenException;
 import java.util.Set;
 
 @ApplicationScoped
-public class ClientAccessEntityRepository extends AccessEntityModulator<Client, String> {
-
-    @Inject
-    ClientAccessControlRepository clientAccessControlRepository;
+public class ClientAccessEntityRepository extends AccessibleModulator<Client, String> {
 
     /**
      * Delegates the execution to clientAccessControlRepository since you cannot assign roles to yourself.
@@ -24,7 +19,7 @@ public class ClientAccessEntityRepository extends AccessEntityModulator<Client, 
             throw new ForbiddenException("You cannot assign roles to yourself.");
         }
 
-        return clientAccessControlRepository.assignRolesToRegisteredClient(clientId, roles);
+        throw new ForbiddenException("You have no access to execute this operation.");
     }
 
     /**
@@ -36,11 +31,6 @@ public class ClientAccessEntityRepository extends AccessEntityModulator<Client, 
             throw new ForbiddenException("You cannot detach roles from yourself.");
         }
 
-        return clientAccessControlRepository.detachRolesFromRegisteredClient(clientId, roles);
-    }
-
-    @Override
-    public AccessControlModulator<Client, String> accessControlModulator() {
-        return clientAccessControlRepository;
+        throw new ForbiddenException("You have no access to execute this operation.");
     }
 }

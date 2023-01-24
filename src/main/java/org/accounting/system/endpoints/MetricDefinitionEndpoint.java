@@ -164,7 +164,7 @@ public class MetricDefinitionEndpoint {
 
         var serverInfo = new AccountingUriInfo(serverUrl.concat(basePath).concat(uriInfo.getPath()));
 
-        utility.exist(metricDefinitionRequestDto);
+        metricDefinitionService.exist(metricDefinitionRequestDto.unitType, metricDefinitionRequestDto.metricName);
 
         var response = metricDefinitionService.save(metricDefinitionRequestDto);
 
@@ -174,7 +174,7 @@ public class MetricDefinitionEndpoint {
     @Tag(name = "Metric Definition")
     @org.eclipse.microprofile.openapi.annotations.Operation(
             summary = "Returns the recorded Metric Definitions.",
-            description = "This operation fetches all database records of Metric Definition. By default, the first page of 10 Providers will be returned. You can tune the default values by using the query parameters page and size.")
+            description = "This operation fetches all database records of Metric Definition. By default, the first page of 10 Metric Definitions will be returned. You can tune the default values by using the query parameters page and size.")
     @APIResponse(
             responseCode = "200",
             description = "Array of Metric Definitions.",
@@ -348,7 +348,7 @@ public class MetricDefinitionEndpoint {
     @Tag(name = "Metric Definition")
     @org.eclipse.microprofile.openapi.annotations.Operation(
             summary = "Deletes an existing Metric Definition.",
-            description = "You can delete only a Metric Definition that doesn’t have any assigned Metrics to it. If the Metric Definition has no Metrics, you can safely delete it.")
+            description = "You can only delete a Metric Definition that doesn’t have any assigned Metrics to it. If the Metric Definition has no Metrics, you can safely delete it.")
     @APIResponse(
             responseCode = "200",
             description = "Metric Definition has been deleted successfully.",
@@ -408,7 +408,7 @@ public class MetricDefinitionEndpoint {
         return Response.ok().entity(successResponse).build();
     }
 
-    @Tag(name = "Unit Type")
+    @Tag(name = "Metric Definition")
     @org.eclipse.microprofile.openapi.annotations.Operation(
             operationId = "unit-type",
             summary = "Returns the unit types.",

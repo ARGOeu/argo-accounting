@@ -48,6 +48,11 @@ public enum Collection {
         public Set<Operation> availableOperations() {
             return Set.of(Operation.READ, Operation.ASSIGN_ROLE, Operation.DETACH_ROLE);
         }
+    },UnitType{
+        @Override
+        public Set<Operation> availableOperations() {
+            return Set.of(Operation.CREATE, Operation.DELETE, Operation.UPDATE, Operation.READ);
+        }
     };
 
     public abstract Set<Operation> availableOperations();

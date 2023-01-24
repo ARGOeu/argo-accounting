@@ -115,6 +115,27 @@
                 access_type: "ALWAYS"
                 }
                 ],
+                collection: "UnitType"
+                },
+                {
+                access_permissions: [
+                {
+                operation: "CREATE",
+                access_type: "ALWAYS"
+                },
+                {
+                operation: "UPDATE",
+                access_type: "ALWAYS"
+                },
+                {
+                operation: "DELETE",
+                access_type: "ALWAYS"
+                },
+                {
+                operation: "READ",
+                access_type: "ALWAYS"
+                }
+                ],
                 collection: "Role"
                 },
                 {
@@ -178,6 +199,15 @@
                 }
                 ],
                 collection: "MetricDefinition"
+                },
+                {
+                access_permissions: [
+                {
+                operation: "READ",
+                access_type: "ALWAYS"
+                }
+                ],
+                collection: "UnitType"
                 },
                 {
                 access_permissions: [
@@ -560,5 +590,114 @@
                 {unique: false, name: "hierarchical_relation_external_id"}
             </ext:options>
         </ext:createIndex>
+    </changeSet>
+
+    <changeSet id="15" author="accounting-system">
+        <ext:createIndex collectionName="UnitType">
+            <ext:keys>
+                { unit: 1}
+            </ext:keys>
+            <ext:options>
+                {unique: true, name: "unique_unit_type", collation: { locale: "en" }}
+            </ext:options>
+        </ext:createIndex>
+    </changeSet>
+
+    <changeSet id="16" author="accounting-system">
+        <ext:insertOne collectionName="Role">
+            <ext:document>
+                {
+                system: true,
+                name: "unit_type_creator",
+                description: "unit_type_creator can create new Unit Types, and read all Unit Types but can update and delete only the entities it created.",
+                collections_access_permissions: [
+                {
+                access_permissions: [
+                {
+                operation: "CREATE",
+                access_type: "ALWAYS"
+                },
+                {
+                operation: "UPDATE",
+                access_type: "ENTITY"
+                },
+                {
+                operation: "DELETE",
+                access_type: "ENTITY"
+                },
+                {
+                operation: "READ",
+                access_type: "ALWAYS"
+                }
+                ],
+                collection: "UnitType"
+                }]
+                }
+            </ext:document>
+        </ext:insertOne>
+    </changeSet>
+
+    <changeSet id="17" author="accounting-system">
+        <ext:insertMany collectionName="UnitType">
+            <ext:documents>
+                [
+                {
+                unit: "TB",
+                description: "terabyte",
+                creatorId: ""
+                },
+                {
+                unit: "TB/year",
+                description: "terabyte per year",
+                creatorId: ""
+                },
+                {
+                unit: "Endpoints Monitored/hour",
+                description: "Endpoints Monitored per hour",
+                creatorId: ""
+                },
+                {
+                unit: "Messages/hour",
+                description: "Messages per hour",
+                creatorId: ""
+                },
+                {
+                unit: "Service Updates",
+                description: "Service Updates",
+                creatorId: ""
+                },
+                {
+                unit: "#",
+                description: "number of",
+                creatorId: ""
+                },
+                {
+                unit: "count",
+                description: "count of",
+                creatorId: ""
+                },
+                {
+                unit: "API reqs",
+                description: "API requests",
+                creatorId: ""
+                },
+                {
+                unit: "PID prefixes",
+                description: "PID prefixes",
+                creatorId: ""
+                },
+                {
+                unit: "CPU Time",
+                description: "the exact amount of time that the CPU has spent processing data",
+                creatorId: ""
+                },
+                {
+                unit: "s",
+                description: "second",
+                creatorId: ""
+                }
+                ]
+            </ext:documents>
+        </ext:insertMany>
     </changeSet>
 </databaseChangeLog>

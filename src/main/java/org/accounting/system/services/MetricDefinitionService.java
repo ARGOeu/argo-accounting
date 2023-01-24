@@ -128,7 +128,7 @@ public class MetricDefinitionService {
     }
 
     /**
-     * Delete a Metric Definition by given id.
+     * Deletes a Metric Definition by given id.
      * @param metricDefinitionId The Metric Definition to be deleted.
      * @return If the operation is successful or not.
      */
@@ -140,8 +140,8 @@ public class MetricDefinitionService {
     /**
      *Τwo Metric Definitions are considered similar when having the same unit type and name.
      *
-     * @param unitType Unit Type of the Metric.
-     * @param name The name of the Metric.
+     * @param unitType The Metric Definition Unit Type.
+     * @param name The Metric Definition name.
      * @throws ConflictException If Metric Definition already exists.
      */
     public void exist(String unitType, String name){
@@ -180,6 +180,7 @@ public class MetricDefinitionService {
 
         return new PageResource<>(panacheQuery, MetricMapper.INSTANCE.metricsToResponse(panacheQuery.list()), uriInfo);
     }
+
     public PageResource<MetricDefinitionResponseDto> searchMetricDefinition( String json, boolean isAlwaysPermission, int page, int size,UriInfo uriInfo) throws ParseException, NoSuchFieldException {
 
         List<String> entityIds=new ArrayList<>();
@@ -192,5 +193,13 @@ public class MetricDefinitionService {
 
     }
 
+    /**
+     * The method result is whether an actual Unit Type is used in an existing Metric Definition.
+     * @param unitType The Unit Type to be checked.
+     * @return Whether the given Unit Type is used in any Metric Definition.
+     */
+    public boolean unitTypeUsedInMetricDefinition(String unitType){
 
+        return metricDefinitionRepository.unitTypeUsedInMetricDefinition(unitType);
+    }
 }

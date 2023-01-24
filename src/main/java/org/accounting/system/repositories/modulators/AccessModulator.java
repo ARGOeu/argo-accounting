@@ -16,10 +16,7 @@ import java.util.List;
 import java.util.Set;
 
 /**
- * This {@link AccessModulator} defines the operations that determine the degree of accessibility to Collection Entities. Each
- * class that extends {@link AccessModulator} must specify which entities will be accessible.
- * Since it implements {@link PanacheMongoRepository}, it also provides access to mongo collections. Because every Accounting
- * System API class that extends {@link Entity}, it represents a mongo collection.
+ * It provides access to mongo collections, since it implements {@link PanacheMongoRepository}.
  *
  * @param <E> Generic class that represents a mongo collection.
  */

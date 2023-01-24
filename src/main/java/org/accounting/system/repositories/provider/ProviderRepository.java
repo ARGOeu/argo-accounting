@@ -8,6 +8,7 @@ import com.mongodb.client.model.Updates;
 import io.quarkus.mongodb.panache.PanacheQuery;
 import io.quarkus.oidc.TokenIntrospection;
 import io.quarkus.panache.common.Page;
+import org.accounting.system.dtos.provider.UpdateProviderRequestDto;
 import org.accounting.system.entities.MetricDefinition;
 import org.accounting.system.entities.acl.RoleAccessControl;
 import org.accounting.system.entities.authorization.Role;
@@ -18,17 +19,22 @@ import org.accounting.system.entities.provider.Provider;
 import org.accounting.system.enums.AccessType;
 import org.accounting.system.enums.Collection;
 import org.accounting.system.enums.Operation;
+import org.accounting.system.mappers.ProviderMapper;
 import org.accounting.system.repositories.metric.MetricRepository;
+import org.accounting.system.repositories.modulators.AccessibleModulator;
 import org.accounting.system.repositories.project.ProjectRepository;
+import org.accounting.system.services.HierarchicalRelationService;
 import org.bson.Document;
 import org.bson.conversions.Bson;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
+import javax.ws.rs.ForbiddenException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -39,14 +45,14 @@ import java.util.stream.Collectors;
  * that can be performed on the {@link Provider} collection. It is also responsible for mapping
  * the data from the storage format to the {@link Provider}.
  *
- * Since {@link ProviderRepository this repository} extends {@link ProviderModulator},
+ * Since {@link ProviderRepository this repository} extends {@link AccessibleModulator},
  * it has access to all queries, which determine the degree of accessibility of the data.
  *
  * Also, all the operations that are defined on {@link io.quarkus.mongodb.panache.PanacheMongoRepository} are available on this repository.
  * In this repository, we essentially define the queries that will be executed on the database without any restrictions.
  */
 @ApplicationScoped
-public class ProviderRepository extends ProviderModulator {
+public class ProviderRepository extends AccessibleModulator<Provider, String> {
 
     @Inject
     ProjectRepository projectRepository;
@@ -56,6 +62,9 @@ public class ProviderRepository extends ProviderModulator {
 
     @Inject
     TokenIntrospection tokenIntrospection;
+
+    @Inject
+    HierarchicalRelationService hierarchicalRelationService;
 
     @ConfigProperty(name = "key.to.retrieve.id.from.access.token")
     String key;
@@ -348,5 +357,31 @@ public class ProviderRepository extends ProviderModulator {
         projectionQuery.page = Page.of(page, size);
 
         return projectionQuery;
+    }
+
+    /**
+     * This method is responsible for updating a part or all attributes of existing Provider.
+     *
+     * @param id The Provider to be updated.
+     * @param request The Provider attributes to be updated.
+     * @return The updated Provider.
+     * @throws ForbiddenException If Provider derives from EOSC-Portal.
+     */
+    public Provider updateEntity(String id, UpdateProviderRequestDto request) {
+
+        Provider entity = findById(id);
+
+        // if Provider's creator id is null then it derives from EOSC-Portal
+        if(Objects.isNull(entity.getCreatorId())){
+            throw new ForbiddenException("You cannot update a Provider which derives from EOSC-Portal.");
+        }
+
+        if(hierarchicalRelationService.providerBelongsToAnyProject(id)){
+            throw new ForbiddenException("You cannot update a Provider which belongs to a Project.");
+        }
+
+        ProviderMapper.INSTANCE.updateProviderFromDto(request, entity);
+
+        return super.updateEntity(entity, id);
     }
 }

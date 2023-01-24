@@ -19,7 +19,7 @@ The Metric consists of the following attributes:
 | Field          	| Description   	                      | 
 |------------------	|---------------------------------------- |
 | id             	| Unique ID of the Metric             |
-| metric_definition_id       	| Reference Id from the metric definition |
+| [metric_definition_id](./metric_definition.md)       	| Reference Id from the metric definition |
 | time_period_start      	    | Timestamp of the starting date time (Zulu timestamp) |
 | time_period_end      	|Timestamp of the end date time (Zulu timestamp)|
 | value      	| Value of the metric for the given period (decimal value) |
