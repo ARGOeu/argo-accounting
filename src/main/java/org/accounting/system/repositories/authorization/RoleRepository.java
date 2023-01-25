@@ -1,9 +1,13 @@
 package org.accounting.system.repositories.authorization;
 
 import io.quarkus.mongodb.panache.PanacheMongoRepository;
+import org.accounting.system.dtos.authorization.update.UpdateRoleRequestDto;
 import org.accounting.system.entities.authorization.AccessPermission;
 import org.accounting.system.entities.authorization.Role;
 import org.accounting.system.enums.Collection;
+import org.accounting.system.mappers.RoleMapper;
+import org.accounting.system.repositories.modulators.AccessibleModulator;
+import org.bson.types.ObjectId;
 
 import javax.enterprise.context.ApplicationScoped;
 import java.util.List;
@@ -17,7 +21,7 @@ import java.util.stream.Collectors;
  * that can be performed on the {@link Role} collection. It is also responsible for mapping
  * the data from the storage format to the {@link Role}.
  *
- * Since {@link RoleRepository this repository} extends {@link RoleModulator},
+ * Since {@link RoleRepository this repository} extends {@link AccessibleModulator},
  * it has access to all queries, which determine the degree of accessibility of the data.
  *
  * Also, all the operations that are defined on {@link PanacheMongoRepository} are available on this repository.
@@ -25,7 +29,7 @@ import java.util.stream.Collectors;
  */
 
 @ApplicationScoped
-public class RoleRepository extends RoleModulator {
+public class RoleRepository extends AccessibleModulator<Role, ObjectId> {
 
     /**
      * This method returns the access permissions of a role upon a specific collection
@@ -55,5 +59,14 @@ public class RoleRepository extends RoleModulator {
 
     public Set<Role> getRolesByName(Set<String> names){
         return find("name in ?1", names).stream().collect(Collectors.toSet());
+    }
+
+    public Role updateEntity(ObjectId id, UpdateRoleRequestDto updateRoleRequestDto) {
+
+        Role entity = findById(id);
+
+        RoleMapper.INSTANCE.updateRoleFromDto(updateRoleRequestDto, entity);
+
+        return super.updateEntity(entity, id);
     }
 }

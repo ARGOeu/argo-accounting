@@ -7,9 +7,12 @@ import io.quarkus.mongodb.panache.PanacheQuery;
 import io.quarkus.panache.common.Page;
 import io.quarkus.panache.common.Sort;
 import io.vavr.collection.Array;
+import org.accounting.system.dtos.metric.UpdateMetricRequestDto;
 import org.accounting.system.entities.Metric;
 import org.accounting.system.entities.projections.MetricProjection;
 import org.accounting.system.entities.projections.MongoQuery;
+import org.accounting.system.mappers.MetricMapper;
+import org.accounting.system.repositories.modulators.AccessibleModulator;
 import org.accounting.system.util.Utility;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -29,14 +32,14 @@ import java.util.stream.Collectors;
  * that can be performed on the {@link Metric} collection. It is also responsible for mapping
  * the data from the storage format to the {@link Metric}.
  * <p>
- * Since {@link MetricRepository this repository} extends {@link MetricModulator},
+ * Since {@link MetricRepository this repository} extends {@link AccessibleModulator},
  * it has access to all queries, which determine the degree of accessibility of the data.
  * <p>
  * Also, all the operations that are defined on {@link PanacheMongoRepository} are available on this repository.
  * In this repository, we essentially define the queries that will be executed on the database without any restrictions.
  */
 @ApplicationScoped
-public class MetricRepository extends MetricModulator {
+public class MetricRepository extends AccessibleModulator<Metric, ObjectId> {
 
     public List<Metric> findMetricsByMetricDefinitionId(String metricDefinitionId) {
 
@@ -158,5 +161,23 @@ public class MetricRepository extends MetricModulator {
 
     public Optional<Metric> findFirstByInstallationId(String installationId){
         return find("installation_id", installationId).firstResultOptional();
+    }
+
+    /**
+     * This method is responsible for updating a part or all attributes of existing Metric.
+     *
+     * @param id The Metric to be updated.
+     * @param request The Metric attributes to be updated.
+     * @return The updated Metric.
+     */
+    public Metric updateEntity(ObjectId id, UpdateMetricRequestDto request) {
+
+        Metric entity = findById(id);
+
+        MetricMapper.INSTANCE.updateMetricFromDto(request, entity);
+
+        super.update(entity);
+
+        return entity;
     }
 }

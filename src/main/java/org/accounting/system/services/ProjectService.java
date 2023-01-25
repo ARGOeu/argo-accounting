@@ -129,7 +129,7 @@ public class ProjectService implements RoleAccessControlService {
         projectRepository.insertNewRoleAccessControl(projectID, accessControl);
 
         if(request.roles.contains("project_admin")){
-            clientAccessAlwaysRepository.assignRolesToRegisteredClient(who, Set.of("provider_creator", "metric_definition_creator"));
+            clientAccessAlwaysRepository.assignRolesToRegisteredClient(who, Set.of("provider_creator", "metric_definition_creator", "unit_type_creator"));
         }
     }
 

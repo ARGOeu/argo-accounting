@@ -4,7 +4,6 @@ package org.accounting.system.util;
 import io.quarkus.oidc.TokenIntrospection;
 import org.accounting.system.beans.RequestInformation;
 import org.accounting.system.dtos.authorization.request.RoleRequestDto;
-import org.accounting.system.dtos.metricdefinition.MetricDefinitionRequestDto;
 import org.accounting.system.enums.Collection;
 import org.accounting.system.enums.Operation;
 import org.accounting.system.repositories.client.ClientRepository;
@@ -69,11 +68,6 @@ public class Utility {
                     String message = String.format("The collection "+optional.collection +" doesn't support one or more of given operations");
                     throw new BadRequestException(message);
                 });
-    }
-
-    public void exist(MetricDefinitionRequestDto request){
-
-        metricDefinitionService.exist(request.unitType, request.metricName);
     }
 
     /**

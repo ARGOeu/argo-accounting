@@ -114,7 +114,7 @@ public class ProviderService implements RoleAccessControlService {
         var provider = providerRepository.findById(providerId);
 
         // if Provider's creator id is null then it derives from EOSC-Portal
-        if(Objects.isNull(provider.getCreatorId())){
+        if(StringUtils.isEmpty(provider.getCreatorId())){
             throw new ForbiddenException("You cannot delete a Provider which derives from EOSC-Portal.");
         }
 

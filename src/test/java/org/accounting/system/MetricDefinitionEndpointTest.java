@@ -259,7 +259,7 @@ public class MetricDefinitionEndpointTest {
 
         Mockito.when(readPredefinedTypesService.searchForUnitType(any())).thenReturn(Optional.of("SECOND"));
         Mockito.when(readPredefinedTypesService.searchForMetricType(any())).thenReturn(Optional.of("Aggregated"));
-        MetricDefinitionRequestDto request= new MetricDefinitionRequestDto();
+        var request= new MetricDefinitionRequestDto();
 
         request.metricName = "metric";
         request.metricDescription = "description";
@@ -288,7 +288,7 @@ public class MetricDefinitionEndpointTest {
 
         Mockito.when(readPredefinedTypesService.searchForUnitType(any())).thenReturn(Optional.of("SECOND"));
         Mockito.when(readPredefinedTypesService.searchForMetricType(any())).thenReturn(Optional.of("Aggregated"));
-        MetricDefinitionRequestDto request= new MetricDefinitionRequestDto();
+        var request= new MetricDefinitionRequestDto();
 
         request.metricName = "metric";
         request.metricDescription = "description";
@@ -319,7 +319,7 @@ public class MetricDefinitionEndpointTest {
 
         Mockito.when(readPredefinedTypesService.searchForUnitType(any())).thenReturn(Optional.of("SECOND"));
         Mockito.when(readPredefinedTypesService.searchForMetricType(any())).thenReturn(Optional.of("Aggregated"));
-        MetricDefinitionRequestDto request= new MetricDefinitionRequestDto();
+        var request= new MetricDefinitionRequestDto();
 
         request.metricName = "metric";
         request.metricDescription = "description";
@@ -337,7 +337,7 @@ public class MetricDefinitionEndpointTest {
 
         Mockito.when(readPredefinedTypesService.searchForUnitType(any())).thenReturn(Optional.of("SECOND"));
         Mockito.when(readPredefinedTypesService.searchForMetricType(any())).thenReturn(Optional.of("Aggregated"));
-        MetricDefinitionRequestDto request= new MetricDefinitionRequestDto();
+        var request= new MetricDefinitionRequestDto();
 
         request.metricName = "metric";
         request.metricDescription = "description";
@@ -373,7 +373,7 @@ public class MetricDefinitionEndpointTest {
 
         Mockito.when(readPredefinedTypesService.searchForUnitType(any())).thenReturn(Optional.of("SECOND"));
         Mockito.when(readPredefinedTypesService.searchForMetricType(any())).thenReturn(Optional.of("Aggregated"));
-        MetricDefinitionRequestDto request= new MetricDefinitionRequestDto();
+        var request= new MetricDefinitionRequestDto();
 
         request.metricName = "metric";
         request.metricDescription = "description";

@@ -10,6 +10,7 @@ import org.eclipse.microprofile.config.inject.ConfigProperty;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.event.Observes;
+import javax.inject.Inject;
 import java.util.Optional;
 
 /**
@@ -20,6 +21,9 @@ import java.util.Optional;
  */
 @ApplicationScoped
 public class ReadPredefinedTypesService {
+
+    @Inject
+    UnitTypeService unitTypeService;
 
     @ConfigProperty(name = "unit.types.file")
     String unitFile;
@@ -38,7 +42,15 @@ public class ReadPredefinedTypesService {
     }
 
     public Optional<String> searchForUnitType(String type){
-        return unitType.searchForType(unitFile, type);
+
+        var databaseValue = unitTypeService.getUnitByType(type);
+        var fileValue = unitType.searchForType(unitFile, type);
+
+        if(databaseValue.isEmpty() && fileValue.isEmpty()){
+            return Optional.empty();
+        } else {
+            return Optional.of("exist");
+        }
     }
 
     public String getMetricTypes(){

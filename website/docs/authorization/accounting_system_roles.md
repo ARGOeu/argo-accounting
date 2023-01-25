@@ -19,6 +19,11 @@ When clients register to the system, they can perform the following actions :
 |------------------	| ------	|
 | Provider      	| Always 	|
 
+- Read all the Unit Types
+
+| Collection       	| Read   	| 
+|------------------	|--------	|
+| UnitType        	| Always 	|
 
 - Read all the clients
 
@@ -56,32 +61,52 @@ Project admin role, has  full access  on the projects it is assigned and can per
 |------------------	|--------	|--------	|--------	 |--------	|
 | Metric            | Always <sup>*</sup> 	| Always <sup>*</sup> 	| Always <sup>*</sup>	 | Always <sup>*</sup>	|
 
+- Grant access to a client  with a specific role , on a provider
+
+| Collection       	| Acl      |
+|------------------	| -------- |
+| Provider      	| Always <sup>*</sup> |
+
+
+<sup>*</sup> You can always perform that action on a particular Project
+<br/>
+<br/>
+
+**They can also : **
+
 - Create providers
 - Read all the providers
 - Update/Delete their  created providers
-- Grant access to a client  with a specific role , on a provider
 
-| Collection       	| Create 	| Update 	| Delete 	| Read   	| Acl      |
-|------------------	|--------	|--------	|--------	|--------	| -------- |
-| Provider      	| Always 	| Entity <sup>**</sup>	| Entity <sup>***</sup>	| Always 	| Always <sup>*</sup> |
+| Collection       	| Create 	| Update 	| Delete 	| Read   	|
+|------------------	|--------	|--------	|--------	|--------	|
+| Provider      	| Always 	| Entity <sup>*</sup>	| Entity <sup>*</sup>	| Always 	|
+
+<sup>*</sup> You cannot update or delete an existing Provider, if it belongs to a Project.
+<br/>
+<br/>
 
 - Create metric definitions
 - Read all the metric definitions
 - Update/Delete their created metric definitions
 
-| Collection       	| Create 	| Update 	| Delete 	| Read   	|
-|------------------	|--------	|--------	|--------	|--------	|
-| MetricDefinition 	| Always 	| Entity <sup>****</sup> 	| Entity <sup>*****</sup> 	| Always 	|
+| Collection       	| Create 	| Update 	| Delete 	    | Read   	|
+|------------------	|--------	|--------	|-------------	|--------	|
+| MetricDefinition 	| Always 	| Entity <sup>**</sup> 	| Entity <sup>**</sup> 	| Always 	|
 
-<sup>*</sup> You can always perform that action on a particular Project
+<sup>**</sup> You cannot update or delete an existing Metric Definition, if there are Metrics assigned to it.
 <br/>
-<sup>**</sup> You cannot update an existing Provider, if it belongs to a Project.
 <br/>
-<sup>***</sup> You cannot delete an existing Provider, if it belongs to a Project.
-<br/>
-<sup>****</sup> You cannot update an existing Metric Definition, if there are Metrics assigned to it.
-<br/>
-<sup>*****</sup> You cannot delete an existing Metric Definition, if there are Metrics assigned to it.
+
+- Create Unit Types
+- Read all the Unit Types
+- Update/Delete their created Unit Types
+
+| Collection       	| Create 	| Update 	| Delete 	    | Read   	|
+|------------------	|--------	|--------	|-------------	|--------	|
+| MetricDefinition 	| Always 	| Entity <sup>***</sup> 	| Entity <sup>***</sup> 	| Always 	|
+
+<sup>***</sup> You cannot update or delete a Unit Type registered by Accounting Service or a Unit Type used in an existing Metric Definition.
 <br/>
 <br/>
 

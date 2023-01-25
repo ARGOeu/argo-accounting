@@ -1,7 +1,6 @@
 package org.accounting.system.services;
 
 import com.mongodb.MongoWriteException;
-import io.quarkus.oidc.TokenIntrospection;
 import org.accounting.system.dtos.metric.MetricResponseDto;
 import org.accounting.system.dtos.metric.UpdateMetricRequestDto;
 import org.accounting.system.dtos.pagination.PageResource;
@@ -10,15 +9,11 @@ import org.accounting.system.entities.Metric;
 import org.accounting.system.entities.projections.MetricProjection;
 import org.accounting.system.exceptions.ConflictException;
 import org.accounting.system.mappers.MetricMapper;
-import org.accounting.system.repositories.HierarchicalRelationRepository;
 import org.accounting.system.repositories.installation.InstallationRepository;
 import org.accounting.system.repositories.metric.MetricRepository;
-import org.accounting.system.services.authorization.RoleService;
-import org.accounting.system.services.installation.InstallationService;
 import org.accounting.system.util.QueryParser;
 import org.bson.conversions.Bson;
 import org.bson.types.ObjectId;
-import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.json.simple.parser.ParseException;
 
 import javax.enterprise.context.ApplicationScoped;
@@ -46,23 +41,7 @@ public class MetricService {
     MetricDefinitionService metricDefinitionService;
 
     @Inject
-    InstallationService installationService;
-
-    @Inject
-    HierarchicalRelationRepository hierarchicalRelationRepository;
-
-    @Inject
     QueryParser queryParser;
-
-    @Inject
-    TokenIntrospection tokenIntrospection;
-
-    @Inject
-    RoleService roleService;
-
-    @ConfigProperty(name = "key.to.retrieve.id.from.access.token")
-    String id;
-
 
     @Inject
     InstallationRepository installationRepository;
