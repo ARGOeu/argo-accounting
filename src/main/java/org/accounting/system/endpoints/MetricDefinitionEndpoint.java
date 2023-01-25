@@ -412,6 +412,7 @@ public class MetricDefinitionEndpoint {
     @org.eclipse.microprofile.openapi.annotations.Operation(
             operationId = "unit-type",
             summary = "Returns the unit types.",
+            deprecated = true,
             description = "The unit type is an attribute of Metric Definition and defines the unit of a Metric." +
                     " This operation reads a file containing the possible unit types and returns them as a JSON structure.")
     @APIResponse(

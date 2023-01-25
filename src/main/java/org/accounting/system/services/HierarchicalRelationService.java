@@ -43,7 +43,6 @@ public class HierarchicalRelationService {
         HierarchicalRelation provider = new HierarchicalRelation(storedInstallation.getOrganisation(), project, RelationType.PROVIDER);
 
         HierarchicalRelation installation = new HierarchicalRelation(installationId, provider, RelationType.INSTALLATION);
-
         var metric = MetricMapper.INSTANCE.requestToMetric(request);
 
         metric.setResourceId(installation.id);
@@ -64,7 +63,6 @@ public class HierarchicalRelationService {
                     metric.getProject(), metric.getProvider(), metric.getInstallation(),
                     request.metricDefinitionId, request.start, request.end));
         }
-
         return metric;
     }
 

@@ -41,12 +41,12 @@ Once you register the Accounting Service, you can perform the following actions:
 :::
 
 
-### READ all Providers
+### READ Providers
 :::info Choose your preferred way
 
 <Tabs>
   <TabItem value="ui" label="User Interface">View Providers on <a href="https://accounting.eosc-portal.eu/providers">website</a>.</TabItem>
-  <TabItem value="http" label="HTTP Request">You can read all the Providers available on the EOSC Resource Catalogue and the ones registered through the Accounting Service API. Apply a request to the api. <b> For more details, how to syntax the request, see  <a href="https://argoeu.github.io/argo-accounting/docs/api/provider#get---fetch-all-registered-providers">here</a>.</b></TabItem>
+  <TabItem value="http" label="HTTP Request">You can read the Providers available on the EOSC Resource Catalogue and the ones registered through the Accounting Service API. Apply a request to the api. <b> For more details, how to syntax the request, see  <a href="https://argoeu.github.io/argo-accounting/docs/api/provider#get---fetch-all-registered-providers">here</a>.</b></TabItem>
 </Tabs>
 
 :::
@@ -58,6 +58,16 @@ Once you register the Accounting Service, you can perform the following actions:
 <Tabs>
   <TabItem value="ui" label="User Interface">It's currently under development.</TabItem>
   <TabItem value="http" label="HTTP Request">You can read all the Clients registered to Accounting Service. Apply a request to the api. <b> For more details, how to syntax the request, see  <a href="https://argoeu.github.io/argo-accounting/docs/api/client#get---read-the-registered-clients">here</a>.</b></TabItem>
+</Tabs>
+
+:::
+
+### READ Unit Types
+:::info Choose your preferred way
+
+<Tabs>
+  <TabItem value="ui" label="User Interface">It's currently under development.</TabItem>
+  <TabItem value="http" label="HTTP Request">You can read all the Unit Types registered to Accounting Service. Apply a request to the api. <b> For more details, how to syntax the request, see  <a href="https://argoeu.github.io/argo-accounting/docs/api/unit_type#get----fetch-all-the-unit-types">here</a>.</b></TabItem>
 </Tabs>
 
 :::
