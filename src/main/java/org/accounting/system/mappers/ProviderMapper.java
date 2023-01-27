@@ -17,7 +17,9 @@ import javax.enterprise.inject.spi.CDI;
 import java.util.List;
 
 /**
- * This interface is responsible for turning a Provider Entity into a request/response and vice versa.
+ * This mapper turns the incoming requests, expressed as Data Transform Objects and related to creating or updating a {@link Provider Provider} into database entities.
+ * Additionally, it converts the database entities to suitable responses.
+ * To be more accurate, to suitable Data Transform Objects.
  */
 @Mapper(imports = StringUtils.class)
 public interface ProviderMapper {

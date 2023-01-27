@@ -11,7 +11,7 @@ public interface RoleAccessControlService {
 
 
     /**
-     * Converts the request for {@link RoleAccessControlRequestDto permissions} to {@link org.accounting.system.entities.acl.AccessControl} and stores it in the database.
+     * This method grants specific client the roles encapsulated to {@link RoleAccessControlRequestDto Access Control Entry}.
      *
      * @param id      The entity id to which permissions will be assigned.
      * @param who     To whom the permissions will be granted.

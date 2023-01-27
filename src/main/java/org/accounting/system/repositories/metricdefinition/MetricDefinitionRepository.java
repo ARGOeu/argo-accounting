@@ -73,4 +73,17 @@ public class MetricDefinitionRepository extends AccessibleModulator<MetricDefini
                         .collationStrength(CollationStrength.SECONDARY).build())
                 .stream().findAny().isPresent();
     }
+
+    /**
+     * This method execute a query to database to check if a Metric Type is used in an existing Metric Definition.
+     * @param metricType The Metric Type to be checked.
+     * @return Whether the given Metric Type is used in any Metric Definition.
+     */
+    public boolean metricTypeUsedInMetricDefinition(String metricType){
+
+        return find("metricType = ?1", metricType)
+                .withCollation(Collation.builder().locale("en")
+                        .collationStrength(CollationStrength.SECONDARY).build())
+                .stream().findAny().isPresent();
+    }
 }

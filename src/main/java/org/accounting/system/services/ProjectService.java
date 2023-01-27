@@ -14,11 +14,11 @@ import org.accounting.system.entities.projections.InstallationProjection;
 import org.accounting.system.entities.projections.normal.ProjectProjection;
 import org.accounting.system.entities.projections.permissions.ProjectProjectionWithPermissions;
 import org.accounting.system.exceptions.ConflictException;
+import org.accounting.system.interceptors.annotations.AdditionalPermissions;
 import org.accounting.system.mappers.AccessControlMapper;
 import org.accounting.system.mappers.InstallationMapper;
 import org.accounting.system.mappers.MetricDefinitionMapper;
 import org.accounting.system.repositories.authorization.RoleRepository;
-import org.accounting.system.repositories.client.ClientAccessAlwaysRepository;
 import org.accounting.system.repositories.project.ProjectRepository;
 import org.accounting.system.services.acl.RoleAccessControlService;
 import org.accounting.system.util.QueryParser;
@@ -43,9 +43,6 @@ public class ProjectService implements RoleAccessControlService {
 
     @Inject
     QueryParser queryParser;
-
-    @Inject
-    ClientAccessAlwaysRepository clientAccessAlwaysRepository;
 
     /**
      * This method correlates the given Providers with a specific Project and creates an hierarchical structure with root
@@ -81,12 +78,14 @@ public class ProjectService implements RoleAccessControlService {
 
         return new PageResource<>(projectionQuery, InstallationMapper.INSTANCE.installationProjectionsToResponse(projectionQuery.list()), uriInfo);
     }
+
     public  PageResource<ProjectProjection> searchProject(String json, int page, int size, UriInfo uriInfo) throws  NoSuchFieldException, org.json.simple.parser.ParseException {
         Bson query=queryParser.parseFile(json, true, new ArrayList<>(), Project.class);
 
         PanacheQuery<ProjectProjection> projectionQuery = projectRepository.searchProjects(query,page,size);
         return new PageResource<>(projectionQuery, projectionQuery.list(), uriInfo);
     }
+
     public PageResource<ProjectProjection> getAll(int page, int size, UriInfo uriInfo) throws NoSuchFieldException, org.json.simple.parser.ParseException, JsonProcessingException {
 
        var projectionQuery = projectRepository.fetchAll(page, size);
@@ -109,6 +108,7 @@ public class ProjectService implements RoleAccessControlService {
     }
 
     @Override
+    @AdditionalPermissions(role = "project_admin", additionalRoles = {"provider_creator", "metric_definition_creator", "unit_type_creator", "metric_type_creator"})
     public void grantPermission(String who, RoleAccessControlRequestDto request, String... id) {
 
         var projectID = id[0];
@@ -127,10 +127,6 @@ public class ProjectService implements RoleAccessControlService {
         accessControl.setRoles(roleRepository.getRolesByName(request.roles));
 
         projectRepository.insertNewRoleAccessControl(projectID, accessControl);
-
-        if(request.roles.contains("project_admin")){
-            clientAccessAlwaysRepository.assignRolesToRegisteredClient(who, Set.of("provider_creator", "metric_definition_creator", "unit_type_creator"));
-        }
     }
 
     @Override

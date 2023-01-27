@@ -9,7 +9,8 @@ import org.mapstruct.factory.Mappers;
 import java.util.List;
 
 /**
- * This interface is responsible for turning a Client Entity into a request/response and vice versa.
+ * This Mapper converts the database {@link Client Client} entities to suitable responses.
+ * To be more accurate, to suitable Data Transform Objects.
  */
 @Mapper(imports = StringUtils.class)
 public interface ClientMapper {

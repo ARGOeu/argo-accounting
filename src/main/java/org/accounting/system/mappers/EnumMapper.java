@@ -10,7 +10,8 @@ import org.mapstruct.factory.Mappers;
 import java.util.List;
 
 /**
- * This interface is responsible for turning a Enum Entity into a request/response and vice versa.
+ * This Mapper converts the available {@link Operand operands} and {@link Operator} operators, to suitable responses.
+ * Both of them are used in Searching Process.
  */
 @Mapper(imports = StringUtils.class)
 public interface EnumMapper {
@@ -21,11 +22,4 @@ public interface EnumMapper {
     List<EnumResponseDto> operandsToResponse(List<Operand> operands);
 
     List<EnumResponseDto> operatorsToResponse(List<Operator> operators);
-
-//    Enum requestToEnum(ProviderRequestDto request);
-
-    //ProviderResponseDto providerToResponse(Provider provider);
-
-
-    //}
 }

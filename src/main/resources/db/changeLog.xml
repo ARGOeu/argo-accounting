@@ -136,6 +136,27 @@
                 access_type: "ALWAYS"
                 }
                 ],
+                collection: "MetricType"
+                },
+                {
+                access_permissions: [
+                {
+                operation: "CREATE",
+                access_type: "ALWAYS"
+                },
+                {
+                operation: "UPDATE",
+                access_type: "ALWAYS"
+                },
+                {
+                operation: "DELETE",
+                access_type: "ALWAYS"
+                },
+                {
+                operation: "READ",
+                access_type: "ALWAYS"
+                }
+                ],
                 collection: "Role"
                 },
                 {
@@ -208,6 +229,15 @@
                 }
                 ],
                 collection: "UnitType"
+                },
+                {
+                access_permissions: [
+                {
+                operation: "READ",
+                access_type: "ALWAYS"
+                }
+                ],
+                collection: "MetricType"
                 },
                 {
                 access_permissions: [
@@ -694,6 +724,80 @@
                 {
                 unit: "s",
                 description: "second",
+                creatorId: ""
+                }
+                ]
+            </ext:documents>
+        </ext:insertMany>
+    </changeSet>
+
+    <changeSet id="18" author="accounting-system">
+        <ext:createIndex collectionName="MetricType">
+            <ext:keys>
+                { metricType: 1}
+            </ext:keys>
+            <ext:options>
+                {unique: true, name: "unique_metric_type", collation: { locale: "en" }}
+            </ext:options>
+        </ext:createIndex>
+    </changeSet>
+
+    <changeSet id="19" author="accounting-system">
+        <ext:insertOne collectionName="Role">
+            <ext:document>
+                {
+                system: true,
+                name: "metric_type_creator",
+                description: "metric_type_creator can create new Metric Types, and read all Metric Types but can update and delete only the entities it created.",
+                collections_access_permissions: [
+                {
+                access_permissions: [
+                {
+                operation: "CREATE",
+                access_type: "ALWAYS"
+                },
+                {
+                operation: "UPDATE",
+                access_type: "ENTITY"
+                },
+                {
+                operation: "DELETE",
+                access_type: "ENTITY"
+                },
+                {
+                operation: "READ",
+                access_type: "ALWAYS"
+                }
+                ],
+                collection: "MetricType"
+                }]
+                }
+            </ext:document>
+        </ext:insertOne>
+    </changeSet>
+
+    <changeSet id="20" author="accounting-system">
+        <ext:insertMany collectionName="MetricType">
+            <ext:documents>
+                [
+                {
+                metricType: "aggregated",
+                description: "The sum of all values captured over the aggregation interval",
+                creatorId: ""
+                },
+                {
+                metricType: "count",
+                description: "It represents the total number of event occurrences in one time interval",
+                creatorId: ""
+                },
+                {
+                metricType: "summarised",
+                description: "It represents the measured values in one time interval",
+                creatorId: ""
+                },
+                {
+                metricType: "averaged",
+                description: "The average of the values captured in one time interval",
                 creatorId: ""
                 }
                 ]

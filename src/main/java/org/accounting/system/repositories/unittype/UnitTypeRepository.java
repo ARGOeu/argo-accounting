@@ -5,6 +5,7 @@ import com.mongodb.client.model.CollationStrength;
 import io.quarkus.mongodb.panache.PanacheMongoRepository;
 import org.accounting.system.dtos.unittype.UpdateUnitTypeRequestDto;
 import org.accounting.system.entities.UnitType;
+import org.accounting.system.exceptions.ConflictException;
 import org.accounting.system.mappers.UnitTypeMapper;
 import org.accounting.system.repositories.metricdefinition.MetricDefinitionRepository;
 import org.accounting.system.repositories.modulators.AccessibleModulator;
@@ -35,9 +36,9 @@ public class UnitTypeRepository extends AccessibleModulator<UnitType, ObjectId> 
     MetricDefinitionRepository metricDefinitionRepository;
 
     /**
-     * This method fetches a Unit Type exists from the database.
+     * This method fetches an entity from the database by given unit type.
      *
-     * @param unitType The Unit Type to be retrieved.
+     * @param unitType The Unit Type that has been requested.
      * @return The wrapped Unit Type as Optional.
      */
     public Optional<UnitType> fetchUnitByType(String unitType){
@@ -52,8 +53,8 @@ public class UnitTypeRepository extends AccessibleModulator<UnitType, ObjectId> 
      * This method is responsible for updating a part or all attributes of an existing Unit Type.
      *
      * @param id The Unit Type to be updated.
-     * @param request The Unit Type attributes to be updated.
-     * @throws ForbiddenException
+     * @param request The Unit Type attributes that have been requested to be updated.
+     * @throws ForbiddenException If the editing action is not allowed.
      * @return The updated Unit Type.
      */
     public UnitType updateEntity(ObjectId id, UpdateUnitTypeRequestDto request) {
@@ -68,6 +69,12 @@ public class UnitTypeRepository extends AccessibleModulator<UnitType, ObjectId> 
 
         if(isUsed){
             throw new ForbiddenException("This Unit Type is used in an existing Metric Definition, so you cannot update it.");
+        }
+
+        if(StringUtils.isNotEmpty(request.unit)){
+            var optional = fetchUnitByType(request.unit);
+
+            optional.ifPresent(ut -> {throw new ConflictException("This Unit Type already exists in the Accounting Service database. Its id is "+ut.getId().toString());});
         }
 
         UnitTypeMapper.INSTANCE.updateUnitTypeFromDto(request, entity);

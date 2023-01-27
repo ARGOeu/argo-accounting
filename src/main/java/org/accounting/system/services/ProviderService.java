@@ -261,6 +261,7 @@ public class ProviderService implements RoleAccessControlService {
 
         return response;
     }
+
     public  PageResource< ProviderResponseDto> searchProviders(String json, int page, int size, UriInfo uriInfo) throws  NoSuchFieldException, org.json.simple.parser.ParseException {
 
         Bson query=queryParser.parseFile(json);

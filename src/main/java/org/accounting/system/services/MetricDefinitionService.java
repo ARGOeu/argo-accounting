@@ -202,4 +202,14 @@ public class MetricDefinitionService {
 
         return metricDefinitionRepository.unitTypeUsedInMetricDefinition(unitType);
     }
+
+    /**
+     * The method result is whether an actual Metric Type is used in an existing Metric Definition.
+     * @param metricType The Metric Type to be checked.
+     * @return Whether the given Metric Type is used in any Metric Definition.
+     */
+    public boolean metricTypeUsedInMetricDefinition(String metricType){
+
+        return metricDefinitionRepository.metricTypeUsedInMetricDefinition(metricType);
+    }
 }

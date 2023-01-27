@@ -99,13 +99,7 @@ public class MetricDefinitionEndpoint {
             description = "Retrieves and inserts a Metric Definition into the database. Typically, " +
                     "a Metric Definition is the metadata describing a Virtual Access Metric. " +
                     "It should be noted that the combination of unit_type and metric_name should be unique. " +
-                    "If you execute a request with a unit_type and metric_name, which have already been generated, you receive an error response. " +
-                    "The unit_type is a predefined value and you can retrieve " +
-                    "[here](#/Unit%20Type/unit-type) the " +
-                    "possible values of unit type. " +
-                    "The metric_type is also a predefined value and you can retrieve " +
-                    "[here](#/Metric%20Type/metric-type) the " +
-                    "possible values of metric type.")
+                    "If you execute a request with a unit_type and metric_name, which have already been generated, you receive an error response. ")
     @APIResponse(
             responseCode = "201",
             description = "Metric Definition has been created successfully.",
@@ -463,10 +457,11 @@ public class MetricDefinitionEndpoint {
         return Response.ok().entity(json).build();
     }
 
-    @Tag(name = "Metric Type")
+    @Tag(name = "Metric Definition")
     @org.eclipse.microprofile.openapi.annotations.Operation(
             operationId = "metric-type",
             summary = "Returns the metric types.",
+            deprecated = true,
             description = "The metric type is an attribute of Metric Definition and defines the metric type of a Metric." +
                     " This operation reads a file containing the possible metric types and returns them as a JSON structure.")
     @APIResponse(
