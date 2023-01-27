@@ -16,8 +16,9 @@ import javax.enterprise.inject.spi.CDI;
 import java.util.List;
 
 /**
- * This mapper turns the incoming requests related to UnitType into database entities.
+ * This mapper turns the incoming requests, expressed as Data Transform Objects and related to creating or updating a {@link UnitType Unit Type} into database entities.
  * Additionally, it converts the database entities to suitable responses.
+ * To be more accurate, to suitable Data Transform Objects.
  */
 @Mapper(uses= UtilMapper.class, imports = {StringUtils.class})
 public interface UnitTypeMapper {
@@ -40,10 +41,20 @@ public interface UnitTypeMapper {
      */
     UnitTypeDto unitTypeToResponse(UnitType unitType);
 
+    /**
+     * This method is responsible for editing a particular entity's properties.
+     * @param request The UnitType attributes that have been requested to be updated.
+     * @param unitType The UnitType entity to be updated.
+     */
     @Mapping(target = "unit", expression = "java(StringUtils.isNotEmpty(request.unit) ? request.unit : unitType.getUnit())")
     @Mapping(target = "description", expression = "java(StringUtils.isNotEmpty(request.description) ? request.description : unitType.getDescription())")
     void updateUnitTypeFromDto(UpdateUnitTypeRequestDto request, @MappingTarget UnitType unitType);
 
+    /**
+     * This method transforms a list of UnitType entities to appropriate Data Transfer Objects.
+     * @param unitTypes A list of UnitType entities
+     * @return The given entities transformed to suitable Data Transfer Objects
+     */
     List<UnitTypeDto> unitTypesToResponse(List<UnitType> unitTypes);
 
     @AfterMapping

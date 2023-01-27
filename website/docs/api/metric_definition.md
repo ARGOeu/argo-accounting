@@ -16,7 +16,7 @@ The Metric Definition can be expressed by the following structure:
 | metric_name      	| Name to be used for describing a Metric |
 | metric_description      	| Short Description of a Metric Definition |
 | [unit_type](./unit_type.md)      	| Expresses and measures physical quantities used in various infrastructures, service providers, and projects.|
-| metric_type      	| Defines how the physical quantities have been collected |
+| [metric_type](./metric_type.md)      	| Defines how the physical quantities have been collected |
 
 ### [POST] - Create a Metric Definition
 

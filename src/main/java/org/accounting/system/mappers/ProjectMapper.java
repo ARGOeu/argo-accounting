@@ -13,8 +13,11 @@ import org.mapstruct.factory.Mappers;
 import javax.enterprise.inject.spi.CDI;
 import java.util.Objects;
 
+
 /**
- * This interface is responsible for turning a Project Entity into a request/response and vice versa.
+ * This mapper turns the incoming requests, expressed as Data Transform Objects and related to creating or updating a {@link Project Project} into database entities.
+ * Additionally, it converts the database entities to suitable responses.
+ * To be more accurate, to suitable Data Transform Objects.
  */
 @Mapper(imports = {StringUtils.class, Objects.class})
 public interface ProjectMapper {

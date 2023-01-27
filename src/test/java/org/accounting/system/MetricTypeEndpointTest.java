@@ -9,13 +9,14 @@ import io.restassured.http.ContentType;
 import org.accounting.system.dtos.InformativeResponse;
 import org.accounting.system.dtos.metricdefinition.MetricDefinitionRequestDto;
 import org.accounting.system.dtos.metricdefinition.MetricDefinitionResponseDto;
+import org.accounting.system.dtos.metrictype.MetricTypeDto;
+import org.accounting.system.dtos.metrictype.UpdateMetricTypeRequestDto;
 import org.accounting.system.dtos.unittype.UnitTypeDto;
-import org.accounting.system.dtos.unittype.UpdateUnitTypeRequestDto;
-import org.accounting.system.endpoints.UnitTypeEndpoint;
+import org.accounting.system.endpoints.MetricTypeEndpoint;
 import org.accounting.system.repositories.client.ClientAccessAlwaysRepository;
 import org.accounting.system.repositories.metricdefinition.MetricDefinitionRepository;
+import org.accounting.system.services.MetricTypeService;
 import org.accounting.system.services.ReadPredefinedTypesService;
-import org.accounting.system.services.UnitTypeService;
 import org.accounting.system.services.client.ClientService;
 import org.accounting.system.util.Utility;
 import org.json.simple.parser.ParseException;
@@ -36,9 +37,9 @@ import static org.mockito.ArgumentMatchers.any;
 
 @QuarkusTest
 @TestProfile(AccountingSystemTestProfile.class)
-@TestHTTPEndpoint(UnitTypeEndpoint.class)
+@TestHTTPEndpoint(MetricTypeEndpoint.class)
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
-public class UnitTypeEndpointTest {
+public class MetricTypeEndpointTest {
 
     @Inject
     Utility utility;
@@ -56,7 +57,7 @@ public class UnitTypeEndpointTest {
     ReadPredefinedTypesService readPredefinedTypesService;
 
     @Inject
-    UnitTypeService unitTypeService;
+    MetricTypeService metricTypeService;
 
     KeycloakTestClient keycloakClient = new KeycloakTestClient();
 
@@ -74,7 +75,7 @@ public class UnitTypeEndpointTest {
     }
 
     @Test
-    public void createUnitTypeNotAuthenticated() {
+    public void createMetricTypeNotAuthenticated() {
 
         var notAuthenticatedResponse = given()
                 .auth()
@@ -87,7 +88,7 @@ public class UnitTypeEndpointTest {
     }
 
     @Test
-    public void createUnitTypeRequestBodyIsEmpty() {
+    public void createMetricTypeRequestBodyIsEmpty() {
 
         var response = given()
                 .auth()
@@ -104,7 +105,7 @@ public class UnitTypeEndpointTest {
     }
 
     @Test
-    public void createUnitTypeCannotConsumeContentType() {
+    public void createMetricTypeCannotConsumeContentType() {
 
         var response = given()
                 .auth()
@@ -120,9 +121,9 @@ public class UnitTypeEndpointTest {
     }
 
     @Test
-    public void createUnitTypeIsEmpty() {
+    public void createMetricTypeIsEmpty() {
 
-        var request= new UnitTypeDto();
+        var request= new MetricTypeDto();
 
         request.description = "description";
 
@@ -138,15 +139,15 @@ public class UnitTypeEndpointTest {
                 .extract()
                 .as(InformativeResponse.class);
 
-        assertEquals("unit_type may not be empty.", response.message);
+        assertEquals("metric_type may not be empty.", response.message);
     }
 
     @Test
-    public void createUnitDescriptionIsEmpty() {
+    public void createMetricTypeDescriptionIsEmpty() {
 
-        var request= new UnitTypeDto();
+        var request= new MetricTypeDto();
 
-        request.unit = "unit";
+        request.metricType = "metric-typw";
 
         var response = given()
                 .auth()
@@ -164,14 +165,14 @@ public class UnitTypeEndpointTest {
     }
 
     @Test
-    public void createUnitTypeSimilar() {
+    public void createMetricTypeSimilar() {
 
-        var request= new UnitTypeDto();
+        var request= new MetricTypeDto();
 
-        request.unit = "unit_similar";
+        request.metricType = "metric_type_similar";
         request.description = "description";
 
-        var unitType = createUnitType(request);
+        var metricType = createMetricType(request);
 
         var response = given()
                 .auth()
@@ -185,20 +186,20 @@ public class UnitTypeEndpointTest {
                 .extract()
                 .as(InformativeResponse.class);
 
-        assertEquals("This Unit Type already exists in the Accounting Service database. Its id is "+unitType.id, response.message);
+        assertEquals("This Metric Type already exists in the Accounting Service database. Its id is "+metricType.id, response.message);
     }
 
     @Test
-    public void createUnitTypeCaseInsensitive() {
+    public void createMetricTypeCaseInsensitive() {
 
-        var request= new UnitTypeDto();
+        var request= new MetricTypeDto();
 
-        request.unit = "unit_case_insensitive";
+        request.metricType = "metric_type_case_insensitive";
         request.description = "description";
 
-        var unitType = createUnitType(request);
+        var metricType = createMetricType(request);
 
-        request.unit = "Unit_Case_Insensitive";
+        request.metricType = "Metric_Type_Case_Insensitive";
 
         var response = given()
                 .auth()
@@ -212,59 +213,59 @@ public class UnitTypeEndpointTest {
                 .extract()
                 .as(InformativeResponse.class);
 
-        assertEquals("This Unit Type already exists in the Accounting Service database. Its id is "+unitType.id, response.message);
+        assertEquals("This Metric Type already exists in the Accounting Service database. Its id is "+metricType.id, response.message);
     }
 
     @Test
-    public void createUnitType() {
+    public void createMetricType() {
 
-        var request= new UnitTypeDto();
+        var request= new MetricTypeDto();
 
-        request.unit = "unit_new";
+        request.metricType = "metric_type_new";
         request.description = "description";
 
-        var unitType = createUnitType(request);
+        var metricType = createMetricType(request);
 
-        assertEquals(request.unit, unitType.unit);
+        assertEquals(request.metricType, metricType.metricType);
     }
 
     @Test
-    public void deleteUnitTypeAuthenticated() {
+    public void deleteMetricTypeAuthenticated() {
 
         var notAuthenticatedResponse = given()
                 .auth()
                 .oauth2("invalidToken")
-                .delete("/{unitType}", "7dyebdheb7377e")
+                .delete("/{metricType}", "7dyebdheb7377e")
                 .thenReturn();
 
         assertEquals(401, notAuthenticatedResponse.statusCode());
     }
 
     @Test
-    public void deleteUnitTypeNotFound() {
+    public void deleteMetricTypeNotFound() {
 
         var response = given()
                 .auth()
                 .oauth2(getAccessToken("admin"))
-                .delete("/{unitTypeId}", "7dyebdheb7377e")
+                .delete("/{metricTypeId}", "7dyebdheb7377e")
                 .then()
                 .assertThat()
                 .statusCode(404)
                 .extract()
                 .as(InformativeResponse.class);
 
-        assertEquals("There is no Unit Type with the following id: 7dyebdheb7377e", response.message);
+        assertEquals("There is no Metric Type with the following id: 7dyebdheb7377e", response.message);
     }
 
     @Test
-    public void deleteUnitTypeIsNotAllowed(){
+    public void deleteMetricTypeIsNotAllowed(){
 
-        var newUnitType= new UnitTypeDto();
+        var newMetricType= new MetricTypeDto();
 
-        newUnitType.unit = "unit_cannot_deleted";
-        newUnitType.description = "description";
+        newMetricType.metricType = "metric_type_cannot_deleted";
+        newMetricType.description = "description";
 
-        var unitType = createUnitType(newUnitType);
+        var metricType = createMetricType(newMetricType);
 
         Mockito.when(readPredefinedTypesService.searchForUnitType(any())).thenReturn(Optional.of("SECOND"));
         Mockito.when(readPredefinedTypesService.searchForMetricType(any())).thenReturn(Optional.of("Aggregated"));
@@ -272,67 +273,67 @@ public class UnitTypeEndpointTest {
 
         request.metricName = "metric";
         request.metricDescription = "description";
-        request.unitType = unitType.unit;
-        request.metricType = "Aggregated";
+        request.unitType = "SECOND";
+        request.metricType = metricType.metricType;
 
         createMetricDefinition(request, "admin");
 
         var deleteResponse = given()
                 .auth()
                 .oauth2(getAccessToken("admin"))
-                .delete("/{unitType}", unitType.id)
+                .delete("/{metricType}", metricType.id)
                 .then()
                 .assertThat()
                 .statusCode(403)
                 .extract()
                 .as(InformativeResponse.class);
 
-        assertEquals("This Unit Type is used in an existing Metric Definition, so you cannot delete it.", deleteResponse.message);
+        assertEquals("This Metric Type is used in an existing Metric Definition, so you cannot delete it.", deleteResponse.message);
     }
 
     @Test
-    public void deleteUnitTypeRegisteredByAccountingServiceIsNotAllowed(){
+    public void deleteMetricTypeRegisteredByAccountingServiceIsNotAllowed(){
 
-        var unitType = unitTypeService.getUnitByType("TB/year");
+        var metricType = metricTypeService.getMetricByType("aggregated");
 
         var deleteResponse = given()
                 .auth()
                 .oauth2(getAccessToken("admin"))
-                .delete("/{unitType}", unitType.get().getId().toString())
+                .delete("/{metricType}", metricType.get().getId().toString())
                 .then()
                 .assertThat()
                 .statusCode(403)
                 .extract()
                 .as(InformativeResponse.class);
 
-        assertEquals("You cannot delete a Unit Type registered by Accounting Service.", deleteResponse.message);
+        assertEquals("You cannot delete a Metric Type registered by Accounting Service.", deleteResponse.message);
     }
 
     @Test
-    public void deleteUnitType() {
+    public void deleteMetricType() {
 
-        var newUnitType= new UnitTypeDto();
+        var newMetricType= new MetricTypeDto();
 
-        newUnitType.unit = "unit_to_be_deleted";
-        newUnitType.description = "description";
+        newMetricType.metricType = "metric_type_to_be_deleted";
+        newMetricType.description = "description";
 
-        var unitType = createUnitType(newUnitType);
+        var metricType = createMetricType(newMetricType);
 
         var deleteResponse = given()
                 .auth()
                 .oauth2(getAccessToken("admin"))
-                .delete("/{unitType}", unitType.id)
+                .delete("/{metricType}", metricType.id)
                 .then()
                 .assertThat()
                 .statusCode(200)
                 .extract()
                 .as(InformativeResponse.class);
 
-        assertEquals("Unit Type has been deleted successfully.", deleteResponse.message);
+        assertEquals("Metric Type has been deleted successfully.", deleteResponse.message);
     }
 
     @Test
-    public void fetchUnitTypeNotAuthenticated() {
+    public void fetchMetricTypeNotAuthenticated() {
 
         var notAuthenticatedResponse = given()
                 .auth()
@@ -344,7 +345,7 @@ public class UnitTypeEndpointTest {
     }
 
     @Test
-    public void fetchUnitTypeNotFound() {
+    public void fetchMetricTypeNotFound() {
 
         var response = given()
                 .auth()
@@ -356,41 +357,41 @@ public class UnitTypeEndpointTest {
                 .extract()
                 .as(InformativeResponse.class);
 
-        assertEquals("There is no Unit Type with the following id: 507f1f77bcf86cd799439011", response.message);
+        assertEquals("There is no Metric Type with the following id: 507f1f77bcf86cd799439011", response.message);
     }
 
     @Test
-    public void fetchUnitType() {
+    public void fetchMetricType() {
 
-        var newUnitType= new UnitTypeDto();
+        var newMetricType= new MetricTypeDto();
 
-        newUnitType.unit = "unit_to_be_retrieved";
-        newUnitType.description = "description";
+        newMetricType.metricType = "metric_type_to_be_retrieved";
+        newMetricType.description = "description";
 
-        var unitType = createUnitType(newUnitType);
+        var metricType = createMetricType(newMetricType);
 
-        var storedUnitType = given()
+        var storedMetricType = given()
                 .auth()
                 .oauth2(getAccessToken("admin"))
-                .get("/{id}", unitType.id)
+                .get("/{id}", metricType.id)
                 .then()
                 .assertThat()
                 .statusCode(200)
                 .extract()
-                .as(UnitTypeDto.class);
+                .as(MetricTypeDto.class);
 
-        assertEquals(unitType.unit, storedUnitType.unit);
+        assertEquals(metricType.metricType, storedMetricType.metricType);
     }
 
     @Test
-    public void updateUnitTypeIsNotAllowed(){
+    public void updateMetricTypeIsNotAllowed(){
 
-        var newUnitType= new UnitTypeDto();
+        var newMetricType= new MetricTypeDto();
 
-        newUnitType.unit = "unit_cannot_updated";
-        newUnitType.description = "description";
+        newMetricType.metricType = "metric_type_cannot_updated";
+        newMetricType.description = "description";
 
-        var unitType = createUnitType(newUnitType);
+        var metricType = createMetricType(newMetricType);
 
         Mockito.when(readPredefinedTypesService.searchForUnitType(any())).thenReturn(Optional.of("SECOND"));
         Mockito.when(readPredefinedTypesService.searchForMetricType(any())).thenReturn(Optional.of("Aggregated"));
@@ -398,71 +399,71 @@ public class UnitTypeEndpointTest {
 
         request.metricName = "metric";
         request.metricDescription = "description";
-        request.unitType = unitType.unit;
-        request.metricType = "Aggregated";
+        request.unitType = "SECOND";
+        request.metricType = metricType.metricType;
 
         createMetricDefinition(request, "admin");
 
-        var updateUnitType= new UpdateUnitTypeRequestDto();
+        var updateMetricType= new UpdateMetricTypeRequestDto();
 
-        updateUnitType.unit = "change_unit";
-        updateUnitType.description = "change_description";
+        updateMetricType.metricType = "change_metric_type";
+        updateMetricType.description = "change_description";
 
         var deleteResponse = given()
                 .auth()
                 .oauth2(getAccessToken("admin"))
                 .contentType(ContentType.JSON)
-                .body(updateUnitType)
-                .patch("/{unitType}", unitType.id)
+                .body(updateMetricType)
+                .patch("/{metricType}", metricType.id)
                 .then()
                 .assertThat()
                 .statusCode(403)
                 .extract()
                 .as(InformativeResponse.class);
 
-        assertEquals("This Unit Type is used in an existing Metric Definition, so you cannot update it.", deleteResponse.message);
+        assertEquals("This Metric Type is used in an existing Metric Definition, so you cannot update it.", deleteResponse.message);
     }
 
     @Test
-    public void updateUnitTypeRegisteredByAccountingServiceIsNotAllowed(){
+    public void updateMetricTypeRegisteredByAccountingServiceIsNotAllowed(){
 
-        var unitType = unitTypeService.getUnitByType("TB/year");
+        var metricType = metricTypeService.getMetricByType("aggregated");
 
-        var updateUnitType= new UpdateUnitTypeRequestDto();
+        var updateMetricType= new UpdateMetricTypeRequestDto();
 
-        updateUnitType.unit = "change_unit";
-        updateUnitType.description = "change_description";
+        updateMetricType.metricType = "change_metric_type";
+        updateMetricType.description = "change_description";
 
         var deleteResponse = given()
                 .auth()
                 .oauth2(getAccessToken("admin"))
                 .contentType(ContentType.JSON)
-                .body(updateUnitType)
-                .patch("/{unitType}",  unitType.get().getId().toString())
+                .body(updateMetricType)
+                .patch("/{metricType}",  metricType.get().getId().toString())
                 .then()
                 .assertThat()
                 .statusCode(403)
                 .extract()
                 .as(InformativeResponse.class);
 
-        assertEquals("You cannot update a Unit Type registered by Accounting Service.", deleteResponse.message);
+        assertEquals("You cannot update a Metric Type registered by Accounting Service.", deleteResponse.message);
     }
 
     @Test
-    public void updateUnitTypeCannotConsumeContentType() {
+    public void updateMetricTypeCannotConsumeContentType() {
 
-        var newUnitType= new UnitTypeDto();
+        var newMetricType= new MetricTypeDto();
 
-        newUnitType.unit = "unit_cannot_consume_content_type";
-        newUnitType.description = "description";
+        newMetricType.metricType = "metric_type_cannot_consume_content_type";
+        newMetricType.description = "description";
 
-        var unitType = createUnitType(newUnitType);
+        var metricType = createMetricType(newMetricType);
 
         var response = given()
                 .auth()
                 .oauth2(getAccessToken("admin"))
-                .body(newUnitType)
-                .patch("/{id}", unitType.id)
+                .body(newMetricType)
+                .patch("/{id}", metricType.id)
                 .then()
                 .assertThat()
                 .statusCode(415)
@@ -473,7 +474,7 @@ public class UnitTypeEndpointTest {
     }
 
     @Test
-    public void updateUnitTypeNotAuthenticated() {
+    public void updateMetricTypeNotAuthenticated() {
 
         var notAuthenticatedResponse = given()
                 .auth()
@@ -486,7 +487,7 @@ public class UnitTypeEndpointTest {
     }
 
     @Test
-    public void updateUnitTypeNotFound() {
+    public void updateMetricTypeNotFound() {
 
         var response = given()
                 .auth()
@@ -499,75 +500,75 @@ public class UnitTypeEndpointTest {
                 .extract()
                 .as(InformativeResponse.class);
 
-        assertEquals("There is no Unit Type with the following id: 556787878e-rrr", response.message);
+        assertEquals("There is no Metric Type with the following id: 556787878e-rrr", response.message);
     }
 
     @Test
-    public void updateUnitTypeFull() {
+    public void updateMetricTypeFull() {
 
-        var newUnitType= new UnitTypeDto();
+        var newMetricType= new MetricTypeDto();
 
-        newUnitType.unit = "unit_type_update_full";
-        newUnitType.description = "description_update_full";
+        newMetricType.metricType = "metric_type_update_full";
+        newMetricType.description = "description_update_full";
 
-        var unitType = createUnitType(newUnitType);
+        var metricType = createMetricType(newMetricType);
 
-        var updateUnitType= new UpdateUnitTypeRequestDto();
+        var updateMetricType= new UpdateMetricTypeRequestDto();
 
-        updateUnitType.unit = "change_unit_type_update_full";
-        updateUnitType.description = "change_description_update_full";
+        updateMetricType.metricType = "change_metric_type_update_full";
+        updateMetricType.description = "change_description_update_full";
 
 
         var updateResponse = given()
                 .auth()
                 .oauth2(getAccessToken("admin"))
-                .body(updateUnitType)
+                .body(updateMetricType)
                 .contentType(ContentType.JSON)
-                .patch("/{id}", unitType.id)
+                .patch("/{id}", metricType.id)
                 .then()
                 .assertThat()
                 .statusCode(200)
-                .body("id", is(unitType.id))
-                .body("unit_type", is(updateUnitType.unit))
-                .body("description", is(updateUnitType.description))
+                .body("id", is(metricType.id))
+                .body("metric_type", is(updateMetricType.metricType))
+                .body("description", is(updateMetricType.description))
                 .extract()
-                .as(UnitTypeDto.class);
+                .as(MetricTypeDto.class);
 
-        assertEquals(updateUnitType.unit, updateResponse.unit);
+        assertEquals(updateMetricType.metricType, updateResponse.metricType);
     }
 
     @Test
-    public void updateUnitTypePartial() {
+    public void updateMetricTypePartial() {
 
-        var newUnitType= new UnitTypeDto();
+        var newMetricType= new MetricTypeDto();
 
-        newUnitType.unit = "unit_type_update_partial";
-        newUnitType.description = "description_update_partial";
+        newMetricType.metricType = "metric_type_update_partial";
+        newMetricType.description = "description_update_partial";
 
-        var unitType = createUnitType(newUnitType);
+        var metricType = createMetricType(newMetricType);
 
-        var updateUnitType= new UpdateUnitTypeRequestDto();
+        var updateMetricType = new UpdateMetricTypeRequestDto();
 
-        updateUnitType.unit = "change_unit_type_update_partial";
+        updateMetricType.metricType = "change_metric_type_update_partial";
 
         var updateResponse = given()
                 .auth()
                 .oauth2(getAccessToken("admin"))
-                .body(updateUnitType)
+                .body(updateMetricType)
                 .contentType(ContentType.JSON)
-                .patch("/{id}", unitType.id)
+                .patch("/{id}", metricType.id)
                 .then()
                 .assertThat()
                 .statusCode(200)
-                .body("id", is(unitType.id))
-                .body("unit_type", is(updateUnitType.unit))
-                .body("description", is(unitType.description))
+                .body("id", is(metricType.id))
+                .body("metric_type", is(updateMetricType.metricType))
+                .body("description", is(metricType.description))
                 .extract()
-                .as(UnitTypeDto.class);
+                .as(MetricTypeDto.class);
 
-        assertEquals(updateUnitType.unit, updateResponse.unit);
+        assertEquals(updateMetricType.metricType, updateResponse.metricType);
 
-        var updateDescription= new UpdateUnitTypeRequestDto();
+        var updateDescription= new UpdateMetricTypeRequestDto();
 
         updateDescription.description = "change_description_update_partial";
 
@@ -576,12 +577,12 @@ public class UnitTypeEndpointTest {
                 .oauth2(getAccessToken("admin"))
                 .body(updateDescription)
                 .contentType(ContentType.JSON)
-                .patch("/{id}", unitType.id)
+                .patch("/{id}", metricType.id)
                 .then()
                 .assertThat()
                 .statusCode(200)
-                .body("id", is(unitType.id))
-                .body("unit_type", is(updateResponse.unit))
+                .body("id", is(metricType.id))
+                .body("metric_type", is(updateResponse.metricType))
                 .body("description", is(updateDescription.description))
                 .extract()
                 .as(UnitTypeDto.class);
@@ -590,51 +591,51 @@ public class UnitTypeEndpointTest {
     }
 
     @Test
-    public void updateUnitTypeConflict() {
+    public void updateMetricTypeConflict() {
 
-        var newUnitType= new UnitTypeDto();
+        var newMetricType= new MetricTypeDto();
 
-        newUnitType.unit = "unit_type_update_conflict";
-        newUnitType.description = "description_update_conflict";
+        newMetricType.metricType = "metric_type_update_conflict";
+        newMetricType.description = "description_update_conflict";
 
-        var unitType = createUnitType(newUnitType);
+        var metricType = createMetricType(newMetricType);
 
-        var updateUnitType= new UpdateUnitTypeRequestDto();
+        var updateMetricType= new UpdateMetricTypeRequestDto();
 
-        var ut = unitTypeService.getUnitByType("TB/year");
+        var mt = metricTypeService.getMetricByType("aggregated");
 
-        updateUnitType.unit = "TB/year";
+        updateMetricType.metricType = "Aggregated";
 
         var informativeResponse = given()
                 .auth()
                 .oauth2(getAccessToken("admin"))
-                .body(updateUnitType)
+                .body(updateMetricType)
                 .contentType(ContentType.JSON)
-                .patch("/{unitType}",  unitType.id)
+                .patch("/{metricType}",  metricType.id)
                 .then()
                 .assertThat()
                 .statusCode(409)
                 .extract()
                 .as(InformativeResponse.class);
 
-        assertEquals("This Unit Type already exists in the Accounting Service database. Its id is "+ut.get().getId().toString(), informativeResponse.message);
+        assertEquals("This Metric Type already exists in the Accounting Service database. Its id is "+mt.get().getId().toString(), informativeResponse.message);
     }
 
     @Test
-    public void updateUnitTypeRequestBodyIsEmpty() {
+    public void updateMetricTypeRequestBodyIsEmpty() {
 
-        var newUnitType= new UnitTypeDto();
+        var newMetricType= new MetricTypeDto();
 
-        newUnitType.unit = "unit_type_update_empty_body";
-        newUnitType.description = "description_update_empty_body";
+        newMetricType.metricType = "metric_type_update_empty_body";
+        newMetricType.description = "description_update_empty_body";
 
-        var unitType = createUnitType(newUnitType);
+        var metricType = createMetricType(newMetricType);
 
         var response = given()
                 .auth()
                 .oauth2(getAccessToken("admin"))
                 .contentType(ContentType.JSON)
-                .patch("/{id}", unitType.id)
+                .patch("/{id}", metricType.id)
                 .then()
                 .assertThat()
                 .statusCode(400)
@@ -644,7 +645,7 @@ public class UnitTypeEndpointTest {
         assertEquals("The request body is empty.", response.message);
     }
 
-    private UnitTypeDto createUnitType(UnitTypeDto request){
+    private MetricTypeDto createMetricType(MetricTypeDto request){
 
         return given()
                 .auth()
@@ -656,7 +657,7 @@ public class UnitTypeEndpointTest {
                 .assertThat()
                 .statusCode(201)
                 .extract()
-                .as(UnitTypeDto.class);
+                .as(MetricTypeDto.class);
     }
 
     private MetricDefinitionResponseDto createMetricDefinition(MetricDefinitionRequestDto request, String user){

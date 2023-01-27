@@ -5,7 +5,6 @@ sidebar_position: 8
 ---
 
 A Unit Type expresses and measures physical quantities used in various infrastructures, service providers, and projects. It is used to describe a class or group of Units based on a single characteristic.
-
 Once a Unit Type is generated, it can be used as an attribute of a [Metric Definition](./metric_definition.md).
 
 The client can interact through several operations with the API in order to create, update, delete or fetch a Unit Type. The aforementioned operations are described below.

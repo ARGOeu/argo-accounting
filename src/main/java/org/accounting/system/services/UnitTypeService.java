@@ -1,17 +1,13 @@
 package org.accounting.system.services;
 
-import com.mongodb.MongoWriteException;
 import io.quarkus.mongodb.panache.PanacheQuery;
-import org.accounting.system.dtos.metricdefinition.MetricDefinitionRequestDto;
 import org.accounting.system.dtos.pagination.PageResource;
 import org.accounting.system.dtos.unittype.UnitTypeDto;
 import org.accounting.system.dtos.unittype.UpdateUnitTypeRequestDto;
-import org.accounting.system.endpoints.MetricEndpoint;
-import org.accounting.system.entities.MetricDefinition;
+import org.accounting.system.endpoints.UnitTypeEndpoint;
 import org.accounting.system.entities.UnitType;
 import org.accounting.system.exceptions.ConflictException;
 import org.accounting.system.mappers.UnitTypeMapper;
-import org.accounting.system.repositories.metric.MetricRepository;
 import org.accounting.system.repositories.unittype.UnitTypeRepository;
 import org.apache.commons.lang3.StringUtils;
 import org.bson.types.ObjectId;
@@ -23,9 +19,9 @@ import javax.ws.rs.core.UriInfo;
 import java.util.Optional;
 
 /**
- * This service exposes business logic, which uses the {@link MetricRepository}.
- * It is used to keep logic to a minimum in {@link MetricEndpoint} and
- * {@link MetricRepository}
+ * This service exposes business logic, which uses the {@link UnitTypeEndpoint}.
+ * It is used to keep logic to a minimum in {@link UnitTypeEndpoint} and
+ * {@link UnitTypeRepository}
  */
 @ApplicationScoped
 public class UnitTypeService {
@@ -37,11 +33,11 @@ public class UnitTypeService {
     MetricDefinitionService metricDefinitionService;
 
     /**
-     * Maps the {@link MetricDefinitionRequestDto} to {@link MetricDefinition}.
-     * Then the {@link MetricDefinition} is stored in the mongo database.
+     * Maps the {@link UnitTypeDto incoming request} to {@link UnitType database entity}.
+     * Then the transformed {@link UnitType entity} is stored in the mongo database.
      *
      * @param request The POST request body.
-     * @return The stored metric definition has been turned into a response body.
+     * @return The stored Unit Type has been turned into a response body.
      */
     public UnitTypeDto save(UnitTypeDto request) {
 
@@ -58,7 +54,7 @@ public class UnitTypeService {
 
     /**
      * Deletes an existing Unit Type by given id.
-     * @param id Unit Type to be deleted.
+     * @param id The Unit Type to be deleted.
      * @return If the operation is successful or not.
      * @throws ForbiddenException If the given Unit Type is used in a Metric Definition.
      */
@@ -82,7 +78,7 @@ public class UnitTypeService {
     /**
      * This method returns a specific entity by given type. If the Unit Type does not exist, the Optional value is empty.
      *
-     * @param unitType The Unit Type to be checked.
+     * @param unitType The Unit Type to be retrieved.
      * @return The wrapped Unit Type as Optional.
      */
     public Optional<UnitType> getUnitByType(String unitType){
@@ -121,7 +117,7 @@ public class UnitTypeService {
      * This method calls the {@link UnitTypeRepository unitTypeRepository} to update an existing Unit Type.
      *
      * @param id The Unit Type to be updated.
-     * @param request The Unit Type attributes to be updated.
+     * @param request The Unit Type attributes that have been requested to be updated.
      * @return The updated Unit Type.
      * @throws ConflictException If the Unit Type to be updated exists
      */
@@ -129,11 +125,8 @@ public class UnitTypeService {
 
         UnitType unitType = null;
 
-        try{
-            unitType = unitTypeRepository.updateEntity(new ObjectId(id), request);
-        } catch (MongoWriteException e){
-            throw new ConflictException("This Unit Type has already been created.");
-        }
+
+        unitType = unitTypeRepository.updateEntity(new ObjectId(id), request);
 
         return UnitTypeMapper.INSTANCE.unitTypeToResponse(unitType);
     }

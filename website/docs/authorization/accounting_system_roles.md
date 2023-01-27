@@ -25,6 +25,12 @@ When clients register to the system, they can perform the following actions :
 |------------------	|--------	|
 | UnitType        	| Always 	|
 
+- Read all the Metric Types
+
+| Collection       	| Read   	| 
+|------------------	|--------	|
+| MetricType        | Always 	|
+
 - Read all the clients
 
 | Collection       	| Read   	| 
@@ -104,9 +110,21 @@ Project admin role, has  full access  on the projects it is assigned and can per
 
 | Collection       	| Create 	| Update 	| Delete 	    | Read   	|
 |------------------	|--------	|--------	|-------------	|--------	|
-| MetricDefinition 	| Always 	| Entity <sup>***</sup> 	| Entity <sup>***</sup> 	| Always 	|
+| UnitType 	| Always 	| Entity <sup>***</sup> 	| Entity <sup>***</sup> 	| Always 	|
 
 <sup>***</sup> You cannot update or delete a Unit Type registered by Accounting Service or a Unit Type used in an existing Metric Definition.
+<br/>
+<br/>
+
+- Create Metric Types
+- Read all the Metric Types
+- Update/Delete their created Metric Types
+
+| Collection       	| Create 	| Update 	| Delete 	    | Read   	|
+|------------------	|--------	|--------	|-------------	|--------	|
+| MetricType 	| Always 	| Entity <sup>****</sup> 	| Entity <sup>****</sup> 	| Always 	|
+
+<sup>****</sup> You cannot update or delete a Metric Type registered by Accounting Service or a Metric Type used in an existing Metric Definition.
 <br/>
 <br/>
 

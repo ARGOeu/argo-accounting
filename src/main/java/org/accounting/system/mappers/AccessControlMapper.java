@@ -13,7 +13,9 @@ import org.mapstruct.factory.Mappers;
 import javax.enterprise.inject.spi.CDI;
 
 /**
- * This interface is responsible for turning an Access Control Entity into a request/response and vice versa.
+ * This mapper turns the incoming requests, expressed as Data Transform Objects and related to creating or updating a {@link RoleAccessControl RoleAccessControl} into database entities.
+ * Additionally, it converts the database entities to suitable responses.
+ * To be more accurate, to suitable Data Transform Objects.
  */
 @Mapper
 public interface AccessControlMapper {

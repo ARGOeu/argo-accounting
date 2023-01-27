@@ -53,6 +53,11 @@ public enum Collection {
         public Set<Operation> availableOperations() {
             return Set.of(Operation.CREATE, Operation.DELETE, Operation.UPDATE, Operation.READ);
         }
+    },MetricType{
+        @Override
+        public Set<Operation> availableOperations() {
+            return Set.of(Operation.CREATE, Operation.DELETE, Operation.UPDATE, Operation.READ);
+        }
     };
 
     public abstract Set<Operation> availableOperations();

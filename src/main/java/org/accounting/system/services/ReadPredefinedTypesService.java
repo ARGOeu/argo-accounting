@@ -25,6 +25,9 @@ public class ReadPredefinedTypesService {
     @Inject
     UnitTypeService unitTypeService;
 
+    @Inject
+    MetricTypeService metricTypeService;
+
     @ConfigProperty(name = "unit.types.file")
     String unitFile;
 
@@ -58,7 +61,15 @@ public class ReadPredefinedTypesService {
     }
 
     public Optional<String> searchForMetricType(String type){
-        return metricType.searchForType(metricFile, type);
+
+        var databaseValue = metricTypeService.getMetricByType(type);
+        var fileValue = metricType.searchForType(metricFile, type);
+
+        if(databaseValue.isEmpty() && fileValue.isEmpty()){
+            return Optional.empty();
+        } else {
+            return Optional.of("exist");
+        }
     }
 
     void onStart(@Observes StartupEvent ev) {

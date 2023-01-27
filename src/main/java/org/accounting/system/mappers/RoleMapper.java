@@ -25,7 +25,9 @@ import java.util.Objects;
 import java.util.Set;
 
 /**
- * This interface is responsible for turning a Role Entity into a request/response and vice versa.
+ * This mapper turns the incoming requests, expressed as Data Transform Objects and related to creating or updating a {@link Role Role} into database entities.
+ * Additionally, it converts the database entities to suitable responses.
+ * To be more accurate, to suitable Data Transform Objects.
  */
 @Mapper(uses= UtilMapper.class, imports = {StringUtils.class})
 public interface RoleMapper {
