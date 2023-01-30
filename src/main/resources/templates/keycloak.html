@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
+		<script src="https://login-devel.einfra.grnet.gr/auth/js/keycloak.js"></script>
+		<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM" crossorigin="anonymous"></script>
+		<meta charset="UTF-8">
+		<title>Keycloak Client</title>
+	</head>
+	<body>
+		<div class="row mb-3 mt-3 md-3 mx-3" id="first_row_div">
+			<label for="token" id="label_for_token"></label>
+			<div class="col-4" id="token">
+			</div>
+			<div class="col-4" id="copy_token">
+			</div>
+			<div class="col-4" id="logout">
+			</div>
+			<div class="w-100"></div>
+			<label for="token" id="label_for_roles"></label>
+			<div class="col-4" id="roles">
+			</div>
+			<div class="col-4" id="copy_roles">
+			</div>
+		</div>
+
+		<script>
+        var keycloak = new Keycloak(
+            {
+                "url": "{keycloak_server_url}",
+                "realm": "{keycloak_server_realm}",
+                "clientId": "{keycloak_server_client_id}"
+            }
+        );
+        keycloak.init({ onLoad: 'login-required' }).then(function(authenticated) {
+
+            // add inner html for the access token
+            var labelForToken = document.getElementById('label_for_token');
+            labelForToken.innerHTML = "Access Token";
+
+
+			// create input for access token
+            var _text = document.createElement("input");
+            _text.id = "token_value";
+            _text.readOnly = true;
+            _text.value = keycloak.token;
+            _text.className = "form-control";
+            _text.for = "token_value";
+
+			// add input to token div
+            var tokenDiv = document.getElementById('token');
+            tokenDiv.appendChild(_text);
+
+			// create a button to copy the access token
+            var _copy = document.createElement("button");
+            _copy.type="button";
+           _copy.data = "Copy Token";
+           _copy.innerHTML = 'Copy Token';
+           _copy.className="btn btn-primary btn-block";
+           _copy.onclick = function()
+            {
+                 var copyText = document.getElementById("token_value");
+                 copyText.select();
+                 copyText.setSelectionRange(0, 99999);
+                 navigator.clipboard.writeText(copyText.value);
+                 <!--alert("Copied the text: " + copyText.value);-->
+            }
+
+			// add button to copy_token div
+            var copyTokenDiv = document.getElementById('copy_token');
+            copyTokenDiv.appendChild(_copy);
+
+			// create a button to perform a logout to keycloak
+            var _logout = document.createElement("button");
+           _logout.type="button";
+           _logout.data = "Logout";
+           _logout.className="btn btn-primary float-end";
+           _logout.innerHTML = 'Logout';
+           _logout.onclick = function()
+            {
+               keycloak.logout();
+            }
+
+            // add logout button to logout div
+            var logoutDiv = document.getElementById('logout');
+            logoutDiv.appendChild(_logout);
+
+            //decode access token
+            var decodedToken = JSON.parse(atob(keycloak.token.split('.')[1]));
+
+			// create an input to display the user's roles
+            var _textRoles = document.createElement("input");
+            _textRoles.id = "roles_from_token";
+            _textRoles.readOnly = true;
+            var rolesFromToken = decodedToken.roles;
+
+            if(rolesFromToken){
+            _textRoles.value = decodedToken.roles;
+            } else {
+            _textRoles.value = "";
+            }
+
+            _textRoles.className="form-control";
+            _textRoles.for = "roles_from_token";
+
+            // add input to roles div
+            var rolesDiv = document.getElementById('roles');
+            rolesDiv.appendChild(_textRoles);
+
+            // add inner html for the roles
+            var labelForRoles = document.getElementById('label_for_roles');
+            labelForRoles.innerHTML = "Roles";
+
+            // create a button to copy the roles
+            var _copyRoles = document.createElement("button");
+            _copyRoles.type="button";
+           _copyRoles.data = "Copy Roles";
+           _copyRoles.innerHTML = 'Copy Roles';
+           _copyRoles.className="btn btn-primary btn-block";
+           _copyRoles.onclick = function()
+            {
+                 var copyText = document.getElementById("roles_from_token");
+                 copyText.select();
+                 copyText.setSelectionRange(0, 99999);
+                 navigator.clipboard.writeText(copyText.value);
+                 <!--alert("Copied the text: " + copyText.value);-->
+            }
+
+			// add button to copy_roles div
+            var copyRolesDiv = document.getElementById('copy_roles');
+            copyRolesDiv.appendChild(_copyRoles);
+
+
+        }).catch(function() {
+            console.log('failed to initialize');
+        });
+    </script>
+	</body>
+</html>

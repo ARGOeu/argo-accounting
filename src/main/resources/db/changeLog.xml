@@ -1,0 +1,807 @@
+<?xml version="1.0"  encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+        xmlns:pro="http://www.liquibase.org/xml/ns/pro"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+	http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.0.xsd
+	http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd
+    http://www.liquibase.org/xml/ns/pro http://www.liquibase.org/xml/ns/pro/liquibase-pro-4.0.xsd">
+
+    <changeSet id="1" author="accounting-system">
+        <ext:createCollection collectionName="MetricDefinition">
+            <ext:options>
+                {
+                validator: {
+                $jsonSchema: {
+                bsonType: "object",
+                required: ["metric_name", "unit_type", "metric_type"],
+                properties: {
+                metric_name: {
+                bsonType: "string",
+                description: "The name of the Metric"
+                },
+                metric_type: {
+                bsonType: "string",
+                description: "Metric Type of the Metric"
+                },
+                metric_description: {
+                bsonType: "string",
+                description: "Description of how the metric is collected"
+                },
+                unit_type: {
+                bsonType: "string",
+                description: "Unit Type of the Virtual Access Metric"
+                }
+                }
+                }
+                },
+                validationAction: "warn",
+                validationLevel: "strict"
+                }
+            </ext:options>
+        </ext:createCollection>
+    </changeSet>
+
+    <changeSet id="2" author="accounting-system">
+        <ext:createIndex collectionName="MetricDefinition">
+            <ext:keys>
+                { unit_type: 1, metric_name: 1}
+            </ext:keys>
+            <ext:options>
+                {unique: true, name: "unique_unit_type_name", collation: { locale: "en" }}
+            </ext:options>
+        </ext:createIndex>
+    </changeSet>
+
+    <changeSet id="3" author="accounting-system">
+        <ext:createIndex collectionName="Role">
+            <ext:keys>
+                { name: 1}
+            </ext:keys>
+            <ext:options>
+                {unique: true, name: "unique_role_name"}
+            </ext:options>
+        </ext:createIndex>
+    </changeSet>
+
+    <changeSet id="4" author="accounting-system">
+        <ext:insertMany collectionName="Role">
+            <ext:documents>
+                [
+                {
+                system: true,
+                name: "collection_owner",
+                description: "collection_owner will always be able to perform any operation in MetricDefinition, Role, Provider and Client collection.",
+                collections_access_permissions: [
+                {
+                access_permissions: [
+                {
+                operation: "CREATE",
+                access_type: "ALWAYS"
+                },
+                {
+                operation: "UPDATE",
+                access_type: "ALWAYS"
+                },
+                {
+                operation: "DELETE",
+                access_type: "ALWAYS"
+                },
+                {
+                operation: "READ",
+                access_type: "ALWAYS"
+                }
+                ],
+                collection: "MetricDefinition"
+                },
+                {
+                access_permissions: [
+                {
+                operation: "CREATE",
+                access_type: "ALWAYS"
+                },
+                {
+                operation: "UPDATE",
+                access_type: "ALWAYS"
+                },
+                {
+                operation: "DELETE",
+                access_type: "ALWAYS"
+                },
+                {
+                operation: "READ",
+                access_type: "ALWAYS"
+                }
+                ],
+                collection: "UnitType"
+                },
+                {
+                access_permissions: [
+                {
+                operation: "CREATE",
+                access_type: "ALWAYS"
+                },
+                {
+                operation: "UPDATE",
+                access_type: "ALWAYS"
+                },
+                {
+                operation: "DELETE",
+                access_type: "ALWAYS"
+                },
+                {
+                operation: "READ",
+                access_type: "ALWAYS"
+                }
+                ],
+                collection: "MetricType"
+                },
+                {
+                access_permissions: [
+                {
+                operation: "CREATE",
+                access_type: "ALWAYS"
+                },
+                {
+                operation: "UPDATE",
+                access_type: "ALWAYS"
+                },
+                {
+                operation: "DELETE",
+                access_type: "ALWAYS"
+                },
+                {
+                operation: "READ",
+                access_type: "ALWAYS"
+                }
+                ],
+                collection: "Role"
+                },
+                {
+                access_permissions: [
+                {
+                operation: "READ",
+                access_type: "ALWAYS"
+                },
+                {
+                operation: "ASSIGN_ROLE",
+                access_type: "ALWAYS"
+                },
+                {
+                operation: "DETACH_ROLE",
+                access_type: "ALWAYS"
+                }
+                ],
+                collection: "Client"
+                },
+                {
+                access_permissions: [
+                {
+                operation: "CREATE",
+                access_type: "ALWAYS"
+                },
+                {
+                operation: "UPDATE",
+                access_type: "ALWAYS"
+                },
+                {
+                operation: "DELETE",
+                access_type: "ALWAYS"
+                },
+                {
+                operation: "READ",
+                access_type: "ALWAYS"
+                }
+                ],
+                collection: "Provider"
+                }]
+                }
+                ]
+            </ext:documents>
+        </ext:insertMany>
+    </changeSet>
+
+    <changeSet id="5" author="accounting-system">
+        <ext:insertMany collectionName="Role">
+            <ext:documents>
+                [
+                {
+                system: true,
+                name: "collection_reader",
+                description: "collection_reader can read all entities in MetricDefinition, Client, and Provider collections.",
+                collections_access_permissions: [
+                {
+                access_permissions: [
+                {
+                operation: "READ",
+                access_type: "ALWAYS"
+                }
+                ],
+                collection: "MetricDefinition"
+                },
+                {
+                access_permissions: [
+                {
+                operation: "READ",
+                access_type: "ALWAYS"
+                }
+                ],
+                collection: "UnitType"
+                },
+                {
+                access_permissions: [
+                {
+                operation: "READ",
+                access_type: "ALWAYS"
+                }
+                ],
+                collection: "MetricType"
+                },
+                {
+                access_permissions: [
+                {
+                operation: "READ",
+                access_type: "ALWAYS"
+                }
+                ],
+                collection: "Client"
+                },
+                {
+                access_permissions: [
+                {
+                operation: "READ",
+                access_type: "ALWAYS"
+                }
+                ],
+                collection: "Provider"
+                }]
+                }
+                ]
+            </ext:documents>
+        </ext:insertMany>
+    </changeSet>
+
+    <changeSet id="6" author="accounting-system">
+        <ext:createIndex collectionName="Installation">
+            <ext:keys>
+                { project: 1, organisation: 1, installation: 1}
+            </ext:keys>
+            <ext:options>
+                {unique: true, name: "unique_project_organisation_installation_entry", collation: { locale: "en" }}
+            </ext:options>
+        </ext:createIndex>
+    </changeSet>
+
+    <changeSet id="7" author="accounting-system">
+        <ext:createIndex collectionName="Metric">
+            <ext:keys>
+                { resource_id: 1, metric_definition_id: 1, time_period_start: 1, time_period_end: 1}
+            </ext:keys>
+            <ext:options>
+                {unique: true, name: "unique_metric_entry"}
+            </ext:options>
+        </ext:createIndex>
+    </changeSet>
+
+    <changeSet id="8" author="accounting-system">
+        <ext:insertOne collectionName="Role">
+            <ext:document>
+                {
+                system: false,
+                name: "project_admin",
+                description: "project_admin can perform any operation on a specific Project.",
+                collections_access_permissions: [
+                {
+                access_permissions: [
+                {
+                operation: "ASSOCIATE",
+                access_type: "ALWAYS"
+                },
+                {
+                operation: "DISSOCIATE",
+                access_type: "ALWAYS"
+                },
+                {
+                operation: "READ",
+                access_type: "ALWAYS"
+                },
+                {
+                operation: "ACL",
+                access_type: "ALWAYS"
+                }
+                ],
+                collection: "Project"
+                },
+                {
+                access_permissions: [
+                {
+                operation: "CREATE",
+                access_type: "ALWAYS"
+                },
+                {
+                operation: "UPDATE",
+                access_type: "ALWAYS"
+                },
+                {
+                operation: "DELETE",
+                access_type: "ALWAYS"
+                },
+                {
+                operation: "READ",
+                access_type: "ALWAYS"
+                }
+                ],
+                collection: "Metric"
+                },
+                {
+                access_permissions: [
+                {
+                operation: "CREATE",
+                access_type: "ALWAYS"
+                },
+                {
+                operation: "UPDATE",
+                access_type: "ALWAYS"
+                },
+                {
+                operation: "DELETE",
+                access_type: "ALWAYS"
+                },
+                {
+                operation: "READ",
+                access_type: "ALWAYS"
+                },
+                {
+                operation: "ACL",
+                access_type: "ALWAYS"
+                }
+                ],
+                collection: "Installation"
+                },
+                {
+                access_permissions: [
+                {
+                operation: "ACL",
+                access_type: "ALWAYS"
+                }
+                ],
+                collection: "Provider"
+                }]
+                }
+            </ext:document>
+        </ext:insertOne>
+    </changeSet>
+
+    <changeSet id="9" author="accounting-system">
+        <ext:insertOne collectionName="Role">
+            <ext:document>
+                {
+                system: false,
+                name: "provider_admin",
+                description: "provider_admin can perform any operation on a specific Provider.",
+                collections_access_permissions: [
+                {
+                access_permissions: [
+                {
+                operation: "CREATE",
+                access_type: "ALWAYS"
+                },
+                {
+                operation: "UPDATE",
+                access_type: "ALWAYS"
+                },
+                {
+                operation: "DELETE",
+                access_type: "ALWAYS"
+                },
+                {
+                operation: "READ",
+                access_type: "ALWAYS"
+                }
+                ],
+                collection: "Metric"
+                },
+                {
+                access_permissions: [
+                {
+                operation: "CREATE",
+                access_type: "ALWAYS"
+                },
+                {
+                operation: "UPDATE",
+                access_type: "ALWAYS"
+                },
+                {
+                operation: "DELETE",
+                access_type: "ALWAYS"
+                },
+                {
+                operation: "READ",
+                access_type: "ALWAYS"
+                },
+                {
+                operation: "ACL",
+                access_type: "ALWAYS"
+                }
+                ],
+                collection: "Installation"
+                },
+                {
+                access_permissions: [
+                {
+                operation: "ACL",
+                access_type: "ALWAYS"
+                }
+                ],
+                collection: "Provider"
+                }]
+                }
+            </ext:document>
+        </ext:insertOne>
+    </changeSet>
+
+
+    <changeSet id="10" author="accounting-system">
+        <ext:insertMany collectionName="Role">
+            <ext:documents>
+                [
+                {
+                system: false,
+                name: "installation_admin",
+                description: "installation_admin can perform any operation on a specific Installation.",
+                collections_access_permissions: [
+                {
+                access_permissions: [
+                {
+                operation: "UPDATE",
+                access_type: "ALWAYS"
+                },
+                {
+                operation: "DELETE",
+                access_type: "ALWAYS"
+                },
+                {
+                operation: "READ",
+                access_type: "ALWAYS"
+                },
+                {
+                operation: "ACL",
+                access_type: "ALWAYS"
+                }
+                ],
+                collection: "Installation"
+                },
+                {
+                access_permissions: [
+                {
+                operation: "CREATE",
+                access_type: "ALWAYS"
+                },
+                {
+                operation: "UPDATE",
+                access_type: "ALWAYS"
+                },
+                {
+                operation: "DELETE",
+                access_type: "ALWAYS"
+                },
+                {
+                operation: "READ",
+                access_type: "ALWAYS"
+                }
+                ],
+                collection: "Metric"
+                }]
+                }
+                ]
+            </ext:documents>
+        </ext:insertMany>
+    </changeSet>
+
+    <changeSet id="11" author="accounting-system">
+        <ext:insertOne collectionName="Role">
+            <ext:document>
+                {
+                system: false,
+                name: "project_reader",
+                description: "project_reader can read all entities related to the Project it will be applied to.",
+                collections_access_permissions: [
+                {
+                access_permissions: [
+                {
+                operation: "READ",
+                access_type: "ALWAYS"
+                }
+                ],
+                collection: "Project"
+                },
+                {
+                access_permissions: [
+                {
+                operation: "READ",
+                access_type: "ALWAYS"
+                }
+                ],
+                collection: "Metric"
+                },
+                {
+                access_permissions: [
+                {
+                operation: "READ",
+                access_type: "ALWAYS"
+                }
+                ],
+                collection: "Installation"
+                }]
+                }
+            </ext:document>
+        </ext:insertOne>
+    </changeSet>
+
+    <changeSet id="12" author="accounting-system">
+        <ext:insertMany collectionName="Role">
+            <ext:documents>
+                [
+                {
+                system: true,
+                name: "metric_definition_creator",
+                description: "metric_definition_creator can create new Metric Definitions, and read all Metric Definitions but can update and delete only the entities it created.",
+                collections_access_permissions: [
+                {
+                access_permissions: [
+                {
+                operation: "CREATE",
+                access_type: "ALWAYS"
+                },
+                {
+                operation: "UPDATE",
+                access_type: "ENTITY"
+                },
+                {
+                operation: "DELETE",
+                access_type: "ENTITY"
+                },
+                {
+                operation: "READ",
+                access_type: "ALWAYS"
+                }
+                ],
+                collection: "MetricDefinition"
+                }]
+                }
+                ]
+            </ext:documents>
+        </ext:insertMany>
+    </changeSet>
+
+
+    <changeSet id="13" author="accounting-system">
+        <ext:insertOne collectionName="Role">
+            <ext:document>
+                {
+                system: true,
+                name: "provider_creator",
+                description: "provider_creator can create new Providers, and read all Providers but can update and delete only the entities it created.",
+                collections_access_permissions: [
+                {
+                access_permissions: [
+                {
+                operation: "CREATE",
+                access_type: "ALWAYS"
+                },
+                {
+                operation: "UPDATE",
+                access_type: "ENTITY"
+                },
+                {
+                operation: "DELETE",
+                access_type: "ENTITY"
+                },
+                {
+                operation: "READ",
+                access_type: "ALWAYS"
+                }
+                ],
+                collection: "Provider"
+                }]
+                }
+            </ext:document>
+        </ext:insertOne>
+    </changeSet>
+
+    <changeSet id="14" author="accounting-system">
+        <ext:createIndex collectionName="HierarchicalRelation">
+            <ext:keys>
+                { externalId: 1}
+            </ext:keys>
+            <ext:options>
+                {unique: false, name: "hierarchical_relation_external_id"}
+            </ext:options>
+        </ext:createIndex>
+    </changeSet>
+
+    <changeSet id="15" author="accounting-system">
+        <ext:createIndex collectionName="UnitType">
+            <ext:keys>
+                { unit: 1}
+            </ext:keys>
+            <ext:options>
+                {unique: true, name: "unique_unit_type", collation: { locale: "en" }}
+            </ext:options>
+        </ext:createIndex>
+    </changeSet>
+
+    <changeSet id="16" author="accounting-system">
+        <ext:insertOne collectionName="Role">
+            <ext:document>
+                {
+                system: true,
+                name: "unit_type_creator",
+                description: "unit_type_creator can create new Unit Types, and read all Unit Types but can update and delete only the entities it created.",
+                collections_access_permissions: [
+                {
+                access_permissions: [
+                {
+                operation: "CREATE",
+                access_type: "ALWAYS"
+                },
+                {
+                operation: "UPDATE",
+                access_type: "ENTITY"
+                },
+                {
+                operation: "DELETE",
+                access_type: "ENTITY"
+                },
+                {
+                operation: "READ",
+                access_type: "ALWAYS"
+                }
+                ],
+                collection: "UnitType"
+                }]
+                }
+            </ext:document>
+        </ext:insertOne>
+    </changeSet>
+
+    <changeSet id="17" author="accounting-system">
+        <ext:insertMany collectionName="UnitType">
+            <ext:documents>
+                [
+                {
+                unit: "TB",
+                description: "terabyte",
+                creatorId: ""
+                },
+                {
+                unit: "TB/year",
+                description: "terabyte per year",
+                creatorId: ""
+                },
+                {
+                unit: "Endpoints Monitored/hour",
+                description: "Endpoints Monitored per hour",
+                creatorId: ""
+                },
+                {
+                unit: "Messages/hour",
+                description: "Messages per hour",
+                creatorId: ""
+                },
+                {
+                unit: "Service Updates",
+                description: "Service Updates",
+                creatorId: ""
+                },
+                {
+                unit: "#",
+                description: "number of",
+                creatorId: ""
+                },
+                {
+                unit: "count",
+                description: "count of",
+                creatorId: ""
+                },
+                {
+                unit: "API reqs",
+                description: "API requests",
+                creatorId: ""
+                },
+                {
+                unit: "PID prefixes",
+                description: "PID prefixes",
+                creatorId: ""
+                },
+                {
+                unit: "CPU Time",
+                description: "the exact amount of time that the CPU has spent processing data",
+                creatorId: ""
+                },
+                {
+                unit: "s",
+                description: "second",
+                creatorId: ""
+                }
+                ]
+            </ext:documents>
+        </ext:insertMany>
+    </changeSet>
+
+    <changeSet id="18" author="accounting-system">
+        <ext:createIndex collectionName="MetricType">
+            <ext:keys>
+                { metricType: 1}
+            </ext:keys>
+            <ext:options>
+                {unique: true, name: "unique_metric_type", collation: { locale: "en" }}
+            </ext:options>
+        </ext:createIndex>
+    </changeSet>
+
+    <changeSet id="19" author="accounting-system">
+        <ext:insertOne collectionName="Role">
+            <ext:document>
+                {
+                system: true,
+                name: "metric_type_creator",
+                description: "metric_type_creator can create new Metric Types, and read all Metric Types but can update and delete only the entities it created.",
+                collections_access_permissions: [
+                {
+                access_permissions: [
+                {
+                operation: "CREATE",
+                access_type: "ALWAYS"
+                },
+                {
+                operation: "UPDATE",
+                access_type: "ENTITY"
+                },
+                {
+                operation: "DELETE",
+                access_type: "ENTITY"
+                },
+                {
+                operation: "READ",
+                access_type: "ALWAYS"
+                }
+                ],
+                collection: "MetricType"
+                }]
+                }
+            </ext:document>
+        </ext:insertOne>
+    </changeSet>
+
+    <changeSet id="20" author="accounting-system">
+        <ext:insertMany collectionName="MetricType">
+            <ext:documents>
+                [
+                {
+                metricType: "aggregated",
+                description: "The sum of all values captured over the aggregation interval",
+                creatorId: ""
+                },
+                {
+                metricType: "count",
+                description: "It represents the total number of event occurrences in one time interval",
+                creatorId: ""
+                },
+                {
+                metricType: "summarised",
+                description: "It represents the measured values in one time interval",
+                creatorId: ""
+                },
+                {
+                metricType: "averaged",
+                description: "The average of the values captured in one time interval",
+                creatorId: ""
+                }
+                ]
+            </ext:documents>
+        </ext:insertMany>
+    </changeSet>
+</databaseChangeLog>
