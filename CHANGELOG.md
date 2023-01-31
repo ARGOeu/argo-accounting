@@ -24,10 +24,13 @@ According to [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) , the `Unr
 
 ---
 
+### Added
+
+-   [#138](https://github.com/ARGOeu/argo-accounting/pull/138) - Docusaurus Guideline for managing Metric Definitions via UI
+
 ### Changed
 
 -   [#139](https://github.com/ARGOeu/argo-accounting/pull/139) - Use another endpoint for retrieving the EOSC Providers.
-
 
 ## 1.0.0 - 2023-01-31
 
