@@ -52,14 +52,14 @@ public class ProviderScheduler {
 
         LOG.info("Retrieving the total number of EOSC Providers.");
 
-        var asyncTotalResponse = providerClient.getTotalNumberOfProviders();
+        var asyncTotalResponse = providerClient.getTotalNumberOfProviders("all");
 
         asyncTotalResponse
                 .thenCompose(total -> {
                     LOG.infof("There are %s Providers in EOSC Portal.", total.total);
                     LOG.info("Retrieving the available Providers from EOSC-Portal.");
 
-                    return providerClient.getAll(total.total);})
+                    return providerClient.getAll("all", total.total);})
                 .thenAccept(response -> saveOrUpdate(response.results))
                 .exceptionally(ex -> {
                     LOG.error("Failed to communicate with EOSC-Portal. ", ex);
@@ -72,7 +72,7 @@ public class ProviderScheduler {
      */
     private void saveOrUpdate(List<EOSCProvider> providers){
 
-        LOG.info("Saving or updating the available EOSC Providers in the database.");
+        LOG.infof("Saving or updating the %s EOSC Providers in the database.", providers != null ? providers.size() : 0);
         providerRepository.persistOrUpdate(ProviderMapper.INSTANCE.eoscProvidersToProviders(providers));
     }
 }

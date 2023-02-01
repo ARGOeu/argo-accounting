@@ -25,7 +25,7 @@ public interface ProviderClient {
      */
     @GET
     @Path("/all")
-    CompletionStage<Total> getTotalNumberOfProviders();
+    CompletionStage<Total> getTotalNumberOfProviders(@QueryParam("catalogue_id") String catalogueId);
 
     /**
      * Communicates with EOSC Portal to fetch the available EOSC Providers.
@@ -35,5 +35,5 @@ public interface ProviderClient {
      */
     @GET
     @Path("/all")
-    CompletionStage<Response> getAll(@QueryParam("quantity") int quantity);
+    CompletionStage<Response> getAll(@QueryParam("catalogue_id") String catalogueId, @QueryParam("quantity") int quantity);
 }

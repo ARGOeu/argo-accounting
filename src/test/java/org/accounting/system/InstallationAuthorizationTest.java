@@ -92,9 +92,9 @@ public class InstallationAuthorizationTest {
     @BeforeAll
     public void setup() throws ExecutionException, InterruptedException, ParseException {
 
-        Total total = providerClient.getTotalNumberOfProviders().toCompletableFuture().get();
+        Total total = providerClient.getTotalNumberOfProviders("all").toCompletableFuture().get();
 
-        Response response = providerClient.getAll(total.total).toCompletableFuture().get();
+        Response response = providerClient.getAll("all", total.total).toCompletableFuture().get();
 
         providerRepository.persistOrUpdate(ProviderMapper.INSTANCE.eoscProvidersToProviders(response.results));
 
