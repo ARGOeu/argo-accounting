@@ -30,6 +30,7 @@ import org.accounting.system.entities.projections.normal.ProjectProjection;
 import org.accounting.system.enums.ApiMessage;
 import org.accounting.system.mappers.ProviderMapper;
 import org.accounting.system.repositories.client.ClientAccessAlwaysRepository;
+import org.accounting.system.repositories.client.ClientRepository;
 import org.accounting.system.repositories.metric.MetricRepository;
 import org.accounting.system.repositories.metricdefinition.MetricDefinitionRepository;
 import org.accounting.system.repositories.project.ProjectRepository;
@@ -95,6 +96,9 @@ public class ProjectAutorizationTest {
     ClientService clientService;
 
     @Inject
+    ClientRepository clientRepository;
+
+    @Inject
     ClientAccessAlwaysRepository clientAccessAlwaysRepository;
 
     KeycloakTestClient keycloakClient = new KeycloakTestClient();
@@ -108,7 +112,7 @@ public class ProjectAutorizationTest {
 
         providerRepository.persistOrUpdate(ProviderMapper.INSTANCE.eoscProvidersToProviders(response.results));
 
-        clientService.register(utility.getIdFromToken(keycloakClient.getAccessToken("admin").split("\\.")[1]), "admin", "admin@email.com");
+        clientRepository.addSystemAdmin(utility.getIdFromToken(keycloakClient.getAccessToken("admin").split("\\.")[1]), "admin", "admin@email.com");
 
         clientService.register("project_admin@example.org", "project_admin", "project_admin@example.org");
 
@@ -123,7 +127,7 @@ public class ProjectAutorizationTest {
         metricRepository.deleteAll();
 
         String sub = utility.getIdFromToken(keycloakClient.getAccessToken("admin").split("\\.")[1]);
-        systemAdminService.accessListOfProjects(Set.of("777536"), sub);
+        systemAdminService.registerProjectsToAccountingService(Set.of("777536"), sub);
     }
 
     @Test

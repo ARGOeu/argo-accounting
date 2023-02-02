@@ -7,7 +7,6 @@ import org.accounting.system.dtos.authorization.request.RoleRequestDto;
 import org.accounting.system.enums.Collection;
 import org.accounting.system.enums.Operation;
 import org.accounting.system.repositories.client.ClientRepository;
-import org.accounting.system.services.MetricDefinitionService;
 import org.apache.commons.validator.GenericValidator;
 import org.bson.types.ObjectId;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
@@ -33,9 +32,6 @@ import java.util.stream.Stream;
 
 @ApplicationScoped
 public class Utility {
-
-    @Inject
-    MetricDefinitionService metricDefinitionService;
 
     @Inject
     RequestInformation requestInformation;
@@ -165,5 +161,10 @@ public class Utility {
         JSONObject json = (JSONObject) parser.parse(payload);
 
         return (String) json.get("sub");
+    }
+
+    public String getClientVopersonId(){
+
+        return tokenIntrospection.getJsonObject().getString(id);
     }
 }

@@ -1,10 +1,9 @@
 package org.accounting.system.endpoints;
 
-import io.quarkus.oidc.TokenIntrospection;
 import io.quarkus.security.Authenticated;
-import org.accounting.system.repositories.client.ClientRepository;
+import org.accounting.system.interceptors.annotations.SystemAdmin;
 import org.accounting.system.services.SystemAdminService;
-import org.eclipse.microprofile.config.inject.ConfigProperty;
+import org.accounting.system.util.Utility;
 import org.eclipse.microprofile.openapi.annotations.Operation;
 
 import javax.inject.Inject;
@@ -25,26 +24,17 @@ public class SystemAdminEndpoint {
     SystemAdminService systemAdminService;
 
     @Inject
-    TokenIntrospection tokenIntrospection;
-
-    @Inject
-    ClientRepository clientRepository;
-
-    @ConfigProperty(name = "key.to.retrieve.id.from.access.token")
-    String key;
+    Utility utility;
 
     @Operation(
             hidden = true)
     @POST
     @Path("/assign-projects")
     @Consumes(value = MediaType.APPLICATION_JSON)
+    @SystemAdmin
     public Response assignProjects(@Valid @NotNull(message = "The request body is empty.") Set<String> projects) {
 
-        String id = tokenIntrospection.getJsonObject().getString(key);
-
-        clientRepository.isSystemAdmin(id);
-
-        systemAdminService.accessListOfProjects(projects, id);
+        systemAdminService.registerProjectsToAccountingService(projects, utility.getClientVopersonId());
 
         return Response.ok().build();
     }

@@ -25,6 +25,7 @@ import org.accounting.system.endpoints.InstallationEndpoint;
 import org.accounting.system.enums.ApiMessage;
 import org.accounting.system.mappers.ProviderMapper;
 import org.accounting.system.repositories.client.ClientAccessAlwaysRepository;
+import org.accounting.system.repositories.client.ClientRepository;
 import org.accounting.system.repositories.metricdefinition.MetricDefinitionRepository;
 import org.accounting.system.repositories.project.ProjectRepository;
 import org.accounting.system.repositories.provider.ProviderRepository;
@@ -82,6 +83,9 @@ public class InstallationAuthorizationTest {
     Utility utility;
 
     @Inject
+    ClientRepository clientRepository;
+
+    @Inject
     ClientService clientService;
 
     @Inject
@@ -98,7 +102,7 @@ public class InstallationAuthorizationTest {
 
         providerRepository.persistOrUpdate(ProviderMapper.INSTANCE.eoscProvidersToProviders(response.results));
 
-        clientService.register(utility.getIdFromToken(keycloakClient.getAccessToken("admin").split("\\.")[1]), "admin", "admin@email.com");
+        clientRepository.addSystemAdmin(utility.getIdFromToken(keycloakClient.getAccessToken("admin").split("\\.")[1]), "admin", "admin@email.com");
 
         clientService.register("provider_admin@example.org", "provider_admin", "provider_admin@example.org");
 
@@ -114,7 +118,7 @@ public class InstallationAuthorizationTest {
         String sub = utility.getIdFromToken(keycloakClient.getAccessToken("admin").split("\\.")[1]);
 
         //We are going to register the EOSC-hub project from OpenAire API
-        systemAdminService.accessListOfProjects(Set.of("777536"), sub);
+        systemAdminService.registerProjectsToAccountingService(Set.of("777536"), sub);
 
         projectRepository.associateProjectWithProviders("777536", Set.of("grnet", "sites"));
     }

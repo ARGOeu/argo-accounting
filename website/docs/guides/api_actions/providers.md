@@ -57,6 +57,6 @@ You can search for specific Installation/Installations,assigned to the Provider,
 Apply a request to the Accounting Service API.You need to provide the search criteria in a specific <b><a href="https://argoeu.github.io/argo-accounting/docs/guides/search-filter"> syntax</a></b>. <b> For more details,how to syntax the request,see <a href="https://argoeu.github.io/argo-accounting/docs/api/installation#post---search-for-installations">here</a></b>
 </details>
 
-Also,if the role, assigned to you,is administrative,you are permitted to perform all the actions described at this <b><a href="https://argoeu.github.io/argo-accounting/docs/guides/installation">section</a></b>,on the Installations assigned to the Provider.
+Also,if the role, assigned to you,is administrative,you are permitted to perform all the actions described at this <b><a href="https://argoeu.github.io/argo-accounting/docs/guides/api_actions/installation">section</a></b>,on the Installations assigned to the Provider.
 
 ---

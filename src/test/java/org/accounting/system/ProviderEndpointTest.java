@@ -96,7 +96,7 @@ public class ProviderEndpointTest {
         projectAccessAlwaysRepository.deleteAll();
 
         String sub = utility.getIdFromToken(keycloakClient.getAccessToken("admin").split("\\.")[1]);
-        systemAdminService.accessListOfProjects(Set.of("777536"), sub);
+        systemAdminService.registerProjectsToAccountingService(Set.of("777536"), sub);
     }
 
     @Test

@@ -24,6 +24,7 @@ import org.accounting.system.entities.Project;
 import org.accounting.system.mappers.ProjectMapper;
 import org.accounting.system.mappers.ProviderMapper;
 import org.accounting.system.repositories.client.ClientAccessAlwaysRepository;
+import org.accounting.system.repositories.client.ClientRepository;
 import org.accounting.system.repositories.metricdefinition.MetricDefinitionRepository;
 import org.accounting.system.repositories.project.ProjectRepository;
 import org.accounting.system.repositories.provider.ProviderRepository;
@@ -89,6 +90,9 @@ public class ProjectEndpointTest {
     ClientService clientService;
 
     @Inject
+    ClientRepository clientRepository;
+
+    @Inject
     ClientAccessAlwaysRepository clientAccessAlwaysRepository;
 
     KeycloakTestClient keycloakClient = new KeycloakTestClient();
@@ -102,7 +106,7 @@ public class ProjectEndpointTest {
 
         providerRepository.persistOrUpdate(ProviderMapper.INSTANCE.eoscProvidersToProviders(response.results));
 
-        clientService.register(utility.getIdFromToken(keycloakClient.getAccessToken("admin").split("\\.")[1]), "admin", "admin@email.com");
+        clientRepository.addSystemAdmin(utility.getIdFromToken(keycloakClient.getAccessToken("admin").split("\\.")[1]), "admin", "admin@email.com");
 
         clientAccessAlwaysRepository.assignRolesToRegisteredClient(utility.getIdFromToken(keycloakClient.getAccessToken("admin").split("\\.")[1]), Set.of("collection_owner"));
     }
@@ -115,7 +119,7 @@ public class ProjectEndpointTest {
 
         String sub = utility.getIdFromToken(keycloakClient.getAccessToken("admin").split("\\.")[1]);
 
-        systemAdminService.accessListOfProjects(Set.of("777536", "101017567"), sub);
+        systemAdminService.registerProjectsToAccountingService(Set.of("777536", "101017567"), sub);
 
         projectRepository.associateProjectWithProviders("777536", Set.of("grnet"));
     }
