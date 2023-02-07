@@ -1,7 +1,10 @@
 package org.accounting.system.entities.projections;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import org.accounting.system.dtos.metricdefinition.MetricDefinitionResponseDto;
 import org.accounting.system.entities.MetricDefinition;
+import org.accounting.system.mappers.MetricDefinitionMapper;
 import org.bson.codecs.pojo.annotations.BsonProperty;
 import org.bson.types.ObjectId;
 import org.eclipse.microprofile.openapi.annotations.enums.SchemaType;
@@ -91,18 +94,17 @@ public class MetricProjection {
     @BsonProperty("project_id")
     private String projectId;
 
-   @JsonProperty("metric_definition")
-   @BsonProperty("metric_definition")
+    @JsonProperty("metric_definition")
+    @Schema(
+            type = SchemaType.OBJECT,
+            implementation = MetricDefinitionResponseDto.class,
+            description = "The Metric Definition the Metric refer to."
+    )
+    private MetricDefinitionResponseDto metricDefinitionResponseDto;
 
-    private List<MetricDefinition> metricDefinition;
-
-    public List<MetricDefinition> getMetricDefinition() {
-        return metricDefinition;
-    }
-
-    public void setMetricDefinition(List<MetricDefinition> metricDefinition) {
-        this.metricDefinition = metricDefinition;
-    }
+    @BsonProperty("metric_definition")
+    @JsonIgnore
+    private List<MetricDefinition> metricDefinitions;
 
     public String getInstallationId() {
         return installationId;
@@ -169,5 +171,20 @@ public class MetricProjection {
         this.provider = provider;
     }
 
+    public MetricDefinitionResponseDto getMetricDefinitionResponseDto() {
+        metricDefinitionResponseDto = MetricDefinitionMapper.INSTANCE.metricDefinitionToResponse(metricDefinitions.get(0));
+        return metricDefinitionResponseDto;
+    }
 
+    public void setMetricDefinitionResponseDto(MetricDefinitionResponseDto metricDefinitionResponseDto) {
+        this.metricDefinitionResponseDto = metricDefinitionResponseDto;
+    }
+
+    public List<MetricDefinition> getMetricDefinitions() {
+        return metricDefinitions;
+    }
+
+    public void setMetricDefinitions(List<MetricDefinition> metricDefinitions) {
+        this.metricDefinitions = metricDefinitions;
+    }
 }
