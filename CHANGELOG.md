@@ -26,7 +26,8 @@ According to [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) , the `Unr
 
 ### Added
 
--   [#138](https://github.com/ARGOeu/argo-accounting/pull/138) - Docusaurus Guideline for managing Metric Definitions via UI
+-   [#141](https://github.com/ARGOeu/argo-accounting/pull/141) - Accounting Service health checks.
+-   [#138](https://github.com/ARGOeu/argo-accounting/pull/138) - Docusaurus Guideline for managing Metric Definitions via UI.
 
 ### Changed
 
