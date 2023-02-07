@@ -1,0 +1,16 @@
+# This CITATION.cff file was generated with cffinit.
+# Visit https://bit.ly/cffinit to generate yours today!
+
+cff-version: 1.2.0
+title: Accounting Service
+message: The Accounting Service is a platform responsible for collecting, aggregating, and exchanging the Virtual Access metrics
+type: software
+authors:
+  - given-names: Fotios
+    family-names: Basios
+    affiliation: GRNET S.A.
+    email: fbasios@admin.grnet.gr
+  - given-names: Chrysa
+    family-names: Thermolia
+    email: cthermolia@admin.grnet.gr
+    affiliation: GRNET S.A.
