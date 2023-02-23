@@ -4,7 +4,7 @@ import io.netty.handler.codec.http.HttpResponseStatus;
 import io.netty.util.internal.StringUtil;
 import org.accounting.system.constraints.UnitTypeNotFound;
 import org.accounting.system.exceptions.CustomValidationException;
-import org.accounting.system.services.ReadPredefinedTypesService;
+import org.accounting.system.services.UnitTypeService;
 import org.apache.commons.lang3.StringUtils;
 
 import javax.enterprise.inject.spi.CDI;
@@ -38,9 +38,9 @@ public class UnitTypeNotFoundValidator implements ConstraintValidator<UnitTypeNo
         builder.append(StringUtil.SPACE);
         builder.append(value);
 
-        ReadPredefinedTypesService service = CDI.current().select(ReadPredefinedTypesService.class).get();
+        UnitTypeService service = CDI.current().select(UnitTypeService.class).get();
 
-        service.searchForUnitType(value).orElseThrow(()->new CustomValidationException(builder.toString(), HttpResponseStatus.NOT_FOUND));
+        service.getUnitByType(value).orElseThrow(()->new CustomValidationException(builder.toString(), HttpResponseStatus.NOT_FOUND));
 
         return true;
     }

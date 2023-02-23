@@ -35,6 +35,11 @@ According to [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) , the `Unr
 
 -   [#139](https://github.com/ARGOeu/argo-accounting/pull/139) - Use another endpoint for retrieving the EOSC Providers.
 
+### Removed
+
+-   [#144](https://github.com/ARGOeu/argo-accounting/pull/144) - Remove redundant endpoints.
+
+
 ## 1.0.0 - 2023-01-31
 
 ---

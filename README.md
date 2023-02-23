@@ -63,16 +63,6 @@ When running the production version of the application, the MongoDB connection n
 If you want to continue use Dev Services we recommend that you use the `%prod.` profile to define your MongoDB settings. What that means practically, is that Quarkus
 will automatically start a MongoDB container when running tests or dev-mode, and automatically configure the connection.
 
-## Unit and Metric type
-
-The possible values of `unit_type` and `metric_type` are defined in two separate files, `unit_type.conf` and `metric_type.conf` respectively.
-The application reads those files and offers to the clients the available values by the respective GET requests.
-You can set the path to those files by filling in the following attributes in the `application.properties`:
--   `unit.types.file`
--   `metric.types.file`
-
-Finally, under the folder `/files`, you can find samples of those files.
-
 ## Authentication
 
 To access Accounting System API resources, you have to be authenticated by EOSC Core Infrastructure Proxy. These resources are protected and can only be accessed if a client is sending a bearer token along with the request,
@@ -398,21 +388,15 @@ The generated roles can be assigned to different users or services via Keycloak.
 To deploy the API in a machine :
 
 -   First, you have to set up a mongo database (We are currently using `4.0.28`, but other versions may be compatible)
--   Second, you have to put the `unit_type.conf` and `metric_type.conf` in the machine filesystem
--   Third, there must be an _über-jar_ version of the API on this machine
+-   Second, there must be an _über-jar_ version of the API on this machine
 
 Before running the _über-jar_, you have to export the following variables:
 ```bash
 - export QUARKUS_MONGODB_CONNECTION_STRING=mongodb://{host}:{port}
-- export UNIT_TYPES_FILE={filesystem path to unit_type.conf}
-- export METRIC_TYPES_FILE={filesystem path to metric_type.conf}
 - export SERVER_URL={The proxy server URL that acts on behalf of the Accounting System}
 - export QUARKUS_OIDC_AUTH_SERVER_URL={The base URL of the OpenID Connect (OIDC) server. Note if you work with Keycloak OIDC server, make sure the base URL is in the following format: https://host:port/auth/realms/{realm} where {realm} has to be replaced by the name of the Keycloak realm}
 - export QUARKUS_OIDC_CLIENT_ID={Specifies an alpha-numeric string that will be used as the client identifier for OIDC requests}
 - export QUARKUS_OIDC_CREDENTIALS_SECRET={Client secret which is used for a client_secret_basic authentication method}
-- export KEYCLOAK_SERVER_URL={The base URL of Keycloak server. Make sure the base URL is in the following format: https://host:port/auth}
-- export KEYCLOAK_SERVER_REALM={The name of the Keycloak realm}
-- export KEYCLOAK_SERVER_CLIENT_ID={Specifies an alpha-numeric string that will be used as the client identifier for OIDC requests}
 ```
 
 Once the variables above have been exported, you should execute the following command:

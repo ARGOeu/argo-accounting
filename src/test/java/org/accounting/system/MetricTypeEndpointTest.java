@@ -3,7 +3,6 @@ package org.accounting.system;
 import io.quarkus.test.common.http.TestHTTPEndpoint;
 import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.test.junit.TestProfile;
-import io.quarkus.test.junit.mockito.InjectMock;
 import io.quarkus.test.keycloak.client.KeycloakTestClient;
 import io.restassured.http.ContentType;
 import org.accounting.system.dtos.InformativeResponse;
@@ -16,7 +15,6 @@ import org.accounting.system.endpoints.MetricTypeEndpoint;
 import org.accounting.system.repositories.client.ClientAccessAlwaysRepository;
 import org.accounting.system.repositories.metricdefinition.MetricDefinitionRepository;
 import org.accounting.system.services.MetricTypeService;
-import org.accounting.system.services.ReadPredefinedTypesService;
 import org.accounting.system.services.client.ClientService;
 import org.accounting.system.util.Utility;
 import org.json.simple.parser.ParseException;
@@ -24,16 +22,13 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
-import org.mockito.Mockito;
 
 import javax.inject.Inject;
-import java.util.Optional;
 import java.util.Set;
 
 import static io.restassured.RestAssured.given;
 import static org.hamcrest.Matchers.is;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.mockito.ArgumentMatchers.any;
 
 @QuarkusTest
 @TestProfile(AccountingSystemTestProfile.class)
@@ -52,9 +47,6 @@ public class MetricTypeEndpointTest {
 
     @Inject
     MetricDefinitionRepository metricDefinitionRepository;
-
-    @InjectMock
-    ReadPredefinedTypesService readPredefinedTypesService;
 
     @Inject
     MetricTypeService metricTypeService;
@@ -267,13 +259,11 @@ public class MetricTypeEndpointTest {
 
         var metricType = createMetricType(newMetricType);
 
-        Mockito.when(readPredefinedTypesService.searchForUnitType(any())).thenReturn(Optional.of("SECOND"));
-        Mockito.when(readPredefinedTypesService.searchForMetricType(any())).thenReturn(Optional.of("Aggregated"));
         MetricDefinitionRequestDto request= new MetricDefinitionRequestDto();
 
         request.metricName = "metric";
         request.metricDescription = "description";
-        request.unitType = "SECOND";
+        request.unitType = "TB";
         request.metricType = metricType.metricType;
 
         createMetricDefinition(request, "admin");
@@ -393,13 +383,11 @@ public class MetricTypeEndpointTest {
 
         var metricType = createMetricType(newMetricType);
 
-        Mockito.when(readPredefinedTypesService.searchForUnitType(any())).thenReturn(Optional.of("SECOND"));
-        Mockito.when(readPredefinedTypesService.searchForMetricType(any())).thenReturn(Optional.of("Aggregated"));
         MetricDefinitionRequestDto request= new MetricDefinitionRequestDto();
 
         request.metricName = "metric";
         request.metricDescription = "description";
-        request.unitType = "SECOND";
+        request.unitType = "TB";
         request.metricType = metricType.metricType;
 
         createMetricDefinition(request, "admin");
