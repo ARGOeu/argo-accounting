@@ -6,16 +6,22 @@ sidebar_position: 7
 ### Syntax a search filter
 
 
-You can apply a search operation on the Projects,Providers,Installations, Metrics,Metric Definitions,existing on the Accounting Service.You can search on a specific field or on a combination of fields of the collection.In order to apply a search request,you need to provide the search criteria on the fields,and the search operation will retrieve the results that match them
+You can apply a search operation on the Projects,Providers,Installations, Metrics,Metric Definitions,existing on the Accounting Service.You can search on a specific field or on a combination of fields of the collection. In order to apply a search request,you need to provide the search criteria on the fields,and the search operation will retrieve the results that match them
 
-### 1.  Search on a field
+Defining search criteria, can be done with 2 ways:  
+**"query"** : defines a search on a single field of the Collection. e.g on Collection Metrics : installation="insta1"
+**"filter"**: defines a search on multiple criteria combined with operators AND/OR. A "filter" contains a combination of "query" or "filter", depending on how complex is the criterio we want to apply. e.g on Collection Metrics: 
+a) project="project1" AND installation="insta1" 
+b) project="project1" AND (installation="insta1" OR installation="insta2")
+c) project="project2" OR [project="project1" AND (installation="insta1" OR installation="insta2")]
 
-The simplest search that can be performed is on a field of the collection.You need to syntax a search query, in a json format,and provide it as body in the search request. 
+### 1.  "query" syntax, searching a single field
+The simplest search that can be performed is on a field of the collection.You need to syntax a search "query", in a json format,and provide it as body in the search request. 
 The fields that need to be defined,in order the syntax to be valid are: 
 
 | Field          	| Description   	                   | 
 |------------------	|---------------------------------------- |
-| type             	| The type of the search.In the case the search is a combination of fields of the collection,it’s value is ‘query’ |
+| type             	| The type of the search. In the case the search is a combination of fields of the collection,it’s value is ‘query’ |
 | field         	| The field of the collection on which we search
 | values         	| The value of the equation, and it can be of any type depending on the type of the field we search
 | operand      	| The equation we want to apply on the field in order to search results.it’s value can be : <br/> eq: ==, neq: !=, lt: < , lte: <= , gt: >, gte: >= 
@@ -45,15 +51,16 @@ You search for Metrics,that the start period is after 01-01-2022.The syntax of t
 ```
 
 
-### 2.  Search on multiple fields
+### 2.  "filter" syntax, search on multiple fields
 
-A more complex search can be performed, combining 2 or more fields of the collection.You need to syntax a search filter,in a json format, and provide it as body in the search request. 
+A more complex search can be performed, combining 2 or more fields of the collection. Each time you apply an AND/OR operation on the fields of the Collection, you need to syntax a "filter". The filter can contain a combination of "query", or a combination of "filter", or a combination of "query"/"filter",depending on how complex is the search you apply.
+You need to syntax a search "filter",in a json format, and provide it as body in the search request. 
 The fields that need to be defined,in order the syntax to be valid are: 
 
 | Field          	| Description   	                   | 
 |------------------	|---------------------------------------- |
-| type             	| The type of the search.In the case the search is on 2 or more fields of the collection,it’s value is ‘filter’ |
-| operator         	|  The operation on which the elements in the criteria will be combined.It’s values is either AND or OR 
+| type             	| The type of the search. In the case the search is on 2 or more fields of the collection,it’s value is ‘filter’ |
+| operator         	|  The operation on which the elements in the criteria will be combined. It’s values is either AND or OR 
 | criteria         	| The specific subqueries that will be matched by the operator. Criteria is an array of objects of either ‘query’ or ‘filter’ type
 
 
@@ -175,4 +182,3 @@ So now we need to combine these search criteria in a filter as:
 }
 
 ```
-
