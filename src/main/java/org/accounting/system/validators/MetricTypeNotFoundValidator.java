@@ -4,7 +4,7 @@ import io.netty.handler.codec.http.HttpResponseStatus;
 import io.netty.util.internal.StringUtil;
 import org.accounting.system.constraints.MetricTypeNotFound;
 import org.accounting.system.exceptions.CustomValidationException;
-import org.accounting.system.services.ReadPredefinedTypesService;
+import org.accounting.system.services.MetricTypeService;
 import org.apache.commons.lang3.StringUtils;
 
 import javax.enterprise.inject.spi.CDI;
@@ -38,9 +38,9 @@ public class MetricTypeNotFoundValidator implements ConstraintValidator<MetricTy
         builder.append(StringUtil.SPACE);
         builder.append(value);
 
-        ReadPredefinedTypesService service = CDI.current().select(ReadPredefinedTypesService.class).get();
+        MetricTypeService service = CDI.current().select(MetricTypeService.class).get();
 
-        service.searchForMetricType(value).orElseThrow(()->new CustomValidationException(builder.toString(), HttpResponseStatus.NOT_FOUND));
+        service.getMetricByType(value).orElseThrow(()->new CustomValidationException(builder.toString(), HttpResponseStatus.NOT_FOUND));
 
         return true;
     }

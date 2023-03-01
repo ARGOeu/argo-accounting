@@ -4,7 +4,6 @@ import io.quarkus.test.common.QuarkusTestResource;
 import io.quarkus.test.common.http.TestHTTPEndpoint;
 import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.test.junit.TestProfile;
-import io.quarkus.test.junit.mockito.InjectMock;
 import io.quarkus.test.keycloak.client.KeycloakTestClient;
 import io.quarkus.test.security.TestSecurity;
 import io.quarkus.test.security.oidc.OidcSecurity;
@@ -35,7 +34,6 @@ import org.accounting.system.repositories.metric.MetricRepository;
 import org.accounting.system.repositories.metricdefinition.MetricDefinitionRepository;
 import org.accounting.system.repositories.project.ProjectRepository;
 import org.accounting.system.repositories.provider.ProviderRepository;
-import org.accounting.system.services.ReadPredefinedTypesService;
 import org.accounting.system.services.SystemAdminService;
 import org.accounting.system.services.client.ClientService;
 import org.accounting.system.util.Utility;
@@ -47,16 +45,13 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
-import org.mockito.Mockito;
 
 import javax.inject.Inject;
-import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
 
 import static io.restassured.RestAssured.given;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.mockito.ArgumentMatchers.any;
 
 
 @QuarkusTest
@@ -85,9 +80,6 @@ public class ProjectAutorizationTest {
 
     @Inject
     MetricRepository metricRepository;
-
-    @InjectMock
-    ReadPredefinedTypesService readPredefinedTypesService;
 
     @Inject
     Utility utility;
@@ -276,14 +268,12 @@ public class ProjectAutorizationTest {
         projectRepository.associateProjectWithProviders("777536", Set.of("grnet"));
 
         //Registering an installation
-        Mockito.when(readPredefinedTypesService.searchForUnitType(any())).thenReturn(Optional.of("SECOND"));
-        Mockito.when(readPredefinedTypesService.searchForMetricType(any())).thenReturn(Optional.of("Aggregated"));
         var requestForMetricDefinition = new MetricDefinitionRequestDto();
 
         requestForMetricDefinition.metricName = "metric";
         requestForMetricDefinition.metricDescription = "description";
-        requestForMetricDefinition.unitType = "SECOND";
-        requestForMetricDefinition.metricType = "Aggregated";
+        requestForMetricDefinition.unitType = "TB";
+        requestForMetricDefinition.metricType = "aggregated";
 
         var metricDefinitionResponse = createMetricDefinition(requestForMetricDefinition, "admin");
 
@@ -636,14 +626,12 @@ public class ProjectAutorizationTest {
 
     private MetricDefinitionResponseDto createMetricDefinition(String user){
 
-        Mockito.when(readPredefinedTypesService.searchForUnitType(any())).thenReturn(Optional.of("SECOND"));
-        Mockito.when(readPredefinedTypesService.searchForMetricType(any())).thenReturn(Optional.of("Aggregated"));
         var requestForMetricDefinition = new MetricDefinitionRequestDto();
 
         requestForMetricDefinition.metricName = "metric";
         requestForMetricDefinition.metricDescription = "description";
-        requestForMetricDefinition.unitType = "SECOND";
-        requestForMetricDefinition.metricType = "Aggregated";
+        requestForMetricDefinition.unitType = "TB";
+        requestForMetricDefinition.metricType = "aggregated";
 
 
         return given()
