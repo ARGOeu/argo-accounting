@@ -80,12 +80,12 @@ Therefore, you can either create a new Metric Definition or use an existing one.
 
 :::
 
-### Step 3: Put Metrics in an Installation
+### Step 3: Add Metrics
 
-:::info Choose your preferred way
+:::info Add Metrics to a particular Project
 
 <Tabs>
-  <TabItem value="ui" label="User Interface">It's currently under development.</TabItem>
+  <TabItem value="ui" label="User Interface">To perform this action via the website, please follow the provided <a href="https://argoeu.github.io/argo-accounting/docs/guides/ui_actions/project#manage-project-metrics">instructions</a>.</TabItem>
   <TabItem value="http" label="HTTP Request">To syntax the HTTP request, please visit the corresponding <a href="https://argoeu.github.io/argo-accounting/docs/api/metric#post---create-a-new-metric">document</a>.</TabItem>
 </Tabs>
 
