@@ -1,13 +1,15 @@
 ---
 id: metric_definition
 title: Metric Definition
-sidebar_position: 1
+sidebar_position: 4
 ---
 
-Please refer to Metric Definition [collection](/docs/api/metric_definition.md) for more details.
 To manage the Metric Definitions via a website, please visit the Metric Definition tab on the <a href="https://accounting.eosc-portal.eu/metrics-definitions">Accounting User Interface</a>.
 
 Please note that all available actions are described in this section. The role that the client has obtained may not grant them access to some or all actions.
+
+Please refer to Metric Definition [collection](/docs/api/metric_definition.md) for more details.
+
 
 ### View all the Metric Definitions
 

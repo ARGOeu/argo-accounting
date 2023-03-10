@@ -1,7 +1,7 @@
 ---
 id: registration
 title: Register Accounting Service
-sidebar_position: 3
+sidebar_position: 1
 ---
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
@@ -50,7 +50,26 @@ Once you register the Accounting Service, you can perform the following actions:
 </Tabs>
 
 :::
- 
+
+### READ Unit Types
+:::info Choose your preferred way
+
+<Tabs>
+  <TabItem value="ui" label="User Interface">View Unit Types on <a href="https://accounting.eosc-portal.eu/unit-types">website</a>.</TabItem>
+  <TabItem value="http" label="HTTP Request">You can read all the Unit Types registered to Accounting Service. Apply a request to the api. <b> For more details, how to syntax the request, see  <a href="https://argoeu.github.io/argo-accounting/docs/api/unit_type#get----fetch-all-the-unit-types">here</a>.</b></TabItem>
+</Tabs>
+
+:::
+
+### READ Metric Types
+:::info Choose your preferred way
+
+<Tabs>
+  <TabItem value="ui" label="User Interface">View Metric Types on <a href="https://accounting.eosc-portal.eu/metric-types">website</a>.</TabItem>
+  <TabItem value="http" label="HTTP Request">You can read all the Metric Types registered to Accounting Service. Apply a request to the api. <b> For more details, how to syntax the request, see  <a href="https://argoeu.github.io/argo-accounting/docs/api/metric_type#get----fetch-all-the-metric-types">here</a>.</b></TabItem>
+</Tabs>
+
+:::
 
 ### READ all Clients
 :::info Choose your preferred way
@@ -58,16 +77,6 @@ Once you register the Accounting Service, you can perform the following actions:
 <Tabs>
   <TabItem value="ui" label="User Interface">It's currently under development.</TabItem>
   <TabItem value="http" label="HTTP Request">You can read all the Clients registered to Accounting Service. Apply a request to the api. <b> For more details, how to syntax the request, see  <a href="https://argoeu.github.io/argo-accounting/docs/api/client#get---read-the-registered-clients">here</a>.</b></TabItem>
-</Tabs>
-
-:::
-
-### READ Unit Types
-:::info Choose your preferred way
-
-<Tabs>
-  <TabItem value="ui" label="User Interface">It's currently under development.</TabItem>
-  <TabItem value="http" label="HTTP Request">You can read all the Unit Types registered to Accounting Service. Apply a request to the api. <b> For more details, how to syntax the request, see  <a href="https://argoeu.github.io/argo-accounting/docs/api/unit_type#get----fetch-all-the-unit-types">here</a>.</b></TabItem>
 </Tabs>
 
 :::

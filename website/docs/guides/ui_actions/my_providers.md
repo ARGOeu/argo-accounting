@@ -1,7 +1,7 @@
 ---
 id: my_providers
 title: My Providers
-sidebar_position: 3
+sidebar_position: 2
 ---
 
 In the <a href="https://accounting.eosc-portal.eu/myProviders">My Providers</a> tab, you can find all the Providers associated with a Project, and you have been granted rights to them 

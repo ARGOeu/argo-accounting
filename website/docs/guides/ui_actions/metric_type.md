@@ -1,13 +1,13 @@
 ---
 id: metric_type
 title: Metric Type
-sidebar_position: 5
+sidebar_position: 7
 ---
-
-Please refer to Metric Type [collection](/docs/api/metric_type.md) for more details.
 To manage the Metric Types via a website, please visit the <a href="https://accounting.eosc-portal.eu/metric-types">Metric Types</a> tab.
 
 Please note that all available actions are described in this section. The role that the client has obtained may not grant them access to some or all actions.
+
+Please refer to Metric Type [collection](/docs/api/metric_type.md) for more details.
 
 ### View all the Metric Types
 

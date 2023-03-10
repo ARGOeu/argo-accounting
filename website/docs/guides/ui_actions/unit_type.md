@@ -1,13 +1,13 @@
 ---
 id: unit_type
 title: Unit Type
-sidebar_position: 4
+sidebar_position: 6
 ---
-
-Please refer to Unit Type [collection](/docs/api/unit_type.md) for more details.
 To manage the Unit Types via a website, please visit the <a href="https://accounting.eosc-portal.eu/unit-types">Unit Types</a> tab.
 
 Please note that all available actions are described in this section. The role that the client has obtained may not grant them access to some or all actions.
+
+Please refer to Unit Type [collection](/docs/api/unit_type.md) for more details.
 
 ### View all the Unit Types
 

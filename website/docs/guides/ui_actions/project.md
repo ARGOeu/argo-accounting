@@ -1,13 +1,13 @@
 ---
 id: project
-title: Project
-sidebar_position: 2
+title: Projects
+sidebar_position: 1
 ---
-
-Please refer to Project [collection](docs/api/project.md) for more details.
 
 In the <a href="https://accounting.eosc-portal.eu/projects">Project</a> tab, you can find all the Projects in which you have been granted rights to them
 as a **Project Admin**.
+
+Please refer to Project [collection](docs/api/project.md) for more details.
 
 ### View all the Projects that have been assigned to you
 
