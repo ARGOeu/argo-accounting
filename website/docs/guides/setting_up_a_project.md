@@ -1,7 +1,7 @@
 ---
 id: setting_up_a_project
 title: Setting up a Project
-sidebar_position: 4
+sidebar_position: 2
 ---
 
 import Tabs from '@theme/Tabs';
@@ -19,7 +19,7 @@ Consider that you can execute the following actions either through User Interfac
 You can either use the Providers <a href="https://argoeu.github.io/argo-accounting/docs/api/provider#registering-provider-by-following-the-eosc-onboarding-process-at-httpsproviderseosc-portaleubecomeaprovider">registered in the EOSC Resource Catalogue</a> or create a new one. 
 :::
 
-:::info View all the Providers
+:::note View all the Providers
 
 <Tabs>
   <TabItem value="ui" label="User Interface">View Providers on <a href="https://accounting.eosc-portal.eu/providers">website</a>.</TabItem>
@@ -28,10 +28,10 @@ You can either use the Providers <a href="https://argoeu.github.io/argo-accounti
 
 :::
 
-:::info Create a new Provider
+:::note Create a new Provider
 
 <Tabs>
-  <TabItem value="ui" label="User Interface">It's currently under development.</TabItem>
+  <TabItem value="ui" label="User Interface">To perform this action via the website, please click <a href="https://accounting.eosc-portal.eu/providers">here</a> and follow the provided <a href="https://argoeu.github.io/argo-accounting/docs/guides/ui_actions/provider#create-a-provider">instructions</a>.</TabItem>
   <TabItem value="http" label="HTTP Request">To syntax the HTTP request, please visit the corresponding <a href="https://argoeu.github.io/argo-accounting/docs/api/provider#post---create-a-new-provider">document</a>.</TabItem>
 </Tabs>
 
@@ -53,7 +53,7 @@ As indicated in the Installation <a href="https://argoeu.github.io/argo-accounti
 Therefore, you can either create a new Metric Definition or use an existing one.
 :::
 
-:::info View all the Metric Definitions
+:::note View all the Metric Definitions
 
 <Tabs>
   <TabItem value="ui" label="User Interface">View Metric Definitions on <a href="https://accounting.eosc-portal.eu/metrics-definitions">website</a>.</TabItem>
@@ -62,7 +62,7 @@ Therefore, you can either create a new Metric Definition or use an existing one.
 
 :::
 
-:::info Create a new Metric Definition
+:::note Create a new Metric Definition
 
 <Tabs>
   <TabItem value="ui" label="User Interface">To perform this action via the website, please click <a href="https://accounting.eosc-portal.eu/metrics-definitions">here</a> and follow the provided <a href="https://argoeu.github.io/argo-accounting/docs/guides/ui_actions/metric_definition#create-a-metric-definition">instructions</a>.</TabItem>
@@ -74,7 +74,7 @@ Therefore, you can either create a new Metric Definition or use an existing one.
 :::info Create a new Installation
 
 <Tabs>
-  <TabItem value="ui" label="User Interface">It's currently under development.</TabItem>
+  <TabItem value="ui" label="User Interface">To perform this action via the website, please click <a href="https://accounting.eosc-portal.eu/installations">here</a> and follow the provided <a href="https://argoeu.github.io/argo-accounting/docs/guides/ui_actions/installation#create-a-new-installation">instructions</a>.</TabItem>
   <TabItem value="http" label="HTTP Request">To syntax the HTTP request, please visit the corresponding <a href="https://argoeu.github.io/argo-accounting/docs/api/installation#post---create-a-new-installation">document</a>.</TabItem>
 </Tabs>
 
@@ -86,6 +86,24 @@ Therefore, you can either create a new Metric Definition or use an existing one.
 
 <Tabs>
   <TabItem value="ui" label="User Interface">To perform this action via the website, please follow the provided <a href="https://argoeu.github.io/argo-accounting/docs/guides/ui_actions/project#manage-project-metrics">instructions</a>.</TabItem>
+  <TabItem value="http" label="HTTP Request">To syntax the HTTP request, please visit the corresponding <a href="https://argoeu.github.io/argo-accounting/docs/api/metric#post---create-a-new-metric">document</a>.</TabItem>
+</Tabs>
+
+:::
+
+:::info Add Metrics to a particular Provider
+
+<Tabs>
+  <TabItem value="ui" label="User Interface">To perform this action via the website, please follow the provided <a href="https://argoeu.github.io/argo-accounting/docs/guides/ui_actions/my_providers#manage-provider-metrics">instructions</a>.</TabItem>
+  <TabItem value="http" label="HTTP Request">To syntax the HTTP request, please visit the corresponding <a href="https://argoeu.github.io/argo-accounting/docs/api/metric#post---create-a-new-metric">document</a>.</TabItem>
+</Tabs>
+
+:::
+
+:::info Add Metrics to a particular Installation
+
+<Tabs>
+  <TabItem value="ui" label="User Interface">To perform this action via the website, please follow the provided <a href="https://argoeu.github.io/argo-accounting/docs/guides/ui_actions/installation#manage-installation-metrics">instructions</a>.</TabItem>
   <TabItem value="http" label="HTTP Request">To syntax the HTTP request, please visit the corresponding <a href="https://argoeu.github.io/argo-accounting/docs/api/metric#post---create-a-new-metric">document</a>.</TabItem>
 </Tabs>
 
