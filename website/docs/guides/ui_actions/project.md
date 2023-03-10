@@ -5,11 +5,13 @@ sidebar_position: 2
 ---
 
 Please refer to Project [collection](docs/api/project.md) for more details.
-To manage the Projects via a website, please visit the Project tab on the <a href="https://accounting.eosc-portal.eu/projects">Accounting User Interface</a>.
+
+In the <a href="https://accounting.eosc-portal.eu/projects">Project</a> tab, you can find all the Projects in which you have been granted rights to them
+as a **Project Admin**.
 
 ### View all the Projects that have been assigned to you
 
-To view all the Projects that have been assigned to you, you should visit the <a href="https://accounting.eosc-portal.eu/projects">Project tab</a> on the Accounting User Interface.
+To view all the Projects that have been assigned to you, you should visit the <a href="https://accounting.eosc-portal.eu/projects">Project</a> tab on the Accounting User Interface.
 Then, all the aforementioned Projects are displayed.
 
 ![](assets/project/projects.png)
@@ -54,7 +56,7 @@ Then, the assigned Metrics are displayed.
 
 ### Manage Project Metrics
 
-By selecting the highlighted button, the Project Metrics tab is displayed. You can manage all Project Metrics and create new ones in this tab.
+As mentioned in the previous section, the Project Metrics are displayed by selecting the highlighted button. You can manage all Project Metrics and create new ones in this tab.
 
 ![](assets/project/project_metrics.png)
 
