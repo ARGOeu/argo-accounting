@@ -9,6 +9,13 @@ To manage the Metric Definitions via a website, please visit the Metric Definiti
 
 Please note that all available actions are described in this section. The role that the client has obtained may not grant them access to some or all actions.
 
+### View all the Metric Definitions
+
+To view all the Metric Definitions, you should visit the <a href="https://accounting.eosc-portal.eu/metrics-definitions">Metric Definition tab</a> on the Accounting User Interface.
+Then, all the created Metric Definitions by any client are displayed.
+
+![](assets/metric_definition/metric_definitions.png)
+
 ### Create a Metric Definition
 
 To create a new Metric Definition click the `Add a new Metric Definition` button.
@@ -22,13 +29,6 @@ Fill in the form with your preferred values and click the `Submit` button.
 If the Metric Definition is successfully created, the following message is displayed.
 
 ![](assets/metric_definition/create_success.png)
-
-### View all the Metric Definitions
-
-To view all the Metric Definitions, you should visit the <a href="https://accounting.eosc-portal.eu/metrics-definitions">Metric Definition tab</a> on the Accounting User Interface.
-Then, all the created Metric Definitions by any client are displayed.
-
-![](assets/metric_definition/metric_definitions.png)
 
 ### Update a Metric Definition
 
