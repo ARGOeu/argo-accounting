@@ -1,6 +1,6 @@
 ---
 id: unit_type
-title: Unit Type
+title: Unit Types
 sidebar_position: 6
 ---
 To manage the Unit Types via a website, please visit the <a href="https://accounting.eosc-portal.eu/unit-types">Unit Types</a> tab.

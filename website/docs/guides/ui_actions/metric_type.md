@@ -1,6 +1,6 @@
 ---
 id: metric_type
-title: Metric Type
+title: Metric Types
 sidebar_position: 7
 ---
 To manage the Metric Types via a website, please visit the <a href="https://accounting.eosc-portal.eu/metric-types">Metric Types</a> tab.

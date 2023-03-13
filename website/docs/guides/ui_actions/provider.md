@@ -1,6 +1,6 @@
 ---
 id: provider
-title: Provider
+title: Providers
 sidebar_position: 5
 ---
 
