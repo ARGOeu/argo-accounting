@@ -115,6 +115,45 @@ Below we describe the actions a **_project_admin_** can either perform through t
 
 :::
 
+:::info Manage Metric Definitions
+
+<Tabs>
+  <TabItem value="info" label="Info">As a project admin, you can create new Metric Definitions and delete/update your created ones.</TabItem>
+  <TabItem value="ui" label="User Interface">To manage them via the website, please click <a href="https://accounting.eosc-portal.eu/metrics-definitions">here</a> and follow the provided <a href="https://argoeu.github.io/argo-accounting/docs/guides/ui_actions/metric_definition">instructions</a>.</TabItem>
+  <TabItem value="http" label="HTTP Request">To manage them via the Accounting Service, please visit the corresponding <a href="https://argoeu.github.io/argo-accounting/docs/api/metric_definition">document</a>.</TabItem>
+</Tabs>
+
+:::
+
+:::info Manage Providers
+
+<Tabs>
+  <TabItem value="info" label="Info">As a project admin, you can create new Providers and delete/update your created ones.</TabItem>
+  <TabItem value="ui" label="User Interface">To manage them via the website, please click <a href="https://accounting.eosc-portal.eu/providers">here</a> and follow the provided <a href="https://argoeu.github.io/argo-accounting/docs/guides/ui_actions/provider">instructions</a>.</TabItem>
+  <TabItem value="http" label="HTTP Request">To manage them via the Accounting Service, please visit the corresponding <a href="https://argoeu.github.io/argo-accounting/docs/api/provider">document</a>.</TabItem>
+</Tabs>
+
+:::
+
+:::info Manage Unit Types
+
+<Tabs>
+  <TabItem value="info" label="Info">As a project admin, you can create new Unit Types and delete/update your created ones.</TabItem>
+  <TabItem value="ui" label="User Interface">To manage them via the website, please click <a href="https://accounting.eosc-portal.eu/unit-types">here</a> and follow the provided <a href="https://argoeu.github.io/argo-accounting/docs/guides/ui_actions/unit_type">instructions</a>.</TabItem>
+  <TabItem value="http" label="HTTP Request">To manage them via the Accounting Service, please visit the corresponding <a href="https://argoeu.github.io/argo-accounting/docs/api/unit_type">document</a>.</TabItem>
+</Tabs>
+
+:::
+
+:::info Manage Metric Types
+
+<Tabs>
+  <TabItem value="info" label="Info">As a project admin, you can create new Metric Types and delete/update your created ones.</TabItem>
+  <TabItem value="ui" label="User Interface">To manage them via the website, please click <a href="https://accounting.eosc-portal.eu/metric-types">here</a> and follow the provided <a href="https://argoeu.github.io/argo-accounting/docs/guides/ui_actions/metric_type">instructions</a>.</TabItem>
+  <TabItem value="http" label="HTTP Request">To manage them via the Accounting Service, please visit the corresponding <a href="https://argoeu.github.io/argo-accounting/docs/api/metric_type">document</a>.</TabItem>
+</Tabs>
+
+:::
 
 Please note that you can perform all the actions on [Providers](/docs/guides/provider_admin.md) and [Installations](/docs/guides/installation_admin.md) belonging to the Project you have been granted as a **_project_admin_**.
 
