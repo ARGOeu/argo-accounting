@@ -10,29 +10,29 @@ import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
 import static com.github.tomakehurst.wiremock.client.WireMock.get;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
 
-public class ProviderWireMockServer implements QuarkusTestResourceLifecycleManager {
+public class ResourceWireMockServer implements QuarkusTestResourceLifecycleManager {
 
     private WireMockServer wireMockServer;
 
     @Override
     public Map<String, String> start() {
 
-        wireMockServer = new WireMockServer(3468);
+        wireMockServer = new WireMockServer(3469);
         wireMockServer.start();
 
-        wireMockServer.stubFor(get(urlEqualTo("/provider/all?catalogue_id=all"))
+        wireMockServer.stubFor(get(urlEqualTo("/resource/all?catalogue_id=all"))
                 .willReturn(aResponse()
                         .withHeader("Content-Type", "application/json")
                         .withStatus(200)
-                        .withBodyFile("json/ProviderResponse.json")));
+                        .withBodyFile("json/Resources.json")));
 
-        wireMockServer.stubFor(get(urlEqualTo("/provider/all?catalogue_id=all&quantity=289"))
+        wireMockServer.stubFor(get(urlEqualTo("/resource/all?catalogue_id=all&quantity=415"))
                 .willReturn(aResponse()
                         .withHeader("Content-Type", "application/json")
                         .withStatus(200)
-                        .withBodyFile("json/ProviderResponse.json")));
+                        .withBodyFile("json/Resources.json")));
 
-        return Collections.singletonMap("quarkus.rest-client.\"org.accounting.system.clients.ProviderClient\".url", wireMockServer.baseUrl());
+        return Collections.singletonMap("quarkus.rest-client.\"org.accounting.system.clients.ResourceClient\".url", wireMockServer.baseUrl());
     }
 
     @Override

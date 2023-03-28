@@ -76,7 +76,7 @@ public class PageResource<R> {
         this.totalElements = panacheQuery.count();
         this.totalPages = panacheQuery.pageCount();
 
-        if(totalPages !=1){
+        if(totalPages !=1 && numberOfPage <= totalPages){
             links.add(buildPageLink(uriInfo, 1, sizeOfPage, "first"));
             links.add(buildPageLink(uriInfo, totalPages, sizeOfPage, "last"));
             links.add(buildPageLink(uriInfo, numberOfPage, sizeOfPage, "self"));

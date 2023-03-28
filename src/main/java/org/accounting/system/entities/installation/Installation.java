@@ -27,6 +27,9 @@ public class Installation extends Entity {
     @BsonProperty("installation")
     private String installation;
 
+    @BsonProperty("resource")
+    private String resource;
+
     @BsonProperty("unit_of_access")
     private ObjectId unitOfAccess;
 
@@ -76,5 +79,13 @@ public class Installation extends Entity {
 
     public void setProject(String project) {
         this.project = project;
+    }
+
+    public String getResource() {
+        return resource;
+    }
+
+    public void setResource(String resource) {
+        this.resource = resource;
     }
 }

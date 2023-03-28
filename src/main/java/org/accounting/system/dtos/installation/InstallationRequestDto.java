@@ -5,8 +5,7 @@ import org.eclipse.microprofile.openapi.annotations.enums.SchemaType;
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
 
 @Schema(name="InstallationRequest", description="An object represents a request for creating a new Installation.")
-public class
-InstallationRequestDto {
+public class InstallationRequestDto {
 
     @Schema(
             type = SchemaType.STRING,
@@ -27,6 +26,15 @@ InstallationRequestDto {
     )
     @JsonProperty("organisation")
     public String organisation;
+
+    @Schema(
+            type = SchemaType.STRING,
+            implementation = String.class,
+            description = "The Resource ID.",
+            example = "unitartu.ut.rocket"
+    )
+    @JsonProperty("resource")
+    public String resource;
 
     @Schema(
             type = SchemaType.STRING,

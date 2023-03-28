@@ -26,6 +26,8 @@ public class InstallationProjection {
     @BsonProperty("unit_of_access")
     private List<MetricDefinition> metricDefinitions;
 
+    private String resource;
+
     public String getId() {
         return id;
     }
@@ -80,5 +82,13 @@ public class InstallationProjection {
 
     public void setProject(String project) {
         this.project = project;
+    }
+
+    public String getResource() {
+        return resource;
+    }
+
+    public void setResource(String resource) {
+        this.resource = resource;
     }
 }
