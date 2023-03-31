@@ -26,6 +26,7 @@ import org.accounting.system.repositories.installation.InstallationRepository;
 import org.accounting.system.repositories.metric.MetricRepository;
 import org.accounting.system.repositories.provider.ProviderRepository;
 import org.accounting.system.services.HierarchicalRelationService;
+import org.accounting.system.services.ResourceService;
 import org.accounting.system.services.acl.RoleAccessControlService;
 import org.accounting.system.util.QueryParser;
 import org.apache.commons.lang3.StringUtils;
@@ -64,6 +65,9 @@ public class InstallationService implements RoleAccessControlService {
     HierarchicalRelationRepository hierarchicalRelationRepository;
 
     @Inject
+    ResourceService resourceService;
+
+    @Inject
     QueryParser queryParser;
 
     /**
@@ -76,6 +80,10 @@ public class InstallationService implements RoleAccessControlService {
     public InstallationResponseDto save(InstallationRequestDto request) {
 
         installationRepository.exist(request.project, request.organisation, request.installation);
+
+        if(StringUtils.isNotEmpty(request.resource) && ! resourceService.exist(request.resource)){
+            throw new NotFoundException("There is no Resource with the following id: "+request.resource);
+        }
 
         var installation = installationRepository.save(request);
 
