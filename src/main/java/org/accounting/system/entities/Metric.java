@@ -45,6 +45,8 @@ public class Metric extends Entity {
     @BsonProperty("installation_id")
     private String installationId;
 
+    private String resource;
+
     public String getResourceId() {
         return resourceId;
     }
@@ -139,5 +141,13 @@ public class Metric extends Entity {
 
     public void setInstallationId(String installationId) {
         this.installationId = installationId;
+    }
+
+    public String getResource() {
+        return resource;
+    }
+
+    public void setResource(String resource) {
+        this.resource = resource;
     }
 }

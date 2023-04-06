@@ -26,6 +26,7 @@ According to [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) , the `Unr
 
 ### Added
 
+-   [#153](https://github.com/ARGOeu/argo-accounting/pull/153) - Add Resource field in Metric entity.
 -   [#152](https://github.com/ARGOeu/argo-accounting/pull/152) - Add support for Resource.
 -   [#143](https://github.com/ARGOeu/argo-accounting/pull/143) - Add CITATION.cff, CODE_OF_CODUCT.md, CONTRIBUTING.md files.
 -   [#142](https://github.com/ARGOeu/argo-accounting/pull/142) - Enhance Metric Response.

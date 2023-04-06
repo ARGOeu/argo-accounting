@@ -12,6 +12,7 @@ import org.accounting.system.repositories.metric.MetricRepository;
 import org.accounting.system.repositories.project.ProjectRepository;
 import org.accounting.system.repositories.provider.ProviderRepository;
 import org.accounting.system.services.installation.InstallationService;
+import org.apache.commons.lang3.StringUtils;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
@@ -45,6 +46,10 @@ public class HierarchicalRelationService {
         HierarchicalRelation installation = new HierarchicalRelation(installationId, provider, RelationType.INSTALLATION);
         var metric = MetricMapper.INSTANCE.requestToMetric(request);
 
+        if(StringUtils.isNotEmpty(storedInstallation.getResource())){
+            metric.setResource(storedInstallation.getResource());
+        }
+
         metric.setResourceId(installation.id);
 
         metric.setProject(projectRepository.findById(storedInstallation.getProject()).getAcronym());
@@ -56,6 +61,7 @@ public class HierarchicalRelationService {
         metric.setInfrastructure(storedInstallation.getInfrastructure());
         metric.setProjectId(storedInstallation.getProject());
         metric.setInstallationId(storedInstallation.getId());
+
         try{
             metricRepository.persist(metric);
         } catch (MongoWriteException e) {

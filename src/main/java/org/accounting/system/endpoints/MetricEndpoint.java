@@ -166,6 +166,5 @@ public class MetricEndpoint {
 
         var list=metricService.searchMetrics(json, page - 1, size, serverInfo);
         return Response.ok().entity(list).build();
-
     }
 }
