@@ -1,6 +1,7 @@
 package org.accounting.system.entities.projections;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import org.accounting.system.dtos.metricdefinition.MetricDefinitionResponseDto;
 import org.accounting.system.entities.MetricDefinition;
@@ -94,6 +95,17 @@ public class MetricProjection {
     @BsonProperty("project_id")
     private String projectId;
 
+    @JsonProperty("resource")
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    @BsonProperty("resource")
+    @Schema(
+            type = SchemaType.STRING,
+            implementation = String.class,
+            description = "The Resource ID.",
+            example = "unitartu.ut.rocket"
+    )
+    private String resource;
+
     @JsonProperty("metric_definition")
     @Schema(
             type = SchemaType.OBJECT,
@@ -128,9 +140,8 @@ public class MetricProjection {
 
     public void setId(ObjectId id) {
         this.id = id;
-    }//    public String getMetricDefinitionId() {
-//        return metricDefinitionId;
-//    }
+    }
+
     public Instant getStart() {
         return start;
     }
@@ -186,5 +197,13 @@ public class MetricProjection {
 
     public void setMetricDefinitions(List<MetricDefinition> metricDefinitions) {
         this.metricDefinitions = metricDefinitions;
+    }
+
+    public String getResource() {
+        return resource;
+    }
+
+    public void setResource(String resource) {
+        this.resource = resource;
     }
 }
