@@ -100,9 +100,7 @@ public class InstallationService implements RoleAccessControlService {
      */
     public void delete(String installationId) {
 
-        if(!metricRepository
-                .findFirstByInstallationId(installationId)
-                .isEmpty()){
+        if(hierarchicalRelationRepository.hasRelationMetrics(installationId)){
 
             throw new ForbiddenException("Deleting an Installation is not allowed if there are Metrics assigned to it.");
         }
@@ -196,6 +194,15 @@ public class InstallationService implements RoleAccessControlService {
      * @return The updated Installation.
      */
     public InstallationResponseDto update(String id, UpdateInstallationRequestDto request) {
+
+        if(hierarchicalRelationRepository.hasRelationMetrics(id)){
+
+            throw new ForbiddenException("Updating an Installation is not allowed if there are Metrics assigned to it.");
+        }
+
+        if(StringUtils.isNotEmpty(request.resource) && ! resourceService.exist(request.resource)){
+            throw new NotFoundException("There is no Resource with the following id: "+request.resource);
+        }
 
         var hierarchicalRelation = hierarchicalRelationRepository.find("externalId", id).firstResult();
 

@@ -4,7 +4,6 @@ import com.mongodb.MongoWriteException;
 import org.accounting.system.dtos.metric.MetricRequestDto;
 import org.accounting.system.entities.HierarchicalRelation;
 import org.accounting.system.entities.Metric;
-import org.accounting.system.enums.RelationType;
 import org.accounting.system.exceptions.ConflictException;
 import org.accounting.system.mappers.MetricMapper;
 import org.accounting.system.repositories.HierarchicalRelationRepository;
@@ -39,18 +38,15 @@ public class HierarchicalRelationService {
 
         var storedInstallation = installationService.fetchInstallation(installationId);
 
-        HierarchicalRelation project = new HierarchicalRelation(storedInstallation.getProject(), RelationType.PROJECT);
+        var hierarchicalRelation = hierarchicalRelationRepository.findByExternalId(installationId);
 
-        HierarchicalRelation provider = new HierarchicalRelation(storedInstallation.getOrganisation(), project, RelationType.PROVIDER);
-
-        HierarchicalRelation installation = new HierarchicalRelation(installationId, provider, RelationType.INSTALLATION);
         var metric = MetricMapper.INSTANCE.requestToMetric(request);
 
         if(StringUtils.isNotEmpty(storedInstallation.getResource())){
             metric.setResource(storedInstallation.getResource());
         }
 
-        metric.setResourceId(installation.id);
+        metric.setResourceId(hierarchicalRelation.id);
 
         metric.setProject(projectRepository.findById(storedInstallation.getProject()).getAcronym());
 
@@ -64,6 +60,7 @@ public class HierarchicalRelationService {
 
         try{
             metricRepository.persist(metric);
+            hierarchicalRelationRepository.relationHasMetrics(installationId);
         } catch (MongoWriteException e) {
             throw new ConflictException(String.format("There is a Metric at {%s, %s, %s} with the following attributes : {%s, %s, %s}",
                     metric.getProject(), metric.getProvider(), metric.getInstallation(),

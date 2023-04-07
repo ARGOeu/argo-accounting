@@ -2,12 +2,15 @@ package org.accounting.system.repositories;
 
 import com.mongodb.client.model.Aggregates;
 import com.mongodb.client.model.Filters;
+import com.mongodb.client.model.Updates;
 import org.accounting.system.entities.HierarchicalRelation;
+import org.accounting.system.repositories.metric.MetricRepository;
 import org.accounting.system.repositories.modulators.AbstractAccessModulator;
 import org.bson.Document;
 import org.bson.conversions.Bson;
 
 import javax.enterprise.context.ApplicationScoped;
+import javax.inject.Inject;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
@@ -16,6 +19,9 @@ import java.util.Objects;
 
 @ApplicationScoped
 public class HierarchicalRelationRepository extends AbstractAccessModulator<HierarchicalRelation, String> {
+
+    @Inject
+    MetricRepository metricRepository;
 
     public void save(HierarchicalRelation hierarchicalRelation){
 
@@ -27,6 +33,30 @@ public class HierarchicalRelationRepository extends AbstractAccessModulator<Hier
         } else {
             persistOrUpdate(toBeStored);
         }
+    }
+
+    public HierarchicalRelation findByExternalId(String externalId){
+
+        return find("externalId = ?1", externalId).singleResult();
+    }
+
+    public void relationHasMetrics(String externalId){
+
+        var update = Updates.set("hasMetrics", true);
+
+        var eq = Filters.eq("externalId",  externalId);
+
+        getMongoCollection().updateOne(eq, update);
+    }
+
+    public boolean hasRelationMetrics(String externalId){
+
+        var hasMetrics = find("externalId = ?1 and hasMetrics = ?2", externalId, true).firstResultOptional().isPresent();
+
+        //TODO The second condition has been added to keep backward compatibility. In the future, it could be removed since it will be redundant.
+        return hasMetrics || metricRepository
+                .findFirstByInstallationId(externalId)
+                .isPresent();
     }
 
     /**
