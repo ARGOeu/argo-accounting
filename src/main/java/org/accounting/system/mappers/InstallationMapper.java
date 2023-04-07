@@ -41,6 +41,7 @@ public interface InstallationMapper {
     @Mapping(target = "project", ignore = true)
     @Mapping(target = "organisation", ignore = true)
     @Mapping(target = "id", ignore = true)
+    @Mapping(target = "resource", expression = "java(StringUtils.isNotEmpty(request.resource) ? request.resource : installation.getResource())")
     @Mapping(target = "infrastructure", expression = "java(StringUtils.isNotEmpty(request.infrastructure) ? request.infrastructure : installation.getInfrastructure())")
     @Mapping(target = "installation", expression = "java(StringUtils.isNotEmpty(request.installation) ? request.installation : installation.getInstallation())")
     @Mapping(target = "unitOfAccess", expression = "java(StringUtils.isNotEmpty(request.unitOfAccess) ? new ObjectId(request.unitOfAccess) : installation.getUnitOfAccess())")
