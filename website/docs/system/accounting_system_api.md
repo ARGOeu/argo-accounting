@@ -1,8 +1,7 @@
 ---
 id: accounting_system_api
 title: Accounting System API
-sidebar_position: 1
-slug: /
+sidebar_position: 2
 ---
 
 The Accounting System is a platform that is responsible for collecting, aggregating, and exchanging the metrics between different infrastructures, providers, and projects.
