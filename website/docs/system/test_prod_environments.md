@@ -5,13 +5,19 @@ sidebar_position: 1
 slug: /
 ---
 
+### Introduction
+
 Our development and production environments are designed to facilitate the development, testing, and deployment of our software applications in a secure and stable environment. This document provides an overview of our development and production environments.
+
+### Purpose
 
 The purpose of our development and production environments are as follows:
 
 - **Development Environment:** To provide a secure and stable environment for software development and testing activities. This environment is isolated from our production environment, ensuring that any issues or bugs discovered during development and testing do not affect our production systems.
 
 - **Production Environment:** To provide a secure and stable environment for hosting and running our software applications in a live production environment.
+
+### Components
 
 Our development and production environments consist of the following components:
 
