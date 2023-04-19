@@ -14,6 +14,7 @@ The Installation collection has the following structure:
 |------------------	|---------------------------------------- |
 | [project](./project.md)             	| It must point to a Project ID that has already been registered             |
 | [organisation](./provider.md)       	| It must point to a Provider ID that has been either registered through the EOSC Resource Catalogue or Accounting System API |
+| [resource](./resource.md)             | This field is optional. If you want to associate an Installation with a Resource, please fill this field in with the corresponding Resource ID from the EOSC Resource Catalogue |
 | infrastructure      	    | Short name of infrastructure |
 | installation      	| Short name of installation |
 | [unit_of_access](./metric_definition.md)      	| It must point to an existing Metric Definition. Obviously, you can add different Metrics to an Installation, but this attribute expresses the primary Unit of Access |

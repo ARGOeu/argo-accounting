@@ -1,7 +1,7 @@
 ---
 id: collect_metrics
 title: Collecting Metrics from different levels
-sidebar_position: 9
+sidebar_position: 10
 ---
 
 The Accounting System offers the possibility to collect Metrics from different levels of the hierarchical structure Project -> Provider -> Installation. 
