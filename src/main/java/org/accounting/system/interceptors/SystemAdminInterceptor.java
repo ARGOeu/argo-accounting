@@ -9,14 +9,13 @@ import javax.inject.Inject;
 import javax.interceptor.AroundInvoke;
 import javax.interceptor.Interceptor;
 import javax.interceptor.InvocationContext;
-import javax.ws.rs.ForbiddenException;
 
 @SystemAdmin
 @Interceptor
 @Priority(3000)
 /**
  * This interceptor checks whether the client is a system admin. If so, it can execute the action that has the {@link SystemAdmin SystemAdmin} annotation.
- * Otherwise, an {@link ForbiddenException exception} is thrown.
+ * Otherwise, a ForbiddenException exception is thrown.
  */
 public class SystemAdminInterceptor {
 
