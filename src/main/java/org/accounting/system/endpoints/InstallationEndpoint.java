@@ -103,7 +103,7 @@ public class InstallationEndpoint {
     RoleService roleService;
 
     @Tag(name = "Installation")
-    @org.eclipse.microprofile.openapi.annotations.Operation(
+    @Operation(
             summary = "Generates a new Installation.",
             description = "This operation is responsible for generating and storing in the Accounting System database " +
                     "a new Installation.")

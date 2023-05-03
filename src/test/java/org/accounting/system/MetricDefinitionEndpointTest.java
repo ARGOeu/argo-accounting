@@ -487,7 +487,7 @@ public class MetricDefinitionEndpointTest {
         request.unitType = "TB";
         request.metricType = "aggregated";
 
-        var metricDefinition = createMetricDefinition(request);
+        createMetricDefinition(request);
 
         var request1= new MetricDefinitionRequestDto();
 
