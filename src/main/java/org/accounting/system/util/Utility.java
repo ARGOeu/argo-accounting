@@ -1,13 +1,13 @@
 package org.accounting.system.util;
 
 
+import io.quarkus.cache.CacheResult;
 import io.quarkus.oidc.TokenIntrospection;
 import org.accounting.system.beans.RequestInformation;
 import org.accounting.system.dtos.authorization.request.RoleRequestDto;
 import org.accounting.system.enums.Collection;
 import org.accounting.system.enums.Operation;
 import org.accounting.system.repositories.client.ClientRepository;
-import org.accounting.system.services.MetricDefinitionService;
 import org.apache.commons.validator.GenericValidator;
 import org.bson.types.ObjectId;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
@@ -27,15 +27,17 @@ import java.util.Arrays;
 import java.util.Base64;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 import java.util.stream.Stream;
+
+import static java.lang.Math.min;
+import static java.util.stream.Collectors.toMap;
 
 @ApplicationScoped
 public class Utility {
-
-    @Inject
-    MetricDefinitionService metricDefinitionService;
 
     @Inject
     RequestInformation requestInformation;
@@ -165,5 +167,27 @@ public class Utility {
         JSONObject json = (JSONObject) parser.parse(payload);
 
         return (String) json.get("sub");
+    }
+
+    public String getClientVopersonId(){
+
+        return tokenIntrospection.getJsonObject().getString(id);
+    }
+
+    /**
+     * This method paginates a list of objects.
+     *
+     * @param list The list to be paginated.
+     * @param pageSize The page size.
+     * @return A map containing the pages of objects.
+     */
+    @CacheResult(cacheName = "partition")
+    public <T> Map<Integer, List<T>> partition(List<T> list, int pageSize) {
+
+        return IntStream.iterate(0, i -> i + pageSize)
+                .limit((list.size() + pageSize - 1) / pageSize)
+                .boxed()
+                .collect(toMap(i -> i / pageSize,
+                        i -> list.subList(i, min(i + pageSize, list.size()))));
     }
 }

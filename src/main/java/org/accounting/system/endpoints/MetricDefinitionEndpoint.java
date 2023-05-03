@@ -14,7 +14,6 @@ import org.accounting.system.enums.Operation;
 import org.accounting.system.interceptors.annotations.AccessPermission;
 import org.accounting.system.repositories.metricdefinition.MetricDefinitionRepository;
 import org.accounting.system.services.MetricDefinitionService;
-import org.accounting.system.services.ReadPredefinedTypesService;
 import org.accounting.system.util.AccountingUriInfo;
 import org.accounting.system.util.Utility;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
@@ -76,18 +75,14 @@ public class MetricDefinitionEndpoint {
     MetricDefinitionService metricDefinitionService;
 
     @Inject
-    ReadPredefinedTypesService readPredefinedTypesService;
-
-    @Inject
     Utility utility;
 
     @Inject
     RequestInformation requestInformation;
 
 
-    public MetricDefinitionEndpoint(MetricDefinitionService metricDefinitionService, ReadPredefinedTypesService readPredefinedTypesService, Utility utility) {
+    public MetricDefinitionEndpoint(MetricDefinitionService metricDefinitionService, Utility utility) {
         this.metricDefinitionService = metricDefinitionService;
-        this.readPredefinedTypesService = readPredefinedTypesService;
         this.utility = utility;
     }
 
@@ -400,108 +395,6 @@ public class MetricDefinitionEndpoint {
             successResponse.message = "Metric Definition cannot be deleted due to a server issue. Please try again.";
         }
         return Response.ok().entity(successResponse).build();
-    }
-
-    @Tag(name = "Metric Definition")
-    @org.eclipse.microprofile.openapi.annotations.Operation(
-            operationId = "unit-type",
-            summary = "Returns the unit types.",
-            deprecated = true,
-            description = "The unit type is an attribute of Metric Definition and defines the unit of a Metric." +
-                    " This operation reads a file containing the possible unit types and returns them as a JSON structure.")
-    @APIResponse(
-            responseCode = "200",
-            description = "Successful operation.",
-            content = @Content(schema = @Schema(
-                    type = SchemaType.OBJECT,
-                    implementation = String.class,
-                    example = "{\n" +
-                            "    \"weight\": [\n" +
-                            "        {\n" +
-                            "            \"name\": \"kg\",\n" +
-                            "            \"description\": \"kilogram\"\n" +
-                            "        },\n" +
-                            "        {\n" +
-                            "            \"name\": \"gr\",\n" +
-                            "            \"description\": \"gram\"\n" +
-                            "        }\n" +
-                            "    ],\n" +
-                            "    \"time\": [\n" +
-                            "        {\n" +
-                            "            \"name\": \"s\",\n" +
-                            "            \"description\": \"second\"\n" +
-                            "        }\n" +
-                            "    ]\n" +
-                            "}")))
-    @APIResponse(
-            responseCode = "401",
-            description = "Client has not been authenticated.",
-            content = @Content(schema = @Schema(
-                    type = SchemaType.OBJECT,
-                    implementation = InformativeResponse.class)))
-    @APIResponse(
-            responseCode = "500",
-            description = "Internal Server Errors.",
-            content = @Content(schema = @Schema(
-                    type = SchemaType.OBJECT,
-                    implementation = InformativeResponse.class)))
-    @SecurityRequirement(name = "Authentication")
-
-    @GET
-    @Path("/unit-types")
-    @Produces(value = MediaType.APPLICATION_JSON)
-    public Response getUnitTypes() {
-
-        var json = readPredefinedTypesService.getUnitTypes();
-
-        return Response.ok().entity(json).build();
-    }
-
-    @Tag(name = "Metric Definition")
-    @org.eclipse.microprofile.openapi.annotations.Operation(
-            operationId = "metric-type",
-            summary = "Returns the metric types.",
-            deprecated = true,
-            description = "The metric type is an attribute of Metric Definition and defines the metric type of a Metric." +
-                    " This operation reads a file containing the possible metric types and returns them as a JSON structure.")
-    @APIResponse(
-            responseCode = "200",
-            description = "Successful operation.",
-            content = @Content(schema = @Schema(
-                    type = SchemaType.OBJECT,
-                    implementation = String.class,
-                    example = "{\n" +
-                            "    \"metric_types\": [\n" +
-                            "        {\n" +
-                            "            \"metric_type\": \"aggregated\"\n" +
-                            "        },\n" +
-                            "        {\n" +
-                            "            \"metric_type\": \"count\"\n" +
-                            "        }\n" +
-                            "    ]\n" +
-                            "}")))
-    @APIResponse(
-            responseCode = "401",
-            description = "Client has not been authenticated.",
-            content = @Content(schema = @Schema(
-                    type = SchemaType.OBJECT,
-                    implementation = InformativeResponse.class)))
-    @APIResponse(
-            responseCode = "500",
-            description = "Internal Server Errors.",
-            content = @Content(schema = @Schema(
-                    type = SchemaType.OBJECT,
-                    implementation = InformativeResponse.class)))
-    @SecurityRequirement(name = "Authentication")
-
-    @GET
-    @Path("/metric-types")
-    @Produces(value = MediaType.APPLICATION_JSON)
-    public Response getMetricTypes() {
-
-        var json = readPredefinedTypesService.getMetricTypes();
-
-        return Response.ok().entity(json).build();
     }
 
     @Tag(name = "Metric Definition")

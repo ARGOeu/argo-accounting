@@ -1,5 +1,6 @@
 package org.accounting.system.dtos.installation;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import org.accounting.system.dtos.metricdefinition.MetricDefinitionResponseDto;
 import org.eclipse.microprofile.openapi.annotations.enums.SchemaType;
@@ -53,6 +54,16 @@ public class InstallationResponseDto {
     )
     @JsonProperty("installation")
     public String installation;
+
+    @Schema(
+            type = SchemaType.STRING,
+            implementation = String.class,
+            description = "The Resource ID.",
+            example = "unitartu.ut.rocket"
+    )
+    @JsonProperty("resource")
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    public String resource;
 
     @Schema(
             type = SchemaType.OBJECT,

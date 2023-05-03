@@ -20,10 +20,6 @@ import java.util.Objects;
 public class ValidateStartEndTimestampValidator implements ConstraintValidator<ValidateStartEndTimestamp, MetricRequestDto> {
 
     @Override
-    public void initialize(ValidateStartEndTimestamp constraintAnnotation) {
-    }
-
-    @Override
     public boolean isValid(MetricRequestDto request, ConstraintValidatorContext constraintValidatorContext) {
 
         if(Objects.isNull(request.start)){

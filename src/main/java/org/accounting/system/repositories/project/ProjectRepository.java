@@ -315,6 +315,18 @@ public class ProjectRepository extends ProjectModulator {
         getMongoCollection().updateOne(query, add);
     }
 
+    public void insertListOfRoleAccessControl(String projectId, Set<RoleAccessControl> roleAccessControls){
+
+        var query = new Document().append("_id",  projectId);
+
+        for(RoleAccessControl roleAccessControl: roleAccessControls){
+
+            var add = Updates.addToSet("roleAccessControls", roleAccessControl);
+
+            getMongoCollection().updateOne(query, add);
+        }
+    }
+
     public void updateRoleAccessControl(String projectId, String who, Set<Role> roles){
 
         var update = Updates.set("roleAccessControls.$.roles", roles);

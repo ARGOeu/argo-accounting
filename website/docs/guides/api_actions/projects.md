@@ -74,6 +74,6 @@ Apply a request to the Accounting Service API.You need to provide the search cri
 </details>
 
 
-In the case the role assigned to you,on the Project,is administrative, you can perform all the actions on the Providers,described at this <b><a href="https://argoeu.github.io/argo-accounting/docs/guides/provider">section</a></b>,as well as all the actions on Installations, described at this <b><a href="https://argoeu.github.io/argo-accounting/docs/guides/installation">section</a></b>. 
+In the case the role assigned to you,on the Project,is administrative, you can perform all the actions on the Providers,described at this <b><a href="https://argoeu.github.io/argo-accounting/docs/guides/api_actions/provider">section</a></b>,as well as all the actions on Installations, described at this <b><a href="https://argoeu.github.io/argo-accounting/docs/guides/api_actions/installation">section</a></b>. 
 
 ---

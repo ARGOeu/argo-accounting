@@ -89,8 +89,6 @@ public class MetricRepository extends AccessibleModulator<Metric, ObjectId> {
 
         Bson lookup = Aggregates.lookup("MetricDefinition", "metric_definition_id", "_id", "metric_definition");
 
-
-
         var metrics= getMongoCollection()
                 .aggregate(List.of(installations,Aggregates.match(searchDoc),addField,Aggregates.skip(size * (page)), Aggregates.limit(size), lookup),MetricProjection.class)
                 .into(new ArrayList<>());
@@ -135,6 +133,10 @@ public class MetricRepository extends AccessibleModulator<Metric, ObjectId> {
 
         var filters = Array.of(Filters.regex("resource_id", "\\b" + externalId + "\\b"+"(?![-])"));
 
+        var addField = new Document("$addFields", new Document("metric_definition_id", new Document("$toObjectId", "$metric_definition_id")));
+
+        Bson lookup = Aggregates.lookup("MetricDefinition", "metric_definition_id", "_id", "metric_definition");
+
         if(ObjectUtils.allNotNull(start, end) && Utility.isDate(start, end) && Utility.isBefore(start, end)) {
             filters = filters.append(Filters.and(Filters.gte("time_period_start", Utility.stringToInstant(start)), Filters.lte("time_period_start", Utility.stringToInstant(end))));
             filters = filters.append(Filters.and(Filters.gte("time_period_end", Utility.stringToInstant(start)), Filters.lte("time_period_end", Utility.stringToInstant(end))));
@@ -149,11 +151,11 @@ public class MetricRepository extends AccessibleModulator<Metric, ObjectId> {
 
         List<MetricProjection> projections = getMongoCollection()
                 .aggregate(List
-                        .of(regex,  Aggregates.skip(size * (page)),Aggregates.limit(size)), MetricProjection.class).into(new ArrayList<>());
+                        .of(regex, addField, Aggregates.skip(size * (page)), Aggregates.limit(size), lookup), MetricProjection.class).into(new ArrayList<>());
 
         Document count = getMongoCollection()
                 .aggregate(List
-                        .of(regex, Aggregates.count())).first();
+                        .of(regex, addField, Aggregates.count())).first();
 
         var projectionQuery = new MongoQuery<MetricProjection>();
 

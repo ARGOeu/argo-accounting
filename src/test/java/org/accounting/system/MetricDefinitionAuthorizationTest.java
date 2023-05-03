@@ -2,7 +2,6 @@ package org.accounting.system;
 
 import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.test.junit.TestProfile;
-import io.quarkus.test.junit.mockito.InjectMock;
 import io.quarkus.test.keycloak.client.KeycloakTestClient;
 import io.restassured.http.ContentType;
 import io.restassured.response.Response;
@@ -14,7 +13,6 @@ import org.accounting.system.dtos.pagination.PageResource;
 import org.accounting.system.enums.ApiMessage;
 import org.accounting.system.repositories.client.ClientAccessAlwaysRepository;
 import org.accounting.system.repositories.metricdefinition.MetricDefinitionRepository;
-import org.accounting.system.services.ReadPredefinedTypesService;
 import org.accounting.system.services.client.ClientService;
 import org.accounting.system.util.Utility;
 import org.json.simple.parser.ParseException;
@@ -22,24 +20,18 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
-import org.mockito.Mockito;
 
 import javax.inject.Inject;
-import java.util.Optional;
 import java.util.Set;
 
 import static io.restassured.RestAssured.given;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.mockito.ArgumentMatchers.any;
 
 
 @QuarkusTest
 @TestProfile(AccountingSystemTestProfile.class)
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 public class MetricDefinitionAuthorizationTest {
-
-    @InjectMock
-    ReadPredefinedTypesService readPredefinedTypesService;
 
     @Inject
     MetricDefinitionRepository metricDefinitionRepository;
@@ -77,14 +69,12 @@ public class MetricDefinitionAuthorizationTest {
     @Test
     public void createMetricDefinitionInspectorForbidden(){
 
-        Mockito.when(readPredefinedTypesService.searchForUnitType(any())).thenReturn(Optional.of("SECOND"));
-        Mockito.when(readPredefinedTypesService.searchForMetricType(any())).thenReturn(Optional.of("Aggregated"));
         MetricDefinitionRequestDto request= new MetricDefinitionRequestDto();
 
         request.metricName = "metric";
         request.metricDescription = "description";
-        request.unitType = "SECOND";
-        request.metricType = "Aggregated";
+        request.unitType = "Tb";
+        request.metricType = "aggregated";
 
         var metricDefinitionResponse = createMetricDefinition(request, "inspector");
 
@@ -101,14 +91,12 @@ public class MetricDefinitionAuthorizationTest {
     @Test
     public void createMetricDefinitionNoRelevantRoleForbidden(){
 
-        Mockito.when(readPredefinedTypesService.searchForUnitType(any())).thenReturn(Optional.of("SECOND"));
-        Mockito.when(readPredefinedTypesService.searchForMetricType(any())).thenReturn(Optional.of("Aggregated"));
         MetricDefinitionRequestDto request= new MetricDefinitionRequestDto();
 
         request.metricName = "metric";
         request.metricDescription = "description";
-        request.unitType = "SECOND";
-        request.metricType = "Aggregated";
+        request.unitType = "TB";
+        request.metricType = "aggregated";
 
         var metricDefinitionResponse = createMetricDefinition(request, "alice");
 
@@ -125,14 +113,12 @@ public class MetricDefinitionAuthorizationTest {
     @Test
     public void updateMetricDefinitionInspectorForbidden(){
 
-        Mockito.when(readPredefinedTypesService.searchForUnitType(any())).thenReturn(Optional.of("SECOND"));
-        Mockito.when(readPredefinedTypesService.searchForMetricType(any())).thenReturn(Optional.of("Aggregated"));
         MetricDefinitionRequestDto request= new MetricDefinitionRequestDto();
 
         request.metricName = "metric";
         request.metricDescription = "description";
-        request.unitType = "SECOND";
-        request.metricType = "Aggregated";
+        request.unitType = "TB";
+        request.metricType = "aggregated";
 
         var response = createMetricDefinition(request, "admin");
 
@@ -154,14 +140,12 @@ public class MetricDefinitionAuthorizationTest {
     public void updateMetricDefinitionCreator(){
 
         // first admin user is creating a Metric Definition
-        Mockito.when(readPredefinedTypesService.searchForUnitType(any())).thenReturn(Optional.of("SECOND"));
-        Mockito.when(readPredefinedTypesService.searchForMetricType(any())).thenReturn(Optional.of("Aggregated"));
         MetricDefinitionRequestDto request= new MetricDefinitionRequestDto();
 
         request.metricName = "metric";
         request.metricDescription = "description";
-        request.unitType = "SECOND";
-        request.metricType = "Aggregated";
+        request.unitType = "TB";
+        request.metricType = "aggregated";
 
         var metricDefinitionResponse = createMetricDefinition(request, "admin");
 
@@ -187,14 +171,12 @@ public class MetricDefinitionAuthorizationTest {
         assertEquals(ApiMessage.UNAUTHORIZED_CLIENT.message, informativeResponse.message);
 
         //creator user is creating a Metric Definition
-        Mockito.when(readPredefinedTypesService.searchForUnitType(any())).thenReturn(Optional.of("SECOND"));
-        Mockito.when(readPredefinedTypesService.searchForMetricType(any())).thenReturn(Optional.of("Aggregated"));
         MetricDefinitionRequestDto request1= new MetricDefinitionRequestDto();
 
         request1.metricName = "metric1";
         request1.metricDescription = "description";
-        request1.unitType = "SECOND";
-        request1.metricType = "Aggregated";
+        request1.unitType = "TB";
+        request1.metricType = "aggregated";
 
         var creatorMetricDefinitionResponse = createMetricDefinition(request1, "creator");
 
@@ -225,14 +207,12 @@ public class MetricDefinitionAuthorizationTest {
     public void deleteMetricDefinitionInspectorForbidden(){
 
         // first admin user is creating a Metric Definition
-        Mockito.when(readPredefinedTypesService.searchForUnitType(any())).thenReturn(Optional.of("SECOND"));
-        Mockito.when(readPredefinedTypesService.searchForMetricType(any())).thenReturn(Optional.of("Aggregated"));
         MetricDefinitionRequestDto request= new MetricDefinitionRequestDto();
 
         request.metricName = "metric";
         request.metricDescription = "description";
-        request.unitType = "SECOND";
-        request.metricType = "Aggregated";
+        request.unitType = "TB";
+        request.metricType = "aggregated";
 
         var metricDefinitionResponse = createMetricDefinition(request, "admin");
 
@@ -260,14 +240,12 @@ public class MetricDefinitionAuthorizationTest {
     public void deleteMetricDefinitionNoRelevantRoleForbidden() {
 
         // first admin user is creating a Metric Definition
-        Mockito.when(readPredefinedTypesService.searchForUnitType(any())).thenReturn(Optional.of("SECOND"));
-        Mockito.when(readPredefinedTypesService.searchForMetricType(any())).thenReturn(Optional.of("Aggregated"));
         MetricDefinitionRequestDto request= new MetricDefinitionRequestDto();
 
         request.metricName = "metric";
         request.metricDescription = "description";
-        request.unitType = "SECOND";
-        request.metricType = "Aggregated";
+        request.unitType = "TB";
+        request.metricType = "aggregated";
 
         var metricDefinitionResponse = createMetricDefinition(request, "admin");
 
@@ -294,14 +272,12 @@ public class MetricDefinitionAuthorizationTest {
     public void deleteMetricDefinitionCreator(){
 
         // first admin user is creating a Metric Definition
-        Mockito.when(readPredefinedTypesService.searchForUnitType(any())).thenReturn(Optional.of("SECOND"));
-        Mockito.when(readPredefinedTypesService.searchForMetricType(any())).thenReturn(Optional.of("Aggregated"));
         MetricDefinitionRequestDto request= new MetricDefinitionRequestDto();
 
         request.metricName = "metric";
         request.metricDescription = "description";
-        request.unitType = "SECOND";
-        request.metricType = "Aggregated";
+        request.unitType = "TB";
+        request.metricType = "aggregated";
 
         var metricDefinitionResponse = createMetricDefinition(request, "admin");
 
@@ -325,14 +301,12 @@ public class MetricDefinitionAuthorizationTest {
         assertEquals(ApiMessage.UNAUTHORIZED_CLIENT.message, informativeResponse.message);
 
         // creator user is creating a Metric Definition
-        Mockito.when(readPredefinedTypesService.searchForUnitType(any())).thenReturn(Optional.of("SECOND"));
-        Mockito.when(readPredefinedTypesService.searchForMetricType(any())).thenReturn(Optional.of("Aggregated"));
         MetricDefinitionRequestDto request1= new MetricDefinitionRequestDto();
 
         request1.metricName = "metric1";
         request1.metricDescription = "description";
-        request1.unitType = "SECOND";
-        request1.metricType = "Aggregated";
+        request1.unitType = "TB";
+        request1.metricType = "aggregated";
 
         var creatorMetricDefinitionResponse = createMetricDefinition(request1, "creator");
 
@@ -360,14 +334,12 @@ public class MetricDefinitionAuthorizationTest {
     public void getAllMetricDefinitions(){
 
         // admin user will submit two metric definitions
-        Mockito.when(readPredefinedTypesService.searchForUnitType(any())).thenReturn(Optional.of("SECOND"));
-        Mockito.when(readPredefinedTypesService.searchForMetricType(any())).thenReturn(Optional.of("Aggregated"));
         MetricDefinitionRequestDto request= new MetricDefinitionRequestDto();
 
         request.metricName = "metric";
         request.metricDescription = "description";
-        request.unitType = "SECOND";
-        request.metricType = "Aggregated";
+        request.unitType = "TB";
+        request.metricType = "aggregated";
 
         var metricDefinitionResponse = createMetricDefinition(request, "admin");
 
@@ -376,14 +348,12 @@ public class MetricDefinitionAuthorizationTest {
                 .assertThat()
                 .statusCode(201);
 
-        Mockito.when(readPredefinedTypesService.searchForUnitType(any())).thenReturn(Optional.of("SECOND"));
-        Mockito.when(readPredefinedTypesService.searchForMetricType(any())).thenReturn(Optional.of("Aggregated"));
         MetricDefinitionRequestDto request1= new MetricDefinitionRequestDto();
 
         request1.metricName = "metric1";
         request1.metricDescription = "description";
-        request1.unitType = "SECOND";
-        request1.metricType = "Aggregated";
+        request1.unitType = "TB";
+        request1.metricType = "aggregated";
 
         var metricDefinitionResponse1 = createMetricDefinition(request1, "admin");
 
@@ -393,14 +363,12 @@ public class MetricDefinitionAuthorizationTest {
                 .statusCode(201);
 
         //creator user will submit a Metric Definition
-        Mockito.when(readPredefinedTypesService.searchForUnitType(any())).thenReturn(Optional.of("SECOND"));
-        Mockito.when(readPredefinedTypesService.searchForMetricType(any())).thenReturn(Optional.of("Aggregated"));
         MetricDefinitionRequestDto request2= new MetricDefinitionRequestDto();
 
         request2.metricName = "metric2";
         request2.metricDescription = "description";
-        request2.unitType = "SECOND";
-        request2.metricType = "Aggregated";
+        request2.unitType = "TB";
+        request2.metricType = "aggregated";
 
         var metricDefinitionResponse2 = createMetricDefinition(request2, "creator");
 

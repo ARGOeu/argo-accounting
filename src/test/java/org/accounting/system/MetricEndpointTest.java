@@ -4,7 +4,6 @@ import io.quarkus.test.common.QuarkusTestResource;
 import io.quarkus.test.common.http.TestHTTPEndpoint;
 import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.test.junit.TestProfile;
-import io.quarkus.test.junit.mockito.InjectMock;
 import io.quarkus.test.keycloak.client.KeycloakTestClient;
 import io.restassured.RestAssured;
 import io.restassured.config.JsonConfig;
@@ -26,13 +25,12 @@ import org.accounting.system.dtos.pagination.PageResource;
 import org.accounting.system.endpoints.MetricEndpoint;
 import org.accounting.system.mappers.ProviderMapper;
 import org.accounting.system.repositories.client.ClientAccessAlwaysRepository;
+import org.accounting.system.repositories.client.ClientRepository;
 import org.accounting.system.repositories.metric.MetricRepository;
 import org.accounting.system.repositories.metricdefinition.MetricDefinitionRepository;
 import org.accounting.system.repositories.project.ProjectRepository;
 import org.accounting.system.repositories.provider.ProviderRepository;
-import org.accounting.system.services.ReadPredefinedTypesService;
 import org.accounting.system.services.SystemAdminService;
-import org.accounting.system.services.client.ClientService;
 import org.accounting.system.util.Utility;
 import org.accounting.system.wiremock.ProjectWireMockServer;
 import org.accounting.system.wiremock.ProviderWireMockServer;
@@ -42,19 +40,16 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
-import org.mockito.Mockito;
 
 import javax.inject.Inject;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
 
 import static io.restassured.RestAssured.given;
 import static org.hamcrest.core.Is.is;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.mockito.ArgumentMatchers.any;
 
 
 @QuarkusTest
@@ -64,9 +59,6 @@ import static org.mockito.ArgumentMatchers.any;
 @QuarkusTestResource(ProjectWireMockServer.class)
 @QuarkusTestResource(ProviderWireMockServer.class)
 public class MetricEndpointTest {
-
-    @InjectMock
-    ReadPredefinedTypesService readPredefinedTypesService;
 
     @Inject
     MetricDefinitionRepository metricDefinitionRepository;
@@ -91,7 +83,7 @@ public class MetricEndpointTest {
     Utility utility;
 
     @Inject
-    ClientService clientService;
+    ClientRepository clientRepository;
 
     @Inject
     ClientAccessAlwaysRepository clientAccessAlwaysRepository;
@@ -101,13 +93,13 @@ public class MetricEndpointTest {
     @BeforeAll
     public void setup() throws ExecutionException, InterruptedException, ParseException {
 
-        Total total = providerClient.getTotalNumberOfProviders().toCompletableFuture().get();
+        Total total = providerClient.getTotalNumberOfProviders("all").toCompletableFuture().get();
 
-        Response response = providerClient.getAll(total.total).toCompletableFuture().get();
+        Response response = providerClient.getAll("all", total.total).toCompletableFuture().get();
 
         providerRepository.persistOrUpdate(ProviderMapper.INSTANCE.eoscProvidersToProviders(response.results));
 
-        clientService.register(utility.getIdFromToken(keycloakClient.getAccessToken("admin").split("\\.")[1]), "admin", "admin@email.com");
+        clientRepository.addSystemAdmin(utility.getIdFromToken(keycloakClient.getAccessToken("admin").split("\\.")[1]), "admin", "admin@email.com");
 
         clientAccessAlwaysRepository.assignRolesToRegisteredClient(utility.getIdFromToken(keycloakClient.getAccessToken("admin").split("\\.")[1]), Set.of("collection_owner"));
     }
@@ -120,7 +112,7 @@ public class MetricEndpointTest {
         projectRepository.deleteAll();
 
         String sub = utility.getIdFromToken(keycloakClient.getAccessToken("admin").split("\\.")[1]);
-        systemAdminService.accessListOfProjects(Set.of("777536"), sub);
+        systemAdminService.registerProjectsToAccountingService(Set.of("777536"), sub);
     }
 
     @Test
@@ -179,14 +171,12 @@ public class MetricEndpointTest {
     @Test
     public void createMetricNoValidZuluTimestamp() {
 
-        Mockito.when(readPredefinedTypesService.searchForUnitType(any())).thenReturn(Optional.of("SECOND"));
-        Mockito.when(readPredefinedTypesService.searchForMetricType(any())).thenReturn(Optional.of("Aggregated"));
         var requestForMetricDefinition = new MetricDefinitionRequestDto();
 
         requestForMetricDefinition.metricName = "metric";
         requestForMetricDefinition.metricDescription = "description";
-        requestForMetricDefinition.unitType = "SECOND";
-        requestForMetricDefinition.metricType = "Aggregated";
+        requestForMetricDefinition.unitType = "TB";
+        requestForMetricDefinition.metricType = "aggregated";
 
         var metricDefinition = createMetricDefinition(requestForMetricDefinition, "admin");
 
@@ -211,14 +201,12 @@ public class MetricEndpointTest {
     @Test
     public void createMetricNoZuluTimestamp() {
 
-        Mockito.when(readPredefinedTypesService.searchForUnitType(any())).thenReturn(Optional.of("SECOND"));
-        Mockito.when(readPredefinedTypesService.searchForMetricType(any())).thenReturn(Optional.of("Aggregated"));
         MetricDefinitionRequestDto requestMetricDefinition = new MetricDefinitionRequestDto();
 
         requestMetricDefinition.metricName = "metric";
         requestMetricDefinition.metricDescription = "description";
-        requestMetricDefinition.unitType = "SECOND";
-        requestMetricDefinition.metricType = "Aggregated";
+        requestMetricDefinition.unitType = "TB";
+        requestMetricDefinition.metricType = "aggregated";
 
         MetricDefinitionResponseDto metricDefinition = createMetricDefinition(requestMetricDefinition, "admin");
 
@@ -244,14 +232,12 @@ public class MetricEndpointTest {
 
         //first create a metric definition
 
-        Mockito.when(readPredefinedTypesService.searchForUnitType(any())).thenReturn(Optional.of("SECOND"));
-        Mockito.when(readPredefinedTypesService.searchForMetricType(any())).thenReturn(Optional.of("Aggregated"));
         var requestForMetricDefinition = new MetricDefinitionRequestDto();
 
         requestForMetricDefinition.metricName = "metric";
         requestForMetricDefinition.metricDescription = "description";
-        requestForMetricDefinition.unitType = "SECOND";
-        requestForMetricDefinition.metricType = "Aggregated";
+        requestForMetricDefinition.unitType = "TB";
+        requestForMetricDefinition.metricType = "aggregated";
 
         var metricDefinitionResponse = createMetricDefinition(requestForMetricDefinition, "admin");
 
@@ -280,14 +266,12 @@ public class MetricEndpointTest {
 
         //first create a metric definition
 
-        Mockito.when(readPredefinedTypesService.searchForUnitType(any())).thenReturn(Optional.of("SECOND"));
-        Mockito.when(readPredefinedTypesService.searchForMetricType(any())).thenReturn(Optional.of("Aggregated"));
         var requestForMetricDefinition = new MetricDefinitionRequestDto();
 
         requestForMetricDefinition.metricName = "metric";
         requestForMetricDefinition.metricDescription = "description";
-        requestForMetricDefinition.unitType = "SECOND";
-        requestForMetricDefinition.metricType = "Aggregated";
+        requestForMetricDefinition.unitType = "TB";
+        requestForMetricDefinition.metricType = "aggregated";
 
         var metricDefinitionResponse = createMetricDefinition(requestForMetricDefinition, "admin");
 
@@ -316,14 +300,12 @@ public class MetricEndpointTest {
 
         //first create a metric definition
 
-        Mockito.when(readPredefinedTypesService.searchForUnitType(any())).thenReturn(Optional.of("SECOND"));
-        Mockito.when(readPredefinedTypesService.searchForMetricType(any())).thenReturn(Optional.of("Aggregated"));
         var requestForMetricDefinition = new MetricDefinitionRequestDto();
 
         requestForMetricDefinition.metricName = "metric";
         requestForMetricDefinition.metricDescription = "description";
-        requestForMetricDefinition.unitType = "SECOND";
-        requestForMetricDefinition.metricType = "Aggregated";
+        requestForMetricDefinition.unitType = "TB";
+        requestForMetricDefinition.metricType = "aggregated";
 
         var metricDefinitionResponse = createMetricDefinition(requestForMetricDefinition, "admin");
 
@@ -362,14 +344,12 @@ public class MetricEndpointTest {
     @Test
     public void fetchMetricNotFound() {
 
-        Mockito.when(readPredefinedTypesService.searchForUnitType(any())).thenReturn(Optional.of("KG"));
-        Mockito.when(readPredefinedTypesService.searchForMetricType(any())).thenReturn(Optional.of("Aggregated"));
         var requestForMetricDefinition = new MetricDefinitionRequestDto();
 
         requestForMetricDefinition.metricName = "metric";
         requestForMetricDefinition.metricDescription = "description";
-        requestForMetricDefinition.unitType = "KG";
-        requestForMetricDefinition.metricType = "Aggregated";
+        requestForMetricDefinition.unitType = "TB/year";
+        requestForMetricDefinition.metricType = "aggregated";
 
         var metricDefinitionResponse = createMetricDefinition(requestForMetricDefinition, "admin");
 
@@ -402,14 +382,12 @@ public class MetricEndpointTest {
     @Test
     public void fetchMetric() {
 
-        Mockito.when(readPredefinedTypesService.searchForUnitType(any())).thenReturn(Optional.of("SECOND"));
-        Mockito.when(readPredefinedTypesService.searchForMetricType(any())).thenReturn(Optional.of("Aggregated"));
         var requestForMetricDefinition = new MetricDefinitionRequestDto();
 
         requestForMetricDefinition.metricName = "metric";
         requestForMetricDefinition.metricDescription = "description";
-        requestForMetricDefinition.unitType = "SECOND";
-        requestForMetricDefinition.metricType = "Aggregated";
+        requestForMetricDefinition.unitType = "TB";
+        requestForMetricDefinition.metricType = "aggregated";
 
         var metricDefinitionResponse = createMetricDefinition(requestForMetricDefinition, "admin");
 
@@ -629,14 +607,12 @@ public class MetricEndpointTest {
     @Test
     public void deleteMetric() {
 
-        Mockito.when(readPredefinedTypesService.searchForUnitType(any())).thenReturn(Optional.of("SECOND"));
-        Mockito.when(readPredefinedTypesService.searchForMetricType(any())).thenReturn(Optional.of("Aggregated"));
         var requestForMetricDefinition = new MetricDefinitionRequestDto();
 
         requestForMetricDefinition.metricName = "metric";
         requestForMetricDefinition.metricDescription = "description";
-        requestForMetricDefinition.unitType = "SECOND";
-        requestForMetricDefinition.metricType = "Aggregated";
+        requestForMetricDefinition.unitType = "TB";
+        requestForMetricDefinition.metricType = "aggregated";
 
         var metricDefinitionResponse = createMetricDefinition(requestForMetricDefinition, "admin");
 
@@ -674,14 +650,12 @@ public class MetricEndpointTest {
     @Test
     public void updateMetricRequestBodyIsEmpty() {
 
-        Mockito.when(readPredefinedTypesService.searchForUnitType(any())).thenReturn(Optional.of("SECOND"));
-        Mockito.when(readPredefinedTypesService.searchForMetricType(any())).thenReturn(Optional.of("Aggregated"));
         var requestForMetricDefinition = new MetricDefinitionRequestDto();
 
         requestForMetricDefinition.metricName = "metric";
         requestForMetricDefinition.metricDescription = "description";
-        requestForMetricDefinition.unitType = "SECOND";
-        requestForMetricDefinition.metricType = "Aggregated";
+        requestForMetricDefinition.unitType = "TB";
+        requestForMetricDefinition.metricType = "aggregated";
 
         var createdMetricDefinition = createMetricDefinition(requestForMetricDefinition, "admin");
 
@@ -733,14 +707,12 @@ public class MetricEndpointTest {
     @Test
     public void updateMetricMetricDefinitionNotValidZuluTimestamp() {
 
-        Mockito.when(readPredefinedTypesService.searchForUnitType(any())).thenReturn(Optional.of("SECOND"));
-        Mockito.when(readPredefinedTypesService.searchForMetricType(any())).thenReturn(Optional.of("Aggregated"));
         var requestForMetricDefinition = new MetricDefinitionRequestDto();
 
         requestForMetricDefinition.metricName = "metric";
         requestForMetricDefinition.metricDescription = "description";
-        requestForMetricDefinition.unitType = "SECOND";
-        requestForMetricDefinition.metricType = "Aggregated";
+        requestForMetricDefinition.unitType = "TB";
+        requestForMetricDefinition.metricType = "aggregated";
 
         var createdMetricDefinition = createMetricDefinition(requestForMetricDefinition, "admin");
 
@@ -786,14 +758,12 @@ public class MetricEndpointTest {
     @Test
     public void updateMetricMetricDefinitionNotFound() {
 
-        Mockito.when(readPredefinedTypesService.searchForUnitType(any())).thenReturn(Optional.of("SECOND"));
-        Mockito.when(readPredefinedTypesService.searchForMetricType(any())).thenReturn(Optional.of("Aggregated"));
         var requestForMetricDefinition = new MetricDefinitionRequestDto();
 
         requestForMetricDefinition.metricName = "metric";
         requestForMetricDefinition.metricDescription = "description";
-        requestForMetricDefinition.unitType = "SECOND";
-        requestForMetricDefinition.metricType = "Aggregated";
+        requestForMetricDefinition.unitType = "TB";
+        requestForMetricDefinition.metricType = "aggregated";
 
         var createdMetricDefinition = createMetricDefinition(requestForMetricDefinition, "admin");
 
@@ -843,14 +813,12 @@ public class MetricEndpointTest {
     public void updateMetricModifiedStartCannotBeAfterEnd() {
 
         //first, create a metric definition
-        Mockito.when(readPredefinedTypesService.searchForUnitType(any())).thenReturn(Optional.of("SECOND"));
-        Mockito.when(readPredefinedTypesService.searchForMetricType(any())).thenReturn(Optional.of("Aggregated"));
         var requestForMetricDefinition = new MetricDefinitionRequestDto();
 
         requestForMetricDefinition.metricName = "metric";
         requestForMetricDefinition.metricDescription = "description";
-        requestForMetricDefinition.unitType = "SECOND";
-        requestForMetricDefinition.metricType = "Aggregated";
+        requestForMetricDefinition.unitType = "TB";
+        requestForMetricDefinition.metricType = "aggregated";
 
         var createdMetricDefinition = createMetricDefinition(requestForMetricDefinition, "admin");
 
@@ -897,14 +865,12 @@ public class MetricEndpointTest {
     public void updateMetricModifiedStartCannotBeAfterModifiedEnd() {
 
         //first, create a metric definition
-        Mockito.when(readPredefinedTypesService.searchForUnitType(any())).thenReturn(Optional.of("SECOND"));
-        Mockito.when(readPredefinedTypesService.searchForMetricType(any())).thenReturn(Optional.of("Aggregated"));
         var requestForMetricDefinition = new MetricDefinitionRequestDto();
 
         requestForMetricDefinition.metricName = "metric";
         requestForMetricDefinition.metricDescription = "description";
-        requestForMetricDefinition.unitType = "SECOND";
-        requestForMetricDefinition.metricType = "Aggregated";
+        requestForMetricDefinition.unitType = "TB";
+        requestForMetricDefinition.metricType = "aggregated";
 
         var createdMetricDefinition = createMetricDefinition(requestForMetricDefinition, "admin");
 
@@ -952,14 +918,12 @@ public class MetricEndpointTest {
     public void updateMetricModifiedEndCannotBeBeforeStart() {
 
         //first, create a metric definition
-        Mockito.when(readPredefinedTypesService.searchForUnitType(any())).thenReturn(Optional.of("SECOND"));
-        Mockito.when(readPredefinedTypesService.searchForMetricType(any())).thenReturn(Optional.of("Aggregated"));
         var requestForMetricDefinition = new MetricDefinitionRequestDto();
 
         requestForMetricDefinition.metricName = "metric";
         requestForMetricDefinition.metricDescription = "description";
-        requestForMetricDefinition.unitType = "SECOND";
-        requestForMetricDefinition.metricType = "Aggregated";
+        requestForMetricDefinition.unitType = "TB";
+        requestForMetricDefinition.metricType = "aggregated";
 
         var createdMetricDefinition = createMetricDefinition(requestForMetricDefinition, "admin");
 
@@ -1006,14 +970,12 @@ public class MetricEndpointTest {
     public void updateMetricModifiedStartCannotBeEqualToModifiedEnd() {
 
         //first, create a metric definition
-        Mockito.when(readPredefinedTypesService.searchForUnitType(any())).thenReturn(Optional.of("SECOND"));
-        Mockito.when(readPredefinedTypesService.searchForMetricType(any())).thenReturn(Optional.of("Aggregated"));
         var requestForMetricDefinition = new MetricDefinitionRequestDto();
 
         requestForMetricDefinition.metricName = "metric";
         requestForMetricDefinition.metricDescription = "description";
-        requestForMetricDefinition.unitType = "SECOND";
-        requestForMetricDefinition.metricType = "Aggregated";
+        requestForMetricDefinition.unitType = "TB";
+        requestForMetricDefinition.metricType = "aggregated";
 
         var createdMetricDefinition = createMetricDefinition(requestForMetricDefinition, "admin");
 
@@ -1062,14 +1024,12 @@ public class MetricEndpointTest {
     public void updateMetricModifiedStartCannotBeEqualToEnd() {
 
         //first, create a metric definition
-        Mockito.when(readPredefinedTypesService.searchForUnitType(any())).thenReturn(Optional.of("SECOND"));
-        Mockito.when(readPredefinedTypesService.searchForMetricType(any())).thenReturn(Optional.of("Aggregated"));
         var requestForMetricDefinition = new MetricDefinitionRequestDto();
 
         requestForMetricDefinition.metricName = "metric";
         requestForMetricDefinition.metricDescription = "description";
-        requestForMetricDefinition.unitType = "SECOND";
-        requestForMetricDefinition.metricType = "Aggregated";
+        requestForMetricDefinition.unitType = "TB";
+        requestForMetricDefinition.metricType = "aggregated";
 
         var createdMetricDefinition = createMetricDefinition(requestForMetricDefinition, "admin");
 
@@ -1116,14 +1076,12 @@ public class MetricEndpointTest {
     public void updateMetricStartCannotBeEqualToModifiedEnd() {
 
         //first, create a metric definition
-        Mockito.when(readPredefinedTypesService.searchForUnitType(any())).thenReturn(Optional.of("SECOND"));
-        Mockito.when(readPredefinedTypesService.searchForMetricType(any())).thenReturn(Optional.of("Aggregated"));
         var requestForMetricDefinition = new MetricDefinitionRequestDto();
 
         requestForMetricDefinition.metricName = "metric";
         requestForMetricDefinition.metricDescription = "description";
-        requestForMetricDefinition.unitType = "SECOND";
-        requestForMetricDefinition.metricType = "Aggregated";
+        requestForMetricDefinition.unitType = "TB";
+        requestForMetricDefinition.metricType = "aggregated";
 
         var createdMetricDefinition = createMetricDefinition(requestForMetricDefinition, "admin");
 
@@ -1170,20 +1128,16 @@ public class MetricEndpointTest {
     public void updateMetricFull() {
 
         //first, create a metric definition
-        Mockito.when(readPredefinedTypesService.searchForUnitType(any())).thenReturn(Optional.of("SECOND"));
-        Mockito.when(readPredefinedTypesService.searchForMetricType(any())).thenReturn(Optional.of("Aggregated"));
         var requestForMetricDefinition = new MetricDefinitionRequestDto();
 
         requestForMetricDefinition.metricName = "metric";
         requestForMetricDefinition.metricDescription = "description";
-        requestForMetricDefinition.unitType = "SECOND";
-        requestForMetricDefinition.metricType = "Aggregated";
+        requestForMetricDefinition.unitType = "TB";
+        requestForMetricDefinition.metricType = "aggregated";
 
         var createdMetricDefinition = createMetricDefinition(requestForMetricDefinition, "admin");
 
         //create another metric definition
-        Mockito.when(readPredefinedTypesService.searchForUnitType(any())).thenReturn(Optional.of("#"));
-        Mockito.when(readPredefinedTypesService.searchForMetricType(any())).thenReturn(Optional.of("count"));
         var requestForMetricDefinition1 = new MetricDefinitionRequestDto();
 
         requestForMetricDefinition1.metricName = "metric";
@@ -1248,14 +1202,12 @@ public class MetricEndpointTest {
     public void updateMetricPartial() {
 
         //first, create a metric definition
-        Mockito.when(readPredefinedTypesService.searchForUnitType(any())).thenReturn(Optional.of("SECOND"));
-        Mockito.when(readPredefinedTypesService.searchForMetricType(any())).thenReturn(Optional.of("Aggregated"));
         var requestForMetricDefinition = new MetricDefinitionRequestDto();
 
         requestForMetricDefinition.metricName = "metric";
         requestForMetricDefinition.metricDescription = "description";
-        requestForMetricDefinition.unitType = "SECOND";
-        requestForMetricDefinition.metricType = "Aggregated";
+        requestForMetricDefinition.unitType = "TB";
+        requestForMetricDefinition.metricType = "aggregated";
 
         var createdMetricDefinition = createMetricDefinition(requestForMetricDefinition, "admin");
 
@@ -1311,14 +1263,12 @@ public class MetricEndpointTest {
         projectRepository.associateProjectWithProviders("777536", Set.of("grnet"));
 
         //Registering an installation
-        Mockito.when(readPredefinedTypesService.searchForUnitType(any())).thenReturn(Optional.of("KG"));
-        Mockito.when(readPredefinedTypesService.searchForMetricType(any())).thenReturn(Optional.of("Aggregated"));
         var requestForMetricDefinition = new MetricDefinitionRequestDto();
 
         requestForMetricDefinition.metricName = "metric";
         requestForMetricDefinition.metricDescription = "description";
-        requestForMetricDefinition.unitType = "KG";
-        requestForMetricDefinition.metricType = "Aggregated";
+        requestForMetricDefinition.unitType = "TB/year";
+        requestForMetricDefinition.metricType = "aggregated";
 
         var metricDefinitionResponse = createMetricDefinition(requestForMetricDefinition, "admin");
 
@@ -1388,14 +1338,12 @@ public class MetricEndpointTest {
 
     private String assignMetricsToSpecificInstallation(){
 
-        Mockito.when(readPredefinedTypesService.searchForUnitType(any())).thenReturn(Optional.of("SECOND"));
-        Mockito.when(readPredefinedTypesService.searchForMetricType(any())).thenReturn(Optional.of("Aggregated"));
         var requestForMetricDefinition = new MetricDefinitionRequestDto();
 
         requestForMetricDefinition.metricName = "metric";
         requestForMetricDefinition.metricDescription = "description";
-        requestForMetricDefinition.unitType = "SECOND";
-        requestForMetricDefinition.metricType = "Aggregated";
+        requestForMetricDefinition.unitType = "TB";
+        requestForMetricDefinition.metricType = "aggregated";
 
         var metricDefinitionResponse = createMetricDefinition(requestForMetricDefinition, "admin");
 
@@ -1453,24 +1401,20 @@ public class MetricEndpointTest {
 
     private Array<String> assignMetricsToSpecificInstallationMultipleMetricDefinitions(){
 
-        Mockito.when(readPredefinedTypesService.searchForUnitType(any())).thenReturn(Optional.of("SECOND"));
-        Mockito.when(readPredefinedTypesService.searchForMetricType(any())).thenReturn(Optional.of("Aggregated"));
         var requestForMetricDefinition = new MetricDefinitionRequestDto();
 
         requestForMetricDefinition.metricName = "metric";
         requestForMetricDefinition.metricDescription = "description";
-        requestForMetricDefinition.unitType = "SECOND";
-        requestForMetricDefinition.metricType = "Aggregated";
+        requestForMetricDefinition.unitType = "TB";
+        requestForMetricDefinition.metricType = "aggregated";
 
         var metricDefinitionResponse = createMetricDefinition(requestForMetricDefinition, "admin");
 
-        Mockito.when(readPredefinedTypesService.searchForUnitType(any())).thenReturn(Optional.of("KG"));
-        Mockito.when(readPredefinedTypesService.searchForMetricType(any())).thenReturn(Optional.of("count"));
         var requestForMetricDefinition1 = new MetricDefinitionRequestDto();
 
         requestForMetricDefinition1.metricName = "metric";
         requestForMetricDefinition1.metricDescription = "description";
-        requestForMetricDefinition1.unitType = "KG";
+        requestForMetricDefinition1.unitType = "TB/year";
         requestForMetricDefinition1.metricType = "count";
 
         var metricDefinitionResponse1 = createMetricDefinition(requestForMetricDefinition1, "admin");

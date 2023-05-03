@@ -1,5 +1,6 @@
 package org.accounting.system.entities.projections.normal;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import org.bson.codecs.pojo.annotations.BsonProperty;
@@ -8,7 +9,7 @@ import org.eclipse.microprofile.openapi.annotations.enums.SchemaType;
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
 
 @Schema(name="InstallationProjectionResponse", description="An object represents the stored Installation.")
-@JsonPropertyOrder({"id", "infrastructure", "installation", "unit_of_access" })
+@JsonPropertyOrder({"id", "infrastructure", "installation", "resource", "unit_of_access" })
 public class ProjectionInstallation {
 
     @Schema(
@@ -37,6 +38,16 @@ public class ProjectionInstallation {
     )
     @JsonProperty("installation")
     public String installation;
+
+    @Schema(
+            type = SchemaType.STRING,
+            implementation = String.class,
+            description = "The Resource ID.",
+            example = "unitartu.ut.rocket"
+    )
+    @JsonProperty("resource")
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    public String resource;
 
     @Schema(
             type = SchemaType.STRING,

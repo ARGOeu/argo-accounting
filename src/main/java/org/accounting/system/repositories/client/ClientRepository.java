@@ -85,6 +85,10 @@ public class ClientRepository extends ClientModulator {
         });
     }
 
+    public List<Client> getSystemAdmins(){
+        return find("systemAdmin = ?1", true).list();
+    }
+
     public Set<String> getClientRoles(String vopersonId){
 
         var client = findByIdOptional(vopersonId);

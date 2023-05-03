@@ -6,7 +6,7 @@ sidebar_position: 4
 
 As Provider, we refer to the Organisation that offers at least one installation to a specific project.
 
-The Provider can either be registered by communicating with EOSC Resource Catalogue, or you can create a new Provider by using the endpoints the Accounting System provides.
+The Provider can either be registered by communicating with EOSC Resource Catalogue, or you can create a new Provider by using the endpoints the Accounting Service provides.
 
 
 ### Registering Provider by following the EOSC Onboarding Process at https://providers.eosc-portal.eu/becomeAProvider

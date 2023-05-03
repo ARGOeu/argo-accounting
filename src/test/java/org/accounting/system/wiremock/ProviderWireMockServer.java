@@ -20,13 +20,13 @@ public class ProviderWireMockServer implements QuarkusTestResourceLifecycleManag
         wireMockServer = new WireMockServer(3468);
         wireMockServer.start();
 
-        wireMockServer.stubFor(get(urlEqualTo("/provider/all"))
+        wireMockServer.stubFor(get(urlEqualTo("/provider/all?catalogue_id=all"))
                 .willReturn(aResponse()
                         .withHeader("Content-Type", "application/json")
                         .withStatus(200)
                         .withBodyFile("json/ProviderResponse.json")));
 
-        wireMockServer.stubFor(get(urlEqualTo("/provider/all?quantity=237"))
+        wireMockServer.stubFor(get(urlEqualTo("/provider/all?catalogue_id=all&quantity=289"))
                 .willReturn(aResponse()
                         .withHeader("Content-Type", "application/json")
                         .withStatus(200)

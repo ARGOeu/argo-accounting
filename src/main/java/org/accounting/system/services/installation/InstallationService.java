@@ -26,6 +26,7 @@ import org.accounting.system.repositories.installation.InstallationRepository;
 import org.accounting.system.repositories.metric.MetricRepository;
 import org.accounting.system.repositories.provider.ProviderRepository;
 import org.accounting.system.services.HierarchicalRelationService;
+import org.accounting.system.services.ResourceService;
 import org.accounting.system.services.acl.RoleAccessControlService;
 import org.accounting.system.util.QueryParser;
 import org.apache.commons.lang3.StringUtils;
@@ -64,6 +65,9 @@ public class InstallationService implements RoleAccessControlService {
     HierarchicalRelationRepository hierarchicalRelationRepository;
 
     @Inject
+    ResourceService resourceService;
+
+    @Inject
     QueryParser queryParser;
 
     /**
@@ -76,6 +80,10 @@ public class InstallationService implements RoleAccessControlService {
     public InstallationResponseDto save(InstallationRequestDto request) {
 
         installationRepository.exist(request.project, request.organisation, request.installation);
+
+        if(StringUtils.isNotEmpty(request.resource) && ! resourceService.exist(request.resource)){
+            throw new NotFoundException("There is no Resource with the following id: "+request.resource);
+        }
 
         var installation = installationRepository.save(request);
 
@@ -92,9 +100,7 @@ public class InstallationService implements RoleAccessControlService {
      */
     public void delete(String installationId) {
 
-        if(!metricRepository
-                .findFirstByInstallationId(installationId)
-                .isEmpty()){
+        if(hierarchicalRelationRepository.hasRelationMetrics(installationId)){
 
             throw new ForbiddenException("Deleting an Installation is not allowed if there are Metrics assigned to it.");
         }
@@ -188,6 +194,15 @@ public class InstallationService implements RoleAccessControlService {
      * @return The updated Installation.
      */
     public InstallationResponseDto update(String id, UpdateInstallationRequestDto request) {
+
+        if(hierarchicalRelationRepository.hasRelationMetrics(id)){
+
+            throw new ForbiddenException("Updating an Installation is not allowed if there are Metrics assigned to it.");
+        }
+
+        if(StringUtils.isNotEmpty(request.resource) && ! resourceService.exist(request.resource)){
+            throw new NotFoundException("There is no Resource with the following id: "+request.resource);
+        }
 
         var hierarchicalRelation = hierarchicalRelationRepository.find("externalId", id).firstResult();
 

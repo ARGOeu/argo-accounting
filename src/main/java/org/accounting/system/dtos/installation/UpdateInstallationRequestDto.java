@@ -2,9 +2,7 @@ package org.accounting.system.dtos.installation;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import org.accounting.system.constraints.NotFoundEntity;
-import org.accounting.system.repositories.project.ProjectRepository;
 import org.accounting.system.repositories.metricdefinition.MetricDefinitionRepository;
-import org.accounting.system.repositories.provider.ProviderRepository;
 import org.eclipse.microprofile.openapi.annotations.enums.SchemaType;
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
 
@@ -27,6 +25,15 @@ public class UpdateInstallationRequestDto {
     )
     @JsonProperty("installation")
     public String installation;
+
+    @Schema(
+            type = SchemaType.STRING,
+            implementation = String.class,
+            description = "The Resource ID.",
+            example = "unitartu.ut.rocket"
+    )
+    @JsonProperty("resource")
+    public String resource;
 
     @Schema(
             type = SchemaType.STRING,
