@@ -24,7 +24,7 @@ The fields that need to be defined,in order the syntax to be valid are:
 | type             	| The type of the search. In the case the search is a combination of fields of the collection,it’s value is ‘query’ |
 | field         	| The field of the collection on which we search
 | values         	| The value of the equation, and it can be of any type depending on the type of the field we search
-| operand      	| The equation we want to apply on the field in order to search results.it’s value can be : <br/> eq: ==, neq: !=, lt: < , lte: <= , gt: >, gte: >= 
+| operand      	| The equation we want to apply on the field in order to search results.it’s value can be : `eq: ==, neq: !=, lt: < , lte: <= , gt: >, gte: >=` 
 
 
 ```

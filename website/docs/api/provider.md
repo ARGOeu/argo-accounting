@@ -335,7 +335,7 @@ Authorization: Bearer {token}
 }
 ```
 
-where {who} is the client ID in which the roles will be assigned.
+where `{who}` is the client ID in which the roles will be assigned.
 
 The response is :
 

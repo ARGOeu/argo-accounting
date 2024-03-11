@@ -22,7 +22,7 @@ Generally, any of the above roles can assign roles to other clients at the level
 
 As a Project Admin, you can grant the above roles to other clients for a specific Project :
 
-- [You can turn a client into a Project Admin for the Project you manage.](/api/project.md#post---access-control-entry-for-a-particular-project-1)
+- [You can turn a client into a Project Admin for the Project you manage.](/api/project.md#post-access-control)
 - [You can turn a client into a Provider Admin for the Providers belonging to the Project you manage.](/api/provider.md#post---access-control-entry-for-a-particular-provider-of-a-specific-project)
 - [You can turn a client into an Installation Admin for the Installations belonging to the Project you manage.](/api/installation.md#post---access-control-entry-for-a-particular-installation)
 

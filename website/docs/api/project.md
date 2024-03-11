@@ -301,7 +301,7 @@ Success Response `200 OK`
 ```
 
 
-### [POST] - Access Control Entry for a particular Project
+### [POST] - Access Control Entry for a particular Project {#post-access-control}
 
 The general endpoint that is responsible for creating an Access Control entry for a Project is as follows:
 
@@ -318,7 +318,7 @@ Authorization: Bearer {token}
 }
 ```
 
-where {who} is the client ID in which the roles will be assigned.
+where `{who}` is the client ID in which the roles will be assigned.
 
 The response is :
 
