@@ -1,15 +1,14 @@
 package org.accounting.system.repositories.project;
 
 import com.pivovarit.function.ThrowingBiFunction;
+import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.inject.Inject;
+import jakarta.ws.rs.NotFoundException;
 import org.accounting.system.clients.ProjectClient;
 import org.accounting.system.entities.Project;
 import org.accounting.system.exceptions.ConflictException;
 import org.accounting.system.repositories.modulators.AccessibleModulator;
 import org.eclipse.microprofile.rest.client.inject.RestClient;
-
-import javax.enterprise.context.ApplicationScoped;
-import javax.inject.Inject;
-import javax.ws.rs.NotFoundException;
 
 @ApplicationScoped
 public class ProjectAccessAlwaysRepository extends AccessibleModulator<Project, String> {

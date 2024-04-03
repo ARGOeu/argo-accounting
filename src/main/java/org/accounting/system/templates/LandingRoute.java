@@ -3,10 +3,9 @@ package org.accounting.system.templates;
 import io.quarkus.qute.Template;
 import io.quarkus.vertx.web.Route;
 import io.vertx.ext.web.RoutingContext;
+import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.inject.Inject;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
-
-import javax.enterprise.context.ApplicationScoped;
-import javax.inject.Inject;
 
 @ApplicationScoped
 public class LandingRoute {

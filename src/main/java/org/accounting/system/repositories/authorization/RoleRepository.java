@@ -1,6 +1,7 @@
 package org.accounting.system.repositories.authorization;
 
 import io.quarkus.mongodb.panache.PanacheMongoRepository;
+import jakarta.enterprise.context.ApplicationScoped;
 import org.accounting.system.dtos.authorization.update.UpdateRoleRequestDto;
 import org.accounting.system.entities.authorization.AccessPermission;
 import org.accounting.system.entities.authorization.Role;
@@ -9,7 +10,6 @@ import org.accounting.system.mappers.RoleMapper;
 import org.accounting.system.repositories.modulators.AccessibleModulator;
 import org.bson.types.ObjectId;
 
-import javax.enterprise.context.ApplicationScoped;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;

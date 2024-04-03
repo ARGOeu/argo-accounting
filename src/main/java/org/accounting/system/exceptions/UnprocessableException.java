@@ -1,6 +1,6 @@
 package org.accounting.system.exceptions;
 
-import javax.ws.rs.ClientErrorException;
+import jakarta.ws.rs.ClientErrorException;
 
 public class UnprocessableException extends ClientErrorException {
 

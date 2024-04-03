@@ -1,10 +1,10 @@
 package org.accounting.system.dtos.authorization.request;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import jakarta.validation.constraints.NotEmpty;
 import org.eclipse.microprofile.openapi.annotations.enums.SchemaType;
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
 
-import javax.validation.constraints.NotEmpty;
 import java.util.Set;
 
 @Schema(name="DetachRoleRequest", description="This object should contain a list of Roles that are going to be detached from a registered client.")

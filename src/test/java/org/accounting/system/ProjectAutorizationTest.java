@@ -10,6 +10,7 @@ import io.quarkus.test.security.oidc.OidcSecurity;
 import io.quarkus.test.security.oidc.TokenIntrospection;
 import io.quarkus.test.security.oidc.UserInfo;
 import io.restassured.http.ContentType;
+import jakarta.inject.Inject;
 import org.accounting.system.clients.ProviderClient;
 import org.accounting.system.clients.responses.eoscportal.Response;
 import org.accounting.system.clients.responses.eoscportal.Total;
@@ -46,7 +47,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 
-import javax.inject.Inject;
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
 

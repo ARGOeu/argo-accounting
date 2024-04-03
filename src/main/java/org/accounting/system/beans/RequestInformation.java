@@ -1,8 +1,8 @@
 package org.accounting.system.beans;
 
+import jakarta.enterprise.context.RequestScoped;
 import org.accounting.system.enums.AccessType;
 
-import javax.enterprise.context.RequestScoped;
 
 @RequestScoped
 public class RequestInformation {

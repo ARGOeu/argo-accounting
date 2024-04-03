@@ -6,6 +6,7 @@ import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.test.junit.TestProfile;
 import io.quarkus.test.keycloak.client.KeycloakTestClient;
 import io.restassured.http.ContentType;
+import jakarta.inject.Inject;
 import org.accounting.system.clients.ProjectClient;
 import org.accounting.system.clients.ProviderClient;
 import org.accounting.system.clients.responses.eoscportal.Response;
@@ -39,7 +40,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 
-import javax.inject.Inject;
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
 

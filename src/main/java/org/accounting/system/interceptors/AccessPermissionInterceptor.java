@@ -2,17 +2,17 @@ package org.accounting.system.interceptors;
 
 import io.quarkus.arc.ArcInvocationContext;
 import io.quarkus.oidc.TokenIntrospection;
+import jakarta.annotation.Priority;
+import jakarta.inject.Inject;
+import jakarta.interceptor.AroundInvoke;
+import jakarta.interceptor.Interceptor;
+import jakarta.interceptor.InvocationContext;
+import jakarta.ws.rs.ForbiddenException;
 import org.accounting.system.enums.ApiMessage;
 import org.accounting.system.interceptors.annotations.AccessPermission;
 import org.accounting.system.services.authorization.RoleService;
 import org.accounting.system.util.Utility;
 
-import javax.annotation.Priority;
-import javax.inject.Inject;
-import javax.interceptor.AroundInvoke;
-import javax.interceptor.Interceptor;
-import javax.interceptor.InvocationContext;
-import javax.ws.rs.ForbiddenException;
 import java.lang.annotation.Annotation;
 import java.util.Objects;
 import java.util.Set;

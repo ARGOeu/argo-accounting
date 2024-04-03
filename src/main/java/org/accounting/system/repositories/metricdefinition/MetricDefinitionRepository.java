@@ -3,14 +3,13 @@ package org.accounting.system.repositories.metricdefinition;
 import com.mongodb.client.model.Collation;
 import com.mongodb.client.model.CollationStrength;
 import io.quarkus.mongodb.panache.PanacheMongoRepository;
+import jakarta.enterprise.context.ApplicationScoped;
 import org.accounting.system.dtos.metricdefinition.UpdateMetricDefinitionRequestDto;
 import org.accounting.system.entities.MetricDefinition;
 import org.accounting.system.exceptions.ConflictException;
 import org.accounting.system.mappers.MetricDefinitionMapper;
 import org.accounting.system.repositories.modulators.AccessibleModulator;
 import org.bson.types.ObjectId;
-
-import javax.enterprise.context.ApplicationScoped;
 
 /**
  * {@link MetricDefinitionRepository This repository} encapsulates the logic required to access

@@ -1,10 +1,10 @@
 package org.accounting.system.dtos.acl.role;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import jakarta.validation.constraints.NotEmpty;
 import org.eclipse.microprofile.openapi.annotations.enums.SchemaType;
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
 
-import javax.validation.constraints.NotEmpty;
 import java.util.Set;
 
 @Schema(name="RoleAccessControlUpdate", description="An object represents a request for updating an Access Control Entry.")

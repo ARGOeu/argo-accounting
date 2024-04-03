@@ -1,6 +1,10 @@
 package org.accounting.system.services;
 
 import io.quarkus.mongodb.panache.PanacheQuery;
+import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.inject.Inject;
+import jakarta.ws.rs.ForbiddenException;
+import jakarta.ws.rs.core.UriInfo;
 import org.accounting.system.dtos.metrictype.MetricTypeDto;
 import org.accounting.system.dtos.metrictype.UpdateMetricTypeRequestDto;
 import org.accounting.system.dtos.pagination.PageResource;
@@ -12,10 +16,6 @@ import org.accounting.system.repositories.metrictype.MetricTypeRepository;
 import org.apache.commons.lang3.StringUtils;
 import org.bson.types.ObjectId;
 
-import javax.enterprise.context.ApplicationScoped;
-import javax.inject.Inject;
-import javax.ws.rs.ForbiddenException;
-import javax.ws.rs.core.UriInfo;
 import java.util.Optional;
 
 /**

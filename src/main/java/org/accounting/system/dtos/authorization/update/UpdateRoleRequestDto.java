@@ -1,10 +1,10 @@
 package org.accounting.system.dtos.authorization.update;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import jakarta.validation.Valid;
 import org.eclipse.microprofile.openapi.annotations.enums.SchemaType;
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
 
-import javax.validation.Valid;
 import java.util.Set;
 
 @Schema(name="UpdateRoleRequest", description="An object represents a request for updating a Role.")

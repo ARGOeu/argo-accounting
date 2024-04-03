@@ -2,12 +2,11 @@ package org.accounting.system.dtos.metricdefinition;
 
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import jakarta.validation.constraints.NotEmpty;
 import org.accounting.system.constraints.MetricTypeNotFound;
 import org.accounting.system.constraints.UnitTypeNotFound;
 import org.eclipse.microprofile.openapi.annotations.enums.SchemaType;
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
-
-import javax.validation.constraints.NotEmpty;
 
 @Schema(name="MetricDefinitionRequest", description="An object represents a request for creating a Metric Definition.")
 public class MetricDefinitionRequestDto {

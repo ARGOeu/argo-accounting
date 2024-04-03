@@ -1,10 +1,9 @@
 package org.accounting.system.dtos.provider;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import jakarta.validation.constraints.NotEmpty;
 import org.eclipse.microprofile.openapi.annotations.enums.SchemaType;
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
-
-import javax.validation.constraints.NotEmpty;
 
 @Schema(name="ProviderRequest", description="An object represents a request for creating a Provider.")
 public class ProviderRequestDto {

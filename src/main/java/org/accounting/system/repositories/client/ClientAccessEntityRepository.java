@@ -1,10 +1,10 @@
 package org.accounting.system.repositories.client;
 
+import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.ws.rs.ForbiddenException;
 import org.accounting.system.entities.client.Client;
 import org.accounting.system.repositories.modulators.AccessibleModulator;
 
-import javax.enterprise.context.ApplicationScoped;
-import javax.ws.rs.ForbiddenException;
 import java.util.Set;
 
 @ApplicationScoped

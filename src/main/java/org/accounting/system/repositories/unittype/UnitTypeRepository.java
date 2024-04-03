@@ -3,6 +3,9 @@ package org.accounting.system.repositories.unittype;
 import com.mongodb.client.model.Collation;
 import com.mongodb.client.model.CollationStrength;
 import io.quarkus.mongodb.panache.PanacheMongoRepository;
+import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.inject.Inject;
+import jakarta.ws.rs.ForbiddenException;
 import org.accounting.system.dtos.unittype.UpdateUnitTypeRequestDto;
 import org.accounting.system.entities.UnitType;
 import org.accounting.system.exceptions.ConflictException;
@@ -12,9 +15,6 @@ import org.accounting.system.repositories.modulators.AccessibleModulator;
 import org.apache.commons.lang3.StringUtils;
 import org.bson.types.ObjectId;
 
-import javax.enterprise.context.ApplicationScoped;
-import javax.inject.Inject;
-import javax.ws.rs.ForbiddenException;
 import java.util.Optional;
 
 /**

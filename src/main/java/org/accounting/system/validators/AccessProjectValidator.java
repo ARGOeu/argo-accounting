@@ -2,16 +2,15 @@ package org.accounting.system.validators;
 
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.vavr.control.Try;
+import jakarta.enterprise.inject.spi.CDI;
+import jakarta.validation.ConstraintValidator;
+import jakarta.validation.ConstraintValidatorContext;
 import org.accounting.system.constraints.AccessProject;
 import org.accounting.system.enums.Collection;
 import org.accounting.system.enums.Operation;
 import org.accounting.system.exceptions.CustomValidationException;
 import org.accounting.system.repositories.project.ProjectRepository;
 import org.accounting.system.util.Utility;
-
-import javax.enterprise.inject.spi.CDI;
-import javax.validation.ConstraintValidator;
-import javax.validation.ConstraintValidatorContext;
 
 /**
  * This {@link AccessProjectValidator} defines the logic to validate the {@link AccessProject}.

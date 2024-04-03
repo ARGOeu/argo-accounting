@@ -1,12 +1,12 @@
 package org.accounting.system.repositories.client;
 
 import com.mongodb.client.model.Filters;
+import jakarta.enterprise.context.ApplicationScoped;
 import org.accounting.system.entities.client.Client;
 import org.accounting.system.repositories.modulators.AccessibleModulator;
 import org.bson.Document;
 import org.bson.conversions.Bson;
 
-import javax.enterprise.context.ApplicationScoped;
 import java.util.Set;
 
 @ApplicationScoped

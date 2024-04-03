@@ -1,14 +1,13 @@
 package org.accounting.system.templates;
 
 import io.quarkus.qute.Template;
+import jakarta.inject.Inject;
+import jakarta.ws.rs.GET;
+import jakarta.ws.rs.Path;
+import jakarta.ws.rs.Produces;
+import jakarta.ws.rs.core.MediaType;
 import org.accounting.system.repositories.authorization.RoleRepository;
 import org.eclipse.microprofile.openapi.annotations.Operation;
-
-import javax.inject.Inject;
-import javax.ws.rs.GET;
-import javax.ws.rs.Path;
-import javax.ws.rs.Produces;
-import javax.ws.rs.core.MediaType;
 
 /**
  * This endpoint is responsible for rendering the role.html.

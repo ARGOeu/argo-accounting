@@ -1,9 +1,9 @@
 package org.accounting.system.interceptors.annotations;
 
+import jakarta.enterprise.util.Nonbinding;
+import jakarta.interceptor.InterceptorBinding;
 import org.accounting.system.dtos.acl.role.RoleAccessControlRequestDto;
 
-import javax.enterprise.util.Nonbinding;
-import javax.interceptor.InterceptorBinding;
 import java.lang.annotation.Retention;
 import java.lang.annotation.Target;
 

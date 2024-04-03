@@ -6,6 +6,7 @@ import io.quarkus.test.junit.TestProfile;
 import io.quarkus.test.keycloak.client.KeycloakTestClient;
 import io.restassured.http.ContentType;
 import io.restassured.response.Response;
+import jakarta.inject.Inject;
 import org.accounting.system.dtos.InformativeResponse;
 import org.accounting.system.dtos.authorization.AccessPermissionDto;
 import org.accounting.system.dtos.authorization.CollectionAccessPermissionDto;
@@ -23,7 +24,6 @@ import org.accounting.system.services.authorization.RoleService;
 import org.accounting.system.util.Utility;
 import org.junit.jupiter.api.Test;
 
-import javax.inject.Inject;
 import java.util.HashSet;
 
 import static io.restassured.RestAssured.given;

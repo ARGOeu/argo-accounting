@@ -1,8 +1,8 @@
 package org.accounting.system.exceptions;
 
 import io.netty.handler.codec.http.HttpResponseStatus;
+import jakarta.validation.ValidationException;
 
-import javax.validation.ValidationException;
 
 public class CustomValidationException extends ValidationException {
 

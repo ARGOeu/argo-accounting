@@ -2,14 +2,13 @@ package org.accounting.system.validators;
 
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.netty.util.internal.StringUtil;
+import jakarta.enterprise.inject.spi.CDI;
+import jakarta.validation.ConstraintValidator;
+import jakarta.validation.ConstraintValidatorContext;
 import org.accounting.system.constraints.UnitTypeNotFound;
 import org.accounting.system.exceptions.CustomValidationException;
 import org.accounting.system.services.UnitTypeService;
 import org.apache.commons.lang3.StringUtils;
-
-import javax.enterprise.inject.spi.CDI;
-import javax.validation.ConstraintValidator;
-import javax.validation.ConstraintValidatorContext;
 
 /**
  * This {@link UnitTypeNotFoundValidator} defines the logic to validate the {@link UnitTypeNotFound}.
