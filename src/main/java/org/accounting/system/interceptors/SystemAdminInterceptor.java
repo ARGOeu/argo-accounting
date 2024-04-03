@@ -1,14 +1,13 @@
 package org.accounting.system.interceptors;
 
+import jakarta.annotation.Priority;
+import jakarta.inject.Inject;
+import jakarta.interceptor.AroundInvoke;
+import jakarta.interceptor.Interceptor;
+import jakarta.interceptor.InvocationContext;
 import org.accounting.system.interceptors.annotations.SystemAdmin;
 import org.accounting.system.repositories.client.ClientRepository;
 import org.accounting.system.util.Utility;
-
-import javax.annotation.Priority;
-import javax.inject.Inject;
-import javax.interceptor.AroundInvoke;
-import javax.interceptor.Interceptor;
-import javax.interceptor.InvocationContext;
 
 @SystemAdmin
 @Interceptor

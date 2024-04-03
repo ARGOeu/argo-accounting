@@ -6,6 +6,7 @@ import io.quarkus.test.junit.TestProfile;
 import io.quarkus.test.keycloak.client.KeycloakTestClient;
 import io.restassured.http.ContentType;
 import io.restassured.response.Response;
+import jakarta.inject.Inject;
 import org.accounting.system.dtos.InformativeResponse;
 import org.accounting.system.dtos.authorization.AccessPermissionDto;
 import org.accounting.system.dtos.authorization.CollectionAccessPermissionDto;
@@ -21,7 +22,6 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 
-import javax.inject.Inject;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.ExecutionException;

@@ -7,6 +7,7 @@ import io.quarkus.mongodb.panache.PanacheQuery;
 import io.quarkus.panache.common.Page;
 import io.quarkus.panache.common.Sort;
 import io.vavr.collection.Array;
+import jakarta.enterprise.context.ApplicationScoped;
 import org.accounting.system.dtos.metric.UpdateMetricRequestDto;
 import org.accounting.system.entities.Metric;
 import org.accounting.system.entities.projections.MetricProjection;
@@ -20,7 +21,6 @@ import org.bson.Document;
 import org.bson.conversions.Bson;
 import org.bson.types.ObjectId;
 
-import javax.enterprise.context.ApplicationScoped;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;

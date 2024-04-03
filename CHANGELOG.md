@@ -26,6 +26,14 @@ According to [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) , the `Unr
 
 ### Added
 
+-   [#164](https://github.com/ARGOeu/argo-accounting/pull/164) - Upgrade quarkus version to 3.6.0.
+
+## 1.1.0 - 2023-05-10
+
+---
+
+### Added
+
 -   [#153](https://github.com/ARGOeu/argo-accounting/pull/153) - Add Resource field in Metric entity.
 -   [#152](https://github.com/ARGOeu/argo-accounting/pull/152) - Add support for Resource.
 -   [#143](https://github.com/ARGOeu/argo-accounting/pull/143) - Add CITATION.cff, CODE_OF_CODUCT.md, CONTRIBUTING.md files.

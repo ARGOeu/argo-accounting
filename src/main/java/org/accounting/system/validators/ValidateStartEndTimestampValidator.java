@@ -1,12 +1,12 @@
 package org.accounting.system.validators;
 
 import io.netty.handler.codec.http.HttpResponseStatus;
+import jakarta.validation.ConstraintValidator;
+import jakarta.validation.ConstraintValidatorContext;
 import org.accounting.system.constraints.ValidateStartEndTimestamp;
 import org.accounting.system.dtos.metric.MetricRequestDto;
 import org.accounting.system.exceptions.CustomValidationException;
 
-import javax.validation.ConstraintValidator;
-import javax.validation.ConstraintValidatorContext;
 import java.time.Instant;
 import java.util.Objects;
 

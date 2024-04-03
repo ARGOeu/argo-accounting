@@ -1,5 +1,6 @@
 package org.accounting.system.mappers;
 
+import jakarta.enterprise.inject.spi.CDI;
 import org.accounting.system.beans.RequestInformation;
 import org.accounting.system.dtos.authorization.CollectionAccessPermissionDto;
 import org.accounting.system.dtos.authorization.request.RoleRequestDto;
@@ -18,7 +19,6 @@ import org.mapstruct.Named;
 import org.mapstruct.NullValuePropertyMappingStrategy;
 import org.mapstruct.factory.Mappers;
 
-import javax.enterprise.inject.spi.CDI;
 import java.util.Collection;
 import java.util.List;
 import java.util.Objects;

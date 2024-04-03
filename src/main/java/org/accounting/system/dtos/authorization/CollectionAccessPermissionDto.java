@@ -1,15 +1,16 @@
 package org.accounting.system.dtos.authorization;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotEmpty;
 import lombok.EqualsAndHashCode;
 import org.accounting.system.constraints.StringEnumeration;
 import org.accounting.system.enums.Collection;
 import org.eclipse.microprofile.openapi.annotations.enums.SchemaType;
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
 
-import javax.validation.Valid;
-import javax.validation.constraints.NotEmpty;
 import java.util.Set;
+
 
 @Schema(name="CollectionAccessPermission", description="An object represents the access permissions upon a collection.")
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)

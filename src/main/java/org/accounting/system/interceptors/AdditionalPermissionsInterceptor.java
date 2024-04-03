@@ -1,16 +1,16 @@
 package org.accounting.system.interceptors;
 
 import io.quarkus.arc.ArcInvocationContext;
+import jakarta.annotation.Priority;
+import jakarta.inject.Inject;
+import jakarta.interceptor.AroundInvoke;
+import jakarta.interceptor.Interceptor;
+import jakarta.interceptor.InvocationContext;
 import org.accounting.system.dtos.acl.role.RoleAccessControlRequestDto;
 import org.accounting.system.interceptors.annotations.AdditionalPermissions;
 import org.accounting.system.repositories.client.ClientAccessAlwaysRepository;
 import org.accounting.system.services.acl.RoleAccessControlService;
 
-import javax.annotation.Priority;
-import javax.inject.Inject;
-import javax.interceptor.AroundInvoke;
-import javax.interceptor.Interceptor;
-import javax.interceptor.InvocationContext;
 import java.lang.annotation.Annotation;
 import java.util.Arrays;
 import java.util.Set;

@@ -1,10 +1,10 @@
 package org.accounting.system.interceptors.annotations;
 
+import jakarta.enterprise.util.Nonbinding;
+import jakarta.interceptor.InterceptorBinding;
 import org.accounting.system.enums.Collection;
 import org.accounting.system.enums.Operation;
 
-import javax.enterprise.util.Nonbinding;
-import javax.interceptor.InterceptorBinding;
 import java.lang.annotation.Retention;
 import java.lang.annotation.Target;
 

@@ -2,10 +2,10 @@ package org.accounting.system.repositories.modulators;
 
 import io.quarkus.mongodb.panache.PanacheQuery;
 import io.quarkus.panache.common.Page;
+import jakarta.ws.rs.ForbiddenException;
 import org.accounting.system.entities.Entity;
 import org.accounting.system.enums.ApiMessage;
 
-import javax.ws.rs.ForbiddenException;
 import java.util.List;
 
 /**

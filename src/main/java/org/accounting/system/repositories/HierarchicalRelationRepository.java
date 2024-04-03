@@ -3,14 +3,14 @@ package org.accounting.system.repositories;
 import com.mongodb.client.model.Aggregates;
 import com.mongodb.client.model.Filters;
 import com.mongodb.client.model.Updates;
+import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.inject.Inject;
 import org.accounting.system.entities.HierarchicalRelation;
 import org.accounting.system.repositories.metric.MetricRepository;
 import org.accounting.system.repositories.modulators.AbstractAccessModulator;
 import org.bson.Document;
 import org.bson.conversions.Bson;
 
-import javax.enterprise.context.ApplicationScoped;
-import javax.inject.Inject;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;

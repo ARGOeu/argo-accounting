@@ -10,6 +10,7 @@ import io.restassured.config.JsonConfig;
 import io.restassured.http.ContentType;
 import io.restassured.path.json.config.JsonPathConfig;
 import io.vavr.collection.Array;
+import jakarta.inject.Inject;
 import org.accounting.system.clients.ProviderClient;
 import org.accounting.system.clients.responses.eoscportal.Response;
 import org.accounting.system.clients.responses.eoscportal.Total;
@@ -41,7 +42,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 
-import javax.inject.Inject;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;

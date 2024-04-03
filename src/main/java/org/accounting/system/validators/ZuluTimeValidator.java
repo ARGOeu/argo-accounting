@@ -2,12 +2,12 @@ package org.accounting.system.validators;
 
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.netty.util.internal.StringUtil;
+import jakarta.validation.ConstraintValidator;
+import jakarta.validation.ConstraintValidatorContext;
 import org.accounting.system.constraints.ZuluTime;
 import org.accounting.system.exceptions.CustomValidationException;
 import org.apache.commons.lang3.StringUtils;
 
-import javax.validation.ConstraintValidator;
-import javax.validation.ConstraintValidatorContext;
 import java.time.Instant;
 
 /**

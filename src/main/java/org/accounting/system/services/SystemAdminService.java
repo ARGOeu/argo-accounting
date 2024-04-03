@@ -1,6 +1,8 @@
 package org.accounting.system.services;
 
 import com.mongodb.MongoWriteException;
+import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.inject.Inject;
 import org.accounting.system.clients.ProjectClient;
 import org.accounting.system.entities.acl.RoleAccessControl;
 import org.accounting.system.entities.client.Client;
@@ -11,8 +13,6 @@ import org.accounting.system.repositories.project.ProjectModulator;
 import org.accounting.system.repositories.project.ProjectRepository;
 import org.eclipse.microprofile.rest.client.inject.RestClient;
 
-import javax.enterprise.context.ApplicationScoped;
-import javax.inject.Inject;
 import java.util.Set;
 import java.util.stream.Collectors;
 
