@@ -13,7 +13,7 @@ public class LandingRoute {
     @Inject
     Template index;
 
-    @ConfigProperty(name = "aai.proxy.client.url")
+    @ConfigProperty(name = "api.accounting.aai.proxy.client.url")
     String aaiProxyClientUrl;
 
     @Route(path = "/", methods = Route.HttpMethod.GET)

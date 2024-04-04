@@ -30,13 +30,13 @@ import java.util.Set;
 @ApplicationScoped
 public class ClientRepository extends ClientModulator {
 
-    @ConfigProperty(name = "system.admin.vopersonid", defaultValue = "")
+    @ConfigProperty(name = "api.accounting.system.admin.vopersonid", defaultValue = "")
     String vopersonId;
 
-    @ConfigProperty(name = "system.admin.name", defaultValue = "")
+    @ConfigProperty(name = "api.accounting.system.admin.name", defaultValue = "")
     String name;
 
-    @ConfigProperty(name = "system.admin.email", defaultValue = "")
+    @ConfigProperty(name = "api.accounting.system.admin.email", defaultValue = "")
     String email;
 
     public void isSystemAdmin(String vopersonId){

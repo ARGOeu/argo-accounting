@@ -87,7 +87,7 @@ public class InstallationEndpoint {
     @ConfigProperty(name = "quarkus.resteasy-reactive.path")
     String basePath;
 
-    @ConfigProperty(name = "server.url")
+    @ConfigProperty(name = "api.server.url")
     String serverUrl;
 
     @Inject
