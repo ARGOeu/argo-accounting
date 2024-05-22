@@ -24,6 +24,9 @@ According to [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) , the `Unr
 
 ---
 
+-   [#169](https://github.com/ARGOeu/argo-accounting/pull/169) - EOSC Resource Not Supported.
+
+
 ## 1.2.0 - 2024-05-10
 
 ---

@@ -1215,11 +1215,7 @@ public class InstallationEndpoint {
     @Path("/all")
     @Produces(value = MediaType.APPLICATION_JSON)
     @Consumes(value = MediaType.APPLICATION_JSON)
-
     public Response getAll(
-            @Valid @NotNull(message = "The request body is empty.") @RequestBody(content = @Content(
-                    schema = @Schema(implementation = String.class),
-                    mediaType = MediaType.APPLICATION_JSON))
             @Parameter(name = "page", in = QUERY,
                     description = "Indicates the page number. Page number must be >= 1.") @DefaultValue("1") @Min(value = 1, message = "Page number must be >= 1.") @QueryParam("page") int page,
             @Parameter(name = "size", in = QUERY,
