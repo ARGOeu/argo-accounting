@@ -2,6 +2,9 @@ package org.accounting.system.schedulers;
 
 import io.quarkus.runtime.StartupEvent;
 import io.quarkus.scheduler.Scheduled;
+import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.enterprise.event.Observes;
+import jakarta.inject.Inject;
 import org.accounting.system.clients.ProviderClient;
 import org.accounting.system.clients.responses.eoscportal.EOSCProvider;
 import org.accounting.system.mappers.ProviderMapper;
@@ -9,9 +12,6 @@ import org.accounting.system.repositories.provider.ProviderRepository;
 import org.eclipse.microprofile.rest.client.inject.RestClient;
 import org.jboss.logging.Logger;
 
-import javax.enterprise.context.ApplicationScoped;
-import javax.enterprise.event.Observes;
-import javax.inject.Inject;
 import java.util.List;
 
 @ApplicationScoped

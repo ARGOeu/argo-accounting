@@ -7,6 +7,7 @@ import io.quarkus.test.security.TestSecurity;
 import io.quarkus.test.security.oidc.OidcSecurity;
 import io.quarkus.test.security.oidc.TokenIntrospection;
 import io.quarkus.test.security.oidc.UserInfo;
+import jakarta.inject.Inject;
 import org.accounting.system.dtos.client.ClientResponseDto;
 import org.accounting.system.endpoints.ClientEndpoint;
 import org.accounting.system.entities.client.Client;
@@ -17,7 +18,6 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 
-import javax.inject.Inject;
 import java.util.Set;
 
 import static io.restassured.RestAssured.given;

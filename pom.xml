@@ -4,30 +4,28 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>org.grnet</groupId>
   <artifactId>accounting-system</artifactId>
-  <version>1.1.0</version>
+  <version>1.2.1</version>
   <properties>
     <apache.common3.version>3.12.0</apache.common3.version>
     <compiler-plugin.version>3.8.1</compiler-plugin.version>
     <json.simple.version>1.1.1</json.simple.version>
-    <junit.vintage.engine.vesrion>5.7.0</junit.vintage.engine.vesrion>
+    <junit.vintage.engine.vesrion>5.10.0</junit.vintage.engine.vesrion>
     <lombok.version>1.18.22</lombok.version>
-    <mapstruct.version>1.4.2.Final</mapstruct.version>
+    <mapstruct.version>1.5.5.Final</mapstruct.version>
     <maven.compiler.parameters>true</maven.compiler.parameters>
     <maven.compiler.source>11</maven.compiler.source>
     <maven.compiler.target>11</maven.compiler.target>
-    <mockito.core.version>4.2.0</mockito.core.version>
+    <mockito.core.version>5.5.0</mockito.core.version>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-    <quarkus.liquibase.mongo.version>2.6.2.Final</quarkus.liquibase.mongo.version>
-    <quarkus.mockito.version>2.6.2.Final</quarkus.mockito.version>
     <quarkus.platform.artifact-id>quarkus-bom</quarkus.platform.artifact-id>
     <quarkus.platform.group-id>io.quarkus.platform</quarkus.platform.group-id>
-    <quarkus.platform.version>2.6.1.Final</quarkus.platform.version>
+    <quarkus.platform.version>3.6.0</quarkus.platform.version>
     <surefire-plugin.version>3.0.0-M5</surefire-plugin.version>
     <vavr.version>0.10.4</vavr.version>
     <type.tools.version>0.6.3</type.tools.version>
     <jacoco.version>0.8.8</jacoco.version>
-    <wiremock.version>2.33.2</wiremock.version>
+    <wiremock.version>3.0.1</wiremock.version>
     <commons.validator.version>1.7</commons.validator.version>
   </properties>
   <dependencyManagement>
@@ -84,11 +82,11 @@
     </dependency>
     <dependency>
       <groupId>io.quarkus</groupId>
-      <artifactId>quarkus-rest-client-reactive</artifactId>
+      <artifactId>quarkus-rest-client</artifactId>
     </dependency>
     <dependency>
       <groupId>io.quarkus</groupId>
-      <artifactId>quarkus-rest-client-reactive-jackson</artifactId>
+      <artifactId>quarkus-rest-client-jackson</artifactId>
     </dependency>
     <dependency>
       <groupId>io.quarkus</groupId>
@@ -121,7 +119,6 @@
     <dependency>
       <groupId>io.quarkus</groupId>
       <artifactId>quarkus-junit5-mockito</artifactId>
-      <version>${quarkus.mockito.version}</version>
       <scope>test</scope>
     </dependency>
     <dependency>
@@ -169,7 +166,6 @@
     <dependency>
       <groupId>io.quarkus</groupId>
       <artifactId>quarkus-liquibase-mongodb</artifactId>
-      <version>${quarkus.liquibase.mongo.version}</version>
     </dependency>
     <dependency>
       <groupId>com.googlecode.json-simple</groupId>
@@ -199,6 +195,14 @@
     </dependency>
   </dependencies>
   <build>
+    <resources>
+      <resource>
+        <directory>src/main/resources</directory>
+      </resource>
+      <resource>
+        <directory>config</directory>
+      </resource>
+    </resources>
     <plugins>
       <plugin>
         <groupId>${quarkus.platform.group-id}</groupId>

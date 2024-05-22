@@ -51,6 +51,11 @@ public class MongoQuery<E> implements PanacheQuery<E> {
     }
 
     @Override
+    public <T extends E> PanacheQuery<T> withBatchSize(int batchSize) {
+        return null;
+    }
+
+    @Override
     public long count() {
         return count;
     }

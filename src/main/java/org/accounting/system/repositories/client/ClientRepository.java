@@ -2,14 +2,14 @@ package org.accounting.system.repositories.client;
 
 import com.mongodb.client.model.Aggregates;
 import io.quarkus.mongodb.panache.PanacheMongoRepository;
+import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.ws.rs.ForbiddenException;
 import org.accounting.system.entities.client.Client;
 import org.accounting.system.enums.ApiMessage;
 import org.bson.Document;
 import org.bson.conversions.Bson;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 
-import javax.enterprise.context.ApplicationScoped;
-import javax.ws.rs.ForbiddenException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -30,13 +30,13 @@ import java.util.Set;
 @ApplicationScoped
 public class ClientRepository extends ClientModulator {
 
-    @ConfigProperty(name = "system.admin.vopersonid", defaultValue = "")
+    @ConfigProperty(name = "api.accounting.system.admin.vopersonid", defaultValue = "")
     String vopersonId;
 
-    @ConfigProperty(name = "system.admin.name", defaultValue = "")
+    @ConfigProperty(name = "api.accounting.system.admin.name", defaultValue = "")
     String name;
 
-    @ConfigProperty(name = "system.admin.email", defaultValue = "")
+    @ConfigProperty(name = "api.accounting.system.admin.email", defaultValue = "")
     String email;
 
     public void isSystemAdmin(String vopersonId){

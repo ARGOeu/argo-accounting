@@ -1,6 +1,7 @@
 package org.accounting.system.util;
 
 import com.mongodb.client.model.Filters;
+import jakarta.enterprise.context.ApplicationScoped;
 import org.accounting.system.enums.Operand;
 import org.accounting.system.enums.Operator;
 import org.bson.conversions.Bson;
@@ -10,7 +11,6 @@ import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 
-import javax.enterprise.context.ApplicationScoped;
 import java.time.Instant;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;

@@ -1,13 +1,13 @@
 package org.accounting.system.repositories.project;
 
 import com.pivovarit.function.ThrowingBiFunction;
+import jakarta.inject.Inject;
+import jakarta.ws.rs.NotFoundException;
 import org.accounting.system.clients.ProjectClient;
 import org.accounting.system.entities.Project;
 import org.accounting.system.mappers.ProjectMapper;
 import org.accounting.system.repositories.modulators.AccessibleModulator;
 
-import javax.inject.Inject;
-import javax.ws.rs.NotFoundException;
 import java.util.Objects;
 import java.util.Set;
 

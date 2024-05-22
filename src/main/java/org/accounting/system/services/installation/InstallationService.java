@@ -1,5 +1,11 @@
 package org.accounting.system.services.installation;
 
+import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.inject.Inject;
+import jakarta.ws.rs.ForbiddenException;
+import jakarta.ws.rs.NotFoundException;
+import jakarta.ws.rs.NotSupportedException;
+import jakarta.ws.rs.core.UriInfo;
 import org.accounting.system.dtos.acl.role.RoleAccessControlRequestDto;
 import org.accounting.system.dtos.acl.role.RoleAccessControlResponseDto;
 import org.accounting.system.dtos.acl.role.RoleAccessControlUpdateDto;
@@ -32,11 +38,6 @@ import org.accounting.system.util.QueryParser;
 import org.apache.commons.lang3.StringUtils;
 import org.bson.conversions.Bson;
 
-import javax.enterprise.context.ApplicationScoped;
-import javax.inject.Inject;
-import javax.ws.rs.ForbiddenException;
-import javax.ws.rs.NotFoundException;
-import javax.ws.rs.core.UriInfo;
 import java.util.ArrayList;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -81,9 +82,13 @@ public class InstallationService implements RoleAccessControlService {
 
         installationRepository.exist(request.project, request.organisation, request.installation);
 
-        if(StringUtils.isNotEmpty(request.resource) && ! resourceService.exist(request.resource)){
-            throw new NotFoundException("There is no Resource with the following id: "+request.resource);
+        if(StringUtils.isNotEmpty(request.resource) ){
+            throw new NotSupportedException("Note: Some functionality is currently not available as the accounting service is yet to be integrated with the Service Catalogue that is not available at the moment in the staging environment.");
         }
+
+//        if(StringUtils.isNotEmpty(request.resource) && ! resourceService.exist(request.resource)){
+//            throw new NotFoundException("There is no Resource with the following id: "+request.resource);
+//        }
 
         var installation = installationRepository.save(request);
 

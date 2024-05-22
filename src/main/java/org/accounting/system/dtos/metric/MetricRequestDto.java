@@ -1,13 +1,13 @@
 package org.accounting.system.dtos.metric;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import jakarta.validation.constraints.NotEmpty;
 import org.accounting.system.constraints.NotFoundEntity;
 import org.accounting.system.constraints.ValidateStartEndTimestamp;
 import org.accounting.system.repositories.metricdefinition.MetricDefinitionRepository;
 import org.eclipse.microprofile.openapi.annotations.enums.SchemaType;
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
 
-import javax.validation.constraints.NotEmpty;
 import java.time.Instant;
 
 @Schema(name="MetricRequest", description="An object represents a request for creating a Metric.")

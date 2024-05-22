@@ -1,6 +1,8 @@
 package org.accounting.system.services;
 
 import com.mongodb.MongoWriteException;
+import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.inject.Inject;
 import org.accounting.system.dtos.metric.MetricRequestDto;
 import org.accounting.system.entities.HierarchicalRelation;
 import org.accounting.system.entities.Metric;
@@ -13,8 +15,6 @@ import org.accounting.system.repositories.provider.ProviderRepository;
 import org.accounting.system.services.installation.InstallationService;
 import org.apache.commons.lang3.StringUtils;
 
-import javax.enterprise.context.ApplicationScoped;
-import javax.inject.Inject;
 
 @ApplicationScoped
 public class HierarchicalRelationService {

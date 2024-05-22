@@ -1,10 +1,10 @@
 package org.accounting.system.validators;
 
+import jakarta.validation.ConstraintValidator;
+import jakarta.validation.ConstraintValidatorContext;
 import org.accounting.system.constraints.StringEnumeration;
 import org.accounting.system.util.Utility;
 
-import javax.validation.ConstraintValidator;
-import javax.validation.ConstraintValidatorContext;
 import java.util.Set;
 
 public class StringEnumerationValidator implements ConstraintValidator<StringEnumeration, String> {

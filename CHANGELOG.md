@@ -24,6 +24,25 @@ According to [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) , the `Unr
 
 ---
 
+## 1.2.1 - 2024-05-22
+
+---
+
+-   [#169](https://github.com/ARGOeu/argo-accounting/pull/169) - EOSC Resource Not Supported.
+
+
+## 1.2.0 - 2024-05-10
+
+---
+
+### Added
+
+-   [#164](https://github.com/ARGOeu/argo-accounting/pull/164) - Upgrade quarkus version to 3.6.0.
+
+## 1.1.0 - 2023-05-10
+
+---
+
 ### Added
 
 -   [#153](https://github.com/ARGOeu/argo-accounting/pull/153) - Add Resource field in Metric entity.

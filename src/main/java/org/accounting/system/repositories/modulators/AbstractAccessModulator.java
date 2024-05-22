@@ -3,14 +3,13 @@ package org.accounting.system.repositories.modulators;
 import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoCollection;
 import io.quarkus.mongodb.panache.PanacheMongoRepositoryBase;
+import jakarta.inject.Inject;
 import net.jodah.typetools.TypeResolver;
 import org.accounting.system.beans.RequestInformation;
 import org.accounting.system.entities.Entity;
 import org.accounting.system.enums.Collection;
 import org.bson.Document;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
-
-import javax.inject.Inject;
 
 public abstract class AbstractAccessModulator<E extends Entity, I> implements PanacheMongoRepositoryBase<E, I> {
 

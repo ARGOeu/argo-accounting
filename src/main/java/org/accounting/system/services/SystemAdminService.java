@@ -1,18 +1,19 @@
 package org.accounting.system.services;
 
-import com.mongodb.MongoWriteException;
+import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.inject.Inject;
+import jakarta.ws.rs.NotFoundException;
 import org.accounting.system.clients.ProjectClient;
+import org.accounting.system.dtos.InformativeResponse;
 import org.accounting.system.entities.acl.RoleAccessControl;
 import org.accounting.system.entities.client.Client;
-import org.accounting.system.exceptions.ConflictException;
 import org.accounting.system.repositories.authorization.RoleRepository;
 import org.accounting.system.repositories.client.ClientRepository;
 import org.accounting.system.repositories.project.ProjectModulator;
 import org.accounting.system.repositories.project.ProjectRepository;
 import org.eclipse.microprofile.rest.client.inject.RestClient;
 
-import javax.enterprise.context.ApplicationScoped;
-import javax.inject.Inject;
+import java.util.HashSet;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -38,39 +39,74 @@ public class SystemAdminService {
      * @param projects A list of Projects to be registered.
      * @param who The system admin who performs the assignment.
      */
-    public void registerProjectsToAccountingService(Set<String> projects, String who){
+    public InformativeResponse registerProjectsToAccountingService(Set<String> projects, String who){
 
-        for(String projectID:projects){
+        var response = new InformativeResponse();
 
-            var projectAdminRole = roleRepository.getRolesByName(Set.of("project_admin"));
+        var success = new HashSet<String>();
+        var errors = new HashSet<String>();
 
-            var function = ProjectModulator.openAire();
+        for(String projectID : projects){
 
-            var project = function.apply(projectID, projectClient);
+            var optional = projectRepository.findByIdOptional(projectID);
 
-            project.setCreatorId(who);
+            if(optional.isEmpty()){
 
-            try{
-                projectRepository.persist(project);
-            } catch (MongoWriteException e){
-                throw new ConflictException("This Project has already been registered.");
+                try{
+
+                    var projectAdminRole = roleRepository.getRolesByName(Set.of("project_admin"));
+
+                    var function = ProjectModulator.openAire();
+
+                    var project = function.apply(projectID, projectClient);
+
+                    project.setCreatorId(who);
+
+                    projectRepository.persist(project);
+
+                    var systemAdmins = clientRepository.getSystemAdmins();
+
+                    var systemAdminsAccessControls = systemAdmins
+                            .stream()
+                            .map(Client::getId)
+                            .map(id->{
+
+                                var systemAdminAccessControl = new RoleAccessControl();
+                                systemAdminAccessControl.setWho(id);
+                                systemAdminAccessControl.setCreatorId(who);
+                                systemAdminAccessControl.setRoles(projectAdminRole);
+                                return systemAdminAccessControl;
+                            }).collect(Collectors.toSet());
+
+                    projectRepository.insertListOfRoleAccessControl(projectID, systemAdminsAccessControls);
+
+                    success.add(projectID);
+
+                } catch (NotFoundException nfe){
+
+                    errors.add(nfe.getMessage());
+
+                } catch (Exception e){
+
+                    errors.add(String.format("Project : %s has not been registered. Please try again.", projectID));
+                }
+            } else {
+
+                errors.add(String.format("Project %s has already been registered.", projectID));
             }
-
-            var systemAdmins = clientRepository.getSystemAdmins();
-
-            var systemAdminsAccessControls = systemAdmins
-                    .stream()
-                    .map(Client::getId)
-                    .map(id->{
-
-                        var systemAdminAccessControl = new RoleAccessControl();
-                        systemAdminAccessControl.setWho(id);
-                        systemAdminAccessControl.setCreatorId(who);
-                        systemAdminAccessControl.setRoles(projectAdminRole);
-                        return systemAdminAccessControl;
-                    }).collect(Collectors.toSet());
-
-            projectRepository.insertListOfRoleAccessControl(projectID, systemAdminsAccessControls);
         }
+
+        if(success.isEmpty()){
+
+            response.message = "No project registration was performed";
+        } else {
+
+            response.message = "Project(s) : "+success+" registered successfully.";
+        }
+
+        response.code = 200;
+        response.errors = errors;
+
+        return response;
     }
 }

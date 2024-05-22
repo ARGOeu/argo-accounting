@@ -1,12 +1,12 @@
 package org.accounting.system.constraints;
 
+import jakarta.enterprise.util.Nonbinding;
+import jakarta.validation.Constraint;
+import jakarta.validation.Payload;
 import org.accounting.system.enums.Collection;
 import org.accounting.system.enums.Operation;
 import org.accounting.system.validators.AccessProviderValidator;
 
-import javax.enterprise.util.Nonbinding;
-import javax.validation.Constraint;
-import javax.validation.Payload;
 import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;

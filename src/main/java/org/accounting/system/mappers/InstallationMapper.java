@@ -1,5 +1,6 @@
 package org.accounting.system.mappers;
 
+import jakarta.enterprise.inject.spi.CDI;
 import org.accounting.system.beans.RequestInformation;
 import org.accounting.system.dtos.installation.InstallationRequestDto;
 import org.accounting.system.dtos.installation.InstallationResponseDto;
@@ -14,7 +15,6 @@ import org.mapstruct.Mapping;
 import org.mapstruct.MappingTarget;
 import org.mapstruct.factory.Mappers;
 
-import javax.enterprise.inject.spi.CDI;
 import java.util.List;
 
 /**

@@ -1,12 +1,11 @@
 package org.accounting.system.clients;
 
+import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.ws.rs.GET;
+import jakarta.ws.rs.Path;
+import jakarta.ws.rs.QueryParam;
 import org.accounting.system.clients.responses.openaire.OpenAireProject;
 import org.eclipse.microprofile.rest.client.inject.RegisterRestClient;
-
-import javax.enterprise.context.ApplicationScoped;
-import javax.ws.rs.GET;
-import javax.ws.rs.Path;
-import javax.ws.rs.QueryParam;
 
 /**
  * This HTTP client communicates with OpenAire to retrieve projects.

@@ -2,6 +2,12 @@ package org.accounting.system.services;
 
 import io.quarkus.cache.CacheResult;
 import io.quarkus.panache.common.Page;
+import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.inject.Inject;
+import jakarta.validation.ValidationException;
+import jakarta.ws.rs.InternalServerErrorException;
+import jakarta.ws.rs.NotFoundException;
+import jakarta.ws.rs.core.UriInfo;
 import org.accounting.system.clients.ResourceClient;
 import org.accounting.system.clients.responses.eoscportal.EOSCResource;
 import org.accounting.system.dtos.pagination.PageResource;
@@ -12,13 +18,7 @@ import org.accounting.system.util.Utility;
 import org.eclipse.microprofile.rest.client.inject.RestClient;
 import org.jboss.logging.Logger;
 
-import javax.enterprise.context.ApplicationScoped;
-import javax.inject.Inject;
-import javax.validation.ValidationException;
-import javax.ws.rs.InternalServerErrorException;
-import javax.ws.rs.NotFoundException;
-import javax.ws.rs.core.UriInfo;
-import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 @ApplicationScoped
@@ -44,18 +44,18 @@ public class ResourceService{
      */
     public PageResource<EoscResourceDto> findAllEoscResources(int page, int size, UriInfo uriInfo){
 
-        var eoscResources = getAllEoscResources();
-
-        var partition = utility.partition(eoscResources, size);
-
-        var resources = partition.get(page) == null ? new ArrayList<EOSCResource>() : partition.get(page);
+//        var eoscResources = getAllEoscResources();
+//
+//        var partition = utility.partition(eoscResources, size);
+//
+//        var resources = partition.get(page) == null ? new ArrayList<EOSCResource>() : partition.get(page);
 
         var pageable = new MongoQuery<EOSCResource>();
 
-        pageable.list = resources;
+        pageable.list = Collections.emptyList();
         pageable.index = page;
         pageable.size = size;
-        pageable.count = eoscResources.size();
+        pageable.count = 0;
         pageable.page = Page.of(page, size);
 
         return new PageResource<>(pageable, ResourceMapper.INSTANCE.eoscResourcesToEoscResourcesDto(pageable.list()), uriInfo);

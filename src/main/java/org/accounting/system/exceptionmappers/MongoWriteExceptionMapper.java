@@ -1,15 +1,14 @@
 package org.accounting.system.exceptionmappers;
 
 import com.mongodb.MongoWriteException;
+import jakarta.ws.rs.core.Response;
+import jakarta.ws.rs.ext.ExceptionMapper;
+import jakarta.ws.rs.ext.Provider;
 import org.accounting.system.dtos.InformativeResponse;
 import org.jboss.logging.Logger;
 
-import javax.ws.rs.core.Response;
-import javax.ws.rs.ext.ExceptionMapper;
-import javax.ws.rs.ext.Provider;
-
 @Provider
-public class MongoWriteExceptionMapper implements ExceptionMapper<MongoWriteException>{
+public class MongoWriteExceptionMapper implements ExceptionMapper<MongoWriteException> {
 
     private static final Logger LOG = Logger.getLogger(MongoWriteExceptionMapper.class);
 

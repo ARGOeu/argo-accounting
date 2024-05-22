@@ -1,5 +1,6 @@
 package org.accounting.system.mappers;
 
+import jakarta.enterprise.inject.spi.CDI;
 import org.accounting.system.beans.RequestInformation;
 import org.accounting.system.dtos.metric.MetricRequestDto;
 import org.accounting.system.dtos.metric.MetricResponseDto;
@@ -13,7 +14,6 @@ import org.mapstruct.MappingTarget;
 import org.mapstruct.ReportingPolicy;
 import org.mapstruct.factory.Mappers;
 
-import javax.enterprise.inject.spi.CDI;
 import java.time.Instant;
 import java.util.List;
 import java.util.Objects;

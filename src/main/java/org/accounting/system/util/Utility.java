@@ -3,6 +3,9 @@ package org.accounting.system.util;
 
 import io.quarkus.cache.CacheResult;
 import io.quarkus.oidc.TokenIntrospection;
+import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.inject.Inject;
+import jakarta.ws.rs.BadRequestException;
 import org.accounting.system.beans.RequestInformation;
 import org.accounting.system.dtos.authorization.request.RoleRequestDto;
 import org.accounting.system.enums.Collection;
@@ -15,9 +18,6 @@ import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 
-import javax.enterprise.context.ApplicationScoped;
-import javax.inject.Inject;
-import javax.ws.rs.BadRequestException;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;

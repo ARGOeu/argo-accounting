@@ -3,10 +3,9 @@ package org.accounting.system.dtos.unittype;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import jakarta.validation.constraints.NotEmpty;
 import org.eclipse.microprofile.openapi.annotations.enums.SchemaType;
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
-
-import javax.validation.constraints.NotEmpty;
 
 @Schema(name="UnitType", description="An object represents a Unit Type.")
 @JsonIgnoreProperties(ignoreUnknown = true)

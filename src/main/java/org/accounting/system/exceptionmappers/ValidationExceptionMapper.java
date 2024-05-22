@@ -1,14 +1,13 @@
 package org.accounting.system.exceptionmappers;
 
 import io.quarkus.hibernate.validator.runtime.jaxrs.ResteasyReactiveViolationException;
+import jakarta.validation.ValidationException;
+import jakarta.ws.rs.core.Response;
+import jakarta.ws.rs.ext.ExceptionMapper;
+import jakarta.ws.rs.ext.Provider;
 import org.accounting.system.dtos.InformativeResponse;
 import org.accounting.system.exceptions.CustomValidationException;
 import org.jboss.logging.Logger;
-
-import javax.validation.ValidationException;
-import javax.ws.rs.core.Response;
-import javax.ws.rs.ext.ExceptionMapper;
-import javax.ws.rs.ext.Provider;
 
 @Provider
 public class ValidationExceptionMapper implements ExceptionMapper<ValidationException> {
@@ -20,14 +19,14 @@ public class ValidationExceptionMapper implements ExceptionMapper<ValidationExce
 
         LOG.error("Validation Error", e);
 
-        if(e.getCause() instanceof CustomValidationException){
+        if (e.getCause() instanceof CustomValidationException) {
 
             CustomValidationException exception = (CustomValidationException) e.getCause();
             InformativeResponse response = new InformativeResponse();
             response.message = exception.getMessage();
             response.code = exception.getStatus().code();
             return Response.status(exception.getStatus().code()).entity(response).build();
-        } else if(e instanceof ResteasyReactiveViolationException){
+        } else if (e instanceof ResteasyReactiveViolationException) {
 
             InformativeResponse response = new InformativeResponse();
             response.message = ((ResteasyReactiveViolationException) e).getConstraintViolations().stream().findFirst().get().getMessageTemplate();

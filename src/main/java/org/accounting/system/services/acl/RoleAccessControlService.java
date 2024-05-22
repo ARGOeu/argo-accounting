@@ -1,11 +1,11 @@
 package org.accounting.system.services.acl;
 
+import jakarta.ws.rs.core.UriInfo;
 import org.accounting.system.dtos.acl.role.RoleAccessControlRequestDto;
 import org.accounting.system.dtos.acl.role.RoleAccessControlResponseDto;
 import org.accounting.system.dtos.acl.role.RoleAccessControlUpdateDto;
 import org.accounting.system.dtos.pagination.PageResource;
 
-import javax.ws.rs.core.UriInfo;
 
 public interface RoleAccessControlService {
 

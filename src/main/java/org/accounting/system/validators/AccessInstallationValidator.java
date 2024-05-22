@@ -2,6 +2,8 @@ package org.accounting.system.validators;
 
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.vavr.control.Try;
+import jakarta.validation.ConstraintValidator;
+import jakarta.validation.ConstraintValidatorContext;
 import org.accounting.system.constraints.AccessInstallation;
 import org.accounting.system.entities.HierarchicalRelation;
 import org.accounting.system.enums.Collection;
@@ -13,9 +15,7 @@ import org.accounting.system.repositories.project.ProjectRepository;
 import org.accounting.system.repositories.provider.ProviderRepository;
 import org.accounting.system.util.Utility;
 
-import javax.enterprise.inject.spi.CDI;
-import javax.validation.ConstraintValidator;
-import javax.validation.ConstraintValidatorContext;
+import jakarta.enterprise.inject.spi.CDI;
 import java.util.regex.Pattern;
 
 /**

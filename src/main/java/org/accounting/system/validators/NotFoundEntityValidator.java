@@ -4,14 +4,13 @@ import io.netty.handler.codec.http.HttpResponseStatus;
 import io.netty.util.internal.StringUtil;
 import io.quarkus.mongodb.panache.PanacheMongoRepositoryBase;
 import io.vavr.control.Try;
+import jakarta.enterprise.inject.spi.CDI;
+import jakarta.validation.ConstraintValidator;
+import jakarta.validation.ConstraintValidatorContext;
 import org.accounting.system.constraints.NotFoundEntity;
 import org.accounting.system.exceptions.CustomValidationException;
 import org.accounting.system.util.Utility;
 import org.apache.commons.lang3.StringUtils;
-
-import javax.enterprise.inject.spi.CDI;
-import javax.validation.ConstraintValidator;
-import javax.validation.ConstraintValidatorContext;
 
 /**
  * This {@link NotFoundEntityValidator} defines the logic to validate the {@link NotFoundEntity}.
