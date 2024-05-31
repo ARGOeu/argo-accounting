@@ -13,14 +13,17 @@ public class LandingRoute {
     @Inject
     Template index;
 
-    @ConfigProperty(name = "api.accounting.aai.proxy.client.url")
-    String aaiProxyClientUrl;
+    @ConfigProperty(name = "api.html.oidc.client.url")
+    String apiHtmlOidcClientUrl;
+
+    @ConfigProperty(name = "api.html.swagger.documentation")
+    String apiHtmlSwaggerDocumentation;
 
     @Route(path = "/", methods = Route.HttpMethod.GET)
     public void landing(RoutingContext rc) {
         rc
                 .response()
                 .putHeader("content-type", "text/html")
-                .end(index.data("aai_proxy_client_url", aaiProxyClientUrl).render());
+                .end(index.data("acc_oidc_client_url", apiHtmlOidcClientUrl, "acc_api_documentation", apiHtmlSwaggerDocumentation).render());
     }
 }
