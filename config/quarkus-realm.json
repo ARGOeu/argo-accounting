@@ -566,6 +566,7 @@
         "address",
         "phone",
         "offline_access",
+        "entitlements",
         "microprofile-jwt"
       ],
       "access": {
@@ -889,6 +890,7 @@
         "address",
         "phone",
         "offline_access",
+        "entitlements",
         "microprofile-jwt"
       ]
     },
@@ -1020,6 +1022,34 @@
             "id.token.claim": "true",
             "access.token.claim": "true",
             "claim.name": "voperson_id"
+          }
+        }
+      ]
+    },
+    {
+      "id": "35a71d37-2b63-4424-b656-9eb858424837",
+      "name": "entitlements",
+      "description": "View your rights to resources",
+      "protocol": "openid-connect",
+      "attributes": {
+        "include.in.token.scope": "true",
+        "display.on.consent.screen": "false"
+      },
+      "protocolMappers": [
+        {
+          "id": "c43910c8-333f-4ec6-b8f8-155c2ef76ede",
+          "name": "entitlements",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-usermodel-attribute-mapper",
+          "consentRequired": false,
+          "config": {
+            "aggregate.attrs": "false",
+            "multivalued": "false",
+            "userinfo.token.claim": "true",
+            "user.attribute": "entitlements",
+            "id.token.claim": "false",
+            "access.token.claim": "false",
+            "claim.name": "entitlements"
           }
         }
       ]
@@ -1544,7 +1574,8 @@
     "offline_access",
     "address",
     "phone",
-    "microprofile-jwt"
+    "microprofile-jwt",
+    "entitlements"
   ],
   "browserSecurityHeaders": {
     "contentSecurityPolicyReportOnly": "",
@@ -2470,7 +2501,8 @@
       "totp": false,
       "emailVerified": false,
       "attributes": {
-        "voperson_id": ["admin_voperson_id"]
+        "voperson_id": ["admin_voperson_id"],
+        "entitlements": ["urn:geant:eosc-federation.eu:group:services:LOT2:okd.eosc-node.eu:role=admin"]
       },
       "credentials": [
         {
@@ -2509,7 +2541,8 @@
       "totp": false,
       "emailVerified": false,
       "attributes": {
-        "voperson_id": ["alice_voperson_id"]
+        "voperson_id": ["alice_voperson_id"],
+        "entitlements": ["urn:geant:eosc-federation.eu:res:okd.eosc-node.eu:projects:act:read"]
       },
       "credentials": [
         {
@@ -2544,7 +2577,8 @@
       "username": "bob",
       "enabled": true,
       "attributes": {
-        "voperson_id": ["bob_voperson_id"]
+        "voperson_id": ["bob_voperson_id"],
+        "entitlements": ["urn:geant:eosc-federation.eu:group:services:LOT2:okd.eosc-node.eu:role=admin"]
       },
       "credentials": [
         {
