@@ -1,6 +1,7 @@
 package org.accounting.system.dtos.metric;
 
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import org.eclipse.microprofile.openapi.annotations.enums.SchemaType;
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
@@ -54,5 +55,26 @@ public class MetricResponseDto {
     )
     @JsonProperty("value")
     public double value;
+
+    @Schema(
+            type = SchemaType.STRING,
+            implementation = String.class,
+            description = "Group ID associated with a metric.",
+            example = "group id"
+    )
+    @JsonProperty("group_id")
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    public String groupId;
+
+    @Schema(
+            type = SchemaType.STRING,
+            implementation = String.class,
+            description = "User ID associated with a metric.",
+            example = "user id"
+    )
+    @JsonProperty("user_id")
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    public String userId;
+
 
 }

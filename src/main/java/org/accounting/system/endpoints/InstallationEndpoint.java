@@ -149,6 +149,12 @@ public class InstallationEndpoint {
             content = @Content(schema = @Schema(
                     type = SchemaType.OBJECT,
                     implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "501",
+            description = "Not Supported.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
     @SecurityRequirement(name = "Authentication")
 
     @POST
@@ -332,6 +338,12 @@ public class InstallationEndpoint {
     @APIResponse(
             responseCode = "500",
             description = "Internal Server Errors.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "501",
+            description = "Not Supported.",
             content = @Content(schema = @Schema(
                     type = SchemaType.OBJECT,
                     implementation = InformativeResponse.class)))
