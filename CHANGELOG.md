@@ -24,9 +24,15 @@ According to [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) , the `Unr
 
 ---
 
+### Added
+
+-   [#173](https://github.com/ARGOeu/argo-accounting/pull/173) - ACC-228 Adapt Metric schema to add support for Groups and Users.
+
 ## 1.2.1 - 2024-05-22
 
 ---
+
+### Changed
 
 -   [#169](https://github.com/ARGOeu/argo-accounting/pull/169) - EOSC Resource Not Supported.
 

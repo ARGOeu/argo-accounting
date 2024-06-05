@@ -8,9 +8,11 @@ import org.accounting.system.dtos.metric.UpdateMetricRequestDto;
 import org.accounting.system.entities.Metric;
 import org.apache.commons.lang3.StringUtils;
 import org.mapstruct.AfterMapping;
+import org.mapstruct.IterableMapping;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.MappingTarget;
+import org.mapstruct.Named;
 import org.mapstruct.ReportingPolicy;
 import org.mapstruct.factory.Mappers;
 
@@ -32,6 +34,7 @@ public interface MetricMapper {
     @Mapping(target="end", expression="java(Instant.parse(request.end))")
     Metric requestToMetric(MetricRequestDto request);
 
+    @Named("metricToDto")
     @Mapping(target="id", expression="java(metric.getId().toString())")
     MetricResponseDto metricToResponse(Metric metric);
 
@@ -39,9 +42,11 @@ public interface MetricMapper {
     @Mapping(target = "start", expression = "java(StringUtils.isNotEmpty(request.start) ? Instant.parse(request.start) : metric.getStart())")
     @Mapping(target = "end", expression = "java(StringUtils.isNotEmpty(request.end) ? Instant.parse(request.end) : metric.getEnd())")
     @Mapping(target = "value", expression = "java(Objects.nonNull(request.value) ? request.value : metric.getValue())")
+    @Mapping(target = "userId", expression = "java(Objects.nonNull(request.userId) ? request.userId : metric.getUserId())")
+    @Mapping(target = "groupId", expression = "java(Objects.nonNull(request.groupId) ? request.groupId : metric.getGroupId())")
     void updateMetricFromDto(UpdateMetricRequestDto request, @MappingTarget Metric metric);
 
-    @Mapping( target="id", expression="java(metric.getId().toString())")
+    @IterableMapping(qualifiedByName = "metricToDto")
     List<MetricResponseDto> metricsToResponse(List<Metric> metrics);
 
     @AfterMapping

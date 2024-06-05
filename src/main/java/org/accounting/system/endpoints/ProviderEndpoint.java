@@ -78,7 +78,7 @@ public class ProviderEndpoint {
     @org.eclipse.microprofile.openapi.annotations.Operation(
             operationId = "providers-from-eosc-portal",
             summary = "Get a list of all Providers in the Accounting System.",
-            description = "Essentially, this operation returns all Providers available on the EOSC-Portal as well as all Providers registered through the Accounting System API. " +
+            description = "This operation returns all Providers available on Accounting System API. " +
                     "By default, the first page of 10 Providers will be returned. You can tune the default values by using " +
                     "the query parameters page and size.")
     @APIResponse(
@@ -140,8 +140,7 @@ public class ProviderEndpoint {
     @org.eclipse.microprofile.openapi.annotations.Operation(
             operationId = "register-a-new-provider",
             summary = "Registers a new Provider.",
-            description = "In addition to Providers from [EOSC-Portal](#/Provider/providers-from-eosc-portal), a client can use this functionality to create a new Provider. " +
-                    "Obviously this Provider will only be registered in the Accounting System API.")
+            description = "A Client can use this functionality to create a new Provider.")
     @APIResponse(
             responseCode = "201",
             description = "Provider has been created successfully.",

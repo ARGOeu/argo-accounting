@@ -49,4 +49,22 @@ public class UpdateMetricRequestDto {
     )
     @JsonProperty("value")
     public Double value;
+
+    @Schema(
+            type = SchemaType.STRING,
+            implementation = String.class,
+            description = "Group ID associated with a metric.",
+            example = "group id"
+    )
+    @JsonProperty("group_id")
+    public String groupId;
+
+    @Schema(
+            type = SchemaType.STRING,
+            implementation = String.class,
+            description = "User ID associated with a metric.",
+            example = "user id"
+    )
+    @JsonProperty("user_id")
+    public String userId;
 }
