@@ -16,6 +16,7 @@ import java.util.List;
 
 
 @Schema(name="Metric", description="An object represents the stored Metric. It also contains the hierarchical structure in which it belongs.")
+
 public class MetricProjection {
 
     @Schema(
@@ -105,6 +106,28 @@ public class MetricProjection {
             example = "unitartu.ut.rocket"
     )
     private String resource;
+
+    @JsonProperty("group_id")
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    @BsonProperty("group_id")
+    @Schema(
+            type = SchemaType.STRING,
+            implementation = String.class,
+            description = "Group ID associated with a metric.",
+            example = "Group ID"
+    )
+    private String groupId;
+
+    @JsonProperty("user_id")
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    @BsonProperty("user_id")
+    @Schema(
+            type = SchemaType.STRING,
+            implementation = String.class,
+            description = "User ID associated with a metric.",
+            example = "User ID"
+    )
+    private String userId;
 
     @JsonProperty("metric_definition")
     @Schema(
@@ -206,4 +229,20 @@ public class MetricProjection {
     public void setResource(String resource) {
         this.resource = resource;
     }
+
+ public String getGroupId() {
+  return groupId;
+ }
+
+ public void setGroupId(String groupId) {
+  this.groupId = groupId;
+ }
+
+ public String getUserId() {
+  return userId;
+ }
+
+ public void setUserId(String userId) {
+  this.userId = userId;
+ }
 }

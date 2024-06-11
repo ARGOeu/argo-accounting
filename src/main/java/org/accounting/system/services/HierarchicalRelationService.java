@@ -57,6 +57,8 @@ public class HierarchicalRelationService {
         metric.setInfrastructure(storedInstallation.getInfrastructure());
         metric.setProjectId(storedInstallation.getProject());
         metric.setInstallationId(storedInstallation.getId());
+        metric.setGroupId(request.groupId);
+        metric.setUserId(request.userId);
 
         try{
             metricRepository.persist(metric);

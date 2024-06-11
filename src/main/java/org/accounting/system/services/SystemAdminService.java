@@ -5,8 +5,16 @@ import jakarta.inject.Inject;
 import jakarta.ws.rs.NotFoundException;
 import org.accounting.system.clients.ProjectClient;
 import org.accounting.system.dtos.InformativeResponse;
+import org.accounting.system.dtos.project.ProjectRequest;
+import org.accounting.system.dtos.resource.ResourceRequest;
+import org.accounting.system.dtos.resource.ResourceResponse;
+import org.accounting.system.entities.Project;
 import org.accounting.system.entities.acl.RoleAccessControl;
 import org.accounting.system.entities.client.Client;
+import org.accounting.system.entities.projections.normal.ProjectProjection;
+import org.accounting.system.exceptions.ConflictException;
+import org.accounting.system.mappers.ResourceMapper;
+import org.accounting.system.repositories.ResourceRepository;
 import org.accounting.system.repositories.authorization.RoleRepository;
 import org.accounting.system.repositories.client.ClientRepository;
 import org.accounting.system.repositories.project.ProjectModulator;
@@ -32,6 +40,9 @@ public class SystemAdminService {
 
     @Inject
     ProjectRepository projectRepository;
+
+    @Inject
+    ResourceRepository resourceRepository;
 
     /**
      * This method is responsible for registering several Projects into Accounting Service.
@@ -108,5 +119,84 @@ public class SystemAdminService {
         response.errors = errors;
 
         return response;
+    }
+
+    /**
+     * Creates a new Project.
+     *
+     * @param request The data transfer object containing project details.
+     * @param who The system admin who performs the request.
+     * @return The created Project.
+     */
+    public ProjectProjection createProject(ProjectRequest request, String who){
+
+        var function = ProjectModulator.openAireOptional();
+
+        var eeProject = function.apply(request.id, projectClient);
+
+        if(eeProject.isPresent()){
+
+            throw new ConflictException(String.format("Project with ID [%s] exists in European Database.", request.id));
+        }
+
+        var databaseProject = projectRepository.findByIdOptional(request.id);
+
+        if(databaseProject.isPresent()){
+
+            throw new ConflictException(String.format("Project with ID [%s] has already been registered in Accounting Service.", request.id));
+        }
+
+        var project = new Project();
+        project.setId(request.id);
+        project.setTitle(request.title);
+        project.setAcronym(request.acronym);
+        project.setEndDate(request.endDate);
+        project.setStartDate(request.startDate);
+        project.setCallIdentifier(request.callIdentifier);
+        project.setCreatorId(who);
+
+        projectRepository.persist(project);
+
+        var systemAdmins = clientRepository.getSystemAdmins();
+
+        var projectAdminRole = roleRepository.getRolesByName(Set.of("project_admin"));
+
+        var systemAdminsAccessControls = systemAdmins
+                .stream()
+                .map(Client::getId)
+                .map(id->{
+
+                    var systemAdminAccessControl = new RoleAccessControl();
+                    systemAdminAccessControl.setWho(id);
+                    systemAdminAccessControl.setCreatorId(who);
+                    systemAdminAccessControl.setRoles(projectAdminRole);
+                    return systemAdminAccessControl;
+                }).collect(Collectors.toSet());
+
+        projectRepository.insertListOfRoleAccessControl(project.getId(), systemAdminsAccessControls);
+
+        return projectRepository.fetchById(project.getId());
+    }
+
+    /**
+     * Creates a new Resource.
+     *
+     * @param request The data transfer object containing project details.
+     * @return The created Project.
+     */
+    public ResourceResponse createResource(ResourceRequest request){
+
+        var databaseResource = resourceRepository.findByIdOptional(request.id);
+
+        if(databaseResource.isPresent()){
+
+            throw new ConflictException(String.format("Resource with ID [%s] has already been registered in Accounting Service.", request.id));
+        }
+
+        var resource = ResourceMapper.INSTANCE.dtoToResource(request);
+
+        resourceRepository.persist(resource);
+
+        return ResourceMapper.INSTANCE.resourceToDto(resource);
     }
 }
