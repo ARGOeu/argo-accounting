@@ -16,7 +16,7 @@ import jakarta.ws.rs.core.UriInfo;
 import org.accounting.system.beans.RequestInformation;
 import org.accounting.system.dtos.InformativeResponse;
 import org.accounting.system.dtos.pagination.PageResource;
-import org.accounting.system.dtos.resource.EoscResourceDto;
+import org.accounting.system.dtos.resource.ResourceResponse;
 import org.accounting.system.enums.AccessType;
 import org.accounting.system.services.ResourceService;
 import org.accounting.system.util.AccountingUriInfo;
@@ -61,8 +61,8 @@ public class ResourceEndpoint {
 
     @Tag(name = "Resource")
     @org.eclipse.microprofile.openapi.annotations.Operation(
-            summary = "Returns all the Resources available on Eosc Providers Portal.",
-            description = "Essentially, this operation returns all the Resources available on the Providers Portal. " +
+            summary = "Returns all the Resources available on Accounting Service.",
+            description = "Essentially, this operation returns all the Resources available on the Accounting Service. " +
                     "By default, the first page of 10 Resources will be returned. You can tune the default values by using " +
                     "the query parameters page and size.")
     @APIResponse(
@@ -70,7 +70,7 @@ public class ResourceEndpoint {
             description = "Array of Eosc Resources.",
             content = @Content(schema = @Schema(
                     type = SchemaType.OBJECT,
-                    implementation = PageableEoscResourceDto.class)))
+                    implementation = PageableResourceResponse.class)))
     @APIResponse(
             responseCode = "401",
             description = "Client has not been authenticated.",
@@ -103,20 +103,20 @@ public class ResourceEndpoint {
         var serverInfo = new AccountingUriInfo(serverUrl.concat(basePath).concat(uriInfo.getPath()));
 
         requestInformation.setAccessType(AccessType.ALWAYS);
-        return Response.ok().entity(resourceService.findAllEoscResources(page - 1, size, serverInfo)).build();
+        return Response.ok().entity(resourceService.findAllResources(page - 1, size, serverInfo)).build();
     }
 
-    public static class PageableEoscResourceDto extends PageResource<EoscResourceDto> {
+    public static class PageableResourceResponse extends PageResource<ResourceResponse> {
 
-        private List<EoscResourceDto> content;
+        private List<ResourceResponse> content;
 
         @Override
-        public List<EoscResourceDto> getContent() {
+        public List<ResourceResponse> getContent() {
             return content;
         }
 
         @Override
-        public void setContent(List<EoscResourceDto> content) {
+        public void setContent(List<ResourceResponse> content) {
             this.content = content;
         }
     }
