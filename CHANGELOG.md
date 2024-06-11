@@ -24,6 +24,10 @@ According to [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) , the `Unr
 
 ---
 
+## 1.3.0 - 2024-05-11
+
+---
+
 ### Added
 
 -   [#173](https://github.com/ARGOeu/argo-accounting/pull/173) - ACC-228 Adapt Metric schema to add support for Groups and Users.
