@@ -4,8 +4,8 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import org.eclipse.microprofile.openapi.annotations.enums.SchemaType;
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
 
-@Schema(name="EoscResource", description="An object represents an Eosc Resource.")
-public class EoscResourceDto {
+@Schema(name="ResourceResponse", description="An object represents a Resource.")
+public class ResourceResponse {
 
     @Schema(
             type = SchemaType.STRING,

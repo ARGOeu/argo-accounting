@@ -9,7 +9,9 @@ import org.accounting.system.mappers.ProjectMapper;
 import org.accounting.system.repositories.modulators.AccessibleModulator;
 
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
+import java.util.function.BiFunction;
 
 
 public class ProjectModulator extends AccessibleModulator<Project, String> {
@@ -47,6 +49,20 @@ public class ProjectModulator extends AccessibleModulator<Project, String> {
             }
 
             return ProjectMapper.INSTANCE.openAireResponseToProject(responseFromOpenAire);
+        };
+    }
+
+    public static BiFunction<String, ProjectClient, Optional<String>> openAireOptional() {
+
+        return (id, client) -> {
+            var responseFromOpenAire = client.getById(id, "json");
+
+            if(Objects.isNull(responseFromOpenAire.response.results)){
+                return Optional.empty();
+            } else {
+
+                return Optional.of("Project exists in European database");
+            }
         };
     }
 }

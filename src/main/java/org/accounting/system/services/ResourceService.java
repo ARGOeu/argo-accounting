@@ -1,28 +1,28 @@
 package org.accounting.system.services;
 
-import io.quarkus.panache.common.Page;
 import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.inject.Inject;
 import jakarta.ws.rs.core.UriInfo;
-import org.accounting.system.clients.responses.eoscportal.EOSCResource;
 import org.accounting.system.dtos.pagination.PageResource;
-import org.accounting.system.dtos.resource.EoscResourceDto;
-import org.accounting.system.entities.projections.MongoQuery;
+import org.accounting.system.dtos.resource.ResourceResponse;
 import org.accounting.system.mappers.ResourceMapper;
-
-import java.util.Collections;
+import org.accounting.system.repositories.ResourceRepository;
 
 @ApplicationScoped
 public class ResourceService{
 
+    @Inject
+    ResourceRepository resourceRepository;
+
     /**
-     * Returns the Eosc Resources from the given page.
+     * Returns the Resources from the given page.
      *
      * @param page Indicates the page number.
-     * @param size The number of Eosc Resources to be retrieved.
+     * @param size The number of Resources to be retrieved.
      * @param uriInfo The current uri.
      * @return An object represents the paginated results.
      */
-    public PageResource<EoscResourceDto> findAllEoscResources(int page, int size, UriInfo uriInfo){
+    public PageResource<ResourceResponse> findAllResources(int page, int size, UriInfo uriInfo){
 
 //        var eoscResources = getAllEoscResources();
 //
@@ -30,14 +30,13 @@ public class ResourceService{
 //
 //        var resources = partition.get(page) == null ? new ArrayList<EOSCResource>() : partition.get(page);
 
-        var pageable = new MongoQuery<EOSCResource>();
+        var resources = resourceRepository.findAllPageable(page, size);
 
-        pageable.list = Collections.emptyList();
-        pageable.index = page;
-        pageable.size = size;
-        pageable.count = 0;
-        pageable.page = Page.of(page, size);
+        return new PageResource<>(resources, ResourceMapper.INSTANCE.resourcesToResponse(resources.list()), uriInfo);
+    }
 
-        return new PageResource<>(pageable, ResourceMapper.INSTANCE.eoscResourcesToEoscResourcesDto(pageable.list()), uriInfo);
+    public boolean exist(String id){
+
+       return resourceRepository.findByIdOptional(id).isPresent();
     }
 }

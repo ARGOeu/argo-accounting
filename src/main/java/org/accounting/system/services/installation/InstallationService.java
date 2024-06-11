@@ -4,7 +4,6 @@ import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.ForbiddenException;
 import jakarta.ws.rs.NotFoundException;
-import jakarta.ws.rs.ServerErrorException;
 import jakarta.ws.rs.core.UriInfo;
 import org.accounting.system.dtos.acl.role.RoleAccessControlRequestDto;
 import org.accounting.system.dtos.acl.role.RoleAccessControlResponseDto;
@@ -31,6 +30,7 @@ import org.accounting.system.repositories.authorization.RoleRepository;
 import org.accounting.system.repositories.installation.InstallationRepository;
 import org.accounting.system.repositories.provider.ProviderRepository;
 import org.accounting.system.services.HierarchicalRelationService;
+import org.accounting.system.services.ResourceService;
 import org.accounting.system.services.acl.RoleAccessControlService;
 import org.accounting.system.util.QueryParser;
 import org.apache.commons.lang3.StringUtils;
@@ -61,6 +61,9 @@ public class InstallationService implements RoleAccessControlService {
     @Inject
     QueryParser queryParser;
 
+    @Inject
+    ResourceService resourceService;
+
     /**
      * Maps the {@link InstallationRequestDto} to {@link Installation}.
      * Then the {@link Installation} is stored in the mongo database.
@@ -72,13 +75,9 @@ public class InstallationService implements RoleAccessControlService {
 
         installationRepository.exist(request.project, request.organisation, request.installation);
 
-        if(StringUtils.isNotEmpty(request.resource) ){
-            throw new ServerErrorException("Note: Some functionality is currently not available as the accounting service is yet to be integrated with the Service Catalogue that is not available at the moment in our environment.", 501);
+        if(StringUtils.isNotEmpty(request.resource) && ! resourceService.exist(request.resource)){
+            throw new NotFoundException("There is no Resource with the following id: "+request.resource);
         }
-
-//        if(StringUtils.isNotEmpty(request.resource) && ! resourceService.exist(request.resource)){
-//            throw new NotFoundException("There is no Resource with the following id: "+request.resource);
-//        }
 
         var installation = installationRepository.save(request);
 
@@ -195,13 +194,10 @@ public class InstallationService implements RoleAccessControlService {
             throw new ForbiddenException("Updating an Installation is not allowed if there are Metrics assigned to it.");
         }
 
-        if(StringUtils.isNotEmpty(request.resource) ){
-            throw new ServerErrorException("Note: Some functionality is currently not available as the accounting service is yet to be integrated with the Service Catalogue that is not available at the moment in our environment.", 501);
-        }
+        if(StringUtils.isNotEmpty(request.resource) && ! resourceService.exist(request.resource)){
 
-//        if(StringUtils.isNotEmpty(request.resource) && ! resourceService.exist(request.resource)){
-//            throw new NotFoundException("There is no Resource with the following id: "+request.resource);
-//        }
+            throw new NotFoundException("There is no Resource with the following id: "+request.resource);
+        }
 
         var hierarchicalRelation = hierarchicalRelationRepository.find("externalId", id).firstResult();
 
