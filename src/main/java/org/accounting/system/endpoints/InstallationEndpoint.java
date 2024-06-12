@@ -49,6 +49,8 @@ import org.accounting.system.services.authorization.RoleService;
 import org.accounting.system.services.installation.InstallationService;
 import org.accounting.system.util.AccountingUriInfo;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
+import org.eclipse.microprofile.metrics.MetricUnits;
+import org.eclipse.microprofile.metrics.annotation.Timed;
 import org.eclipse.microprofile.openapi.annotations.Operation;
 import org.eclipse.microprofile.openapi.annotations.enums.SchemaType;
 import org.eclipse.microprofile.openapi.annotations.enums.SecuritySchemeIn;
@@ -766,6 +768,7 @@ public class InstallationEndpoint {
 
     @POST
     @Path("/{installationId}/metrics")
+    @Timed(name = "checksMetricInsertion", description = "A measure of how long it takes to insert a new Metric.", unit = MetricUnits.MILLISECONDS)
     @Produces(value = MediaType.APPLICATION_JSON)
     @Consumes(value = MediaType.APPLICATION_JSON)
     public Response save(
@@ -1005,6 +1008,7 @@ public class InstallationEndpoint {
 
     @GET
     @Path("/{installationId}/metrics")
+    @Timed(name = "checksMetricRetrievalOfInstallation", description = "A measure of how long it takes to retrieve Metrics under an Installation.", unit = MetricUnits.MILLISECONDS)
     @Produces(value = MediaType.APPLICATION_JSON)
     public Response getAllMetricsUnderAnInstallation(
             @Parameter(

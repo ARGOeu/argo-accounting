@@ -193,6 +193,10 @@
       <version>${wiremock.version}</version>
       <scope>test</scope>
     </dependency>
+    <dependency>
+      <groupId>io.quarkus</groupId>
+      <artifactId>quarkus-smallrye-metrics</artifactId>
+    </dependency>
   </dependencies>
   <build>
     <resources>

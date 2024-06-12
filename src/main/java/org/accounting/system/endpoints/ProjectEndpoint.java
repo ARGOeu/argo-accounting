@@ -47,6 +47,8 @@ import org.accounting.system.services.ProviderService;
 import org.accounting.system.services.authorization.RoleService;
 import org.accounting.system.util.AccountingUriInfo;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
+import org.eclipse.microprofile.metrics.MetricUnits;
+import org.eclipse.microprofile.metrics.annotation.Timed;
 import org.eclipse.microprofile.openapi.annotations.Operation;
 import org.eclipse.microprofile.openapi.annotations.enums.SchemaType;
 import org.eclipse.microprofile.openapi.annotations.enums.SecuritySchemeIn;
@@ -136,6 +138,7 @@ public class ProjectEndpoint {
 
     @GET
     @Path("/{projectId}/metrics")
+    @Timed(name = "checksMetricRetrievalOfProject", description = "A measure of how long it takes to retrieve Metrics under a Project.", unit = MetricUnits.MILLISECONDS)
     @Produces(value = MediaType.APPLICATION_JSON)
     public Response getAllMetricsUnderAProject(
             @Parameter(
@@ -251,6 +254,7 @@ public class ProjectEndpoint {
 
     @GET
     @Path("/{projectId}/providers/{providerId}/metrics")
+    @Timed(name = "checksMetricRetrievalOfProvider", description = "A measure of how long it takes to retrieve Metrics under a Provider.", unit = MetricUnits.MILLISECONDS)
     @Produces(value = MediaType.APPLICATION_JSON)
     @AccessProvider(collection = Collection.Metric, operation = READ)
     public Response getAllMetricsUnderAProvider(
