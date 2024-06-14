@@ -3,6 +3,7 @@ package org.accounting.system.mappers;
 import jakarta.enterprise.inject.spi.CDI;
 import org.accounting.system.beans.RequestInformation;
 import org.accounting.system.clients.responses.openaire.OpenAireProject;
+import org.accounting.system.dtos.project.UpdateProjectRequest;
 import org.accounting.system.entities.Project;
 import org.apache.commons.lang3.StringUtils;
 import org.mapstruct.AfterMapping;
@@ -31,6 +32,13 @@ public interface ProjectMapper {
     @Mapping(target = "endDate", expression = "java(Objects.nonNull(project.response.results.result.get(project.response.header.total.value-1).metadata.entity.project.endDate) ? project.response.results.result.get(project.response.header.total.value-1).metadata.entity.project.endDate.value : StringUtils.EMPTY)")
     @Mapping(target = "callIdentifier", expression = "java(Objects.nonNull(project.response.results.result.get(project.response.header.total.value-1).metadata.entity.project.callIdentifier) ? project.response.results.result.get(project.response.header.total.value-1).metadata.entity.project.callIdentifier.value : StringUtils.EMPTY)")
     Project openAireResponseToProject(OpenAireProject project);
+
+    @Mapping(target = "acronym", expression = "java(StringUtils.isNotEmpty(request.acronym) ? request.acronym : project.getAcronym())")
+    @Mapping(target = "title", expression = "java(StringUtils.isNotEmpty(request.title) ? request.title : project.getTitle())")
+    @Mapping(target = "startDate", expression = "java(StringUtils.isNotEmpty(request.startDate) ? request.startDate : project.getStartDate())")
+    @Mapping(target = "endDate", expression = "java(StringUtils.isNotEmpty(request.endDate) ? request.endDate : project.getEndDate())")
+    @Mapping(target = "callIdentifier", expression = "java(StringUtils.isNotEmpty(request.callIdentifier) ? request.callIdentifier : project.getCallIdentifier())")
+    void updateProjectFromDto(UpdateProjectRequest request, @MappingTarget Project project);
 
     @AfterMapping
     default void setCreatorId(OpenAireProject source, @MappingTarget Project project) {
