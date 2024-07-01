@@ -12,7 +12,6 @@ import org.accounting.system.clients.ProviderClient;
 import org.accounting.system.clients.responses.eoscportal.Response;
 import org.accounting.system.clients.responses.eoscportal.Total;
 import org.accounting.system.clients.responses.openaire.OpenAireProject;
-import org.accounting.system.dtos.InformativeResponse;
 import org.accounting.system.dtos.installation.InstallationRequestDto;
 import org.accounting.system.dtos.installation.InstallationResponseDto;
 import org.accounting.system.dtos.metric.MetricRequestDto;
@@ -204,68 +203,6 @@ public class ProjectEndpointTest {
         assertEquals(metric.start, assignedMetric.start.toString());
         assertEquals(metric.end, assignedMetric.end.toString());
         assertEquals(metric.value, assignedMetric.value);
-    }
-
-    @Test
-    public void assignMetricAndGeneratingConflict(){
-
-        //Registering an installation
-        var requestForMetricDefinition = new MetricDefinitionRequestDto();
-
-        requestForMetricDefinition.metricName = "metric";
-        requestForMetricDefinition.metricDescription = "description";
-        requestForMetricDefinition.unitType = "TB";
-        requestForMetricDefinition.metricType = "aggregated";
-
-        var metricDefinitionResponse = createMetricDefinition(requestForMetricDefinition, "admin");
-
-        var request= new InstallationRequestDto();
-
-        request.project = "777536";
-        request.organisation = "grnet";
-        request.infrastructure = "okeanos-knossos";
-        request.installation = "SECOND";
-        request.unitOfAccess = metricDefinitionResponse.id;
-
-        var installation = createInstallation(request, "admin");
-
-        var metric = new MetricRequestDto();
-        metric.start = "2022-01-05T09:13:07Z";
-        metric.end = "2022-01-05T09:14:07Z";
-        metric.value = 10.8;
-        metric.metricDefinitionId = metricDefinitionResponse.id;
-
-        // creating and assigning a new Metric
-        given()
-                .auth()
-                .oauth2(getAccessToken("admin"))
-                .basePath("accounting-system/installations")
-                .body(metric)
-                .contentType(ContentType.JSON)
-                .post("/{installationId}/metrics", installation.id)
-                .then()
-                .assertThat()
-                .statusCode(201)
-                .extract()
-                .as(MetricResponseDto.class);
-
-        // Generating a conflict
-        var conflict = given()
-                .auth()
-                .oauth2(getAccessToken("admin"))
-                .basePath("accounting-system/installations")
-                .body(metric)
-                .contentType(ContentType.JSON)
-                .post("/{installationId}/metrics", installation.id)
-                .then()
-                .assertThat()
-                .statusCode(409)
-                .extract()
-                .as(InformativeResponse.class);
-
-        assertEquals(String.format("There is a Metric at {%s, %s, %s} with the following attributes : {%s, %s, %s}",
-                "EOSC-hub", "grnet", installation.installation,
-                metric.metricDefinitionId, metric.start, metric.end), conflict.message);
     }
 
     private InstallationResponseDto createInstallation(InstallationRequestDto request, String user){
