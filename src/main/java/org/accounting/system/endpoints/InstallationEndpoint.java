@@ -767,7 +767,7 @@ public class InstallationEndpoint {
     @SecurityRequirement(name = "Authentication")
 
     @POST
-    @Path("/{installationId}/metrics")
+    @Path("/{installation_id}/metrics")
     @Timed(name = "checksMetricInsertion", description = "A measure of how long it takes to insert a new Metric.", unit = MetricUnits.MILLISECONDS)
     @Produces(value = MediaType.APPLICATION_JSON)
     @Consumes(value = MediaType.APPLICATION_JSON)
@@ -777,7 +777,7 @@ public class InstallationEndpoint {
                     required = true,
                     example = "507f1f77bcf86cd799439011",
                     schema = @Schema(type = SchemaType.STRING))
-            @PathParam("installationId")
+            @PathParam("installation_id")
             @Valid
             @AccessInstallation(collection = Collection.Metric, operation = CREATE) String installationId,
             @Valid @NotNull(message = "The request body is empty.") MetricRequestDto metricRequestDto, @Context UriInfo uriInfo) {
@@ -820,7 +820,7 @@ public class InstallationEndpoint {
     @SecurityRequirement(name = "Authentication")
 
     @DELETE
-    @Path("/{installationId}/metrics/{id}")
+    @Path("/{installation_id}/metrics/{id}")
     @Produces(value = MediaType.APPLICATION_JSON)
     public Response delete(
             @Parameter(
@@ -828,7 +828,7 @@ public class InstallationEndpoint {
                     required = true,
                     example = "507f1f77bcf86cd799439011",
                     schema = @Schema(type = SchemaType.STRING))
-            @PathParam("installationId")
+            @PathParam("installation_id")
             @Valid
             @AccessInstallation(collection = Collection.Metric, operation = DELETE) String installationId,
             @Parameter(
@@ -897,7 +897,7 @@ public class InstallationEndpoint {
     @SecurityRequirement(name = "Authentication")
 
     @PATCH
-    @Path("/{installationId}/metrics/{id}")
+    @Path("/{installation_id}/metrics/{id}")
     @Produces(value = MediaType.APPLICATION_JSON)
     @Consumes(value = MediaType.APPLICATION_JSON)
     public Response update(
@@ -906,7 +906,7 @@ public class InstallationEndpoint {
                     required = true,
                     example = "507f1f77bcf86cd799439011",
                     schema = @Schema(type = SchemaType.STRING))
-            @PathParam("installationId")
+            @PathParam("installation_id")
             @Valid
             @AccessInstallation(collection = Collection.Metric, operation = UPDATE) String installationId,
             @Parameter(
@@ -951,7 +951,7 @@ public class InstallationEndpoint {
     @SecurityRequirement(name = "Authentication")
 
     @GET
-    @Path("/{installationId}/metrics/{id}")
+    @Path("/{installation_id}/metrics/{id}")
     @Produces(value = MediaType.APPLICATION_JSON)
     public Response getMetric(
             @Parameter(
@@ -959,7 +959,7 @@ public class InstallationEndpoint {
                     required = true,
                     example = "507f1f77bcf86cd799439011",
                     schema = @Schema(type = SchemaType.STRING))
-            @PathParam("installationId")
+            @PathParam("installation_id")
             @Valid
             @AccessInstallation(collection = Collection.Metric, operation = READ) String installationId,
             @Parameter(
@@ -1007,7 +1007,7 @@ public class InstallationEndpoint {
     @SecurityRequirement(name = "Authentication")
 
     @GET
-    @Path("/{installationId}/metrics")
+    @Path("/{installation_id}/metrics")
     @Timed(name = "checksMetricRetrievalOfInstallation", description = "A measure of how long it takes to retrieve Metrics under an Installation.", unit = MetricUnits.MILLISECONDS)
     @Produces(value = MediaType.APPLICATION_JSON)
     public Response getAllMetricsUnderAnInstallation(
@@ -1016,7 +1016,7 @@ public class InstallationEndpoint {
                     required = true,
                     example = "507f1f77bcf86cd799439011",
                     schema = @Schema(type = SchemaType.STRING))
-            @PathParam("installationId") @Valid @AccessInstallation(collection = Collection.Metric, operation = READ) String installationId,
+            @PathParam("installation_id") @Valid @AccessInstallation(collection = Collection.Metric, operation = READ) String installationId,
             @Parameter(name = "page", in = QUERY,
                     description = "Indicates the page number. Page number must be >= 1.") @DefaultValue("1") @Min(value = 1, message = "Page number must be >= 1.") @QueryParam("page") int page,
             @Parameter(name = "size", in = QUERY,
