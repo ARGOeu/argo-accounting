@@ -60,7 +60,7 @@ public class MetricRequestDto {
             type = SchemaType.STRING,
             implementation = String.class,
             description = "Group ID associated with a metric.",
-            example = "group id"
+            example = "group-id"
     )
     @JsonProperty("group_id")
     public String groupId;
@@ -69,7 +69,7 @@ public class MetricRequestDto {
             type = SchemaType.STRING,
             implementation = String.class,
             description = "User ID associated with a metric.",
-            example = "user id"
+            example = "user-id"
     )
     @JsonProperty("user_id")
     public String userId;
