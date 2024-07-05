@@ -243,6 +243,74 @@ public class ProjectEndpoint {
         return Response.ok().entity(response).build();
     }
 
+    @Tag(name = "Metric")
+    @Operation(
+            summary = "Get all metrics under a specific project related to a specific user id.",
+            description = "Retrieves a list of all metrics under the specified project and user id. By default, the first page of 10 Metrics will be returned. " +
+                    "You can tune the default values by using the query parameters page and size.")
+    @APIResponse(
+            responseCode = "200",
+            description = "A list of metrics related to the specified project and user id.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = PageableMetricProjection.class)))
+    @APIResponse(
+            responseCode = "401",
+            description = "Client has not been authenticated.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "403",
+            description = "The authenticated client is not permitted to perform the requested operation.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "404",
+            description = "Not found.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "500",
+            description = "Internal Server Errors.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @SecurityRequirement(name = "Authentication")
+    @GET
+    @Path("/projects/{project_id}/groups/{user_id}/metrics")
+    @Produces(value = MediaType.APPLICATION_JSON)
+    public Response getAllMetricsUnderSpecificProjectRelatedToSpecificUser(
+            @Parameter(
+                    description = "The ID of the project",
+                    required = true,
+                    example = "704029",
+                    schema = @Schema(type = SchemaType.STRING))
+            @PathParam("project_id")
+            @Valid
+            @AccessProject(collection = Collection.Metric, operation = READ) String id,
+            @Parameter(
+                    description = "The ID of the user.",
+                    required = true,
+                    example = "user-id",
+                    schema = @Schema(type = SchemaType.STRING))
+            @PathParam("user_id") String userId,
+            @Parameter(name = "page", in = QUERY,
+                    description = "Indicates the page number. Page number must be >= 1.") @DefaultValue("1") @Min(value = 1, message = "Page number must be >= 1.") @QueryParam("page") int page,
+            @Parameter(name = "size", in = QUERY,
+                    description = "The page size.") @DefaultValue("10") @Min(value = 1, message = "Page size must be between 1 and 100.")
+            @Max(value = 100, message = "Page size must be between 1 and 100.") @QueryParam("size") int size,
+            @Context UriInfo uriInfo) {
+
+        var serverInfo = new AccountingUriInfo(serverUrl.concat(basePath).concat(uriInfo.getPath()));
+
+        var response = metricService.getMetricsByProjectAndUser(id, userId,page - 1, size, serverInfo);
+
+        return Response.ok().entity(response).build();
+    }
+
     @Tag(name = "Project")
     @Operation(
             summary = "Returns Project's Metric Definitions.",
@@ -477,7 +545,7 @@ public class ProjectEndpoint {
             @Parameter(
                     description = "The Project in which the Providers will be associated with.",
                     required = true,
-                    example = "447535",
+                    example = "888743",
                     schema = @Schema(type = SchemaType.STRING))
             @PathParam("id")
             @Valid

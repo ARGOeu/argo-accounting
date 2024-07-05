@@ -827,4 +827,15 @@
         </ext:runCommand>
     </changeSet>
 
+    <changeSet id="23" author="accounting-system">
+        <ext:createIndex collectionName="Metric">
+            <ext:keys>
+                { resource_id: 1, user_id: 1}
+            </ext:keys>
+            <ext:options>
+                {unique: false, name: "project_user_index"}
+            </ext:options>
+        </ext:createIndex>
+    </changeSet>
+
 </databaseChangeLog>
