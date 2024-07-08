@@ -47,6 +47,8 @@ import org.accounting.system.services.ProviderService;
 import org.accounting.system.services.authorization.RoleService;
 import org.accounting.system.util.AccountingUriInfo;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
+import org.eclipse.microprofile.metrics.MetricUnits;
+import org.eclipse.microprofile.metrics.annotation.Timed;
 import org.eclipse.microprofile.openapi.annotations.Operation;
 import org.eclipse.microprofile.openapi.annotations.enums.SchemaType;
 import org.eclipse.microprofile.openapi.annotations.enums.SecuritySchemeIn;
@@ -121,6 +123,12 @@ public class ProjectEndpoint {
                     type = SchemaType.OBJECT,
                     implementation = InformativeResponse.class)))
     @APIResponse(
+            responseCode = "403",
+            description = "The authenticated client is not permitted to perform the requested operation.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
             responseCode = "404",
             description = "Not found.",
             content = @Content(schema = @Schema(
@@ -135,7 +143,8 @@ public class ProjectEndpoint {
     @SecurityRequirement(name = "Authentication")
 
     @GET
-    @Path("/{projectId}/metrics")
+    @Path("/{project_id}/metrics")
+    @Timed(name = "checksMetricRetrievalOfProject", description = "A measure of how long it takes to retrieve Metrics under a Project.", unit = MetricUnits.MILLISECONDS)
     @Produces(value = MediaType.APPLICATION_JSON)
     public Response getAllMetricsUnderAProject(
             @Parameter(
@@ -143,7 +152,7 @@ public class ProjectEndpoint {
                     required = true,
                     example = "704029",
                     schema = @Schema(type = SchemaType.STRING))
-            @PathParam("projectId")
+            @PathParam("project_id")
             @Valid
             @AccessProject(collection = Collection.Metric, operation = READ) String id,
             @Parameter(name = "page", in = QUERY,
@@ -162,6 +171,142 @@ public class ProjectEndpoint {
         var serverInfo = new AccountingUriInfo(serverUrl.concat(basePath).concat(uriInfo.getPath()));
 
         var response = metricService.fetchAllMetrics(id, page - 1, size, serverInfo, start, end, metricDefinitionId);
+
+        return Response.ok().entity(response).build();
+    }
+
+    @Tag(name = "Metric")
+    @Operation(
+            summary = "Get all metrics under a specific project related to a specific group id.",
+            description = "Retrieves a list of all metrics under the specified project and group id. By default, the first page of 10 Metrics will be returned. " +
+                    "You can tune the default values by using the query parameters page and size.")
+    @APIResponse(
+            responseCode = "200",
+            description = "A list of metrics related to the specified project and group id.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = PageableMetricProjection.class)))
+    @APIResponse(
+            responseCode = "401",
+            description = "Client has not been authenticated.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "403",
+            description = "The authenticated client is not permitted to perform the requested operation.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "404",
+            description = "Not found.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "500",
+            description = "Internal Server Errors.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @SecurityRequirement(name = "Authentication")
+    @GET
+    @Path("/projects/{project_id}/groups/{group_id}/metrics")
+    @Produces(value = MediaType.APPLICATION_JSON)
+    public Response getAllMetricsUnderSpecificProjectRelatedToSpecificGroup(
+            @Parameter(
+                    description = "The ID of the project",
+                    required = true,
+                    example = "704029",
+                    schema = @Schema(type = SchemaType.STRING))
+            @PathParam("project_id")
+            @Valid
+            @AccessProject(collection = Collection.Metric, operation = READ) String id,
+            @Parameter(
+                    description = "The ID of the group.",
+                    required = true,
+                    example = "group-id",
+                    schema = @Schema(type = SchemaType.STRING))
+            @PathParam("group_id") String groupId,
+            @Parameter(name = "page", in = QUERY,
+                    description = "Indicates the page number. Page number must be >= 1.") @DefaultValue("1") @Min(value = 1, message = "Page number must be >= 1.") @QueryParam("page") int page,
+            @Parameter(name = "size", in = QUERY,
+                    description = "The page size.") @DefaultValue("10") @Min(value = 1, message = "Page size must be between 1 and 100.")
+            @Max(value = 100, message = "Page size must be between 1 and 100.") @QueryParam("size") int size,
+            @Context UriInfo uriInfo) {
+
+        var serverInfo = new AccountingUriInfo(serverUrl.concat(basePath).concat(uriInfo.getPath()));
+
+        var response = metricService.getMetricsByProjectAndGroup(id, groupId,page - 1, size, serverInfo);
+
+        return Response.ok().entity(response).build();
+    }
+
+    @Tag(name = "Metric")
+    @Operation(
+            summary = "Get all metrics under a specific project related to a specific user id.",
+            description = "Retrieves a list of all metrics under the specified project and user id. By default, the first page of 10 Metrics will be returned. " +
+                    "You can tune the default values by using the query parameters page and size.")
+    @APIResponse(
+            responseCode = "200",
+            description = "A list of metrics related to the specified project and user id.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = PageableMetricProjection.class)))
+    @APIResponse(
+            responseCode = "401",
+            description = "Client has not been authenticated.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "403",
+            description = "The authenticated client is not permitted to perform the requested operation.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "404",
+            description = "Not found.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "500",
+            description = "Internal Server Errors.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @SecurityRequirement(name = "Authentication")
+    @GET
+    @Path("/projects/{project_id}/groups/{user_id}/metrics")
+    @Produces(value = MediaType.APPLICATION_JSON)
+    public Response getAllMetricsUnderSpecificProjectRelatedToSpecificUser(
+            @Parameter(
+                    description = "The ID of the project",
+                    required = true,
+                    example = "704029",
+                    schema = @Schema(type = SchemaType.STRING))
+            @PathParam("project_id")
+            @Valid
+            @AccessProject(collection = Collection.Metric, operation = READ) String id,
+            @Parameter(
+                    description = "The ID of the user.",
+                    required = true,
+                    example = "user-id",
+                    schema = @Schema(type = SchemaType.STRING))
+            @PathParam("user_id") String userId,
+            @Parameter(name = "page", in = QUERY,
+                    description = "Indicates the page number. Page number must be >= 1.") @DefaultValue("1") @Min(value = 1, message = "Page number must be >= 1.") @QueryParam("page") int page,
+            @Parameter(name = "size", in = QUERY,
+                    description = "The page size.") @DefaultValue("10") @Min(value = 1, message = "Page size must be between 1 and 100.")
+            @Max(value = 100, message = "Page size must be between 1 and 100.") @QueryParam("size") int size,
+            @Context UriInfo uriInfo) {
+
+        var serverInfo = new AccountingUriInfo(serverUrl.concat(basePath).concat(uriInfo.getPath()));
+
+        var response = metricService.getMetricsByProjectAndUser(id, userId,page - 1, size, serverInfo);
 
         return Response.ok().entity(response).build();
     }
@@ -250,7 +395,8 @@ public class ProjectEndpoint {
     @SecurityRequirement(name = "Authentication")
 
     @GET
-    @Path("/{projectId}/providers/{providerId}/metrics")
+    @Path("/{project_id}/providers/{provider_id}/metrics")
+    @Timed(name = "checksMetricRetrievalOfProvider", description = "A measure of how long it takes to retrieve Metrics under a Provider.", unit = MetricUnits.MILLISECONDS)
     @Produces(value = MediaType.APPLICATION_JSON)
     @AccessProvider(collection = Collection.Metric, operation = READ)
     public Response getAllMetricsUnderAProvider(
@@ -259,13 +405,13 @@ public class ProjectEndpoint {
                     required = true,
                     example = "704029",
                     schema = @Schema(type = SchemaType.STRING))
-            @PathParam("projectId") String projectId,
+            @PathParam("project_id") String projectId,
             @Parameter(
                     description = "Τhe Provider id with which you can request all the Metrics that have been assigned to it.",
                     required = true,
                     example = "grnet",
                     schema = @Schema(type = SchemaType.STRING))
-            @PathParam("providerId") String providerId,
+            @PathParam("provider_id") String providerId,
             @Parameter(name = "page", in = QUERY,
                     description = "Indicates the page number. Page number must be >= 1.") @DefaultValue("1") @Min(value = 1, message = "Page number must be >= 1.") @QueryParam("page") int page,
             @Parameter(name = "size", in = QUERY,
@@ -399,7 +545,7 @@ public class ProjectEndpoint {
             @Parameter(
                     description = "The Project in which the Providers will be associated with.",
                     required = true,
-                    example = "447535",
+                    example = "888743",
                     schema = @Schema(type = SchemaType.STRING))
             @PathParam("id")
             @Valid

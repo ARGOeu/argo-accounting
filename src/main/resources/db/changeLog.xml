@@ -804,4 +804,38 @@
             </ext:documents>
         </ext:insertMany>
     </changeSet>
+
+    <changeSet id="21" author="accounting-system">
+        <ext:createIndex collectionName="Metric">
+            <ext:keys>
+                { resource_id: 1, group_id: 1}
+            </ext:keys>
+            <ext:options>
+                {unique: false, name: "project_group_index"}
+            </ext:options>
+        </ext:createIndex>
+    </changeSet>
+
+    <changeSet id="22" author="accounting-system">
+        <ext:runCommand>
+            <ext:command>
+                {
+                dropIndexes: "Metric",
+                index: "unique_metric_entry"
+                }
+            </ext:command>
+        </ext:runCommand>
+    </changeSet>
+
+    <changeSet id="23" author="accounting-system">
+        <ext:createIndex collectionName="Metric">
+            <ext:keys>
+                { resource_id: 1, user_id: 1}
+            </ext:keys>
+            <ext:options>
+                {unique: false, name: "project_user_index"}
+            </ext:options>
+        </ext:createIndex>
+    </changeSet>
+
 </databaseChangeLog>

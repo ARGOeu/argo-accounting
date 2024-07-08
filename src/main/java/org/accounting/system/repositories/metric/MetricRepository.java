@@ -168,6 +168,68 @@ public class MetricRepository extends AccessibleModulator<Metric, ObjectId> {
         return projectionQuery;
     }
 
+    public PanacheQuery<MetricProjection> findByProjectIdAndGroupId(final String externalId, final String groupId, int page, int size) {
+
+        var filters = Array.of(Filters.regex("resource_id", "\\b" + externalId + "\\b"+"(?![-])"));
+
+        var addField = new Document("$addFields", new Document("metric_definition_id", new Document("$toObjectId", "$metric_definition_id")));
+
+        Bson lookup = Aggregates.lookup("MetricDefinition", "metric_definition_id", "_id", "metric_definition");
+
+        filters = filters.append(Filters.eq("group_id", groupId));
+
+        Bson regex = Aggregates.match(Filters.and(filters));
+
+        List<MetricProjection> projections = getMongoCollection()
+                .aggregate(List
+                        .of(regex, addField, Aggregates.skip(size * (page)), Aggregates.limit(size), lookup), MetricProjection.class).into(new ArrayList<>());
+
+        Document count = getMongoCollection()
+                .aggregate(List
+                        .of(regex, addField, Aggregates.count())).first();
+
+        var projectionQuery = new MongoQuery<MetricProjection>();
+
+        projectionQuery.list = projections;
+        projectionQuery.index = page;
+        projectionQuery.size = size;
+        projectionQuery.count = count == null ? 0L : Long.parseLong(count.get("count").toString());
+        projectionQuery.page = Page.of(page, size);
+
+        return projectionQuery;
+    }
+
+    public PanacheQuery<MetricProjection> findByProjectIdAndUserId(final String externalId, final String userId, int page, int size) {
+
+        var filters = Array.of(Filters.regex("resource_id", "\\b" + externalId + "\\b"+"(?![-])"));
+
+        var addField = new Document("$addFields", new Document("metric_definition_id", new Document("$toObjectId", "$metric_definition_id")));
+
+        Bson lookup = Aggregates.lookup("MetricDefinition", "metric_definition_id", "_id", "metric_definition");
+
+        filters = filters.append(Filters.eq("user_id", userId));
+
+        Bson regex = Aggregates.match(Filters.and(filters));
+
+        List<MetricProjection> projections = getMongoCollection()
+                .aggregate(List
+                        .of(regex, addField, Aggregates.skip(size * (page)), Aggregates.limit(size), lookup), MetricProjection.class).into(new ArrayList<>());
+
+        Document count = getMongoCollection()
+                .aggregate(List
+                        .of(regex, addField, Aggregates.count())).first();
+
+        var projectionQuery = new MongoQuery<MetricProjection>();
+
+        projectionQuery.list = projections;
+        projectionQuery.index = page;
+        projectionQuery.size = size;
+        projectionQuery.count = count == null ? 0L : Long.parseLong(count.get("count").toString());
+        projectionQuery.page = Page.of(page, size);
+
+        return projectionQuery;
+    }
+
     public Optional<Metric> findFirstByInstallationId(String installationId){
         return find("installation_id", installationId).firstResultOptional();
     }

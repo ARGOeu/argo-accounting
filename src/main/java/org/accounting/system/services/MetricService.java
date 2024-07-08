@@ -168,4 +168,32 @@ public class MetricService {
 
         return new PageResource<>(projection, projection.list(), uriInfo);
     }
+
+    /**
+     * Retrieves all metrics under a specific project related to a specific group id.
+     *
+     * @param projectId The ID of the project.
+     * @param groupId The ID of the group.
+     * @return A list of metrics related to the specified project and group.
+     */
+    public PageResource<MetricProjection> getMetricsByProjectAndGroup(String projectId, String groupId, int page, int size, UriInfo uriInfo){
+
+        var projection = metricRepository.findByProjectIdAndGroupId(projectId, groupId, page, size);
+
+        return new PageResource<>(projection, projection.list(), uriInfo);
+    }
+
+    /**
+     * Retrieves all metrics under a specific project related to a specific user id.
+     *
+     * @param projectId The ID of the project.
+     * @param userId The ID of the group.
+     * @return A list of metrics related to the specified project and user.
+     */
+    public PageResource<MetricProjection> getMetricsByProjectAndUser(String projectId, String userId, int page, int size, UriInfo uriInfo){
+
+        var projection = metricRepository.findByProjectIdAndUserId(projectId, userId, page, size);
+
+        return new PageResource<>(projection, projection.list(), uriInfo);
+    }
 }
