@@ -24,6 +24,17 @@ According to [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) , the `Unr
 
 ---
 
+## 1.4.0 - 2024-07-08
+
+---
+
+### Added
+
+-   [#178](https://github.com/ARGOeu/argo-accounting/pull/178) - ACC-237 Add API call to modify Project.
+-   [#179](https://github.com/ARGOeu/argo-accounting/pull/179) - ACC-239 Create a new API call that returns all metrics under a specific group id.
+-   [#180](https://github.com/ARGOeu/argo-accounting/pull/180) - ACC-242 New API call that returns all metrics under a specific user id.
+
+
 ## 1.3.0 - 2024-05-11
 
 ---
