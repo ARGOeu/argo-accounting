@@ -7,7 +7,7 @@ import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.NotFoundException;
 import jakarta.ws.rs.core.UriInfo;
-import org.accounting.system.beans.RequestInformation;
+import org.accounting.system.beans.RequestUserContext;
 import org.accounting.system.dtos.authorization.CollectionAccessPermissionDto;
 import org.accounting.system.dtos.authorization.request.RoleRequestDto;
 import org.accounting.system.dtos.authorization.response.RoleResponseDto;
@@ -40,7 +40,7 @@ public class RoleService {
     RoleRepository roleRepository;
 
     @Inject
-    RequestInformation requestInformation;
+    RequestUserContext requestInformation;
 
     /**
      * Maps the {@link RoleRequestDto} to {@link Role}.

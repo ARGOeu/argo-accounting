@@ -1,7 +1,7 @@
 package org.accounting.system.mappers;
 
 import jakarta.enterprise.inject.spi.CDI;
-import org.accounting.system.beans.RequestInformation;
+import org.accounting.system.beans.RequestUserContext;
 import org.accounting.system.dtos.metric.MetricRequestDto;
 import org.accounting.system.dtos.metric.MetricResponseDto;
 import org.accounting.system.dtos.metric.UpdateMetricRequestDto;
@@ -51,7 +51,7 @@ public interface MetricMapper {
 
     @AfterMapping
     default void setCreatorId(MetricRequestDto source, @MappingTarget Metric metric) {
-        RequestInformation requestInformation = CDI.current().select(RequestInformation.class).get();
-        metric.setCreatorId(requestInformation.getSubjectOfToken());
+        var requestInformation = CDI.current().select(RequestUserContext.class).get();
+        metric.setCreatorId(requestInformation.getId());
     }
 }

@@ -97,7 +97,7 @@ public abstract class AccessibleModulator<E extends Entity, I> extends AccessMod
             case ALWAYS:
                 return findAll().list();
             case ENTITY:
-                return list("creatorId = ?1", getRequestInformation().getSubjectOfToken());
+                return list("creatorId = ?1", getRequestInformation().getId());
             default:
                 throw new ForbiddenException(ApiMessage.NO_PERMISSION.message);
         }
@@ -109,7 +109,7 @@ public abstract class AccessibleModulator<E extends Entity, I> extends AccessMod
             case ALWAYS:
                 return findAll().page(Page.of(page, size));
             case ENTITY:
-                return find("creatorId = ?1", getRequestInformation().getSubjectOfToken()).page(Page.of(page, size));
+                return find("creatorId = ?1", getRequestInformation().getId()).page(Page.of(page, size));
             default:
                 throw new ForbiddenException(ApiMessage.NO_PERMISSION.message);
         }

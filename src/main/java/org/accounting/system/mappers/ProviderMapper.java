@@ -1,7 +1,7 @@
 package org.accounting.system.mappers;
 
 import jakarta.enterprise.inject.spi.CDI;
-import org.accounting.system.beans.RequestInformation;
+import org.accounting.system.beans.RequestUserContext;
 import org.accounting.system.clients.responses.eoscportal.EOSCProvider;
 import org.accounting.system.dtos.provider.ProviderRequestDto;
 import org.accounting.system.dtos.provider.ProviderResponseDto;
@@ -49,7 +49,7 @@ public interface ProviderMapper {
 
     @AfterMapping
     default void setCreatorId(ProviderRequestDto source, @MappingTarget Provider provider) {
-        RequestInformation requestInformation = CDI.current().select(RequestInformation.class).get();
-        provider.setCreatorId(requestInformation.getSubjectOfToken());
+        var requestInformation = CDI.current().select(RequestUserContext.class).get();
+        provider.setCreatorId(requestInformation.getId());
     }
 }

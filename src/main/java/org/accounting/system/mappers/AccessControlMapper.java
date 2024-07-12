@@ -1,7 +1,7 @@
 package org.accounting.system.mappers;
 
 import jakarta.enterprise.inject.spi.CDI;
-import org.accounting.system.beans.RequestInformation;
+import org.accounting.system.beans.RequestUserContext;
 import org.accounting.system.dtos.acl.role.RoleAccessControlRequestDto;
 import org.accounting.system.dtos.acl.role.RoleAccessControlResponseDto;
 import org.accounting.system.entities.acl.RoleAccessControl;
@@ -30,7 +30,7 @@ public interface AccessControlMapper {
 
     @AfterMapping
     default void setCreatorId(RoleAccessControlRequestDto source, @MappingTarget RoleAccessControl accessControl) {
-        RequestInformation requestInformation = CDI.current().select(RequestInformation.class).get();
-        accessControl.setCreatorId(requestInformation.getSubjectOfToken());
+        var requestInformation = CDI.current().select(RequestUserContext.class).get();
+        accessControl.setCreatorId(requestInformation.getId());
     }
 }

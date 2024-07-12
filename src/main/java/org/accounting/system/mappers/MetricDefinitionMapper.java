@@ -2,7 +2,7 @@ package org.accounting.system.mappers;
 
 
 import jakarta.enterprise.inject.spi.CDI;
-import org.accounting.system.beans.RequestInformation;
+import org.accounting.system.beans.RequestUserContext;
 import org.accounting.system.dtos.metricdefinition.MetricDefinitionRequestDto;
 import org.accounting.system.dtos.metricdefinition.MetricDefinitionResponseDto;
 import org.accounting.system.dtos.metricdefinition.UpdateMetricDefinitionRequestDto;
@@ -43,7 +43,7 @@ public interface MetricDefinitionMapper {
 
     @AfterMapping
     default void setCreatorId(MetricDefinitionRequestDto source, @MappingTarget MetricDefinition metricDefinition) {
-        RequestInformation requestInformation = CDI.current().select(RequestInformation.class).get();
-        metricDefinition.setCreatorId(requestInformation.getSubjectOfToken());
+        var requestInformation = CDI.current().select(RequestUserContext.class).get();
+        metricDefinition.setCreatorId(requestInformation.getId());
     }
 }

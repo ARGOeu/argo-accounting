@@ -8,10 +8,10 @@ import com.mongodb.client.model.UnwindOptions;
 import com.mongodb.client.model.UpdateOptions;
 import com.mongodb.client.model.Updates;
 import io.quarkus.mongodb.panache.PanacheQuery;
-import io.quarkus.oidc.TokenIntrospection;
 import io.quarkus.panache.common.Page;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
+import org.accounting.system.beans.RequestUserContext;
 import org.accounting.system.dtos.installation.InstallationRequestDto;
 import org.accounting.system.entities.HierarchicalRelation;
 import org.accounting.system.entities.MetricDefinition;
@@ -32,7 +32,6 @@ import org.accounting.system.repositories.project.ProjectRepository;
 import org.bson.Document;
 import org.bson.conversions.Bson;
 import org.bson.types.ObjectId;
-import org.eclipse.microprofile.config.inject.ConfigProperty;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -58,13 +57,10 @@ public class InstallationRepository {
     MetricRepository metricRepository;
 
     @Inject
-    TokenIntrospection tokenIntrospection;
+    RequestUserContext requestUserContext;
 
     @Inject
     HierarchicalRelationRepository hierarchicalRelationRepository;
-
-    @ConfigProperty(name = "key.to.retrieve.id.from.access.token")
-    String key;
 
     public void exist(String projectID, String providerID, String installationID){
 
@@ -358,7 +354,7 @@ public class InstallationRepository {
 
     public boolean accessibility(String project, String provider, String installation, Collection collection, Operation operation){
 
-        var roleAccessControls = fetchRoleAccessControl(project, provider, installation, tokenIntrospection.getJsonObject().getString(key));
+        var roleAccessControls = fetchRoleAccessControl(project, provider, installation, requestUserContext.getId());
 
         List<AccessType> accessTypeList = roleAccessControls
                 .stream()
@@ -380,17 +376,17 @@ public class InstallationRepository {
     public PanacheQuery<InstallationProjection> fetchAllInstallations(int page, int size) {
 
         var eqAccessControl =Aggregates.match(Filters.or(
-                Filters.and(Filters.eq("roleAccessControls.who", tokenIntrospection.getJsonObject().getString(key)),
+                Filters.and(Filters.eq("roleAccessControls.who", requestUserContext.getId()),
                         Filters.eq("roleAccessControls.roles.collections_access_permissions.collection", Collection.Installation.name()),
                         Filters.eq("roleAccessControls.roles.collections_access_permissions.access_permissions.operation", Operation.READ.name()),
                         Filters.eq("roleAccessControls.roles.collections_access_permissions.access_permissions.access_type", AccessType.ALWAYS.name())),
 
-                Filters.and(Filters.eq("providers.roleAccessControls.who", tokenIntrospection.getJsonObject().getString(key)),
+                Filters.and(Filters.eq("providers.roleAccessControls.who", requestUserContext.getId()),
                         Filters.eq("providers.roleAccessControls.roles.collections_access_permissions.collection", Collection.Installation.name()),
                         Filters.eq("providers.roleAccessControls.roles.collections_access_permissions.access_permissions.operation", Operation.READ.name()),
                         Filters.eq("providers.roleAccessControls.roles.collections_access_permissions.access_permissions.access_type", AccessType.ALWAYS.name())),
 
-                Filters.and(Filters.eq("providers.installations.roleAccessControls.who", tokenIntrospection.getJsonObject().getString(key)),
+                Filters.and(Filters.eq("providers.installations.roleAccessControls.who", requestUserContext.getId()),
                         Filters.eq("providers.installations.roleAccessControls.roles.collections_access_permissions.collection", Collection.Installation.name()),
                         Filters.eq("providers.installations.roleAccessControls.roles.collections_access_permissions.access_permissions.operation", Operation.READ.name()),
                         Filters.eq("providers.installations.roleAccessControls.roles.collections_access_permissions.access_permissions.access_type", AccessType.ALWAYS.name()))));
@@ -428,17 +424,17 @@ public class InstallationRepository {
     public List<String> fetchAllInstallationIds() {
 
         var eqAccessControl =Aggregates.match(Filters.or(
-                Filters.and(Filters.eq("roleAccessControls.who", tokenIntrospection.getJsonObject().getString(key)),
+                Filters.and(Filters.eq("roleAccessControls.who", requestUserContext.getId()),
                         Filters.eq("roleAccessControls.roles.collections_access_permissions.collection", Collection.Installation.name()),
                         Filters.eq("roleAccessControls.roles.collections_access_permissions.access_permissions.operation", Operation.READ.name()),
                         Filters.eq("roleAccessControls.roles.collections_access_permissions.access_permissions.access_type", AccessType.ALWAYS.name())),
 
-                Filters.and(Filters.eq("providers.roleAccessControls.who", tokenIntrospection.getJsonObject().getString(key)),
+                Filters.and(Filters.eq("providers.roleAccessControls.who", requestUserContext.getId()),
                         Filters.eq("providers.roleAccessControls.roles.collections_access_permissions.collection", Collection.Installation.name()),
                         Filters.eq("providers.roleAccessControls.roles.collections_access_permissions.access_permissions.operation", Operation.READ.name()),
                         Filters.eq("providers.roleAccessControls.roles.collections_access_permissions.access_permissions.access_type", AccessType.ALWAYS.name())),
 
-                Filters.and(Filters.eq("providers.installations.roleAccessControls.who", tokenIntrospection.getJsonObject().getString(key)),
+                Filters.and(Filters.eq("providers.installations.roleAccessControls.who", requestUserContext.getId()),
                         Filters.eq("providers.installations.roleAccessControls.roles.collections_access_permissions.collection", Collection.Installation.name()),
                         Filters.eq("providers.installations.roleAccessControls.roles.collections_access_permissions.access_permissions.operation", Operation.READ.name()),
                         Filters.eq("providers.installations.roleAccessControls.roles.collections_access_permissions.access_permissions.access_type", AccessType.ALWAYS.name()))));
@@ -472,17 +468,17 @@ public class InstallationRepository {
     public PanacheQuery<InstallationProjection> searchInstallations(Bson searchDoc, int page, int size) {
 
         var eqAccessControl =Aggregates.match(Filters.or(
-                Filters.and(Filters.eq("roleAccessControls.who", tokenIntrospection.getJsonObject().getString(key)),
+                Filters.and(Filters.eq("roleAccessControls.who", requestUserContext.getId()),
                         Filters.eq("roleAccessControls.roles.collections_access_permissions.collection", Collection.Installation.name()),
                         Filters.eq("roleAccessControls.roles.collections_access_permissions.access_permissions.operation", Operation.READ.name()),
                         Filters.eq("roleAccessControls.roles.collections_access_permissions.access_permissions.access_type", AccessType.ALWAYS.name())),
 
-                Filters.and(Filters.eq("providers.roleAccessControls.who", tokenIntrospection.getJsonObject().getString(key)),
+                Filters.and(Filters.eq("providers.roleAccessControls.who", requestUserContext.getId()),
                         Filters.eq("providers.roleAccessControls.roles.collections_access_permissions.collection", Collection.Installation.name()),
                         Filters.eq("providers.roleAccessControls.roles.collections_access_permissions.access_permissions.operation", Operation.READ.name()),
                         Filters.eq("providers.roleAccessControls.roles.collections_access_permissions.access_permissions.access_type", AccessType.ALWAYS.name())),
 
-                Filters.and(Filters.eq("providers.installations.roleAccessControls.who", tokenIntrospection.getJsonObject().getString(key)),
+                Filters.and(Filters.eq("providers.installations.roleAccessControls.who", requestUserContext.getId()),
                         Filters.eq("providers.installations.roleAccessControls.roles.collections_access_permissions.collection", Collection.Installation.name()),
                         Filters.eq("providers.installations.roleAccessControls.roles.collections_access_permissions.access_permissions.operation", Operation.READ.name()),
                         Filters.eq("providers.installations.roleAccessControls.roles.collections_access_permissions.access_permissions.access_type", AccessType.ALWAYS.name()))));

@@ -13,7 +13,7 @@ import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.UriInfo;
-import org.accounting.system.beans.RequestInformation;
+import org.accounting.system.beans.RequestUserContext;
 import org.accounting.system.dtos.InformativeResponse;
 import org.accounting.system.dtos.pagination.PageResource;
 import org.accounting.system.dtos.resource.ResourceResponse;
@@ -50,7 +50,7 @@ public class ResourceEndpoint {
     ResourceService resourceService;
 
     @Inject
-    RequestInformation requestInformation;
+    RequestUserContext requestInformation;
 
     @ConfigProperty(name = "quarkus.resteasy-reactive.path")
     String basePath;

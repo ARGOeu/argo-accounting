@@ -4,9 +4,7 @@ import io.quarkus.test.InjectMock;
 import io.quarkus.test.common.http.TestHTTPEndpoint;
 import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.test.junit.TestProfile;
-import io.quarkus.test.keycloak.client.KeycloakTestClient;
 import io.restassured.http.ContentType;
-import jakarta.inject.Inject;
 import org.accounting.system.dtos.InformativeResponse;
 import org.accounting.system.dtos.metricdefinition.MetricDefinitionRequestDto;
 import org.accounting.system.dtos.metricdefinition.MetricDefinitionResponseDto;
@@ -15,20 +13,11 @@ import org.accounting.system.dtos.pagination.PageResource;
 import org.accounting.system.endpoints.MetricDefinitionEndpoint;
 import org.accounting.system.entities.MetricDefinition;
 import org.accounting.system.mappers.MetricDefinitionMapper;
-import org.accounting.system.repositories.client.ClientAccessAlwaysRepository;
-import org.accounting.system.repositories.metricdefinition.MetricDefinitionRepository;
 import org.accounting.system.services.MetricService;
-import org.accounting.system.services.client.ClientService;
-import org.accounting.system.util.Utility;
 import org.bson.types.ObjectId;
-import org.json.simple.parser.ParseException;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 import org.mockito.Mockito;
-
-import java.util.Set;
 
 import static io.restassured.RestAssured.given;
 import static org.hamcrest.Matchers.is;
@@ -39,38 +28,10 @@ import static org.mockito.ArgumentMatchers.any;
 @TestProfile(AccountingSystemTestProfile.class)
 @TestHTTPEndpoint(MetricDefinitionEndpoint.class)
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
-public class MetricDefinitionEndpointTest {
-
-    @Inject
-    MetricDefinitionRepository metricDefinitionRepository;
-
-    @Inject
-    Utility utility;
+public class MetricDefinitionEndpointTest extends PrepareTest{
 
     @InjectMock
     MetricService metricService;
-
-    @Inject
-    ClientService clientService;
-
-    @Inject
-    ClientAccessAlwaysRepository clientAccessAlwaysRepository;
-
-
-    KeycloakTestClient keycloakClient = new KeycloakTestClient();
-
-    @BeforeAll
-    public void setup() throws ParseException {
-
-        clientService.register(utility.getIdFromToken(keycloakClient.getAccessToken("admin").split("\\.")[1]), "admin", "admin@email.com");
-
-        clientAccessAlwaysRepository.assignRolesToRegisteredClient(utility.getIdFromToken(keycloakClient.getAccessToken("admin").split("\\.")[1]), Set.of("collection_owner"));
-    }
-
-    @BeforeEach
-    public void each(){
-        metricDefinitionRepository.deleteAll();
-    }
 
     @Test
     public void createMetricDefinitionNotAuthenticated() {
@@ -830,9 +791,5 @@ public class MetricDefinitionEndpointTest {
                 .statusCode(201)
                 .extract()
                 .as(MetricDefinitionResponseDto.class);
-    }
-
-    protected String getAccessToken(String userName) {
-        return keycloakClient.getAccessToken(userName);
     }
 }

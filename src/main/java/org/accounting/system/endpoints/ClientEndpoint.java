@@ -1,6 +1,5 @@
 package org.accounting.system.endpoints;
 
-import io.quarkus.oidc.TokenIntrospection;
 import io.quarkus.oidc.UserInfo;
 import io.quarkus.security.Authenticated;
 import jakarta.inject.Inject;
@@ -20,6 +19,7 @@ import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.UriInfo;
+import org.accounting.system.beans.RequestUserContext;
 import org.accounting.system.constraints.NotFoundEntity;
 import org.accounting.system.dtos.InformativeResponse;
 import org.accounting.system.dtos.authorization.CollectionAccessPermissionDto;
@@ -68,16 +68,10 @@ public class ClientEndpoint {
     ClientService clientService;
 
     @Inject
-    TokenIntrospection tokenIntrospection;
-
-    @Inject
     UserInfo userInfo;
 
     @Inject
     ProjectService projectService;
-
-    @ConfigProperty(name = "key.to.retrieve.id.from.access.token")
-    String key;
 
     @ConfigProperty(name = "quarkus.resteasy-reactive.path")
     String basePath;
@@ -85,6 +79,8 @@ public class ClientEndpoint {
     @ConfigProperty(name = "api.server.url")
     String serverUrl;
 
+    @Inject
+    RequestUserContext requestUserContext;
 
     @Tag(name = "Client")
     @org.eclipse.microprofile.openapi.annotations.Operation(
@@ -128,7 +124,7 @@ public class ClientEndpoint {
             email = Objects.isNull(userInfo.getJsonObject().get("email")) ? "": userInfo.getJsonObject().getString("email");
         }
 
-        var response = clientService.register(tokenIntrospection.getJsonObject().getString(key), name, email);
+        var response = clientService.register(requestUserContext.getId(), name, email);
 
         return Response.ok().entity(response).build();
     }

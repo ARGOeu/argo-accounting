@@ -1,7 +1,7 @@
 package org.accounting.system.mappers;
 
 import jakarta.enterprise.inject.spi.CDI;
-import org.accounting.system.beans.RequestInformation;
+import org.accounting.system.beans.RequestUserContext;
 import org.accounting.system.clients.responses.openaire.OpenAireProject;
 import org.accounting.system.dtos.project.UpdateProjectRequest;
 import org.accounting.system.entities.Project;
@@ -42,7 +42,8 @@ public interface ProjectMapper {
 
     @AfterMapping
     default void setCreatorId(OpenAireProject source, @MappingTarget Project project) {
-        RequestInformation requestInformation = CDI.current().select(RequestInformation.class).get();
-        project.setCreatorId(requestInformation.getSubjectOfToken());
+
+        var requestInformation = CDI.current().select(RequestUserContext.class).get();
+        project.setCreatorId(requestInformation.getId());
     }
 }
