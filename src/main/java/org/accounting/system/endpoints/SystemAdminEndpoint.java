@@ -14,6 +14,7 @@ import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.UriInfo;
+import org.accounting.system.beans.RequestUserContext;
 import org.accounting.system.constraints.NotFoundEntity;
 import org.accounting.system.dtos.InformativeResponse;
 import org.accounting.system.dtos.admin.ProjectRegistrationRequest;
@@ -26,7 +27,6 @@ import org.accounting.system.interceptors.annotations.SystemAdmin;
 import org.accounting.system.repositories.project.ProjectRepository;
 import org.accounting.system.services.SystemAdminService;
 import org.accounting.system.util.AccountingUriInfo;
-import org.accounting.system.util.Utility;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.eclipse.microprofile.openapi.annotations.Operation;
 import org.eclipse.microprofile.openapi.annotations.enums.SchemaType;
@@ -54,14 +54,14 @@ public class SystemAdminEndpoint {
     @Inject
     SystemAdminService systemAdminService;
 
-    @Inject
-    Utility utility;
-
     @ConfigProperty(name = "quarkus.resteasy-reactive.path")
     String basePath;
 
     @ConfigProperty(name = "api.server.url")
     String serverUrl;
+
+    @Inject
+    RequestUserContext requestUserContext;
 
 
     @Tag(name = "System Administrator")
@@ -107,7 +107,7 @@ public class SystemAdminEndpoint {
     @SystemAdmin
     public Response assignProjects(@Valid @NotNull(message = "The request body is empty." ) ProjectRegistrationRequest request) {
 
-        var response = systemAdminService.registerProjectsToAccountingService(request.projects, utility.getClientVopersonId());
+        var response = systemAdminService.registerProjectsToAccountingService(request.projects, requestUserContext.getId());
 
         return Response.ok().entity(response).build();
     }
@@ -163,7 +163,7 @@ public class SystemAdminEndpoint {
 
         var serverInfo = new AccountingUriInfo(serverUrl.concat(basePath).concat(uriInfo.getPath()));
 
-        var response = systemAdminService.createProject(request, utility.getClientVopersonId());
+        var response = systemAdminService.createProject(request, requestUserContext.getId());
 
         return Response.created(serverInfo.getAbsolutePathBuilder().path(response.id).build()).entity(response).build();
     }

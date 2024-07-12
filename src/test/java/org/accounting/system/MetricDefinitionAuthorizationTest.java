@@ -2,27 +2,16 @@ package org.accounting.system;
 
 import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.test.junit.TestProfile;
-import io.quarkus.test.keycloak.client.KeycloakTestClient;
 import io.restassured.http.ContentType;
 import io.restassured.response.Response;
-import jakarta.inject.Inject;
 import org.accounting.system.dtos.InformativeResponse;
 import org.accounting.system.dtos.metricdefinition.MetricDefinitionRequestDto;
 import org.accounting.system.dtos.metricdefinition.MetricDefinitionResponseDto;
 import org.accounting.system.dtos.metricdefinition.UpdateMetricDefinitionRequestDto;
 import org.accounting.system.dtos.pagination.PageResource;
 import org.accounting.system.enums.ApiMessage;
-import org.accounting.system.repositories.client.ClientAccessAlwaysRepository;
-import org.accounting.system.repositories.metricdefinition.MetricDefinitionRepository;
-import org.accounting.system.services.client.ClientService;
-import org.accounting.system.util.Utility;
-import org.json.simple.parser.ParseException;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
-
-import java.util.Set;
 
 import static io.restassured.RestAssured.given;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -31,40 +20,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 @QuarkusTest
 @TestProfile(AccountingSystemTestProfile.class)
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
-public class MetricDefinitionAuthorizationTest {
-
-    @Inject
-    MetricDefinitionRepository metricDefinitionRepository;
-
-    @Inject
-    Utility utility;
-
-    @Inject
-    ClientService clientService;
-
-    @Inject
-    ClientAccessAlwaysRepository clientAccessAlwaysRepository;
-
-
-    KeycloakTestClient keycloakClient = new KeycloakTestClient();
-
-    @BeforeAll
-    public void setup() throws ParseException {
-
-        clientService.register(utility.getIdFromToken(keycloakClient.getAccessToken("admin").split("\\.")[1]), "admin", "admin@email.com");
-
-        clientAccessAlwaysRepository.assignRolesToRegisteredClient(utility.getIdFromToken(keycloakClient.getAccessToken("admin").split("\\.")[1]), Set.of("collection_owner"));
-
-        clientService.register(utility.getIdFromToken(keycloakClient.getAccessToken("creator").split("\\.")[1]), "creator", "creator@email.com");
-
-        clientAccessAlwaysRepository.assignRolesToRegisteredClient(utility.getIdFromToken(keycloakClient.getAccessToken("creator").split("\\.")[1]), Set.of("metric_definition_creator"));
-    }
-
-    @BeforeEach
-    public void each() {
-
-        metricDefinitionRepository.deleteAll();
-    }
+public class MetricDefinitionAuthorizationTest extends PrepareTest {
 
     @Test
     public void createMetricDefinitionInspectorForbidden(){
@@ -460,9 +416,5 @@ public class MetricDefinitionAuthorizationTest {
                 .oauth2(getAccessToken(user))
                 .basePath("accounting-system/metric-definitions")
                 .get();
-    }
-
-    protected String getAccessToken(String userName) {
-        return keycloakClient.getAccessToken(userName);
     }
 }

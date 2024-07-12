@@ -4,16 +4,11 @@ import io.quarkus.test.common.QuarkusTestResource;
 import io.quarkus.test.common.http.TestHTTPEndpoint;
 import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.test.junit.TestProfile;
-import io.quarkus.test.keycloak.client.KeycloakTestClient;
 import io.quarkus.test.security.TestSecurity;
 import io.quarkus.test.security.oidc.OidcSecurity;
 import io.quarkus.test.security.oidc.TokenIntrospection;
 import io.quarkus.test.security.oidc.UserInfo;
 import io.restassured.http.ContentType;
-import jakarta.inject.Inject;
-import org.accounting.system.clients.ProviderClient;
-import org.accounting.system.clients.responses.eoscportal.Response;
-import org.accounting.system.clients.responses.eoscportal.Total;
 import org.accounting.system.dtos.InformativeResponse;
 import org.accounting.system.dtos.acl.role.RoleAccessControlRequestDto;
 import org.accounting.system.dtos.installation.InstallationRequestDto;
@@ -23,26 +18,12 @@ import org.accounting.system.dtos.metricdefinition.MetricDefinitionResponseDto;
 import org.accounting.system.dtos.pagination.PageResource;
 import org.accounting.system.endpoints.InstallationEndpoint;
 import org.accounting.system.enums.ApiMessage;
-import org.accounting.system.mappers.ProviderMapper;
-import org.accounting.system.repositories.client.ClientAccessAlwaysRepository;
-import org.accounting.system.repositories.client.ClientRepository;
-import org.accounting.system.repositories.metricdefinition.MetricDefinitionRepository;
-import org.accounting.system.repositories.project.ProjectRepository;
-import org.accounting.system.repositories.provider.ProviderRepository;
-import org.accounting.system.services.SystemAdminService;
-import org.accounting.system.services.client.ClientService;
-import org.accounting.system.util.Utility;
 import org.accounting.system.wiremock.ProjectWireMockServer;
 import org.accounting.system.wiremock.ProviderWireMockServer;
-import org.eclipse.microprofile.rest.client.inject.RestClient;
-import org.json.simple.parser.ParseException;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 
 import java.util.Set;
-import java.util.concurrent.ExecutionException;
 
 import static io.restassured.RestAssured.given;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -53,67 +34,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 @QuarkusTestResource(ProjectWireMockServer.class)
 @QuarkusTestResource(ProviderWireMockServer.class)
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
-public class InstallationAuthorizationTest {
-
-    @Inject
-    MetricDefinitionRepository metricDefinitionRepository;
-
-    @Inject
-    ProviderRepository providerRepository;
-
-    @Inject
-    ProjectRepository projectRepository;
-
-    @Inject
-    SystemAdminService systemAdminService;
-
-    @Inject
-    @RestClient
-    ProviderClient providerClient;
-
-    @Inject
-    Utility utility;
-
-    @Inject
-    ClientRepository clientRepository;
-
-    @Inject
-    ClientService clientService;
-
-    @Inject
-    ClientAccessAlwaysRepository clientAccessAlwaysRepository;
-
-    KeycloakTestClient keycloakClient = new KeycloakTestClient();
-
-    @BeforeAll
-    public void setup() throws ExecutionException, InterruptedException, ParseException {
-
-        Total total = providerClient.getTotalNumberOfProviders("all").toCompletableFuture().get();
-
-        Response response = providerClient.getAll("all", total.total).toCompletableFuture().get();
-
-        providerRepository.persistOrUpdate(ProviderMapper.INSTANCE.eoscProvidersToProviders(response.results));
-
-        clientRepository.addSystemAdmin(utility.getIdFromToken(keycloakClient.getAccessToken("admin").split("\\.")[1]), "admin", "admin@email.com");
-
-        clientService.register("provider_admin@example.org", "provider_admin", "provider_admin@example.org");
-
-        clientAccessAlwaysRepository.assignRolesToRegisteredClient(utility.getIdFromToken(keycloakClient.getAccessToken("admin").split("\\.")[1]),Set.of("collection_owner"));
-    }
-
-    @BeforeEach
-    public void before() throws ParseException {
-
-        metricDefinitionRepository.deleteAll();
-        projectRepository.deleteAll();
-
-        String sub = utility.getIdFromToken(keycloakClient.getAccessToken("admin").split("\\.")[1]);
-
-        //We are going to register the EOSC-hub project from OpenAire API
-        systemAdminService.registerProjectsToAccountingService(Set.of("777536"), sub);
-
-        projectRepository.associateProjectWithProviders("777536", Set.of("grnet", "sites"));
-    }
+public class InstallationAuthorizationTest extends PrepareTest {
 
     @Test
     @TestSecurity(user = "provider_admin")
@@ -128,6 +49,8 @@ public class InstallationAuthorizationTest {
             }
     )
     public void clientGrantAccessToOtherClientToManageAProvider(){
+
+        projectRepository.associateProjectWithProviders("777536", Set.of("grnet", "sites"));
 
         // admin user will submit two installations
 
@@ -211,6 +134,8 @@ public class InstallationAuthorizationTest {
     @Test
     public void getInstallation(){
 
+        projectRepository.associateProjectWithProviders("777536", Set.of("grnet", "sites"));
+
         // admin user will submit one installation
 
         //the first installation has been created by admin
@@ -227,7 +152,7 @@ public class InstallationAuthorizationTest {
 
         var installation = createInstallation(request, "admin");
 
-        //the second installation has been created by installationcreator
+        //the second installation has been created by admin
 
         var request1= new InstallationRequestDto();
 
@@ -239,7 +164,7 @@ public class InstallationAuthorizationTest {
 
         var installation1 = createInstallation(request1, "admin");
 
-        //because admin can access all installations, it can retrieve the installation created by installationcreator
+        //admin can access all installations
 
         var response = fetchInstallation(installation1.id, "admin");
 
@@ -252,9 +177,9 @@ public class InstallationAuthorizationTest {
 
         assertEquals(installation1.id, installationResponseDto.id);
 
-        //because creator can access only its Installations, it cannot can retrieve the installation created by admin
+        //inspector cannot retrieve the installation created by admin
 
-        var response1 = fetchInstallation(installation.id, "installationcreator");
+        var response1 = fetchInstallation(installation.id, "inspector");
 
         var informativeResponse = response1
                 .then()

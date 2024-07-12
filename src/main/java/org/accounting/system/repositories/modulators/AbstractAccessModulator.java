@@ -5,7 +5,7 @@ import com.mongodb.client.MongoCollection;
 import io.quarkus.mongodb.panache.PanacheMongoRepositoryBase;
 import jakarta.inject.Inject;
 import net.jodah.typetools.TypeResolver;
-import org.accounting.system.beans.RequestInformation;
+import org.accounting.system.beans.RequestUserContext;
 import org.accounting.system.entities.Entity;
 import org.accounting.system.enums.Collection;
 import org.bson.Document;
@@ -14,7 +14,7 @@ import org.eclipse.microprofile.config.inject.ConfigProperty;
 public abstract class AbstractAccessModulator<E extends Entity, I> implements PanacheMongoRepositoryBase<E, I> {
 
     @Inject
-    RequestInformation requestInformation;
+    RequestUserContext requestInformation;
 
     @Inject
     MongoClient mongoClient;
@@ -47,10 +47,10 @@ public abstract class AbstractAccessModulator<E extends Entity, I> implements Pa
      * @return
      */
     public boolean isIdentifiable(String idToBeIdentified){
-        return idToBeIdentified.equals(getRequestInformation().getSubjectOfToken());
+        return idToBeIdentified.equals(getRequestInformation().getId());
     }
 
-    public RequestInformation getRequestInformation() {
+    public RequestUserContext getRequestInformation() {
         return requestInformation;
     }
 

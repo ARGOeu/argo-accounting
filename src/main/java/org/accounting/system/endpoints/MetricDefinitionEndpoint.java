@@ -20,7 +20,7 @@ import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.UriInfo;
-import org.accounting.system.beans.RequestInformation;
+import org.accounting.system.beans.RequestUserContext;
 import org.accounting.system.constraints.NotFoundEntity;
 import org.accounting.system.dtos.InformativeResponse;
 import org.accounting.system.dtos.metricdefinition.MetricDefinitionRequestDto;
@@ -78,14 +78,12 @@ public class MetricDefinitionEndpoint {
     Utility utility;
 
     @Inject
-    RequestInformation requestInformation;
-
+    RequestUserContext requestInformation;
 
     public MetricDefinitionEndpoint(MetricDefinitionService metricDefinitionService, Utility utility) {
         this.metricDefinitionService = metricDefinitionService;
         this.utility = utility;
     }
-
 
     @Tag(name = "Metric Definition")
     @org.eclipse.microprofile.openapi.annotations.Operation(

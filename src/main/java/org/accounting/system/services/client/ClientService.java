@@ -1,13 +1,13 @@
 package org.accounting.system.services.client;
 
 import io.quarkus.mongodb.panache.PanacheQuery;
-import io.quarkus.oidc.TokenIntrospection;
 import io.quarkus.panache.common.Page;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.ForbiddenException;
 import jakarta.ws.rs.NotFoundException;
 import jakarta.ws.rs.core.UriInfo;
+import org.accounting.system.beans.RequestUserContext;
 import org.accounting.system.dtos.authorization.CollectionAccessPermissionDto;
 import org.accounting.system.dtos.client.ClientResponseDto;
 import org.accounting.system.dtos.pagination.PageResource;
@@ -17,7 +17,6 @@ import org.accounting.system.repositories.authorization.RoleRepository;
 import org.accounting.system.repositories.client.ClientRepository;
 import org.accounting.system.services.authorization.RoleService;
 import org.apache.commons.lang3.StringUtils;
-import org.eclipse.microprofile.config.inject.ConfigProperty;
 
 import java.util.Optional;
 import java.util.Set;
@@ -36,11 +35,7 @@ public class ClientService {
     RoleService roleService;
 
     @Inject
-    TokenIntrospection tokenIntrospection;
-
-    @ConfigProperty(name = "key.to.retrieve.id.from.access.token")
-    String key;
-
+    RequestUserContext requestUserContext;
 
     /**
      * This method extracts specific information regarding the client from access token and stores it into the
@@ -131,7 +126,7 @@ public class ClientService {
 
     public Set<CollectionAccessPermissionDto> getGeneralPermissions(){
 
-        var roleNames = clientRepository.getClientRoles(tokenIntrospection.getJsonObject().getString(key));
+        var roleNames = clientRepository.getClientRoles(requestUserContext.getId());
 
         var roles = roleNames
                 .stream()

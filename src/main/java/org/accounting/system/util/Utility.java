@@ -2,18 +2,16 @@ package org.accounting.system.util;
 
 
 import io.quarkus.cache.CacheResult;
-import io.quarkus.oidc.TokenIntrospection;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.BadRequestException;
-import org.accounting.system.beans.RequestInformation;
+import org.accounting.system.beans.RequestUserContext;
 import org.accounting.system.dtos.authorization.request.RoleRequestDto;
 import org.accounting.system.enums.Collection;
 import org.accounting.system.enums.Operation;
 import org.accounting.system.repositories.client.ClientRepository;
 import org.apache.commons.validator.GenericValidator;
 import org.bson.types.ObjectId;
-import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
@@ -38,16 +36,8 @@ import static java.util.stream.Collectors.toMap;
 
 @ApplicationScoped
 public class Utility {
-
     @Inject
-    RequestInformation requestInformation;
-
-    @Inject
-    TokenIntrospection tokenIntrospection;
-
-    @ConfigProperty(name = "key.to.retrieve.id.from.access.token")
-    String id;
-
+    RequestUserContext requestUserContext;
     @Inject
     ClientRepository clientRepository;
 
@@ -116,12 +106,7 @@ public class Utility {
 
     public Set<String> getRoles(){
 
-        String vopersonId = tokenIntrospection.getJsonObject().getString(id);
-
-        // sub -> Usually a machine-readable identifier of the resource owner who authorized this token
-        requestInformation.setSubjectOfToken(tokenIntrospection.getJsonObject().getString(id));
-
-        return clientRepository.getClientRoles(vopersonId);
+        return clientRepository.getClientRoles(requestUserContext.getId());
     }
 
     public static boolean isDate(String... values){
@@ -149,12 +134,6 @@ public class Utility {
         }
     }
 
-    public void setAccessToken(){
-
-        // sub -> Usually a machine-readable identifier of the resource owner who authorized this token
-        requestInformation.setSubjectOfToken(tokenIntrospection.getJsonObject().getString(id));
-    }
-
     public String getIdFromToken(String chunk) throws ParseException {
 
 
@@ -167,11 +146,6 @@ public class Utility {
         JSONObject json = (JSONObject) parser.parse(payload);
 
         return (String) json.get("sub");
-    }
-
-    public String getClientVopersonId(){
-
-        return tokenIntrospection.getJsonObject().getString(id);
     }
 
     /**

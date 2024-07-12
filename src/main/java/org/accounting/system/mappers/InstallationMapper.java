@@ -1,7 +1,7 @@
 package org.accounting.system.mappers;
 
 import jakarta.enterprise.inject.spi.CDI;
-import org.accounting.system.beans.RequestInformation;
+import org.accounting.system.beans.RequestUserContext;
 import org.accounting.system.dtos.installation.InstallationRequestDto;
 import org.accounting.system.dtos.installation.InstallationResponseDto;
 import org.accounting.system.dtos.installation.UpdateInstallationRequestDto;
@@ -49,7 +49,7 @@ public interface InstallationMapper {
 
     @AfterMapping
     default void setCreatorId(InstallationRequestDto source, @MappingTarget Installation installation) {
-        RequestInformation requestInformation = CDI.current().select(RequestInformation.class).get();
-        installation.setCreatorId(requestInformation.getSubjectOfToken());
+        var requestInformation = CDI.current().select(RequestUserContext.class).get();
+        installation.setCreatorId(requestInformation.getId());
     }
 }

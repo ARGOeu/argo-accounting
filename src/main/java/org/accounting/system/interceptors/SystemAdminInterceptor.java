@@ -5,9 +5,9 @@ import jakarta.inject.Inject;
 import jakarta.interceptor.AroundInvoke;
 import jakarta.interceptor.Interceptor;
 import jakarta.interceptor.InvocationContext;
+import org.accounting.system.beans.RequestUserContext;
 import org.accounting.system.interceptors.annotations.SystemAdmin;
 import org.accounting.system.repositories.client.ClientRepository;
-import org.accounting.system.util.Utility;
 
 @SystemAdmin
 @Interceptor
@@ -22,7 +22,7 @@ public class SystemAdminInterceptor {
     ClientRepository clientRepository;
 
     @Inject
-    Utility utility;
+    RequestUserContext requestUserContext;
 
 
     @AroundInvoke
@@ -33,7 +33,7 @@ public class SystemAdminInterceptor {
 
     private Object hasAccess(InvocationContext context) throws Exception {
 
-        clientRepository.isSystemAdmin(utility.getClientVopersonId());
+        clientRepository.isSystemAdmin(requestUserContext.getId());
 
         return context.proceed();
     }

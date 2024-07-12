@@ -6,7 +6,6 @@ import io.quarkus.test.junit.TestProfile;
 import io.quarkus.test.keycloak.client.KeycloakTestClient;
 import io.restassured.http.ContentType;
 import io.restassured.response.Response;
-import jakarta.inject.Inject;
 import org.accounting.system.dtos.InformativeResponse;
 import org.accounting.system.dtos.authorization.AccessPermissionDto;
 import org.accounting.system.dtos.authorization.CollectionAccessPermissionDto;
@@ -19,8 +18,6 @@ import org.accounting.system.endpoints.RoleEndpoint;
 import org.accounting.system.enums.AccessType;
 import org.accounting.system.enums.Collection;
 import org.accounting.system.enums.Operation;
-import org.accounting.system.repositories.authorization.RoleRepository;
-import org.accounting.system.services.authorization.RoleService;
 import org.accounting.system.util.Utility;
 import org.junit.jupiter.api.Test;
 
@@ -34,12 +31,6 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 @TestProfile(AccountingSystemTestProfile.class)
 @TestHTTPEndpoint(RoleEndpoint.class)
 public class RoleEndpointTest {
-
-    @Inject
-    RoleRepository roleRepository;
-
-    @Inject
-    RoleService roleService;
 
     KeycloakTestClient keycloakClient = new KeycloakTestClient();
 

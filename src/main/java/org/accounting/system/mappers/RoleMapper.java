@@ -1,7 +1,7 @@
 package org.accounting.system.mappers;
 
 import jakarta.enterprise.inject.spi.CDI;
-import org.accounting.system.beans.RequestInformation;
+import org.accounting.system.beans.RequestUserContext;
 import org.accounting.system.dtos.authorization.CollectionAccessPermissionDto;
 import org.accounting.system.dtos.authorization.request.RoleRequestDto;
 import org.accounting.system.dtos.authorization.response.RoleResponseDto;
@@ -74,7 +74,7 @@ public interface RoleMapper {
 
     @AfterMapping
     default void setCreatorId(RoleRequestDto source, @MappingTarget Role role) {
-        RequestInformation requestInformation = CDI.current().select(RequestInformation.class).get();
-        role.setCreatorId(requestInformation.getSubjectOfToken());
+        var requestUserContext = CDI.current().select(RequestUserContext.class).get();
+        role.setCreatorId(requestUserContext.getId());
     }
 }
