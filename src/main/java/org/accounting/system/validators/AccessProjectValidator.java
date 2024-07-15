@@ -10,7 +10,6 @@ import org.accounting.system.enums.Collection;
 import org.accounting.system.enums.Operation;
 import org.accounting.system.exceptions.CustomValidationException;
 import org.accounting.system.repositories.project.ProjectRepository;
-import org.accounting.system.util.Utility;
 
 /**
  * This {@link AccessProjectValidator} defines the logic to validate the {@link AccessProject}.
@@ -39,10 +38,6 @@ public class AccessProjectValidator implements ConstraintValidator<AccessProject
     public boolean isValid(String project, ConstraintValidatorContext context) {
 
         var projectRepository = CDI.current().select(ProjectRepository.class).get();
-
-        var utility = CDI.current().select(Utility.class).get();
-
-        utility.setAccessToken();
 
         if(checkIfExists){
             Try

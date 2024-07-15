@@ -6,11 +6,11 @@ import com.mongodb.client.model.Filters;
 import com.mongodb.client.model.Updates;
 import com.pivovarit.function.ThrowingFunction;
 import io.quarkus.mongodb.panache.PanacheQuery;
-import io.quarkus.oidc.TokenIntrospection;
 import io.quarkus.panache.common.Page;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.NotFoundException;
+import org.accounting.system.beans.RequestUserContext;
 import org.accounting.system.entities.HierarchicalRelation;
 import org.accounting.system.entities.MetricDefinition;
 import org.accounting.system.entities.acl.RoleAccessControl;
@@ -34,7 +34,6 @@ import org.accounting.system.repositories.provider.ProviderRepository;
 import org.accounting.system.services.authorization.RoleService;
 import org.bson.Document;
 import org.bson.conversions.Bson;
-import org.eclipse.microprofile.config.inject.ConfigProperty;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -56,23 +55,20 @@ public class ProjectRepository extends ProjectModulator {
     InstallationRepository installationRepository;
 
     @Inject
-    TokenIntrospection tokenIntrospection;
-
-    @Inject
     RoleService roleService;
 
     @Inject
     MetricRepository metricRepository;
 
-    @ConfigProperty(name = "key.to.retrieve.id.from.access.token")
-    String key;
+    @Inject
+    RequestUserContext requestUserContext;
 
     public PanacheQuery<ProjectProjection> fetchAll(int page, int size) {
 
         //TODO We have to create an index for the following query
         var eqAccessControl = Aggregates
                 .match(Filters
-                        .and(Filters.eq("roleAccessControls.who", tokenIntrospection.getJsonObject().getString(key)),
+                        .and(Filters.eq("roleAccessControls.who", requestUserContext.getId()),
                                 Filters.eq("roleAccessControls.roles.collections_access_permissions.collection", Collection.Project.name()),
                                 Filters.eq("roleAccessControls.roles.collections_access_permissions.access_permissions.operation", Operation.READ.name()),
                                 Filters.eq("roleAccessControls.roles.collections_access_permissions.access_permissions.access_type", AccessType.ALWAYS.name())));
@@ -287,7 +283,7 @@ public class ProjectRepository extends ProjectModulator {
 
     public boolean accessibility(String projectId, Collection collection, Operation operation){
 
-        var roleAccessControls = fetchRoleAccessControl(projectId, tokenIntrospection.getJsonObject().getString(key));
+        var roleAccessControls = fetchRoleAccessControl(projectId, requestUserContext.getId());
 
         List<AccessType> accessTypeList = roleAccessControls
                 .stream()
@@ -350,7 +346,7 @@ public class ProjectRepository extends ProjectModulator {
         //TODO We have to create an index for the following query
         var eqAccessControl = Aggregates
                 .match(Filters
-                        .and(searchDoc,Filters.eq("roleAccessControls.who", tokenIntrospection.getJsonObject().getString(key)),
+                        .and(searchDoc,Filters.eq("roleAccessControls.who", requestUserContext.getId()),
                                 Filters.eq("roleAccessControls.roles.collections_access_permissions.collection", Collection.Project.name()),
                                 Filters.eq("roleAccessControls.roles.collections_access_permissions.access_permissions.operation", Operation.READ.name()),
                                 Filters.eq("roleAccessControls.roles.collections_access_permissions.access_permissions.access_type", AccessType.ALWAYS.name())));
@@ -377,17 +373,17 @@ public class ProjectRepository extends ProjectModulator {
     public PanacheQuery<ProjectProjectionWithPermissions> fetchClientPermissions(int page, int size){
 
         var eqAccessControl =Aggregates.match(Filters.or(
-                Filters.and(Filters.eq("roleAccessControls.who", tokenIntrospection.getJsonObject().getString(key)),
+                Filters.and(Filters.eq("roleAccessControls.who", requestUserContext.getId()),
                         Filters.eq("roleAccessControls.roles.collections_access_permissions.collection", Collection.Installation.name()),
                         Filters.eq("roleAccessControls.roles.collections_access_permissions.access_permissions.operation", Operation.READ.name()),
                         Filters.eq("roleAccessControls.roles.collections_access_permissions.access_permissions.access_type", AccessType.ALWAYS.name())),
 
-                Filters.and(Filters.eq("providers.roleAccessControls.who", tokenIntrospection.getJsonObject().getString(key)),
+                Filters.and(Filters.eq("providers.roleAccessControls.who", requestUserContext.getId()),
                         Filters.eq("providers.roleAccessControls.roles.collections_access_permissions.collection", Collection.Installation.name()),
                         Filters.eq("providers.roleAccessControls.roles.collections_access_permissions.access_permissions.operation", Operation.READ.name()),
                         Filters.eq("providers.roleAccessControls.roles.collections_access_permissions.access_permissions.access_type", AccessType.ALWAYS.name())),
 
-                Filters.and(Filters.eq("providers.installations.roleAccessControls.who", tokenIntrospection.getJsonObject().getString(key)),
+                Filters.and(Filters.eq("providers.installations.roleAccessControls.who", requestUserContext.getId()),
                         Filters.eq("providers.installations.roleAccessControls.roles.collections_access_permissions.collection", Collection.Installation.name()),
                         Filters.eq("providers.installations.roleAccessControls.roles.collections_access_permissions.access_permissions.operation", Operation.READ.name()),
                         Filters.eq("providers.installations.roleAccessControls.roles.collections_access_permissions.access_permissions.access_type", AccessType.ALWAYS.name()))));
@@ -402,17 +398,17 @@ public class ProjectRepository extends ProjectModulator {
 
         for(ProjectProjectionWithPermissions project: projects){
 
-            project.roleAccessControls.removeIf(roleAccessControl -> !roleAccessControl.getWho().equals(tokenIntrospection.getJsonObject().getString(key)));
+            project.roleAccessControls.removeIf(roleAccessControl -> !roleAccessControl.getWho().equals(requestUserContext.getId()));
             project.permissions = roleService.mergeRoles(project.roleAccessControls.stream().flatMap(acl->acl.getRoles().stream()).collect(Collectors.toSet()));
 
             for (ProviderProjectionWithPermissions provider: project.providers){
 
-                provider.roleAccessControls.removeIf(roleAccessControl -> !roleAccessControl.getWho().equals(tokenIntrospection.getJsonObject().getString(key)));
+                provider.roleAccessControls.removeIf(roleAccessControl -> !roleAccessControl.getWho().equals(requestUserContext.getId()));
                 provider.permissions = roleService.mergeRoles(provider.roleAccessControls.stream().flatMap(acl->acl.getRoles().stream()).collect(Collectors.toSet()));
 
                 for (ProjectionInstallationWithPermissions installation: provider.installations){
 
-                    installation.roleAccessControls.removeIf(roleAccessControl -> !roleAccessControl.getWho().equals(tokenIntrospection.getJsonObject().getString(key)));
+                    installation.roleAccessControls.removeIf(roleAccessControl -> !roleAccessControl.getWho().equals(requestUserContext.getId()));
                     installation.permissions = roleService.mergeRoles(installation.roleAccessControls.stream().flatMap(acl->acl.getRoles().stream()).collect(Collectors.toSet()));
                 }
             }

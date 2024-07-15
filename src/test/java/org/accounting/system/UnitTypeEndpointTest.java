@@ -3,7 +3,6 @@ package org.accounting.system;
 import io.quarkus.test.common.http.TestHTTPEndpoint;
 import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.test.junit.TestProfile;
-import io.quarkus.test.keycloak.client.KeycloakTestClient;
 import io.restassured.http.ContentType;
 import jakarta.inject.Inject;
 import org.accounting.system.dtos.InformativeResponse;
@@ -12,18 +11,9 @@ import org.accounting.system.dtos.metricdefinition.MetricDefinitionResponseDto;
 import org.accounting.system.dtos.unittype.UnitTypeDto;
 import org.accounting.system.dtos.unittype.UpdateUnitTypeRequestDto;
 import org.accounting.system.endpoints.UnitTypeEndpoint;
-import org.accounting.system.repositories.client.ClientAccessAlwaysRepository;
-import org.accounting.system.repositories.metricdefinition.MetricDefinitionRepository;
 import org.accounting.system.services.UnitTypeService;
-import org.accounting.system.services.client.ClientService;
-import org.accounting.system.util.Utility;
-import org.json.simple.parser.ParseException;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
-
-import java.util.Set;
 
 import static io.restassured.RestAssured.given;
 import static org.hamcrest.Matchers.is;
@@ -33,37 +23,10 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 @TestProfile(AccountingSystemTestProfile.class)
 @TestHTTPEndpoint(UnitTypeEndpoint.class)
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
-public class UnitTypeEndpointTest {
-
-    @Inject
-    Utility utility;
-
-    @Inject
-    ClientService clientService;
-
-    @Inject
-    ClientAccessAlwaysRepository clientAccessAlwaysRepository;
-
-    @Inject
-    MetricDefinitionRepository metricDefinitionRepository;
+public class UnitTypeEndpointTest extends PrepareTest {
 
     @Inject
     UnitTypeService unitTypeService;
-
-    KeycloakTestClient keycloakClient = new KeycloakTestClient();
-
-    @BeforeAll
-    public void setup() throws ParseException {
-
-        clientService.register(utility.getIdFromToken(keycloakClient.getAccessToken("admin").split("\\.")[1]), "admin", "admin@email.com");
-
-        clientAccessAlwaysRepository.assignRolesToRegisteredClient(utility.getIdFromToken(keycloakClient.getAccessToken("admin").split("\\.")[1]), Set.of("collection_owner"));
-    }
-
-    @BeforeEach
-    public void each(){
-        metricDefinitionRepository.deleteAll();
-    }
 
     @Test
     public void createUnitTypeNotAuthenticated() {
@@ -661,9 +624,5 @@ public class UnitTypeEndpointTest {
                 .statusCode(201)
                 .extract()
                 .as(MetricDefinitionResponseDto.class);
-    }
-
-    protected String getAccessToken(String userName) {
-        return keycloakClient.getAccessToken(userName);
     }
 }

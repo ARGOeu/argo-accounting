@@ -342,6 +342,30 @@
           "attributes": {}
         },
         {
+          "id": "df147a31-3da2-2bbc-566c-f20cf99b2637",
+          "name": "installationadmin",
+          "composite": false,
+          "clientRole": true,
+          "containerId": "0ac5df91-e044-4051-bd03-106a3a5fb9cc",
+          "attributes": {}
+        },
+        {
+          "id": "df348a31-3da2-2bbc-539c-f20bf99b2637",
+          "name": "inspector",
+          "composite": false,
+          "clientRole": true,
+          "containerId": "0ac5df91-e044-4051-bd03-106a3a5fb9cc",
+          "attributes": {}
+        },
+        {
+          "id": "df348a31-3da2-5bbc-629c-f20bf99b2637",
+          "name": "creator",
+          "composite": false,
+          "clientRole": true,
+          "containerId": "0ac5df91-e044-4051-bd03-106a3a5fb9cc",
+          "attributes": {}
+        },
+        {
           "id": "df147a31-5da2-5bbc-866c-f30cf99b2637",
           "name": "provider_admin",
           "composite": false,
@@ -2597,6 +2621,45 @@
         {
           "type": "password",
           "value": "evald"
+        }
+      ]
+    },
+    {
+      "username": "installationadmin",
+      "enabled": true,
+      "attributes": {
+        "voperson_id": ["installationadmin_voperson_id"]
+      },
+      "credentials": [
+        {
+          "type": "password",
+          "value": "installationadmin"
+        }
+      ]
+    },
+    {
+      "username": "inspector",
+      "enabled": true,
+      "attributes": {
+        "voperson_id": ["inspector_voperson_id"]
+      },
+      "credentials": [
+        {
+          "type": "password",
+          "value": "inspector"
+        }
+      ]
+    },
+    {
+      "username": "creator",
+      "enabled": true,
+      "attributes": {
+        "voperson_id": ["creator_voperson_id"]
+      },
+      "credentials": [
+        {
+          "type": "password",
+          "value": "creator"
         }
       ]
     },

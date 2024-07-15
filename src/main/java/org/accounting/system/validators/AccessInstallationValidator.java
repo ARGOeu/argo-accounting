@@ -2,6 +2,7 @@ package org.accounting.system.validators;
 
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.vavr.control.Try;
+import jakarta.enterprise.inject.spi.CDI;
 import jakarta.validation.ConstraintValidator;
 import jakarta.validation.ConstraintValidatorContext;
 import org.accounting.system.constraints.AccessInstallation;
@@ -13,9 +14,7 @@ import org.accounting.system.repositories.HierarchicalRelationRepository;
 import org.accounting.system.repositories.installation.InstallationRepository;
 import org.accounting.system.repositories.project.ProjectRepository;
 import org.accounting.system.repositories.provider.ProviderRepository;
-import org.accounting.system.util.Utility;
 
-import jakarta.enterprise.inject.spi.CDI;
 import java.util.regex.Pattern;
 
 /**
@@ -46,10 +45,6 @@ public class AccessInstallationValidator implements ConstraintValidator<AccessIn
         var hierarchicalRelationRepository = CDI.current().select(HierarchicalRelationRepository.class).get();
 
         var hierarchicalRelationOptional = hierarchicalRelationRepository.find("externalId", installationId).firstResultOptional();
-
-        var utility = CDI.current().select(Utility.class).get();
-
-        utility.setAccessToken();
 
         var hierarchicalRelation = hierarchicalRelationOptional.orElseThrow(()-> new CustomValidationException("There is no Installation with the following id: "+installationId, HttpResponseStatus.NOT_FOUND));
 

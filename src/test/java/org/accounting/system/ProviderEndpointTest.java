@@ -4,36 +4,20 @@ import io.quarkus.test.common.QuarkusTestResource;
 import io.quarkus.test.common.http.TestHTTPEndpoint;
 import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.test.junit.TestProfile;
-import io.quarkus.test.keycloak.client.KeycloakTestClient;
 import io.restassured.http.ContentType;
 import jakarta.inject.Inject;
-import org.accounting.system.clients.ProviderClient;
-import org.accounting.system.clients.responses.eoscportal.Response;
-import org.accounting.system.clients.responses.eoscportal.Total;
 import org.accounting.system.dtos.InformativeResponse;
 import org.accounting.system.dtos.provider.ProviderRequestDto;
 import org.accounting.system.dtos.provider.ProviderResponseDto;
 import org.accounting.system.dtos.provider.UpdateProviderRequestDto;
 import org.accounting.system.endpoints.ProviderEndpoint;
-import org.accounting.system.mappers.ProviderMapper;
-import org.accounting.system.repositories.client.ClientAccessAlwaysRepository;
-import org.accounting.system.repositories.project.ProjectAccessAlwaysRepository;
-import org.accounting.system.repositories.provider.ProviderRepository;
 import org.accounting.system.services.ProjectService;
-import org.accounting.system.services.SystemAdminService;
-import org.accounting.system.services.client.ClientService;
-import org.accounting.system.util.Utility;
 import org.accounting.system.wiremock.ProjectWireMockServer;
 import org.accounting.system.wiremock.ProviderWireMockServer;
-import org.eclipse.microprofile.rest.client.inject.RestClient;
-import org.json.simple.parser.ParseException;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 
 import java.util.Set;
-import java.util.concurrent.ExecutionException;
 
 import static io.restassured.RestAssured.given;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -45,59 +29,10 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 @QuarkusTestResource(ProjectWireMockServer.class)
 @QuarkusTestResource(ProviderWireMockServer.class)
-public class ProviderEndpointTest {
-
-    @Inject
-    ProviderRepository providerRepository;
-
-    @Inject
-    SystemAdminService systemAdminService;
-
-    @Inject
-    @RestClient
-    ProviderClient providerClient;
-
-    @Inject
-    Utility utility;
-
-    @Inject
-    ClientService clientService;
+public class ProviderEndpointTest extends PrepareTest {
 
     @Inject
     ProjectService projectService;
-
-    @Inject
-    ClientAccessAlwaysRepository clientAccessAlwaysRepository;
-
-    @Inject
-    ProjectAccessAlwaysRepository projectAccessAlwaysRepository;
-
-    KeycloakTestClient keycloakClient = new KeycloakTestClient();
-
-    @BeforeAll
-    public void setup() throws ExecutionException, InterruptedException, ParseException {
-
-        Total total = providerClient.getTotalNumberOfProviders("all").toCompletableFuture().get();
-
-        Response response = providerClient.getAll("all", total.total).toCompletableFuture().get();
-
-        providerRepository.persistOrUpdate(ProviderMapper.INSTANCE.eoscProvidersToProviders(response.results));
-
-        var sub = utility.getIdFromToken(keycloakClient.getAccessToken("admin").split("\\.")[1]);
-
-        clientService.register(sub, "admin", "admin@email.com");
-
-        clientAccessAlwaysRepository.assignRolesToRegisteredClient(utility.getIdFromToken(keycloakClient.getAccessToken("creator").split("\\.")[1]), Set.of("collection_owner"));
-    }
-
-    @BeforeEach
-    public void before() throws ParseException {
-
-        projectAccessAlwaysRepository.deleteAll();
-
-        String sub = utility.getIdFromToken(keycloakClient.getAccessToken("admin").split("\\.")[1]);
-        systemAdminService.registerProjectsToAccountingService(Set.of("777536"), sub);
-    }
 
     @Test
     public void fetchProvidersPaginationNotAuthenticated() {
@@ -673,9 +608,5 @@ public class ProviderEndpointTest {
         assertEquals("SITES", storedProvider.abbreviation);
         assertEquals("https://www.fieldsites.se/en-GB", storedProvider.website);
         assertEquals("https://dst15js82dk7j.cloudfront.net/231546/95187636-P5q11.png", storedProvider.logo);
-    }
-
-    protected String getAccessToken(String userName) {
-        return keycloakClient.getAccessToken(userName);
     }
 }

@@ -6,11 +6,11 @@ import com.mongodb.client.model.Filters;
 import com.mongodb.client.model.UpdateOptions;
 import com.mongodb.client.model.Updates;
 import io.quarkus.mongodb.panache.PanacheQuery;
-import io.quarkus.oidc.TokenIntrospection;
 import io.quarkus.panache.common.Page;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.ForbiddenException;
+import org.accounting.system.beans.RequestUserContext;
 import org.accounting.system.dtos.provider.UpdateProviderRequestDto;
 import org.accounting.system.entities.MetricDefinition;
 import org.accounting.system.entities.acl.RoleAccessControl;
@@ -29,7 +29,6 @@ import org.accounting.system.repositories.project.ProjectRepository;
 import org.accounting.system.services.HierarchicalRelationService;
 import org.bson.Document;
 import org.bson.conversions.Bson;
-import org.eclipse.microprofile.config.inject.ConfigProperty;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -61,13 +60,10 @@ public class ProviderRepository extends AccessibleModulator<Provider, String> {
     MetricRepository metricRepository;
 
     @Inject
-    TokenIntrospection tokenIntrospection;
-
-    @Inject
     HierarchicalRelationService hierarchicalRelationService;
 
-    @ConfigProperty(name = "key.to.retrieve.id.from.access.token")
-    String key;
+    @Inject
+    RequestUserContext requestUserContext;
 
     /**
      * Executes a query in mongo database to fetch a Provider by given name.
@@ -220,7 +216,7 @@ public class ProviderRepository extends AccessibleModulator<Provider, String> {
 
     public boolean accessibility(String project, String provider, Collection collection, Operation operation){
 
-        var roleAccessControls = fetchRoleAccessControl(project, provider, tokenIntrospection.getJsonObject().getString(key));
+        var roleAccessControls = fetchRoleAccessControl(project, provider, requestUserContext.getId());
 
         List<AccessType> accessTypeList = roleAccessControls
                 .stream()
@@ -243,12 +239,12 @@ public class ProviderRepository extends AccessibleModulator<Provider, String> {
 
         //TODO We have to create an index for the following query
         var eqAccessControl = Aggregates.match(Filters.or(
-                Filters.and(Filters.eq("roleAccessControls.who", tokenIntrospection.getJsonObject().getString(key)),
+                Filters.and(Filters.eq("roleAccessControls.who", requestUserContext.getId()),
                         Filters.eq("roleAccessControls.roles.collections_access_permissions.collection", Collection.Provider.name()),
                         Filters.eq("roleAccessControls.roles.collections_access_permissions.access_permissions.operation", Operation.READ.name()),
                         Filters.eq("roleAccessControls.roles.collections_access_permissions.access_permissions.access_type", AccessType.ALWAYS.name())),
 
-                Filters.and(Filters.eq("providers.roleAccessControls.who", tokenIntrospection.getJsonObject().getString(key)),
+                Filters.and(Filters.eq("providers.roleAccessControls.who", requestUserContext.getId()),
                         Filters.eq("providers.roleAccessControls.roles.collections_access_permissions.collection", Collection.Provider.name()),
                         Filters.eq("providers.roleAccessControls.roles.collections_access_permissions.access_permissions.operation", Operation.READ.name()),
                         Filters.eq("providers.roleAccessControls.roles.collections_access_permissions.access_permissions.access_type", AccessType.ALWAYS.name())))
@@ -284,12 +280,12 @@ public class ProviderRepository extends AccessibleModulator<Provider, String> {
 
         //TODO We have to create an index for the following query
         var eqAccessControl = Aggregates.match(Filters.or(
-                Filters.and(Filters.eq("roleAccessControls.who", tokenIntrospection.getJsonObject().getString(key)),
+                Filters.and(Filters.eq("roleAccessControls.who", requestUserContext.getId()),
                         Filters.eq("roleAccessControls.roles.collections_access_permissions.collection", Collection.Provider.name()),
                         Filters.eq("roleAccessControls.roles.collections_access_permissions.access_permissions.operation", Operation.READ.name()),
                         Filters.eq("roleAccessControls.roles.collections_access_permissions.access_permissions.access_type", AccessType.ALWAYS.name())),
 
-                Filters.and(Filters.eq("providers.roleAccessControls.who", tokenIntrospection.getJsonObject().getString(key)),
+                Filters.and(Filters.eq("providers.roleAccessControls.who", requestUserContext.getId()),
                         Filters.eq("providers.roleAccessControls.roles.collections_access_permissions.collection", Collection.Provider.name()),
                         Filters.eq("providers.roleAccessControls.roles.collections_access_permissions.access_permissions.operation", Operation.READ.name()),
                         Filters.eq("providers.roleAccessControls.roles.collections_access_permissions.access_permissions.access_type", AccessType.ALWAYS.name())))

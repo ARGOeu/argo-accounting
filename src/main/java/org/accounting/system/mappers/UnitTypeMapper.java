@@ -2,7 +2,7 @@ package org.accounting.system.mappers;
 
 
 import jakarta.enterprise.inject.spi.CDI;
-import org.accounting.system.beans.RequestInformation;
+import org.accounting.system.beans.RequestUserContext;
 import org.accounting.system.dtos.unittype.UnitTypeDto;
 import org.accounting.system.dtos.unittype.UpdateUnitTypeRequestDto;
 import org.accounting.system.entities.UnitType;
@@ -59,7 +59,7 @@ public interface UnitTypeMapper {
 
     @AfterMapping
     default void setCreatorId(UnitTypeDto source, @MappingTarget UnitType unitType) {
-        RequestInformation requestInformation = CDI.current().select(RequestInformation.class).get();
-        unitType.setCreatorId(requestInformation.getSubjectOfToken());
+        var requestUserContext = CDI.current().select(RequestUserContext.class).get();
+        unitType.setCreatorId(requestUserContext.getId());
     }
 }

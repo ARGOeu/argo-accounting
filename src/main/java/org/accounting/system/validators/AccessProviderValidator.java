@@ -15,7 +15,6 @@ import org.accounting.system.exceptions.CustomValidationException;
 import org.accounting.system.repositories.metricdefinition.MetricDefinitionRepository;
 import org.accounting.system.repositories.project.ProjectRepository;
 import org.accounting.system.repositories.provider.ProviderRepository;
-import org.accounting.system.util.Utility;
 import org.apache.commons.lang3.StringUtils;
 import org.bson.types.ObjectId;
 
@@ -69,10 +68,6 @@ public class AccessProviderValidator implements ConstraintValidator<AccessProvid
 
         var providerRepository = CDI.current().select(ProviderRepository.class).get();
 
-        var utility = CDI.current().select(Utility.class).get();
-
-        utility.setAccessToken();
-
         Try
                 .run(()->projectRepository.findByIdOptional(project).orElseThrow(()->new CustomValidationException("There is no Project with the following id: "+project, HttpResponseStatus.NOT_FOUND)))
                 .getOrElseThrow(()->new CustomValidationException("There is no Project with the following id: "+project, HttpResponseStatus.NOT_FOUND));
@@ -123,7 +118,6 @@ public class AccessProviderValidator implements ConstraintValidator<AccessProvid
 
             throw new CustomValidationException("organisation may not be empty.", HttpResponseStatus.BAD_REQUEST);
         }
-
     
         if(StringUtils.isEmpty(request.installation)){
 

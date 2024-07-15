@@ -55,5 +55,4 @@ public class SearchTest {
     protected String getAccessToken(String userName) {
         return keycloakClient.getAccessToken(userName);
     }
-
 }

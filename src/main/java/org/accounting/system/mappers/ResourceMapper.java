@@ -1,7 +1,7 @@
 package org.accounting.system.mappers;
 
 import jakarta.enterprise.inject.spi.CDI;
-import org.accounting.system.beans.RequestInformation;
+import org.accounting.system.beans.RequestUserContext;
 import org.accounting.system.clients.responses.eoscportal.EOSCResource;
 import org.accounting.system.dtos.resource.ResourceRequest;
 import org.accounting.system.dtos.resource.ResourceResponse;
@@ -36,7 +36,7 @@ public interface ResourceMapper {
 
     @AfterMapping
     default void setCreatorId(ResourceRequest source, @MappingTarget Resource resource) {
-        var requestInformation = CDI.current().select(RequestInformation.class).get();
-        resource.setCreatorId(requestInformation.getSubjectOfToken());
+        var requestUserContext = CDI.current().select(RequestUserContext.class).get();
+        resource.setCreatorId(requestUserContext.getId());
     }
 }
