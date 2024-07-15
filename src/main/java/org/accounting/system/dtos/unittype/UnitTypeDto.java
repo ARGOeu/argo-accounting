@@ -46,7 +46,7 @@ public class UnitTypeDto {
             type = SchemaType.STRING,
             implementation = String.class,
             readOnly = true,
-            description = "The client's voperson_id who has created the Unit Type.",
+            description = "The client's id who has created the Unit Type.",
             example = "ee4r4fffff368faa27442e7@grnet.account"
     )
     public String creatorId;

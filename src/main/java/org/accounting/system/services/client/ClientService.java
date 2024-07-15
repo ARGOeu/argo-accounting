@@ -4,7 +4,6 @@ import io.quarkus.mongodb.panache.PanacheQuery;
 import io.quarkus.panache.common.Page;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
-import jakarta.ws.rs.ForbiddenException;
 import jakarta.ws.rs.NotFoundException;
 import jakarta.ws.rs.core.UriInfo;
 import org.accounting.system.beans.RequestUserContext;
@@ -16,7 +15,6 @@ import org.accounting.system.mappers.ClientMapper;
 import org.accounting.system.repositories.authorization.RoleRepository;
 import org.accounting.system.repositories.client.ClientRepository;
 import org.accounting.system.services.authorization.RoleService;
-import org.apache.commons.lang3.StringUtils;
 
 import java.util.Optional;
 import java.util.Set;
@@ -44,10 +42,6 @@ public class ClientService {
      * @return The registered client has been turned into a response body.
      */
     public ClientResponseDto register(String id, String name, String email){
-
-        if(StringUtils.isEmpty(id)){
-            throw new ForbiddenException("voperson_id is empty. The client cannot be registered without voperson_id.");
-        }
 
         Optional<Client> optionalClient = clientRepository.findByIdOptional(id);
 
