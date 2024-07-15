@@ -20,17 +20,17 @@ Authorization: Bearer {token}
 
 Once the above request is executed, we extract the following information from the token:
 
-- voperson_id
+- sub
 - name
 - email
 
 Then we store it into the database collection Client:
 
-| Field          	| Description   	                      | 
-|------------------	|---------------------------------------- |
-| voperson_id             	| An identifier for the client which is globally unique and not reassignable. |
-| name       	| The client's full name. |
-| email      	    | The client’s email. |
+| Field          	 | Description   	                      | 
+|------------------|---------------------------------------- |
+| id             	 | An identifier for the client which is globally unique and not reassignable. |
+| name       	     | The client's full name. |
+| email      	     | The client’s email. |
 
 ### [GET] - Read the registered Clients
 

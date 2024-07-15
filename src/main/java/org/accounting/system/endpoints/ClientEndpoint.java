@@ -1,6 +1,5 @@
 package org.accounting.system.endpoints;
 
-import io.quarkus.oidc.UserInfo;
 import io.quarkus.security.Authenticated;
 import jakarta.inject.Inject;
 import jakarta.validation.Valid;
@@ -35,7 +34,6 @@ import org.accounting.system.repositories.client.ClientRepository;
 import org.accounting.system.services.ProjectService;
 import org.accounting.system.services.client.ClientService;
 import org.accounting.system.util.AccountingUriInfo;
-import org.apache.commons.lang3.StringUtils;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.eclipse.microprofile.openapi.annotations.enums.SchemaType;
 import org.eclipse.microprofile.openapi.annotations.enums.SecuritySchemeIn;
@@ -49,7 +47,6 @@ import org.eclipse.microprofile.openapi.annotations.security.SecurityScheme;
 import org.eclipse.microprofile.openapi.annotations.tags.Tag;
 
 import java.util.List;
-import java.util.Objects;
 
 import static org.eclipse.microprofile.openapi.annotations.enums.ParameterIn.QUERY;
 
@@ -66,9 +63,6 @@ public class ClientEndpoint {
 
     @Inject
     ClientService clientService;
-
-    @Inject
-    UserInfo userInfo;
 
     @Inject
     ProjectService projectService;
@@ -116,15 +110,7 @@ public class ClientEndpoint {
     @Produces(value = MediaType.APPLICATION_JSON)
     public Response clientRegistration() {
 
-        String name = StringUtils.EMPTY;
-        String email = StringUtils.EMPTY;
-
-        if(userInfo !=null && userInfo.getJsonObject() != null){
-            name = Objects.isNull(userInfo.getJsonObject().get("name")) ? "": userInfo.getJsonObject().getString("name");
-            email = Objects.isNull(userInfo.getJsonObject().get("email")) ? "": userInfo.getJsonObject().getString("email");
-        }
-
-        var response = clientService.register(requestUserContext.getId(), name, email);
+        var response = clientService.register(requestUserContext.getId(), requestUserContext.getName().orElse(""), requestUserContext.getEmail().orElse(""));
 
         return Response.ok().entity(response).build();
     }
@@ -167,7 +153,7 @@ public class ClientEndpoint {
     @org.eclipse.microprofile.openapi.annotations.Operation(
             hidden = true,
             summary = "Assign one or more roles to a registered client.",
-            description = "Using the unique identifier (voperson_id) of a registered client, you can assign roles to it.")
+            description = "Using the unique identifier of a registered client, you can assign roles to it.")
     @APIResponse(
             responseCode = "200",
             description = "The Roles have been successfully assigned to a registered client.",
@@ -236,7 +222,7 @@ public class ClientEndpoint {
     @org.eclipse.microprofile.openapi.annotations.Operation(
             hidden = true,
             summary = "Detach one or more roles from a registered client.",
-            description = "Using the unique identifier (voperson_id) of a registered client, you can detach roles from it.")
+            description = "Using the unique identifier of a registered client, you can detach roles from it.")
     @APIResponse(
             responseCode = "200",
             description = "The Roles have been successfully detached from a registered client.",

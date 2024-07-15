@@ -9,14 +9,13 @@ import lombok.Setter;
 import org.accounting.system.enums.AccessType;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 
+import java.util.Optional;
+
 @RequestScoped
 public class RequestUserContext {
 
-    @ConfigProperty(name = "person.key.to.retrieve.id.from.access.token")
-    String personKey;
-
-    @ConfigProperty(name = "service.key.to.retrieve.id.from.access.token")
-    String serviceKey;
+    @ConfigProperty(name = "key.to.retrieve.id.from.access.token")
+    String key;
 
     @Inject
     private final TokenIntrospection tokenIntrospection;
@@ -34,18 +33,35 @@ public class RequestUserContext {
 
         try {
 
-            return tokenIntrospection.getJsonObject().getString(personKey);
+            return tokenIntrospection.getJsonObject().getString(key);
 
         } catch (Exception e) {
 
-            try {
+            throw new BadRequestException(String.format("The unique identifier %s wasn't present in the access token.", key));
+        }
+    }
 
-                return tokenIntrospection.getJsonObject().getString(serviceKey);
+    public Optional<String> getName(){
 
-            } catch (Exception exc) {
+        try {
 
-                throw new BadRequestException(String.format("None of the following unique identifiers were present in the access token : %s , %s", personKey, serviceKey));
-            }
+            return Optional.of(tokenIntrospection.getJsonObject().getString("name"));
+
+        } catch (Exception e) {
+
+            return Optional.empty();
+        }
+    }
+
+    public Optional<String> getEmail(){
+
+        try {
+
+            return Optional.of(tokenIntrospection.getJsonObject().getString("email"));
+
+        } catch (Exception e) {
+
+            return Optional.empty();
         }
     }
 }

@@ -218,6 +218,7 @@ public class RoleEndpoint {
             content = @Content(schema = @Schema(
                     type = SchemaType.OBJECT,
                     implementation = InformativeResponse.class)))
+    @SecurityRequirement(name = "Authentication")
 
     @GET
     @Produces(value = MediaType.APPLICATION_JSON)

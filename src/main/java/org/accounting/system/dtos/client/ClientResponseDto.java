@@ -13,7 +13,7 @@ public class ClientResponseDto {
             description = "An identifier for the client which is globally unique.",
             example = "xyz@example.org"
     )
-    @JsonProperty("voperson_id")
+    @JsonProperty("id")
     public String id;
 
     @Schema(
