@@ -14,8 +14,11 @@ import java.util.Optional;
 @RequestScoped
 public class RequestUserContext {
 
-    @ConfigProperty(name = "key.to.retrieve.id.from.access.token")
-    String key;
+    @ConfigProperty(name = "person.key.to.retrieve.id.from.access.token")
+    String personKey;
+
+    @ConfigProperty(name = "service.key.to.retrieve.id.from.access.token")
+    String serviceKey;
 
     @Inject
     private final TokenIntrospection tokenIntrospection;
@@ -33,11 +36,18 @@ public class RequestUserContext {
 
         try {
 
-            return tokenIntrospection.getJsonObject().getString(key);
+            return tokenIntrospection.getJsonObject().getString(personKey);
 
         } catch (Exception e) {
 
-            throw new BadRequestException(String.format("The unique identifier %s wasn't present in the access token.", key));
+            try{
+
+                return tokenIntrospection.getJsonObject().getString(serviceKey);
+
+            } catch (Exception ex){
+
+                throw new BadRequestException(String.format("Unique identifiers [%s, %s] weren't present in the access token.", personKey, serviceKey));
+            }
         }
     }
 

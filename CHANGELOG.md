@@ -24,6 +24,15 @@ According to [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) , the `Unr
 
 ---
 
+## 1.5.1 - 2024-07-24
+
+---
+
+### Added
+
+-   [#187](https://github.com/ARGOeu/argo-accounting/pull/187) - ACC-248 Extract 'sub' or 'client-id' from Token Introspection.
+
+
 ## 1.5.0 - 2024-07-15
 
 ---
