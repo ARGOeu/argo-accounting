@@ -28,6 +28,11 @@ According to [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) , the `Unr
 
 -   [#190](https://github.com/ARGOeu/argo-accounting/pull/190) - ACC-256 Add start/end field in metrics retrieval API calls for user and group ids.
 
+### Changed
+
+-   [#191](https://github.com/ARGOeu/argo-accounting/pull/191) - ACC-252 Registered clients should not be visible to everyone.
+
+
 ## 1.5.1 - 2024-07-24
 
 ---
