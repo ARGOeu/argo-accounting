@@ -160,11 +160,11 @@ public class ProjectEndpoint {
             @Parameter(name = "size", in = QUERY,
                     description = "The page size.") @DefaultValue("10") @Min(value = 1, message = "Page size must be between 1 and 100.")
             @Max(value = 100, message = "Page size must be between 1 and 100.") @QueryParam("size") int size,
-            @Parameter(name = "metric-definition-id", in = QUERY, example = "507f1f77bcf86cd799439011",
+            @Parameter(name = "metric-definition-id", in = QUERY, schema = @Schema(type = SchemaType.STRING, defaultValue = ""),
                     description = "The Metric Definition that the Metrics are related to.")  @QueryParam("metric-definition-id") @NotFoundEntity(repository = MetricDefinitionRepository.class, message = "There is no Metric Definition with the following id:") String metricDefinitionId,
-            @Parameter(name = "start", in = QUERY, example = "2020-01-01",
+            @Parameter(name = "start", in = QUERY, schema = @Schema(type = SchemaType.STRING, defaultValue = ""),
                     description = "The inclusive start date for the query in the format YYYY-MM-DD. Cannot be after end.")  @QueryParam("start") String start,
-            @Parameter(name = "end", in = QUERY, example = "2020-12-31",
+            @Parameter(name = "end", in = QUERY, schema = @Schema(type = SchemaType.STRING, defaultValue = ""),
                     description = "The inclusive end date for the query in the format YYYY-MM-DD. Cannot be before start.") @QueryParam("end") String end,
             @Context UriInfo uriInfo) {
 
@@ -234,11 +234,15 @@ public class ProjectEndpoint {
             @Parameter(name = "size", in = QUERY,
                     description = "The page size.") @DefaultValue("10") @Min(value = 1, message = "Page size must be between 1 and 100.")
             @Max(value = 100, message = "Page size must be between 1 and 100.") @QueryParam("size") int size,
+            @Parameter(name = "start", in = QUERY, schema = @Schema(type = SchemaType.STRING, defaultValue = ""),
+                    description = "The inclusive start date for the query in the format YYYY-MM-DD. Cannot be after end.")  @QueryParam("start") String start,
+            @Parameter(name = "end", in = QUERY, schema = @Schema(type = SchemaType.STRING, defaultValue = ""),
+                    description = "The inclusive end date for the query in the format YYYY-MM-DD. Cannot be before start.") @QueryParam("end") String end,
             @Context UriInfo uriInfo) {
 
         var serverInfo = new AccountingUriInfo(serverUrl.concat(basePath).concat(uriInfo.getPath()));
 
-        var response = metricService.getMetricsByProjectAndGroup(id, groupId,page - 1, size, serverInfo);
+        var response = metricService.getMetricsByProjectAndGroup(id, groupId,page - 1, size, start, end, serverInfo);
 
         return Response.ok().entity(response).build();
     }
@@ -302,11 +306,15 @@ public class ProjectEndpoint {
             @Parameter(name = "size", in = QUERY,
                     description = "The page size.") @DefaultValue("10") @Min(value = 1, message = "Page size must be between 1 and 100.")
             @Max(value = 100, message = "Page size must be between 1 and 100.") @QueryParam("size") int size,
+            @Parameter(name = "start", in = QUERY, schema = @Schema(type = SchemaType.STRING, defaultValue = ""),
+                    description = "The inclusive start date for the query in the format YYYY-MM-DD. Cannot be after end.")  @QueryParam("start") String start,
+            @Parameter(name = "end", in = QUERY, schema = @Schema(type = SchemaType.STRING, defaultValue = ""),
+                    description = "The inclusive end date for the query in the format YYYY-MM-DD. Cannot be before start.") @QueryParam("end") String end,
             @Context UriInfo uriInfo) {
 
         var serverInfo = new AccountingUriInfo(serverUrl.concat(basePath).concat(uriInfo.getPath()));
 
-        var response = metricService.getMetricsByProjectAndUser(id, userId,page - 1, size, serverInfo);
+        var response = metricService.getMetricsByProjectAndUser(id, userId,page - 1, size, start, end, serverInfo);
 
         return Response.ok().entity(response).build();
     }
@@ -417,11 +425,11 @@ public class ProjectEndpoint {
             @Parameter(name = "size", in = QUERY,
                     description = "The page size.") @DefaultValue("10") @Min(value = 1, message = "Page size must be between 1 and 100.")
             @Max(value = 100, message = "Page size must be between 1 and 100.") @QueryParam("size") int size,
-            @Parameter(name = "metric-definition-id", in = QUERY, example = "507f1f77bcf86cd799439011",
+            @Parameter(name = "metric-definition-id", in = QUERY, schema = @Schema(type = SchemaType.STRING, defaultValue = ""),
                     description = "The Metric Definition that the Metrics are related to.")  @QueryParam("metric-definition-id") @NotFoundEntity(repository = MetricDefinitionRepository.class, message = "There is no Metric Definition with the following id:") String metricDefinitionId,
-            @Parameter(name = "start", in = QUERY, example = "2020-01-01",
+            @Parameter(name = "start", in = QUERY, schema = @Schema(type = SchemaType.STRING, defaultValue = ""),
                     description = "The inclusive start date for the query in the format YYYY-MM-DD. Cannot be after end.")  @QueryParam("start") String start,
-            @Parameter(name = "end", in = QUERY, example = "2020-12-31",
+            @Parameter(name = "end", in = QUERY, schema = @Schema(type = SchemaType.STRING, defaultValue = ""),
                     description = "The inclusive end date for the query in the format YYYY-MM-DD. Cannot be before start.") @QueryParam("end") String end,
             @Context UriInfo uriInfo) {
 
