@@ -176,9 +176,9 @@ public class MetricService {
      * @param groupId The ID of the group.
      * @return A list of metrics related to the specified project and group.
      */
-    public PageResource<MetricProjection> getMetricsByProjectAndGroup(String projectId, String groupId, int page, int size, UriInfo uriInfo){
+    public PageResource<MetricProjection> getMetricsByProjectAndGroup(String projectId, String groupId, int page, int size, String start, String end, UriInfo uriInfo){
 
-        var projection = metricRepository.findByProjectIdAndGroupId(projectId, groupId, page, size);
+        var projection = metricRepository.findByProjectIdAndGroupId(projectId, groupId, page, size, start, end);
 
         return new PageResource<>(projection, projection.list(), uriInfo);
     }
@@ -190,9 +190,9 @@ public class MetricService {
      * @param userId The ID of the group.
      * @return A list of metrics related to the specified project and user.
      */
-    public PageResource<MetricProjection> getMetricsByProjectAndUser(String projectId, String userId, int page, int size, UriInfo uriInfo){
+    public PageResource<MetricProjection> getMetricsByProjectAndUser(String projectId, String userId, int page, int size, String start, String end, UriInfo uriInfo){
 
-        var projection = metricRepository.findByProjectIdAndUserId(projectId, userId, page, size);
+        var projection = metricRepository.findByProjectIdAndUserId(projectId, userId, page, size, start, end);
 
         return new PageResource<>(projection, projection.list(), uriInfo);
     }
