@@ -77,7 +77,7 @@ public class ClientEndpoint {
             description = "Client has been successfully registered.",
             content = @Content(schema = @Schema(
                     type = SchemaType.OBJECT,
-                    implementation = InformativeResponse.class)))
+                    implementation = ClientResponseDto.class)))
     @APIResponse(
             responseCode = "401",
             description = "Client has not been authenticated.",
@@ -97,7 +97,6 @@ public class ClientEndpoint {
                     type = SchemaType.OBJECT,
                     implementation = InformativeResponse.class)))
     @SecurityRequirement(name = "Authentication")
-
     @POST
     @Produces(value = MediaType.APPLICATION_JSON)
     public Response clientRegistration() {

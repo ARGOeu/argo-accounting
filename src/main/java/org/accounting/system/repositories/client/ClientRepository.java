@@ -10,6 +10,7 @@ import org.bson.Document;
 import org.bson.conversions.Bson;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -74,13 +75,14 @@ public class ClientRepository extends ClientModulator {
 
         }, ()->{
 
-            Client client = new Client();
+            var client = new Client();
 
             client.setSystemAdmin(true);
             client.setEmail(email);
             client.setName(name);
             client.setId(vopersonId);
             client.setRoles(Set.of("collection_owner"));
+            client.setRegisteredOn(LocalDateTime.now());
             persist(client);
         });
     }
