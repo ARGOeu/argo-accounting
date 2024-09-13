@@ -34,18 +34,21 @@ public class ClientResponseDto {
     @JsonProperty("email")
     public String email;
 
-//    @Schema(
-//            type = SchemaType.ARRAY,
-//            implementation = String.class,
-//            description = "This list contains the name of roles.",
-//            example = "{\n" +
-//                    "   \"roles\":[\n" +
-//                    "      \"role_admin\",\n" +
-//                    "      \"metric_definition_creator\",\n" +
-//                    "      \"metric_inspector\"\n" +
-//                    "   ]\n" +
-//                    "}\n"
-//    )
-//    @JsonProperty("roles")
-//    public Set<String> roles;
+    @Schema(
+            type = SchemaType.STRING,
+            implementation = String.class,
+            description = "Date and time when the user registered on the service.",
+            example = "2024-09-13T09:38:47.116"
+    )
+    @JsonProperty("registered_on")
+    public String registeredOn;
+
+    @Schema(
+            type = SchemaType.BOOLEAN,
+            implementation = Boolean.class,
+            description = "Whether a client is system admin or not",
+            example = "false"
+    )
+    @JsonProperty("system_admin")
+    public boolean systemAdmin;
 }
