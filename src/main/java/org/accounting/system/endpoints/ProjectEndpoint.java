@@ -284,7 +284,7 @@ public class ProjectEndpoint {
                     implementation = InformativeResponse.class)))
     @SecurityRequirement(name = "Authentication")
     @GET
-    @Path("/projects/{project_id}/groups/{user_id}/metrics")
+    @Path("/projects/{project_id}/users/{user_id}/metrics")
     @Produces(value = MediaType.APPLICATION_JSON)
     public Response getAllMetricsUnderSpecificProjectRelatedToSpecificUser(
             @Parameter(
