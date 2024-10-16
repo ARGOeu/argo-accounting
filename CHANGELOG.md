@@ -37,8 +37,7 @@ According to [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) , the `Unr
 ### Fixed
 
 -   [#193](https://github.com/ARGOeu/argo-accounting/pull/193) - ACC-274 Update Group ID Path Name to Resolve Conflict with User ID Path.
-
-
+-   [#194](https://github.com/ARGOeu/argo-accounting/pull/194) - ACC-275 Fix Search of Metrics by Start or End Date.
 
 ## 1.5.1 - 2024-07-24
 
