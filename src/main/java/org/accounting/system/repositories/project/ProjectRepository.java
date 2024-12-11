@@ -11,6 +11,7 @@ import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.NotFoundException;
 import org.accounting.system.beans.RequestUserContext;
+import org.accounting.system.dtos.project.UpdateProjectRequest;
 import org.accounting.system.entities.HierarchicalRelation;
 import org.accounting.system.entities.MetricDefinition;
 import org.accounting.system.entities.acl.RoleAccessControl;
@@ -32,6 +33,7 @@ import org.accounting.system.repositories.installation.InstallationRepository;
 import org.accounting.system.repositories.metric.MetricRepository;
 import org.accounting.system.repositories.provider.ProviderRepository;
 import org.accounting.system.services.authorization.RoleService;
+import org.apache.commons.lang3.StringUtils;
 import org.bson.Document;
 import org.bson.conversions.Bson;
 
@@ -279,6 +281,46 @@ public class ProjectRepository extends ProjectModulator {
         return getMongoCollection()
                 .aggregate(List.of(eq), ProjectProjection.class)
                 .first();
+    }
+
+    public ProjectProjection updateProject(UpdateProjectRequest request, String id) {
+
+        var eq = Filters.eq("_id",  id);
+
+        var list = new ArrayList<Bson>();
+
+        if(StringUtils.isNotEmpty(request.acronym)){
+
+            list.add(Updates.set("acronym", request.acronym));
+        }
+
+        if(StringUtils.isNotEmpty(request.title)){
+
+            list.add(Updates.set("title", request.title));
+        }
+
+        if(StringUtils.isNotEmpty(request.startDate)){
+
+            list.add(Updates.set("startDate", request.startDate));
+        }
+
+        if(StringUtils.isNotEmpty(request.endDate)){
+
+            list.add(Updates.set("endDate", request.endDate));
+        }
+
+        if(StringUtils.isNotEmpty(request.callIdentifier)){
+
+            list.add(Updates.set("callIdentifier", request.callIdentifier));
+        }
+
+        var update = Updates.combine(
+                list
+        );
+
+        getMongoCollection().updateOne(eq, update);
+
+        return fetchById(id);
     }
 
     public boolean accessibility(String projectId, Collection collection, Operation operation){
