@@ -14,7 +14,6 @@ import org.accounting.system.entities.acl.RoleAccessControl;
 import org.accounting.system.entities.client.Client;
 import org.accounting.system.entities.projections.normal.ProjectProjection;
 import org.accounting.system.exceptions.ConflictException;
-import org.accounting.system.mappers.ProjectMapper;
 import org.accounting.system.mappers.ResourceMapper;
 import org.accounting.system.repositories.ResourceRepository;
 import org.accounting.system.repositories.authorization.RoleRepository;
@@ -205,12 +204,6 @@ public class SystemAdminService {
 
     public ProjectProjection updateProject(UpdateProjectRequest request, String id) {
 
-        var entity = projectRepository.findById(id);
-
-        ProjectMapper.INSTANCE.updateProjectFromDto(request, entity);
-
-        projectRepository.update(entity);
-
-        return projectRepository.fetchById(id);
+        return projectRepository.updateProject(request, id);
     }
 }
