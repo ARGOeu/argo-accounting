@@ -4,7 +4,7 @@ title: Installations
 sidebar_position: 3
 ---
 
-In the <a href="https://accounting.eosc-portal.eu/installations">Installations</a> tab, you can find all the Installations associated with a Project, and you have been granted rights to them 
+In the <a href="https://accounting.eosc-portal.eu/installations">Installations</a> tab, you can find all the Installations associated with a Project, and you have been granted rights to them
 either as **Project Admin**, **Provider Admin** or **Installation Admin**.
 
 Please refer to Installation [collection](docs/api/installation.md) for more details.
@@ -58,7 +58,6 @@ If the Installation is successfully deleted, the following message is displayed.
 
 ![](assets/installation/delete_success.png)
 
-
 ### Collect Metrics from specific Installation
 
 You can collect all Metrics under a specific Installation by clicking on the highlighted button.
@@ -75,7 +74,7 @@ As mentioned in the previous section, the Installation Metrics are displayed by 
 
 ![](assets/installation/collect_metrics.png)
 
-#### Add a new Metric 
+#### Add a new Metric
 
 Click the `Add Metric` button to insert a new Metric to the selected Installation.
 

@@ -7,19 +7,18 @@ sidebar_position: 5
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
-### Before you start 
+### Before you start
 
 You can manage a Provider assigned to a specific Project.<br/>
 
 **1.** [Register](/docs/guides/register.md) to Accounting Service.<br/>
 **2.** Contact the administrator of the Project or the administrator of the Project's Provider, that this Installation is associated with, to assign you the Installation Admin role upon the installation you want.
 
-
 In the Accounting Service, the **_installation_admin_** role is the main role for managing an Installation. This role permits the user to perform any operation, on a specific Installation.
 
 Below we describe the actions an **_installation_admin_** can either perform through the Accounting User Interface or a simple HTTP request.
 
-## Actions 
+## Actions
 
 ---
 

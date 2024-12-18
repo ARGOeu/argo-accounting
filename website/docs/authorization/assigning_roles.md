@@ -12,8 +12,8 @@ As we have already mentioned, a client can interact with a Project-Provider-Inst
 
 Initially, no client has a role. The Accounting System Administrators can initially turn any client into a Project Admin.
 
-| ![](assets/info.png)    	|  If you want to be a Project Admin to a particular Project, then send an email to accounting@einfra.grnet.gr.|
-|------------------	|--------	|
+| ![](assets/info.png)     |  If you want to be a Project Admin to a particular Project, then send an email to <accounting@einfra.grnet.gr>.|
+|------------------ |-------- |
 
 Once you have been assigned the Project Admin role, you can in turn grant roles to other clients.
 Generally, any of the above roles can assign roles to other clients at the level of the Project-Provider-Installation relationship they manage.

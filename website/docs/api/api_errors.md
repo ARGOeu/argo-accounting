@@ -14,6 +14,7 @@ In case of Error during handling user’s request the API responds using the fol
   "message": "Internal Server Error"
 }
 ```
+
 ## Error Codes
 
 The following error codes are the possible errors of all methods

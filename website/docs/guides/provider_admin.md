@@ -7,19 +7,18 @@ sidebar_position: 4
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
-### Before you start 
+### Before you start
 
 You can manage a Provider assigned to a specific Project.<br/>
 
 **1.** [Register](/docs/guides/register.md) to Accounting Service.<br/>
 **2.** Contact the administrator of the Project, that this Provider is associated with, to assign you the Provider Admin role upon the provider you want.
 
-
 In the Accounting Service,the **_provider_admin_** role is the main role for managing a Provider belonging to a Project. This role permits the user to perform any operation, on a specific Provider.
 
 Below we describe the actions a **_provider_admin_** can either perform through the Accounting User Interface or a simple HTTP request.
 
-## Actions 
+## Actions
 
 ---
 

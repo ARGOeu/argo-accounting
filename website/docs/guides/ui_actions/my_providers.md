@@ -4,7 +4,7 @@ title: My Providers
 sidebar_position: 2
 ---
 
-In the <a href="https://accounting.eosc-portal.eu/myProviders">My Providers</a> tab, you can find all the Providers associated with a Project, and you have been granted rights to them 
+In the <a href="https://accounting.eosc-portal.eu/myProviders">My Providers</a> tab, you can find all the Providers associated with a Project, and you have been granted rights to them
 either as **Project Admin** or **Provider Admin**.
 
 ### View all the Providers you have access to
@@ -30,7 +30,7 @@ As mentioned in the previous section, the Provider Metrics are displayed by sele
 
 ![](assets/my_providers/collect_metrics.png)
 
-#### Add a new Metric 
+#### Add a new Metric
 
 Click the `Add Metric` button to insert a new Metric to the selected Provider.
 

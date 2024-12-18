@@ -14,4 +14,4 @@ Essentially, the main functions of the platform are expressed by a REST API. The
 - Offering the aggregated input to several different clients.
 - Request accounting data for a specific time period.
 
-In addition, API resources must only be obtainable by authenticated clients. For this reason, every client who wants access to API resources should be authenticated. 
+In addition, API resources must only be obtainable by authenticated clients. For this reason, every client who wants access to API resources should be authenticated.

@@ -10,13 +10,13 @@ A metric definition is the way to represent and describe the type of the metrics
 
 The Metric Definition can be expressed by the following structure:
 
-| Field          	| Description   	                      | 
-|------------------	|---------------------------------------- |
-| id             	| A unique identifier             |
-| metric_name      	| Name to be used for describing a Metric |
-| metric_description      	| Short Description of a Metric Definition |
-| [unit_type](./unit_type.md)      	| Expresses and measures physical quantities used in various infrastructures, service providers, and projects.|
-| [metric_type](./metric_type.md)      	| Defines how the physical quantities have been collected |
+| Field           | Description                          |
+|------------------ |---------------------------------------- |
+| id              | A unique identifier             |
+| metric_name       | Name to be used for describing a Metric |
+| metric_description       | Short Description of a Metric Definition |
+| [unit_type](./unit_type.md)       | Expresses and measures physical quantities used in various infrastructures, service providers, and projects.|
+| [metric_type](./metric_type.md)       | Defines how the physical quantities have been collected |
 
 ### [POST] - Create a Metric Definition
 
@@ -65,6 +65,7 @@ Authorization: Bearer {token}
 The response returned to the client is the following:
 
 Success Response `200 OK`
+
 ```
 {
     "id" : "61dff744ba5b5f60791bd09d",
@@ -132,6 +133,7 @@ Authorization: Bearer {token}
 If the operation is successful, you get the following response:
 
 Success Response `200 OK`
+
 ```
 {
    "code": 200,
@@ -139,11 +141,9 @@ Success Response `200 OK`
 }
 ```
 
-
 ### [GET]  - Fetch all the Metric Definitions
 
 You can also fetch all the Metric Definitions that exist to the accounting system.
-
 
 ```
 GET /accounting-system/metric-definitions
@@ -187,14 +187,16 @@ If the operation is successful, you get the following response:
 ```
 
 ### [POST] - Search for Metric Definitions
- 
+
 You can search on Installations, to find the ones corresponding to the given search criteria. Metric Definitions can be searched by executing the following request:
- 
-``` 
+
+```
 POST accounting-system/metric-definition/search
 Content-Type: application/json
 ```
-#### Example 1: 
+
+#### Example 1
+
 ```
 {
   "type": "query",
@@ -204,7 +206,7 @@ Content-Type: application/json
 }
 ```
 
-#### Example 2: 
+#### Example 2
 
 ```
 {
@@ -237,9 +239,10 @@ Content-Type: application/json
     }
     
 ```
- 
+
 The context of the request should be a json object. The syntax of the json object , is described <b> <a href="https://argoeu.github.io/argo-accounting/docs/guides/search-filter">here</a></b>
 If the operation is successful, you get a list of metrics, for example:
+
 ```
 {
     "size_of_page": 1,
