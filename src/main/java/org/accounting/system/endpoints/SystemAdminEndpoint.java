@@ -22,6 +22,7 @@ import jakarta.ws.rs.core.UriInfo;
 import org.accounting.system.beans.RequestUserContext;
 import org.accounting.system.constraints.NotFoundEntity;
 import org.accounting.system.dtos.InformativeResponse;
+import org.accounting.system.dtos.VersionDto;
 import org.accounting.system.dtos.admin.ProjectRegistrationRequest;
 import org.accounting.system.dtos.authorization.request.AssignRoleRequestDto;
 import org.accounting.system.dtos.authorization.request.DetachRoleRequestDto;
@@ -63,6 +64,9 @@ import static org.eclipse.microprofile.openapi.annotations.enums.ParameterIn.QUE
 
 public class SystemAdminEndpoint {
 
+    @ConfigProperty(name = "quarkus.application.version")
+    String version;
+
     @Inject
     ClientService clientService;
 
@@ -77,7 +81,6 @@ public class SystemAdminEndpoint {
 
     @Inject
     RequestUserContext requestUserContext;
-
 
     @Tag(name = "System Administrator")
     @Operation(
@@ -458,7 +461,6 @@ public class SystemAdminEndpoint {
                     type = SchemaType.OBJECT,
                     implementation = InformativeResponse.class)))
     @SecurityRequirement(name = "Authentication")
-
     @POST
     @Path("clients/{client_id}/detach-roles")
     @Produces(value = MediaType.APPLICATION_JSON)
@@ -477,5 +479,46 @@ public class SystemAdminEndpoint {
         var response = clientService.detachRolesFromRegisteredClient(clientId, detachRoleRequestDto.roles);
 
         return Response.ok().entity(response).build();
+    }
+
+    @Tag(name = "System Administrator")
+    @Operation(
+            summary = "Returns the version of the Accounting Service API.",
+            description = "Returns the version of the Accounting Service API.")
+    @APIResponse(
+            responseCode = "200",
+            description = "The Accounting Service API version.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = VersionDto.class)))
+    @APIResponse(
+            responseCode = "401",
+            description = "Client has not been authenticated.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "403",
+            description = "The authenticated client is not permitted to perform the requested operation.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "500",
+            description = "Internal Server Error.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @SecurityRequirement(name = "Authentication")
+    @GET
+    @Path("/version")
+    @Produces(value = MediaType.APPLICATION_JSON)
+    @SystemAdmin
+    public Response version() {
+
+        var versionDto = new VersionDto();
+        versionDto.version = version;
+
+        return Response.status(Response.Status.OK).entity(versionDto).build();
     }
 }
