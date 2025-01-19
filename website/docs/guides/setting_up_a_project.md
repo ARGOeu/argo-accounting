@@ -7,7 +7,6 @@ sidebar_position: 2
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
-
 To be able to set up a particular Project, you must be the `Project Admin` of that Project.
 See [here](/docs/guides/api_actions/projects.md) how you can obtain that role.
 
@@ -16,7 +15,7 @@ Consider that you can execute the following actions either through User Interfac
 ### Step 1: Associate Providers with the Project
 
 :::note
-You can either use the Providers <a href="https://argoeu.github.io/argo-accounting/docs/api/provider#registering-provider-by-following-the-eosc-onboarding-process-at-httpsproviderseosc-portaleubecomeaprovider">registered in the EOSC Resource Catalogue</a> or create a new one. 
+You can either use the Providers <a href="https://argoeu.github.io/argo-accounting/docs/api/provider#registering-provider-by-following-the-eosc-onboarding-process-at-httpsproviderseosc-portaleubecomeaprovider">registered in the EOSC Resource Catalogue</a> or create a new one.
 :::
 
 :::note View all the Providers

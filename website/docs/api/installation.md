@@ -10,14 +10,14 @@ An Installation can only be generated through the endpoint we are going to descr
 
 The Installation collection has the following structure:
 
-| Field          	| Description   	                      | 
-|------------------	|---------------------------------------- |
-| [project](./project.md)             	| It must point to a Project ID that has already been registered             |
-| [organisation](./provider.md)       	| It must point to a Provider ID that has been either registered through the EOSC Resource Catalogue or Accounting System API |
+| Field           | Description                          |
+|------------------ |---------------------------------------- |
+| [project](./project.md)              | It must point to a Project ID that has already been registered             |
+| [organisation](./provider.md)        | It must point to a Provider ID that has been either registered through the EOSC Resource Catalogue or Accounting System API |
 | [resource](./resource.md)             | This field is optional. If you want to associate an Installation with a Resource, please fill this field in with the corresponding Resource ID from the EOSC Resource Catalogue |
-| infrastructure      	    | Short name of infrastructure |
-| installation      	| Short name of installation |
-| [unit_of_access](./metric_definition.md)      	| It must point to an existing Metric Definition. Obviously, you can add different Metrics to an Installation, but this attribute expresses the primary Unit of Access |
+| infrastructure           | Short name of infrastructure |
+| installation       | Short name of installation |
+| [unit_of_access](./metric_definition.md)       | It must point to an existing Metric Definition. Obviously, you can add different Metrics to an Installation, but this attribute expresses the primary Unit of Access |
 
 ### [POST] - Create a new Installation
 
@@ -314,14 +314,16 @@ Success Response `200 OK`
 **Keep in mind that** to execute the above operation, you must have been assigned a role containing the Installation Acl permission.
 
 ### [POST] - Search for Installations
- 
+
 You can search on Installations, to find the ones corresponding to the given search criteria. Installations  can be searched by executing the following request:
- 
-``` 
+
+```
 POST accounting-system/installations/search
 Content-Type: application/json
 ```
-#### Example 1: 
+
+#### Example 1
+
 ```
 {
            "type":"query",
@@ -332,7 +334,7 @@ Content-Type: application/json
 }
 ```
 
-#### Example 2: 
+#### Example 2
 
 ```
 {
@@ -358,9 +360,10 @@ Content-Type: application/json
 
    }]}
 ```
- 
+
 The context of the request should be a json object. The syntax of the json object , is described <b> <a href="https://argoeu.github.io/argo-accounting/docs/guides/search-filter">here</a></b>
 If the operation is successful, you get a list of installations
+
 ```
 {
    "size_of_page": 2,

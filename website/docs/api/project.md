@@ -91,6 +91,7 @@ Authorization: Bearer {token}
 Basically, the hierarchical structure of a Project is returned:
 
 Success Response `200 OK`
+
 ```
 {
     "id": "725025",
@@ -126,7 +127,6 @@ Success Response `200 OK`
     ]
 }
 ```
-
 
 ### [GET] - Fetch all Projects
 
@@ -300,7 +300,6 @@ Success Response `200 OK`
 }
 ```
 
-
 ### [POST] - Access Control Entry for a particular Project {#post-access-control}
 
 The general endpoint that is responsible for creating an Access Control entry for a Project is as follows:
@@ -337,15 +336,18 @@ Consequently, any client can have different responsibilities at different Projec
 **Keep in mind that** to execute the above operation, you must have been assigned a role containing the Project Acl permission.
 
 ### [POST] - Search for Projects
- 
+
 You can search on Projects, to find the ones corresponding to the given search criteria. Projects  can be searched by executing the following request:
+
 ```
 POST accounting-system/projects/search
 Content-Type: application/json
 
 
 ```
-#### Example 1: 
+
+#### Example 1
+
 ```
  {
       "type": "query",
@@ -354,7 +356,8 @@ Content-Type: application/json
       "operand": "eq"
     }
 ```
-#### Example 2: 
+
+#### Example 2
 
 ```
 {
@@ -378,7 +381,7 @@ Content-Type: application/json
 ```
 
 The context of the request should be a json object. The syntax of the json object , is described <b> <a href="https://argoeu.github.io/argo-accounting/docs/guides/search-filter">here</a></b>
- 
+
 If the operation is successful, you get a list of projects
 
 ```
@@ -427,11 +430,7 @@ If the operation is successful, you get a list of projects
 
 ```
 
-
 Otherwise, an empty response will be returned.
-
-
-
 
 ### Errors
 

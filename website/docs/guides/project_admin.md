@@ -7,17 +7,16 @@ sidebar_position: 3
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
-### Before you start 
+### Before you start
 
 **1.** [Register](/docs/guides/register.md) to Accounting Service.<br/>
-**2.** [Contact](/docs/authorization/assigning_roles.md) the system administrator, to assign you the Project Admin role upon the project you want. 
-
+**2.** [Contact](/docs/authorization/assigning_roles.md) the system administrator, to assign you the Project Admin role upon the project you want.
 
 In the Accounting Service, the **_project_admin_** role is the main role for managing a Project. This role permits the client to perform any operation, on a specific Project.
 
 Below we describe the actions a **_project_admin_** can either perform through the Accounting User Interface or a simple HTTP request.
 
-## Actions 
+## Actions
 
 ---
 
@@ -47,7 +46,6 @@ Below we describe the actions a **_project_admin_** can either perform through t
 </Tabs>
 
 :::
-
 
 :::info Create a new Installation on a specific Project
 

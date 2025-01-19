@@ -60,7 +60,7 @@ As mentioned in the previous section, the Project Metrics are displayed by selec
 
 ![](assets/project/project_metrics.png)
 
-#### Add a new Metric 
+#### Add a new Metric
 
 Click the `Add Metric` button to insert a new Metric to the selected Project.
 

@@ -6,12 +6,12 @@ sidebar_position: 1
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
-
 ### Steps to Register into Accounting Service
 
 There are two ways to register yourself into Accounting Service :
 
 ### The first way
+
 ---
 
 - **_Authenticate yourself_**<br/>
@@ -20,16 +20,16 @@ First you need to authenticate yourself to EOSC Core Infrastructure Proxy. Instr
 Then you need to apply a request to the Accounting Service API, in order to register yourself. <b> For more details, how to syntax the request, see <a href="https://argoeu.github.io/argo-accounting/docs/api/client#post---client-registration">here</a></b>.<br/>
 
 ### The second way
+
 ---
 Just log in to [Accounting User Interface](https://accounting.eosc-portal.eu/).
-
 
 ### Upon successful Registration
 
 Once you register the Accounting Service, you can perform the following actions:
 
-
 ### READ Metric Definitions
+
 :::info Choose your preferred way
 
 <Tabs>
@@ -40,8 +40,8 @@ Once you register the Accounting Service, you can perform the following actions:
 
 :::
 
-
 ### READ Providers
+
 :::info Choose your preferred way
 
 <Tabs>
@@ -52,6 +52,7 @@ Once you register the Accounting Service, you can perform the following actions:
 :::
 
 ### READ Unit Types
+
 :::info Choose your preferred way
 
 <Tabs>
@@ -62,6 +63,7 @@ Once you register the Accounting Service, you can perform the following actions:
 :::
 
 ### READ Metric Types
+
 :::info Choose your preferred way
 
 <Tabs>
@@ -72,6 +74,7 @@ Once you register the Accounting Service, you can perform the following actions:
 :::
 
 ### READ all Clients
+
 :::info Choose your preferred way
 
 <Tabs>
@@ -80,21 +83,3 @@ Once you register the Accounting Service, you can perform the following actions:
 </Tabs>
 
 :::
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

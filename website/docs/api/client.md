@@ -4,7 +4,7 @@ title: Client
 sidebar_position: 1
 ---
 
-As a client we define either a user or a service that communicates and interacts with the Accounting System API. 
+As a client we define either a user or a service that communicates and interacts with the Accounting System API.
 In order for a client to be able to interact with the API, first it has to register itself into the Accounting System. Based on the Client **_voperson_id_** the Accounting System API assigns different Roles to different Clients.
 Consequently, a client cannot get a Role unless registration has been completed first.
 
@@ -26,11 +26,11 @@ Once the above request is executed, we extract the following information from th
 
 Then we store it into the database collection Client:
 
-| Field          	 | Description   	                      | 
+| Field            | Description                          |
 |------------------|---------------------------------------- |
-| id             	 | An identifier for the client which is globally unique and not reassignable. |
-| name       	     | The client's full name. |
-| email      	     | The client’s email. |
+| id               | An identifier for the client which is globally unique and not reassignable. |
+| name             | The client's full name. |
+| email            | The client’s email. |
 
 ### [GET] - Read the registered Clients
 

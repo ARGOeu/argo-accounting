@@ -4,8 +4,9 @@ title: Collecting Metrics from different levels
 sidebar_position: 10
 ---
 
-The Accounting System offers the possibility to collect Metrics from different levels of the hierarchical structure Project -> Provider -> Installation. 
+The Accounting System offers the possibility to collect Metrics from different levels of the hierarchical structure Project -> Provider -> Installation.
 You can select the level you want, and the API returns the Metrics under it. Returned Metrics also contain the hierarchical structure they belong to, for example:
+
 ```
 {
    "id": "6297459e0f41a20c683e9019",
@@ -169,7 +170,7 @@ You can tune the default values by using the query parameters page and size as s
 GET /accounting-system/accounting-system/projects/{project_id}/metrics?page=2&size=15
 ```
 
-The above request returns the second page which contains 15 Metrics. 
+The above request returns the second page which contains 15 Metrics.
 
 In conclusion, the aforementioned request returns all the metrics to which the client has access in a project. The range of metrics can be limited by using date filters.
 

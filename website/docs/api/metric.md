@@ -16,13 +16,13 @@ Once you have completed the above steps, you can submit a new metric in the Acco
 
 The Metric consists of the following attributes:
 
-| Field          	| Description   	                      | 
-|------------------	|---------------------------------------- |
-| id             	| Unique ID of the Metric             |
-| [metric_definition_id](./metric_definition.md)       	| Reference Id from the metric definition |
-| time_period_start      	    | Timestamp of the starting date time (Zulu timestamp) |
-| time_period_end      	|Timestamp of the end date time (Zulu timestamp)|
-| value      	| Value of the metric for the given period (decimal value) |
+| Field           | Description                          |
+|------------------ |---------------------------------------- |
+| id              | Unique ID of the Metric             |
+| [metric_definition_id](./metric_definition.md)        | Reference Id from the metric definition |
+| time_period_start           | Timestamp of the starting date time (Zulu timestamp) |
+| time_period_end       |Timestamp of the end date time (Zulu timestamp)|
+| value       | Value of the metric for the given period (decimal value) |
 
 ### [POST] - Create a new Metric
 
@@ -55,7 +55,6 @@ Success Response `201 CREATED`
     "value": 700
 }
 ```
-
 
 ### [DELETE] - Delete an existing Metric
 
@@ -132,14 +131,16 @@ Success Response `200 OK`
 ```
 
 ### [POST] - Search for Metrics
- 
+
 You can search on Metrics, to find the ones corresponding to the given search criteria. Metrics  can be searched by executing the following request:
- 
-``` 
+
+```
 POST accounting-system/metrics/search
 Content-Type: application/json
 ```
-#### Example 1: 
+
+#### Example 1
+
 ```
 {
   "type": "query",
@@ -149,7 +150,7 @@ Content-Type: application/json
 }
 ```
 
-#### Example 2: 
+#### Example 2
 
 ```
 {
@@ -183,9 +184,10 @@ Content-Type: application/json
   ]
 }
 ```
- 
+
 The context of the request should be a json object. The syntax of the json object , is described <b> <a href="https://argoeu.github.io/argo-accounting/docs/guides/search-filter">here</a></b>
 If the operation is successful, you get a list of metrics, for example:
+
 ```
 {
     "size_of_page": 3,
@@ -257,7 +259,6 @@ If the operation is successful, you get a list of metrics, for example:
     "links": []
 }
 ```
-
 
 ### Errors
 

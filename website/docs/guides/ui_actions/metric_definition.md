@@ -10,7 +10,6 @@ Please note that all available actions are described in this section. The role t
 
 Please refer to Metric Definition [collection](/docs/api/metric_definition.md) for more details.
 
-
 ### View all the Metric Definitions
 
 To view all the Metric Definitions, you should visit the <a href="https://accounting.eosc-portal.eu/metrics-definitions">Metric Definition tab</a> on the Accounting User Interface.

@@ -6,11 +6,10 @@ sidebar_position: 9
 
 The Accounting System communicates with EOSC Resource Catalogue to retrieve the available Resources. From the response we receive we keep specific information, which expresses a Resource. The Resource for the Accounting Service has the following structure:
 
-
-| Field          	| Description   	                      | 
-|------------------	|---------------------------------------- |
-| id             	| A unique Resource identifier            |
-| name            	| The name of Resource                    |
+| Field           | Description                          |
+|------------------ |---------------------------------------- |
+| id              | A unique Resource identifier            |
+| name             | The name of Resource                    |
 
 ### [GET] - Fetch the available EOSC Resources
 
