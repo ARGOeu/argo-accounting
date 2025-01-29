@@ -29,7 +29,7 @@ public interface InstallationMapper {
 
     InstallationMapper INSTANCE = Mappers.getMapper( InstallationMapper.class );
 
-    @Mapping(target="unitOfAccess", expression="java(new ObjectId(request.unitOfAccess))")
+    @Mapping(target="unitOfAccess", expression="java(StringUtils.isNotEmpty(request.unitOfAccess) ? new ObjectId(request.unitOfAccess) : null)")
     Installation requestToInstallation(InstallationRequestDto request);
 
     @Mapping( target="id", expression="java(installation.getId().toString())")
