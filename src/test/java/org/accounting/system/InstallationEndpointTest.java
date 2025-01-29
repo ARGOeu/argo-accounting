@@ -221,27 +221,6 @@ public class InstallationEndpointTest extends PrepareTest {
                 .as(InformativeResponse.class);
 
         assertEquals("installation may not be empty.", responseNoInstallation.message);
-
-        var requestNoMetricDefinition= new InstallationRequestDto();
-
-        requestNoMetricDefinition.project = "777536";
-        requestNoMetricDefinition.organisation = "grnet";
-        requestNoMetricDefinition.infrastructure = "okeanos-knossos";
-        requestNoMetricDefinition.installation = "SECOND";
-
-        InformativeResponse responseNoMetricDefinition = given()
-                .auth()
-                .oauth2(getAccessToken("admin"))
-                .body(requestNoMetricDefinition)
-                .contentType(ContentType.JSON)
-                .post()
-                .then()
-                .assertThat()
-                .statusCode(400)
-                .extract()
-                .as(InformativeResponse.class);
-
-        assertEquals("unit_of_access may not be empty.", responseNoMetricDefinition.message);
     }
 
     @Test

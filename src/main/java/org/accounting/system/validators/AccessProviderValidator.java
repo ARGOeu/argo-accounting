@@ -124,16 +124,13 @@ public class AccessProviderValidator implements ConstraintValidator<AccessProvid
             throw new CustomValidationException("installation may not be empty.", HttpResponseStatus.BAD_REQUEST);
         }
 
-        if(StringUtils.isEmpty(request.unitOfAccess)){
+        if(!StringUtils.isEmpty(request.unitOfAccess)){
 
-            throw new CustomValidationException("unit_of_access may not be empty.", HttpResponseStatus.BAD_REQUEST);
+            var metricDefinitionRepository = CDI.current().select(MetricDefinitionRepository.class).get();
+
+            Try
+                    .run(()->metricDefinitionRepository.findByIdOptional(new ObjectId(request.unitOfAccess)).orElseThrow(()->new CustomValidationException("There is no Metric Definition with the following id "+request.unitOfAccess, HttpResponseStatus.NOT_FOUND)))
+                    .getOrElseThrow(()->new CustomValidationException("There is no Metric Definition with the following id: "+request.unitOfAccess, HttpResponseStatus.NOT_FOUND));
         }
-
-        var metricDefinitionRepository = CDI.current().select(MetricDefinitionRepository.class).get();
-
-
-        Try
-                .run(()->metricDefinitionRepository.findByIdOptional(new ObjectId(request.unitOfAccess)).orElseThrow(()->new CustomValidationException("There is no Metric Definition with the following id "+request.unitOfAccess, HttpResponseStatus.NOT_FOUND)))
-                .getOrElseThrow(()->new CustomValidationException("There is no Metric Definition with the following id: "+request.unitOfAccess, HttpResponseStatus.NOT_FOUND));
     }
 }
