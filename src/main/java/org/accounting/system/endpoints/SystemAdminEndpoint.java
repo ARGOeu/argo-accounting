@@ -7,6 +7,7 @@ import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
 import jakarta.ws.rs.Consumes;
+import jakarta.ws.rs.DELETE;
 import jakarta.ws.rs.DefaultValue;
 import jakarta.ws.rs.GET;
 import jakarta.ws.rs.PATCH;
@@ -184,6 +185,63 @@ public class SystemAdminEndpoint {
         var response = systemAdminService.createProject(request, requestUserContext.getId());
 
         return Response.created(serverInfo.getAbsolutePathBuilder().path(response.id).build()).entity(response).build();
+    }
+
+    @Tag(name = "System Administrator")
+    @Operation(
+            summary = "Delete an existing Project.",
+            description = "Deletes an existing Project in the Accounting Service. Accessible only by system administrators.")
+    @APIResponse(
+            responseCode = "200",
+            description = "Project deleted successfully.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "401",
+            description = "Client has not been authenticated.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "403",
+            description = "The authenticated client is not permitted to perform the requested operation.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "404",
+            description = "Not Found.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "500",
+            description = "Internal Server Errors.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @SecurityRequirement(name = "Authentication")
+    @DELETE
+    @Path("/projects/{id}")
+    @Produces(value = MediaType.APPLICATION_JSON)
+    @Consumes(value = MediaType.APPLICATION_JSON)
+    @SystemAdmin
+    public Response deleteProject(@Parameter(
+            description = "The Project to be deleted.",
+            required = true,
+            example = "447535",
+            schema = @Schema(type = SchemaType.STRING))
+                                       @PathParam("id") @Valid
+                                      @NotFoundEntity(repository = ProjectRepository.class, id = String.class, message = "There is no Project with the following id:") String id) {
+
+        systemAdminService.deleteProject(id);
+
+        var response = new InformativeResponse();
+        response.code = 200;
+        response.message = "Project deleted successfully.";
+
+        return Response.ok().entity(response).build();
     }
 
     @Tag(name = "System Administrator")

@@ -36,6 +36,8 @@ According to [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) , the
   version in API.
 - [#200](https://github.com/ARGOeu/argo-accounting/pull/200) - ACC-245 Make 
   field unit_of_access OPTIONAL.
+- [#202](https://github.com/ARGOeu/argo-accounting/pull/202) - ACC-297 Add API 
+  call to delete a project.
 
 ### Unreleased - Changed
 

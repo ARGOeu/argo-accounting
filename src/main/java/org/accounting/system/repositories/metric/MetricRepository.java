@@ -309,4 +309,8 @@ public class MetricRepository extends AccessibleModulator<Metric, ObjectId> {
 
         return entity;
     }
+
+    public void deleteByProjectId(String projectId) {
+        delete("project_id", projectId);
+    }
 }

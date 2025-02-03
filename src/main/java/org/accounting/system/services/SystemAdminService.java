@@ -15,9 +15,11 @@ import org.accounting.system.entities.client.Client;
 import org.accounting.system.entities.projections.normal.ProjectProjection;
 import org.accounting.system.exceptions.ConflictException;
 import org.accounting.system.mappers.ResourceMapper;
+import org.accounting.system.repositories.HierarchicalRelationRepository;
 import org.accounting.system.repositories.ResourceRepository;
 import org.accounting.system.repositories.authorization.RoleRepository;
 import org.accounting.system.repositories.client.ClientRepository;
+import org.accounting.system.repositories.metric.MetricRepository;
 import org.accounting.system.repositories.project.ProjectModulator;
 import org.accounting.system.repositories.project.ProjectRepository;
 import org.eclipse.microprofile.rest.client.inject.RestClient;
@@ -44,6 +46,13 @@ public class SystemAdminService {
 
     @Inject
     ResourceRepository resourceRepository;
+
+    @Inject
+    MetricRepository metricRepository;
+
+    @Inject
+    HierarchicalRelationRepository hierarchicalRelationRepository;
+
 
     /**
      * This method is responsible for registering several Projects into Accounting Service.
@@ -121,6 +130,14 @@ public class SystemAdminService {
         response.errors = errors;
 
         return response;
+    }
+
+    public void deleteProject(String id){
+
+        metricRepository.deleteByProjectId(id);
+        hierarchicalRelationRepository.deleteByProjectId(id);
+        projectRepository.deleteById(id);
+
     }
 
     /**
