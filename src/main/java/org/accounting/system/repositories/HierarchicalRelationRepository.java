@@ -113,4 +113,10 @@ public class HierarchicalRelationRepository extends AbstractAccessModulator<Hier
 
         return root;
     }
+
+    public void deleteByProjectId(String projectId) {
+
+       var filter = Filters.regex("_id", "^" + projectId);
+       getMongoCollection().deleteMany(filter);
+    }
 }
