@@ -19,6 +19,7 @@ import org.accounting.system.repositories.HierarchicalRelationRepository;
 import org.accounting.system.repositories.ResourceRepository;
 import org.accounting.system.repositories.authorization.RoleRepository;
 import org.accounting.system.repositories.client.ClientRepository;
+import org.accounting.system.repositories.installation.InstallationRepository;
 import org.accounting.system.repositories.metric.MetricRepository;
 import org.accounting.system.repositories.project.ProjectModulator;
 import org.accounting.system.repositories.project.ProjectRepository;
@@ -52,6 +53,9 @@ public class SystemAdminService {
 
     @Inject
     HierarchicalRelationRepository hierarchicalRelationRepository;
+
+    @Inject
+    InstallationRepository installationRepository;
 
 
     /**
@@ -138,6 +142,16 @@ public class SystemAdminService {
         hierarchicalRelationRepository.deleteByProjectId(id);
         projectRepository.deleteById(id);
 
+    }
+
+    public void deleteResource(String id){
+
+        if(installationRepository.resourceExists(id)){
+
+            throw new ConflictException("Resource cannot be deleted. It is assigned to an Installation.");
+        }
+
+        resourceRepository.deleteById(id);
     }
 
     /**

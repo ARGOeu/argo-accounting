@@ -38,6 +38,8 @@ According to [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) , the
   field unit_of_access OPTIONAL.
 - [#202](https://github.com/ARGOeu/argo-accounting/pull/202) - ACC-297 Add API 
   call to delete a project.
+- [#203](https://github.com/ARGOeu/argo-accounting/pull/203) - ACC-299 Add API 
+  call to delete a resource.
 
 ### Unreleased - Changed
 

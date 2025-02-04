@@ -34,6 +34,7 @@ import org.accounting.system.dtos.resource.ResourceRequest;
 import org.accounting.system.dtos.resource.ResourceResponse;
 import org.accounting.system.entities.projections.normal.ProjectProjection;
 import org.accounting.system.interceptors.annotations.SystemAdmin;
+import org.accounting.system.repositories.ResourceRepository;
 import org.accounting.system.repositories.client.ClientRepository;
 import org.accounting.system.repositories.project.ProjectRepository;
 import org.accounting.system.services.SystemAdminService;
@@ -225,7 +226,6 @@ public class SystemAdminEndpoint {
     @DELETE
     @Path("/projects/{id}")
     @Produces(value = MediaType.APPLICATION_JSON)
-    @Consumes(value = MediaType.APPLICATION_JSON)
     @SystemAdmin
     public Response deleteProject(@Parameter(
             description = "The Project to be deleted.",
@@ -298,6 +298,62 @@ public class SystemAdminEndpoint {
         var response = systemAdminService.createResource(request);
 
         return Response.created(serverInfo.getAbsolutePathBuilder().path(response.id).build()).entity(response).build();
+    }
+
+    @Tag(name = "System Administrator")
+    @Operation(
+            summary = "Delete an existing Resource.",
+            description = "Deletes an existing Resource in the Accounting Service. Accessible only by system administrators.")
+    @APIResponse(
+            responseCode = "200",
+            description = "Resource deleted successfully.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "401",
+            description = "Client has not been authenticated.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "403",
+            description = "The authenticated client is not permitted to perform the requested operation.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "404",
+            description = "Not Found.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "500",
+            description = "Internal Server Errors.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @SecurityRequirement(name = "Authentication")
+    @DELETE
+    @Path("/resources/{id}")
+    @Produces(value = MediaType.APPLICATION_JSON)
+    @SystemAdmin
+    public Response deleteResource(@Parameter(
+            description = "The Resource to be deleted.",
+            required = true,
+            example = "unitartu.ut.rocket",
+            schema = @Schema(type = SchemaType.STRING))
+                                  @PathParam("id") @Valid
+                                  @NotFoundEntity(repository = ResourceRepository.class, id = String.class, message = "There is no Resource with the following id:") String id) {
+
+        systemAdminService.deleteResource(id);
+
+        var response = new InformativeResponse();
+        response.code = 200;
+        response.message = "Resource deleted successfully.";
+
+        return Response.ok().entity(response).build();
     }
 
     @Tag(name = "System Administrator")
