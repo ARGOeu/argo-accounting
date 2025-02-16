@@ -34,11 +34,11 @@ According to [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) , the
   Additional Information for the Clients.
 - [#197](https://github.com/ARGOeu/argo-accounting/pull/197) - ACC-287 Add
   version in API.
-- [#200](https://github.com/ARGOeu/argo-accounting/pull/200) - ACC-245 Make 
+- [#200](https://github.com/ARGOeu/argo-accounting/pull/200) - ACC-245 Make
   field unit_of_access OPTIONAL.
-- [#202](https://github.com/ARGOeu/argo-accounting/pull/202) - ACC-297 Add API 
+- [#202](https://github.com/ARGOeu/argo-accounting/pull/202) - ACC-297 Add API
   call to delete a project.
-- [#203](https://github.com/ARGOeu/argo-accounting/pull/203) - ACC-299 Add API 
+- [#203](https://github.com/ARGOeu/argo-accounting/pull/203) - ACC-299 Add API
   call to delete a resource.
 
 ### Unreleased - Changed

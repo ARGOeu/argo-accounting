@@ -4,8 +4,14 @@ title: Collecting Metrics from different levels
 sidebar_position: 10
 ---
 
-The Accounting System offers the possibility to collect Metrics from different levels of the hierarchical structure Project -> Provider -> Installation. 
-You can select the level you want, and the API returns the Metrics under it. Returned Metrics also contain the hierarchical structure they belong to, for example:
+# Collecting Metrics from different levels
+
+The Accounting System offers the possibility to collect Metrics from different
+levels of the hierarchical structure Project -> Provider -> Installation.
+You can select the level you want, and the API returns the Metrics under it.
+Returned Metrics also contain the hierarchical structure they belong to, for
+example:
+
 ```
 {
    "id": "6297459e0f41a20c683e9019",
@@ -19,9 +25,10 @@ You can select the level you want, and the API returns the Metrics under it. Ret
 }
 ```
 
-### [GET] - Collecting Metrics from specific Project
+## [GET] - Collecting Metrics from specific Project
 
-You can collect all Metrics under a specific Project by executing the following GET HTTP request :
+You can collect all Metrics under a specific Project by executing the following
+GET HTTP request :
 
 ```
 GET /accounting-system/projects/{project_id}/metrics
@@ -29,7 +36,8 @@ GET /accounting-system/projects/{project_id}/metrics
 Authorization: Bearer {token}
 ```
 
-By default, the first page of 10 Metrics under that Project will be returned. For instance:
+By default, the first page of 10 Metrics under that Project will be returned.
+For instance:
 
 Success Response `200 OK`
 
@@ -144,55 +152,69 @@ Success Response `200 OK`
    ],
    "links": [
        {
-           "href": "https://acc.devel.argo.grnet.gr/accounting-system/projects/101017567/metrics?page=1&size=10",
+           "href":
+"https://acc.devel.argo.grnet.gr/accounting-system/projects/101017567/metrics?page=1&size=10",
            "rel": "first"
        },
        {
-           "href": "https://acc.devel.argo.grnet.gr/accounting-system/projects/101017567/metrics?page=2&size=10",
+           "href":
+"https://acc.devel.argo.grnet.gr/accounting-system/projects/101017567/metrics?page=2&size=10",
            "rel": "last"
        },
        {
-           "href": "https://acc.devel.argo.grnet.gr/accounting-system/projects/101017567/metrics?page=1&size=10",
+           "href":
+"https://acc.devel.argo.grnet.gr/accounting-system/projects/101017567/metrics?page=1&size=10",
            "rel": "self"
        },
        {
-           "href": "https://acc.devel.argo.grnet.gr/accounting-system/projects/101017567/metrics?page=2&size=10",
+           "href":
+"https://acc.devel.argo.grnet.gr/accounting-system/projects/101017567/metrics?page=2&size=10",
            "rel": "next"
        }
    ]
 }
 ```
 
-You can tune the default values by using the query parameters page and size as shown in the example below.
+You can tune the default values by using the query parameters page and size as
+shown in the example below.
 
 ```
-GET /accounting-system/accounting-system/projects/{project_id}/metrics?page=2&size=15
+GET
+/accounting-system/accounting-system/projects/{project_id}/metrics?page=2&size=15
 ```
 
-The above request returns the second page which contains 15 Metrics. 
+The above request returns the second page which contains 15 Metrics.
 
-In conclusion, the aforementioned request returns all the metrics to which the client has access in a project. The range of metrics can be limited by using date filters.
+In conclusion, the aforementioned request returns all the metrics to which the
+client has access in a project. The range of metrics can be limited by using
+date filters.
 
-#### Date Filtering
+### Date Filtering for Project
 
 You can limit the range of metrics by using the following URL parameters:
 
 - start
 - end
 
-For example, if you want to retrieve metrics whose `time_period_start` and `time_period_end` are in the date range [2020-01-01 to 2020-12-31], you can execute the following request:
+For example, if you want to retrieve metrics whose `time_period_start` and
+`time_period_end` are in the date range [2020-01-01 to 2020-12-31], you can
+execute the following request:
 
 ```
-GET /accounting-system/accounting-system/projects/{project_id}/metrics?start=2020-01-01&end=2020-12-31
+GET
+/accounting-system/accounting-system/projects/{project_id}/metrics?start=2020-01-01&end=2020-12-31
 
 Authorization: Bearer {token}
 ```
 
-Bear in mind that both parameters should be in the format `YYYY-MM-DD` and `start` cannot be after `end`.
+Bear in mind that both parameters should be in the format `YYYY-MM-DD` and
+`start` cannot be after `end`.
 
-### [GET] - Collecting Metrics from specific Provider
+## [GET] - Collecting Metrics from specific Provider
 
-Respectively, you can collect all Metrics that exist in a specific Provider. To execute the following request, you need to pass the Project ID to which that Provider belongs and of course the Provider ID.
+Respectively, you can collect all Metrics that exist in a specific Provider. To
+execute the following request, you need to pass the Project ID to which that
+Provider belongs and of course the Provider ID.
 
 ```
 GET /accounting-system/projects/{project_id}/providers/{provider_id}/metrics
@@ -200,30 +222,39 @@ GET /accounting-system/projects/{project_id}/providers/{provider_id}/metrics
 Authorization: Bearer {token}
 ```
 
-By default, the first page of 10 Metrics under that Provider will be returned. Of course, You can tune the default values by using the query parameters page and size.
+By default, the first page of 10 Metrics under that Provider will be returned.
+Of course, You can tune the default values by using the query parameters page
+and size.
 
-In conclusion, the aforementioned request returns all the metrics to which the client has access in a specific Provider. The range of metrics can be limited by using date filters.
+In conclusion, the aforementioned request returns all the metrics to which the
+client has access in a specific Provider. The range of metrics can be limited
+by using date filters.
 
-#### Date Filtering
+### Date Filtering for Provider
 
 You can limit the range of metrics by using the following URL parameters:
 
 - start
 - end
 
-For example, if you want to retrieve metrics whose `time_period_start` and `time_period_end` are in the date range [2020-01-01 to 2020-12-31], you can execute the following request:
+For example, if you want to retrieve metrics whose `time_period_start` and
+`time_period_end` are in the date range [2020-01-01 to 2020-12-31], you can
+execute the following request:
 
 ```
-GET /accounting-system/projects/{project_id}/providers/{provider_id}/metrics?start=2020-01-01&end=2020-12-31
+GET
+/accounting-system/projects/{project_id}/providers/{provider_id}/metrics?start=2020-01-01&end=2020-12-31
 
 Authorization: Bearer {token}
 ```
 
-Bear in mind that both parameters should be in the format `YYYY-MM-DD` and `start` cannot be after `end`.
+Bear in mind that both parameters should be in the format `YYYY-MM-DD` and
+`start` cannot be after `end`.
 
-### [GET] - Collecting Metrics from specific Installation
+## [GET] - Collecting Metrics from specific Installation
 
-Likewise, you can collect all Metrics that exist in a specific Installation. To execute the following request, you need to pass the Installation ID.
+Likewise, you can collect all Metrics that exist in a specific Installation. To
+execute the following request, you need to pass the Installation ID.
 
 ```
 GET /accounting-system/installations/{installation_id}/metrics
@@ -232,26 +263,34 @@ Authorization: Bearer {token}
 
 ```
 
-By default, the first page of 10 Metrics under that Installation will be returned. Of course, You can tune the default values by using the query parameters page and size.
+By default, the first page of 10 Metrics under that Installation will be
+returned. Of course, You can tune the default values by using the query
+parameters page and size.
 
-In conclusion, the aforementioned request returns all the metrics to which the client has access in a particular Installation. The range of metrics can be limited by using date filters.
+In conclusion, the aforementioned request returns all the metrics to which the
+client has access in a particular Installation. The range of metrics can be
+limited by using date filters.
 
-#### Date Filtering
+### Date Filtering for Installation
 
 You can limit the range of metrics by using the following URL parameters:
 
 - start
 - end
 
-For example, if you want to retrieve metrics whose `time_period_start` and `time_period_end` are in the date range [2020-01-01 to 2020-12-31], you can execute the following request:
+For example, if you want to retrieve metrics whose `time_period_start` and
+`time_period_end` are in the date range [2020-01-01 to 2020-12-31], you can
+execute the following request:
 
 ```
-GET /accounting-system/installations/{installation_id}/metrics?start=2020-01-01&end=2020-12-31
+GET
+/accounting-system/installations/{installation_id}/metrics?start=2020-01-01&end=2020-12-31
 
 Authorization: Bearer {token}
 ```
 
-Bear in mind that both parameters should be in the format `YYYY-MM-DD` and `start` cannot be after `end`.
+Bear in mind that both parameters should be in the format `YYYY-MM-DD` and
+`start` cannot be after `end`.
 
 ### Errors
 

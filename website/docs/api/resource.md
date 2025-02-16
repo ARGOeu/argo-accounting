@@ -4,17 +4,22 @@ title: Resource
 sidebar_position: 9
 ---
 
-The Accounting System communicates with EOSC Resource Catalogue to retrieve the available Resources. From the response we receive we keep specific information, which expresses a Resource. The Resource for the Accounting Service has the following structure:
+# Resource
 
+The Accounting System communicates with EOSC Resource Catalogue to retrieve the
+available Resources. From the response we receive we keep specific information,
+which expresses a Resource. The Resource for the Accounting Service has the
+following structure:
 
-| Field          	| Description   	                      | 
-|------------------	|---------------------------------------- |
-| id             	| A unique Resource identifier            |
-| name            	| The name of Resource                    |
+| Field           | Description                          |
+|------------------ |---------------------------------------- |
+| id              | A unique Resource identifier            |
+| name             | The name of Resource                    |
 
-### [GET] - Fetch the available EOSC Resources
+## [GET] - Fetch the available EOSC Resources
 
-The client can retrieve the Resources that are available in the EOSC Resource Catalogue by executing the following request:
+The client can retrieve the Resources that are available in the EOSC Resource
+Catalogue by executing the following request:
 
 ```
 GET /accounting-system/resources
@@ -47,6 +52,6 @@ Success Response `200 OK`
 }
 ```
 
-### Errors
+## Errors
 
 Please refer to section [Errors](./api_errors) to see all possible Errors.

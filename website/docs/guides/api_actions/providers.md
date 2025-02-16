@@ -4,59 +4,90 @@ title: Manage Providers
 sidebar_position: 3
 ---
 
-This is a guide that refers to a Provider.
-A Provider is the Organization that operates one or more Installations in one or more Projects.
-If you are permitted to act on one or more Providers, via this guide you can see all the options you have .
+# Manage Providers
 
-### Before you start
+This is a guide that refers to a Provider. A Provider is the Organization that
+operates one or more Installations in one or more Projects. If you are
+permitted to act on one or more Providers, via this guide you can see all the
+options you have.
 
-You can manage a Provider assigned to a specific Project.<br/>
+## Before you start
 
-**1.** Register to the Accounting Service.<br/>
-**2.** Contact the administrator of the Project,that this Provider is associated with,to assign you one or more roles on the Provider. 
+You can manage a Provider assigned to a specific Project.
 
-**ΝΟΤΕ** <br/>
-In the Accounting Service,the **_provider_admin_** role is the main role for managing a Provider.This role permits the user to perform any operation,on a specific Provider.
-In case the user is assigned with any other role, he can operate according to the role's permissions.
+**1.** [Register](/docs/guides/register.md) to Accounting Service.  
+**2.** [Contact](/docs/authorization/assigning_roles.md) the administrator of
+the Project that this Provider is
+associated with to assign you one or more roles on the Provider.
 
+**NOTE**  
+In the Accounting Service, the **_provider_admin_** role is the main role for
+managing a Provider. This role permits the user to perform any operation on a
+specific Provider. In case the user is assigned any other role, they can
+operate according to the role's permissions.
 
-## OPERATIONS 
+## OPERATIONS
 
---- 
+---
 
 ### GET Provider's details
-<details>
-You can get the details of the Provider.Apply a request to the Accounting Service API. 
-<b> For more details,how to syntax the request,see <a href="https://argoeu.github.io/argo-accounting/docs/api/provider#get---fetch-an-existing-provider">here</a></b>
-</details>
+
+You can get the details of the Provider. Apply a request to the
+Accounting Service API.  
+
+> 📝 **For more details on how to syntax the request, see** [here](https://argoeu.github.io/argo-accounting/docs/api/provider#get---fetch-an-existing-provider).
 
 ### Provide access roles on the Provider
-<details>
-You can provide users with access roles on the Provider.<br/>
 
-**1.** Read registered clients ( see <a href="https://argoeu.github.io/argo-accounting/docs/api/client#get---read-the-registered-clients)">here</a>) and retrieve client's id. <br/>
-**2.** Decide one or more roles,that this user will be assigned with,on the Provider and apply a request to the Accounting Service API.
-<b> For more details,how to syntax the request,see <a href="https://argoeu.github.io/argo-accounting/docs/api/provider#post---access-control-entry-for-a-particular-provider-of-a-specific-project">here.</a></b>
-</details>
+You can provide users with access roles on the Provider.
+
+**1.** Read registered clients (see
+[here](https://argoeu.github.io/argo-accounting/docs/api/client#get---read-the-registered-clients)
+) and retrieve the client's id.  
+**2.** Decide on one or more roles that this user will be assigned with on
+the Provider and apply a request to the Accounting Service API.  
+
+> 📝 **For more details on how to syntax the request, see**
+[here](https://argoeu.github.io/argo-accounting/docs/api/provider#post---access-control-entry-for-a-particular-provider-of-a-specific-project)
+.
 
 ### ASSIGN Installations to the Provider
-<details>
-You can assign one or more Installations to the Provider.Apply a request to the Accounting Service API.
-<b> For more details,how to syntax the request,see <a href="https://argoeu.github.io/argo-accounting/docs/api/installation#post---create-a-new-installation">here.</a></b>
-</details>
+
+You can assign one or more Installations to the Provider.
+Apply a request to the Accounting Service API.  
+
+> 📝 **For more details on how to syntax the request, see**
+[here](https://argoeu.github.io/argo-accounting/docs/api/installation#post---create-a-new-installation)
+.
 
 ### FETCH all Installations assigned to the provider
-<details>
-You can fetch all Installations,assigned to the Provider.Apply a request to the Accounting Service API.
-<b> For more details,how to syntax the request,see <a href="https://argoeu.github.io/argo-accounting/docs/api/installation#get-fetch-all-provider-installations">here.</a></b>
-</details>
 
-### SEARCH installations, assigned to the provider
-<details>
-You can search for specific Installation/Installations,assigned to the Provider,that matches one or more criteria.You can define search criteria on each field of the <b><a href="https://argoeu.github.io/argo-accounting/docs/api/installation"> Installation Collection</a></b> or a combination of search criteria on more than one fields.You can search for Installations by Project, Provider, infrastracture, Installation's name, Metric Definition id or a combination of them. 
-Apply a request to the Accounting Service API.You need to provide the search criteria in a specific <b><a href="https://argoeu.github.io/argo-accounting/docs/guides/search-filter"> syntax</a></b>. <b> For more details,how to syntax the request,see <a href="https://argoeu.github.io/argo-accounting/docs/api/installation#post---search-for-installations">here</a></b>
-</details>
+You can fetch all Installations assigned to the Provider.
+Apply a request to the Accounting Service API.  
 
-Also,if the role, assigned to you,is administrative,you are permitted to perform all the actions described at this <b><a href="https://argoeu.github.io/argo-accounting/docs/guides/api_actions/installation">section</a></b>,on the Installations assigned to the Provider.
+> 📝 **For more details on how to syntax the request, see**
+[here](https://argoeu.github.io/argo-accounting/docs/api/installation#get-fetch-all-provider-installations)
+.
+
+### SEARCH Installations assigned to the provider
+
+You can search for specific Installation/Installations assigned to the
+Provider that match one or more criteria. You can define search criteria
+on each field of the **[Installation Collection](https://argoeu.github.io/argo-accounting/docs/api/installation)**
+or a combination of search criteria on more than one field. You can search
+for Installations by Project, Provider, infrastructure, Installation's name,
+Metric Definition id, or a combination of them.  
+Apply a request to the Accounting Service API. You need to provide the search
+criteria in a specific  
+**[syntax](https://argoeu.github.io/argo-accounting/docs/guides/search-filter)**
+.
+
+> 📝 **For more details on how to syntax the request, see**
+[here](https://argoeu.github.io/argo-accounting/docs/api/installation#post---search-for-installations)
+.
+
+Also, if the role assigned to you is administrative, you are permitted to
+perform all the actions described at this **[section](https://argoeu.github.io/argo-accounting/docs/guides/api_actions/installation)**
+on the Installations assigned to the Provider.
 
 ---

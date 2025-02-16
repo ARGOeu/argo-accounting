@@ -4,8 +4,10 @@ ARGO Accounting
 
 This project uses Quarkus, the Supersonic Subatomic Java Framework.
 
-## SQAaaS badge 
-[![SQAaaS badge](https://github.com/EOSC-synergy/SQAaaS/raw/master/badges/badges_150x116/badge_software_silver.png)](https://api.eu.badgr.io/public/assertions/db-bCCpHTzqJoe-K_DhYWg "SQAaaS silver badge achieved")
+## SQAaaS badge
+
+[![SQAaaS badge](https://github.com/EOSC-synergy/SQAaaS/raw/master/badges/badges_150x116/badge_software_silver.png)](https://api.eu.badgr.io/public/assertions/db-bCCpHTzqJoe-K_DhYWg
+"SQAaaS silver badge achieved")
 
 ## Prerequisites
 
@@ -154,10 +156,12 @@ prefix `%prod.` from `%prod.quarkus.oidc.auth-server-url`. Then you have to
 configure the following variables in `application.properties`:
 
 - `quarkus.oidc.auth-server-url={The base URL of the OIDC server}`
+
 - `quarkus.oidc.client-id={Specifies an alpha-numeric string that will be
-used as the client identifier for OIDC requests}`
+  used as the client identifier for OIDC requests}`
+
 - `quarkus.oidc.credentials.secret={Client secret which is used for a
-client_secret_basic authentication method}`
+  client_secret_basic authentication method}`
 
 You also need to comment out all the properties that start with
 `%dev.quarkus.oidc`.

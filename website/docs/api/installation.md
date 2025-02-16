@@ -4,22 +4,38 @@ title: Installation
 sidebar_position: 5
 ---
 
-We use the term installation as it is defined in the Virtual Access documentation to refer to a specific instance or part of a resource/service that is allocated to a specific Project by one Provider.
+# Installation
 
-An Installation can only be generated through the endpoint we are going to describe below.
+We use the term installation as it is defined in the Virtual Access
+documentation to refer to a specific instance or part of a resource/service
+that is allocated to a specific Project by one Provider.
+
+An Installation can only be generated through the endpoint we are going to
+describe below.
 
 The Installation collection has the following structure:
 
-| Field          	| Description   	                      | 
-|------------------	|---------------------------------------- |
-| [project](./project.md)             	| It must point to a Project ID that has already been registered             |
-| [organisation](./provider.md)       	| It must point to a Provider ID that has been either registered through the EOSC Resource Catalogue or Accounting System API |
-| [resource](./resource.md)             | This field is optional. If you want to associate an Installation with a Resource, please fill this field in with the corresponding Resource ID from the EOSC Resource Catalogue |
-| infrastructure      	    | Short name of infrastructure |
-| installation      	| Short name of installation |
-| [unit_of_access](./metric_definition.md)      	| It must point to an existing Metric Definition. Obviously, you can add different Metrics to an Installation, but this attribute expresses the primary Unit of Access |
+| Field                | Description         |
+|----------------------|---------------------------------|
+| [project](./project.md) | Points to an already registered Project ID. |
+| [organisation](./provider.md) |Points to an already registered Provider* ID.|
+|[resource](./resource.md)|Points to a Resource**. _(O)_|
+| infrastructure       | Short name of infrastructure. |
+| installation         | Short name of installation.   |
+|[unit_of_access](./metric_definition.md)| Points to Metric Definition***. _(O)_|
 
-### [POST] - Create a new Installation
+\* _Provider has been either registered through the EOSC Resource Catalogue
+or Accounting System API._
+
+\** _Resource has been either registered through the EOSC Resource Catalogue
+or Accounting System API._
+
+\*** _Different Metrics can be added to an Installation, but this attribute
+expresses the primary Unit of Access._
+
+_O_: Optional
+
+## [POST] - Create a new Installation
 
 You can submit a new Installation by executing the following POST request:
 
@@ -38,7 +54,8 @@ Authorization: Bearer {token}
 }
 ```
 
-Upon inserting the record into the database, the API returns the Installation enhanced with the generated installation ID :
+Upon inserting the record into the database, the API returns the Installation
+enhanced with the generated installation ID:
 
 Success Response `201 CREATED`
 
@@ -60,7 +77,7 @@ Success Response `201 CREATED`
 }
 ```
 
-### [DELETE] - Delete an existing Installation
+## [DELETE] - Delete an existing Installation
 
 You can also delete an existing Installation by executing the following request:
 
@@ -81,7 +98,7 @@ Success Response `200 OK`
 }
 ```
 
-### [PATCH] - Update an existing Installation
+## [PATCH] - Update an existing Installation
 
 You can update an existing Installation by executing the following request:
 
@@ -99,7 +116,9 @@ Authorization: Bearer {token}
 }
 ```
 
-The body of the request must contain an updated representation of Installation. You can update a part or all attributes of the Installation. The empty or null values are ignored.
+The body of the request must contain an updated representation of Installation.
+You can update a part or all attributes of the Installation. The empty or null
+values are ignored.
 
 The response will be the updated entity :
 
@@ -111,7 +130,7 @@ Success Response `200 OK`
 }
 ```
 
-### [GET] - Fetch an existing Installation
+## [GET] - Fetch an existing Installation
 
 You can fetch a created Installation by executing the following GET HTTP request:
 
@@ -142,9 +161,11 @@ Success Response `200 OK`
 }
 ```
 
-### [GET] Fetch all Project Installations
+## [GET] Fetch all Project Installations
 
-Essentially, the following endpoint returns all Installations available in a specific Project. By default, the first page of 10 Installations will be returned.
+Essentially, the following endpoint returns all Installations available
+in a specific Project. By default, the first page of 10 Installations will
+be returned.
 
 ```
 GET /accounting-system/projects/{project_id}/installations
@@ -152,7 +173,8 @@ GET /accounting-system/projects/{project_id}/installations
 Authorization: Bearer {token}
 ```
 
-You can tune the default values by using the query parameters page and size as shown in the example below.
+You can tune the default values by using the query parameters page and size as
+shown in the example below.
 
 ```
 GET /accounting-system/projects/{project_id}/installations?page=2&size=15
@@ -210,9 +232,11 @@ Success Response 200 OK
 }
 ```
 
-### [GET] Fetch all Provider Installations
+## [GET] Fetch all Provider Installations
 
-Essentially, the following endpoint returns all Installations available in a Provider belonging to a specific Project. By default, the first page of 10 Installations will be returned.
+Essentially, the following endpoint returns all Installations available in a
+Provider belonging to a specific Project. By default, the first page of 10
+Installations will be returned.
 
 ```
 GET /accounting-system/projects/{project_id}/providers/{provider_id}/installations
@@ -220,7 +244,8 @@ GET /accounting-system/projects/{project_id}/providers/{provider_id}/installatio
 Authorization: Bearer {token}
 ```
 
-You can tune the default values by using the query parameters page and size as shown in the example below.
+You can tune the default values by using the query parameters page and size as
+shown in the example below.
 
 ```
 GET /accounting-system/projects/{project_id}/providers/{provider_id}/installations?page=2&size=15
@@ -279,18 +304,22 @@ Success Response 200 OK
 }
 ```
 
-### [POST] - Access Control Entry for a particular Installation
+## [POST] - Access Control Entry for a particular Installation
 
-The same goes for the Installations. Any client can have different responsibilities at different Installations. The actions the client can perform at each Installation are determined by the role, and the permissions it has.
+The same goes for the Installations. Any client can have different
+responsibilities at different Installations. The actions the client can
+perform at each Installation are determined by the role, and the permissions
+it has.
 
-To grant a role to a client on a specific Installation, you have to execute the following request:
+To grant a role to a client on a specific Installation, you have to execute
+the following request:
 
 ```
 POST /accounting-system/installations/{installation_id}/acl/{who}
 
 Content-Type: application/json
 Authorization: Bearer {token}
- 
+
 {
   "roles":[
      {role_name}
@@ -311,28 +340,33 @@ Success Response `200 OK`
 }
 ```
 
-**Keep in mind that** to execute the above operation, you must have been assigned a role containing the Installation Acl permission.
+**Keep in mind that** to execute the above operation, you must have been
+assigned a role containing the Installation Acl permission.
 
-### [POST] - Search for Installations
- 
-You can search on Installations, to find the ones corresponding to the given search criteria. Installations  can be searched by executing the following request:
- 
-``` 
+## [POST] - Search for Installations
+
+You can search on Installations, to find the ones corresponding to the given
+search criteria. Installations  can be searched by executing the following
+request:
+
+```
 POST accounting-system/installations/search
 Content-Type: application/json
 ```
-#### Example 1: 
+
+### Example 1
+
 ```
 {
            "type":"query",
            "field": "installation",
            "values": "GRNET-KNS-1",
-           "operand": "eq"         
+           "operand": "eq"
 
 }
 ```
 
-#### Example 2: 
+### Example 2
 
 ```
 {
@@ -346,21 +380,23 @@ Content-Type: application/json
            "type":"query",
            "field": "installation",
            "values": "GRNET-KNS-1",
-           "operand": "eq"         
+           "operand": "eq"
 
 },{
            "type":"query",
            "field": "organisation",
            "values": "grnet",
-           "operand": "eq"         
+           "operand": "eq"
 
 }]
 
    }]}
 ```
- 
-The context of the request should be a json object. The syntax of the json object , is described <b> <a href="https://argoeu.github.io/argo-accounting/docs/guides/search-filter">here</a></b>
-If the operation is successful, you get a list of installations
+
+The context of the request should be a JSON object. The syntax of the JSON
+object is described [**here**](https://argoeu.github.io/argo-accounting/docs/guides/search-filter).
+If the operation is successful, you get a list of installations.
+
 ```
 {
    "size_of_page": 2,
@@ -401,6 +437,6 @@ If the operation is successful, you get a list of installations
 }
 ```
 
-### Errors
+## Errors
 
 Please refer to section [Errors](./api_errors) to see all possible Errors.
