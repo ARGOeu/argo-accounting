@@ -130,7 +130,7 @@ PATCH /accounting-system/metric-definitions/{metric_definition_id}
 Content-type: application/json
 Authorization: Bearer {token}
 
-{  
+{
     "metric_type": "metric_type_to_be_updated"
 }
 ```

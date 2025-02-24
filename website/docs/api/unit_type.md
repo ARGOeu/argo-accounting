@@ -126,7 +126,7 @@ PATCH /accounting-system/unit-types/{unit_type_id}
 Content-type: application/json
 Authorization: Bearer {token}
 
-{  
+{
     "unit_type": "unit_type_to_be_updated"
 }
 ```

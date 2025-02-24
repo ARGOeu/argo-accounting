@@ -8,7 +8,8 @@ sidebar_position: 3
 
 ## Before you start
 
-**1.** [Register](/docs/guides/register.md) to Accounting Service.  
+**1.** [Register](/docs/guides/register.md) to Accounting Service.
+
 **2.** [Contact](/docs/authorization/assigning_roles.md) the system
 administrator, to assign you the Project Admin role upon the project
 you want.
