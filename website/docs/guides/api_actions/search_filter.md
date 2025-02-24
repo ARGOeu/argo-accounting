@@ -15,7 +15,7 @@ them.
 
 Defining search criteria can be done in two ways:
 
-1. **"query"**: Defines a search on a single field of the collection.  
+1. **"query"**: Defines a search on a single field of the collection.
    E.g., in Collection Metrics: `installation="insta1"`
 
 1. **"filter"**: Defines a search on multiple criteria combined with AND/OR
@@ -63,7 +63,7 @@ of the query should be:
   "type":"query",
   "field": "time_period_start" ,
   "values":"2022-01-01T00:00:00Z",
-  "operand": "gt"  
+  "operand": "gt"
 }
 
 ```
@@ -114,7 +114,7 @@ Query on start period:
   "type":"query",
   "field": "time_period_start" ,
   "values":"2022-01-01T00:00:00Z",
-  "operand": "gt"  
+  "operand": "gt"
 }
 
 ```
@@ -127,7 +127,7 @@ Query on end period:
   "type":"query",
   "field": "time_period_end" ,
   "values":"2022-01-02T00:00:00Z",
-  "operand": "lt"  
+  "operand": "lt"
 }
 
 ```
@@ -172,7 +172,7 @@ The query to search for value greater than 1000 is defined as:
   "type":"query",
   "field": "value" ,
   "values":"1000.0",
-  "operand": "gt"  
+  "operand": "gt"
 }
 ```
 

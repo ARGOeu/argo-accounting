@@ -15,13 +15,15 @@ Installations, this guide outlines all the options available to you.
 
 You can manage an Installation assigned to a specific Project and Provider.
 
-**1.** [Register](/docs/guides/register.md) to Accounting Service.  
+**1.** [Register](/docs/guides/register.md) to Accounting Service.
+
 **2.** [Contact](/docs/authorization/assigning_roles.md) the administrator of
    the Project or the administrator of the
    Project's Provider that this Installation is associated with to assign you
    one or more roles on the Installation.
 
-**NOTE**  
+### NOTE
+
 In the Accounting Service, the **installation_admin** role is the main role
 for managing an Installation. This role permits the user to perform any
 operation on a specific Installation. If the user is assigned any other role,

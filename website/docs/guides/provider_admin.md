@@ -10,7 +10,8 @@ sidebar_position: 4
 
 You can manage a Provider assigned to a specific Project.
 
-**1.** [Register](/docs/guides/register.md) to Accounting Service.  
+**1.** [Register](/docs/guides/register.md) to Accounting Service.
+
 **2.** Contact the administrator of the Project, that this Provider is
 associated with, to assign you the Provider Admin role upon the provider
 you want.

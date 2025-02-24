@@ -59,9 +59,10 @@ the Accounting Service API.
 that match one or more criteria. You can define search criteria on each field
 of the **[Metrics Collection](https://argoeu.github.io/argo-accounting/docs/api/metric)**
 or a combination of search criteria on more than one field. You can search
-for Metrics by Metric Definition id, value, period, or a combination of them.  
+for Metrics by Metric Definition id, value, period, or a combination of them.
+
 Apply a request to the Accounting Service API. You need to provide the search
-criteria in a specific  
+criteria in a specific
 **[syntax](https://argoeu.github.io/argo-accounting/docs/guides/search-filter)**
 .
 

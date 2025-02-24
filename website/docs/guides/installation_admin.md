@@ -10,7 +10,8 @@ sidebar_position: 5
 
 You can manage a Provider assigned to a specific Project.
 
-**1.** [Register](/docs/guides/register.md) to Accounting Service.  
+**1.** [Register](/docs/guides/register.md) to Accounting Service.
+
 **2.** Contact the administrator of the Project or the administrator of the
 Project's Provider, that this Installation is associated with, to assign you
 the Installation Admin role upon the installation you want.

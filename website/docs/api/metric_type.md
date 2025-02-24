@@ -126,7 +126,7 @@ PATCH /accounting-system/metric-types/{metric_type_id}
 Content-type: application/json
 Authorization: Bearer {token}
 
-{  
+{
     "metric_type": "metric_type_to_be_updated"
 }
 ```

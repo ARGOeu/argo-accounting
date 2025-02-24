@@ -12,11 +12,13 @@ via this guide you can see all the options you have.
 
 ## Before you start
 
-**1.** [Register](/docs/guides/register.md) to Accounting Service.  
+**1.** [Register](/docs/guides/register.md) to Accounting Service.
+
 **2.** [Contact](/docs/authorization/assigning_roles.md) the system
 administrator to assign you one or more roles on the Project.
 
-**NOTE**  
+### NOTE
+
 In the Accounting Service, the **_project_admin_** role is the main role
 for managing a Project. This role permits the user to perform any operation
 on a specific Project. In case the user is assigned any other role, they can
@@ -87,7 +89,8 @@ search criteria on each field of the
 **[Project Collection](https://argoeu.github.io/argo-accounting/docs/api/project)**
 or a combination of search criteria on more than one field. You can search
 by Project's acronym, title, period, call identifier, or a combination of
-them.  
+them.
+
 Apply a request to the Accounting Service API. You need to provide the search
 criteria in a specific
 **[syntax](https://argoeu.github.io/argo-accounting/docs/guides/search-filter)**

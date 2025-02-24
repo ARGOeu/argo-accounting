@@ -14,12 +14,14 @@ There are two ways to register yourself into Accounting Service:
 
 ---
 
-- **Authenticate yourself**  
+- **Authenticate yourself**
+
   First, you need to authenticate yourself to EOSC Core Infrastructure Proxy.
   Instructions are provided [here](https://argoeu.github.io/argo-accounting/docs/authentication/authenticating_clients)
 . Once you gain an access token, copy it.
 
-- **Register yourself**  
+- **Register yourself**
+
   Then, you need to apply a request to the Accounting Service API in order to
   register yourself. For more details on how to syntax the request, see [here](https://argoeu.github.io/argo-accounting/docs/api/client#post---client-registration)
   .
@@ -44,7 +46,8 @@ Once you register for the Accounting Service, you can perform the following acti
 - **HTTP Request**
 
   All users with roles can display all the Metric Definitions existing in the
-  Accounting Service. Apply a request to the API.  
+  Accounting Service. Apply a request to the API.
+
   > 📝 For more details on how to syntax the request, see [here](https://argoeu.github.io/argo-accounting/docs/api/metric_definition#get----fetch-all-metric-definitions).
 
 ### READ Providers
@@ -58,7 +61,8 @@ Once you register for the Accounting Service, you can perform the following acti
 - **HTTP Request**
 
   You can read the Providers available on the EOSC Resource Catalogue and those
-  registered through the Accounting Service API. Apply a request to the API.  
+  registered through the Accounting Service API. Apply a request to the API.
+
   > 📝 For more details on how to syntax the request, see [here](https://argoeu.github.io/argo-accounting/docs/api/provider#get---fetch-all-registered-providers).
 
 ### READ Unit Types
@@ -72,8 +76,9 @@ Once you register for the Accounting Service, you can perform the following acti
 - **HTTP Request**
 
   You can read all the Unit Types registered to the Accounting Service.
-  Apply a request to the API.  
-  >📝 For more details on how to syntax the request, see [here](https://argoeu.github.io/argo-accounting/docs/api/unit_type#get----fetch-all-the-unit-types).
+  Apply a request to the API.
+
+  > 📝 For more details on how to syntax the request, see [here](https://argoeu.github.io/argo-accounting/docs/api/unit_type#get----fetch-all-the-unit-types).
 
 ### READ Metric Types
 
@@ -86,7 +91,8 @@ Once you register for the Accounting Service, you can perform the following acti
 - **HTTP Request**
 
   You can read all the Metric Types registered to the Accounting Service.
-  Apply a request to the API.  
+  Apply a request to the API.
+
   > 📝 For more details on how to syntax the request, see [here](https://argoeu.github.io/argo-accounting/docs/api/metric_type#get----fetch-all-the-metric-types).
 
 ### READ all Clients
@@ -100,7 +106,8 @@ Once you register for the Accounting Service, you can perform the following acti
 - **HTTP Request**
 
   You can read all the Clients registered to the Accounting Service.
-  Apply a request to the API.  
+  Apply a request to the API.
+
   > 📝 For more details on how to syntax the request, see [here](https://argoeu.github.io/argo-accounting/docs/api/client#get---read-the-registered-clients).
 
 ---
