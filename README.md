@@ -6,7 +6,7 @@ This project uses Quarkus, the Supersonic Subatomic Java Framework.
 
 ## SQAaaS badge
 
-[![SQAaaS badge](https://github.com/EOSC-synergy/SQAaaS/raw/master/badges/badges_150x116/badge_software_silver.png)](https://api.eu.badgr.io/public/assertions/db-bCCpHTzqJoe-K_DhYWg
+[![SQAaaS badge](https://github.com/EOSC-synergy/SQAaaS/raw/master/badges/badges_150x116/badge_software_silver.png)](https://api.eu.badgr.io/public/assertions/WpDNMoS4Sd600xCtNkl6SQ
 "SQAaaS silver badge achieved")
 
 ## Prerequisites
