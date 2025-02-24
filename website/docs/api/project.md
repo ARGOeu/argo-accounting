@@ -4,13 +4,20 @@ title: Project
 sidebar_position: 3
 ---
 
-A Project is the main resource of the Accounting System. The first step a user must follow is to create a project under which the metric data will belong.
+# Project
 
-Currently, we support only projects that are available in the EU database.  Basically, we register information about a particular Project in our system using the unique ID that every European Project has for its identification.
+A Project is the main resource of the Accounting System. The first step a user m
+ust follow is to create a project under which the metric data will belong.
 
-### [POST] - Associate Providers with a specific Project
+Currently, we support only projects that are available in the EU database.  Basi
+cally, we register information about a particular Project in our system using th
+e unique ID that every European Project has for its identification.
 
-To be able to register Metrics in an installation, first you must associate a Project with one or more  Providers. The following action is responsible for generating a hierarchical relationship between a Project and one or more Providers:
+## [POST] - Associate Providers with a specific Project
+
+To be able to register Metrics in an installation, first you must associate a Pr
+oject with one or more  Providers. The following action is responsible for gener
+ating a hierarchical relationship between a Project and one or more Providers:
 
 ```
 POST /accounting-system/projects/{project_id}/associate
@@ -35,11 +42,12 @@ Success Response `200 OK`
 ```
 {
    "code": 200,
-   "message": "The following providers [bioexcel, osmooc, grnet, sites] have been associated with Project {project_id}"
+   "message": "The following providers [bioexcel, osmooc, grnet, sites] have bee
+n associated with Project {project_id}"
 }
 ```
 
-### [POST] - Dissociate Providers from a Project
+## [POST] - Dissociate Providers from a Project
 
 You can also dissociate one or more Providers from a Project:
 
@@ -63,24 +71,28 @@ Success Response `200 OK`
 ```
 {
    "code": 200,
-   "message": "The following providers [grnet] have been dissociated from Project {project_id}"
+   "message": "The following providers [grnet] have been dissociated from Projec
+t {project_id}"
 }
 ```
 
-If there are Installations registered to Provider, the dissociation is not allowed:
+If there are Installations registered to Provider, the dissociation is not allow
+ed:
 
 Error Response `409 CONFLICT`
 
 ```
 {
    "code": 409,
-   "message": "Dissociation is not allowed. There are registered Installations to {project_id, provider_id}"
+   "message": "Dissociation is not allowed. There are registered Installations t
+o {project_id, provider_id}"
 }
 ```
 
-### [GET] - Project Hierarchical Structure
+## [GET] - Project Hierarchical Structure
 
-You can retrieve the Providers and Installations associated with a specific project:
+You can retrieve the Providers and Installations associated with a specific proj
+ect:
 
 ```
 GET /accounting-system/projects/{project_id}
@@ -91,11 +103,13 @@ Authorization: Bearer {token}
 Basically, the hierarchical structure of a Project is returned:
 
 Success Response `200 OK`
+
 ```
 {
     "id": "725025",
     "acronym": "AgeConsolidate",
-    "title": "The Missing Link of Episodic Memory Decline in Aging: The Role of Inefficient Systems Consolidation",
+    "title": "The Missing Link of Episodic Memory Decline in Aging: The Role of
+             Inefficient Systems Consolidation",
     "start_date": "2017-05-01",
     "end_date": "2022-10-31",
     "call_identifier": "ERC-2016-COG",
@@ -127,10 +141,10 @@ Success Response `200 OK`
 }
 ```
 
+## [GET] - Fetch all Projects
 
-### [GET] - Fetch all Projects
-
-You can retrieve all Projects assigned to you by executing the following GET request:
+You can retrieve all Projects assigned to you by executing the following GET req
+uest:
 
 ```
 GET /accounting-system/projects
@@ -138,7 +152,9 @@ GET /accounting-system/projects
 Authorization: Bearer {token}
 ```
 
-By default, the first page of 10 Projects will be returned. You can tune the default values by using the query parameters page and size as shown in the example below.
+By default, the first page of 10 Projects will be returned. You can tune the def
+ault values by using the query parameters page and size as shown in the example
+below.
 
 ```
 GET /accounting-system/projects?page=2&size=5
@@ -158,7 +174,9 @@ Success Response `200 OK`
         {
             "id": "888743",
             "acronym": "DABAT",
-            "title": "DNA-sensing by AIM2 in activated B cells: novel targets to improve allogeneic haematopoietic stem cell transplantation",
+            "title": "DNA-sensing by AIM2 in activated B cells: novel targets to
+                     improve allogeneic haematopoietic stem cell
+                     transplantation",
             "start_date": "2020-10-01",
             "end_date": "2023-09-30",
             "call_identifier": "H2020-MSCA-IF-2019",
@@ -191,7 +209,8 @@ Success Response `200 OK`
         {
             "id": "709328",
             "acronym": "IN VIVO MOSSY",
-            "title": "Is the hippocampal mossy fiber synapse a detonator in vivo?",
+            "title": "Is the hippocampal mossy fiber synapse a detonator in
+                     vivo?",
             "start_date": "2016-04-01",
             "end_date": "2018-03-31",
             "call_identifier": "H2020-MSCA-IF-2015",
@@ -207,7 +226,8 @@ Success Response `200 OK`
             "providers": [
                 {
                     "id": "ubora",
-                    "name": "Open Biomedical Engineering e-platform for Innovation through Education",
+                    "name": "Open Biomedical Engineering e-platform for
+                            Innovation through Education",
                     "website": "http://ubora-biomedical.org/",
                     "abbreviation": "UBORA",
                     "logo": "http://ubora-biomedical.org/wp-content/uploads/2017/01/UBORA-Logo-Final-JPEGb.jpg",
@@ -218,7 +238,8 @@ Success Response `200 OK`
         {
             "id": "887530",
             "acronym": "NONORMOPERA",
-            "title": "Sexual and Gender Non-Normativity in Opera after the Second World War",
+            "title": "Sexual and Gender Non-Normativity in Opera after the
+                     Second World War",
             "start_date": "2020-11-01",
             "end_date": "2024-05-02",
             "call_identifier": "H2020-MSCA-IF-2019",
@@ -227,7 +248,9 @@ Success Response `200 OK`
         {
             "id": "843702",
             "acronym": "LCxLCProt",
-            "title": "Comprehensive two-dimensional liquid chromatography for the characterization of protein biopharmaceuticals at the protein level",
+            "title": "Comprehensive two-dimensional liquid chromatography for
+                     the characterization of protein biopharmaceuticals at
+                     the protein level",
             "start_date": "2020-01-01",
             "end_date": "2020-12-31",
             "call_identifier": "H2020-MSCA-IF-2018",
@@ -236,7 +259,8 @@ Success Response `200 OK`
         {
             "id": "894897",
             "acronym": "DEFORM",
-            "title": "Dead or Alive: Finding the Origin of Caldera Unrest using Magma Reservoir Models",
+            "title": "Dead or Alive: Finding the Origin of Caldera Unrest
+                     using Magma Reservoir Models",
             "start_date": "2020-11-01",
             "end_date": "2022-10-31",
             "call_identifier": "H2020-MSCA-IF-2019",
@@ -254,7 +278,9 @@ Success Response `200 OK`
         {
             "id": "894921",
             "acronym": "PlaGE",
-            "title": "Playing at the Gateways of Europe: theatrical languages and performatives practices in the Migrants' Reception Centres of the Mediterranean Area",
+            "title": "Playing at the Gateways of Europe: theatrical languages
+                     and performatives practices in the Migrants' Reception
+                     Centres of the Mediterranean Area",
             "start_date": "2020-10-01",
             "end_date": "2023-09-30",
             "call_identifier": "H2020-MSCA-IF-2019",
@@ -263,7 +289,8 @@ Success Response `200 OK`
         {
             "id": "654496",
             "acronym": "NanoCytox",
-            "title": "Development of Novel Analytical Methods to assess Nanoparticle cytotoxicity",
+            "title": "Development of Novel Analytical Methods to assess
+                     Nanoparticle cytotoxicity",
             "start_date": "2015-11-01",
             "end_date": "2017-10-31",
             "call_identifier": "H2020-MSCA-IF-2014",
@@ -272,7 +299,9 @@ Success Response `200 OK`
         {
             "id": "701538",
             "acronym": "TransIt",
-            "title": "Translating science in the long Italian Eighteenth-Century. The role of translators and publishers as “cultural mediators” (1760-1790s)",
+            "title": "Translating science in the long Italian
+                     Eighteenth-Century. The role of translators and publishers
+                     as “cultural mediators” (1760-1790s)",
             "start_date": "2017-02-01",
             "end_date": "2019-01-31",
             "call_identifier": "H2020-MSCA-IF-2015",
@@ -300,17 +329,17 @@ Success Response `200 OK`
 }
 ```
 
+## [POST] - Access Control Entry for a specific Project {#post-access-control}
 
-### [POST] - Access Control Entry for a particular Project {#post-access-control}
-
-The general endpoint that is responsible for creating an Access Control entry for a Project is as follows:
+The general endpoint that is responsible for creating an Access Control entry fo
+r a Project is as follows:
 
 ```
 POST /accounting-system/projects/{project_id}/acl/{who}
 
 Content-Type: application/json
 Authorization: Bearer {token}
- 
+
 {
   "roles":[
      {role_name}
@@ -331,30 +360,41 @@ Success Response `200 OK`
 }
 ```
 
-One client can have different roles at different Projects. For instance, in one Project can be an admin executing all the Project operations while in another it can only read the Project Metrics.
-Consequently, any client can have different responsibilities at different Projects. The actions the client can perform at each Project are determined by the role, and the permissions it has.
+One client can have different roles at different Projects. For instance, in one
+Project can be an admin executing all the Project operations while in another it
+ can only read the Project Metrics.
+Consequently, any client can have different responsibilities at different Projec
+ts. The actions the client can perform at each Project are determined by the rol
+e, and the permissions it has.
 
-**Keep in mind that** to execute the above operation, you must have been assigned a role containing the Project Acl permission.
+**Keep in mind that** to execute the above operation, you must have been assigne
+d a role containing the Project Acl permission.
 
-### [POST] - Search for Projects
- 
-You can search on Projects, to find the ones corresponding to the given search criteria. Projects  can be searched by executing the following request:
+## [POST] - Search for Projects
+
+You can search on Projects, to find the ones corresponding to the given search c
+riteria. Projects  can be searched by executing the following request:
+
 ```
 POST accounting-system/projects/search
 Content-Type: application/json
 
 
 ```
-#### Example 1: 
+
+### Example 1
+
 ```
  {
       "type": "query",
       "field": "title",
-      "values": "Functional and Molecular Characterisation of Breast Cancer Stem Cells",
+      "values": "Functional and Molecular Characterisation of Breast Cancer Stem
+                Cells",
       "operand": "eq"
     }
 ```
-#### Example 2: 
+
+### Example 2
 
 ```
 {
@@ -364,7 +404,8 @@ Content-Type: application/json
     {
       "type": "query",
       "field": "title",
-      "values": "Functional and Molecular Characterisation of Breast Cancer Stem Cells",
+      "values": "Functional and Molecular Characterisation of Breast Cancer Stem
+                Cells",
       "operand": "eq"
     },
     {
@@ -377,8 +418,8 @@ Content-Type: application/json
 }
 ```
 
-The context of the request should be a json object. The syntax of the json object , is described <b> <a href="https://argoeu.github.io/argo-accounting/docs/guides/search-filter">here</a></b>
- 
+The context of the request should be a JSON object. The syntax of the JSON
+object is described [**here**](https://argoeu.github.io/argo-accounting/docs/guides/search-filter).
 If the operation is successful, you get a list of projects
 
 ```
@@ -391,7 +432,9 @@ If the operation is successful, you get a list of projects
         {
             "id": "655710",
             "acronym": "CONRICONF",
-            "title": "Contentious Rights: A Comparative Study of International Human Rights Norms and their Effects on Domestic Social Conflict",
+            "title": "Contentious Rights: A Comparative Study of International
+                      Human Rights Norms and their Effects on Domestic Social
+                      Conflict",
             "start_date": "2016-01-17",
             "end_date": "2020-02-08",
             "call_identifier": "H2020-MSCA-IF-2014",
@@ -427,12 +470,8 @@ If the operation is successful, you get a list of projects
 
 ```
 
-
 Otherwise, an empty response will be returned.
 
-
-
-
-### Errors
+## Errors
 
 Please refer to section [Errors](./api_errors) to see all possible Errors.

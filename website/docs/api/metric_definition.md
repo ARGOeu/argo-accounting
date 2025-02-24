@@ -4,24 +4,36 @@ title: Metric Definition
 sidebar_position: 2
 ---
 
-Metrics are measures of quantitative assessment commonly used for assessing, comparing, and tracking usage or performance of a service. They are the main indicators.
+# Metric Definition
 
-A metric definition is the way to represent and describe the type of the metrics. A Metric Definition consists of the metadata describing a Metric. The client can interact through several operations with the API in order to create, update, delete or fetch a Metric Definition. The aforementioned operations are described below.
+Metrics are measures of quantitative assessment commonly used for assessing,
+comparing, and tracking usage or performance of a service. They are the main
+indicators.
+
+A metric definition is the way to represent and describe the type of the
+metrics. A Metric Definition consists of the metadata describing a Metric.
+The client can interact through several operations with the API in order to
+create, update, delete or fetch a Metric Definition. The aforementioned
+operations are described below.
 
 The Metric Definition can be expressed by the following structure:
 
-| Field          	| Description   	                      | 
-|------------------	|---------------------------------------- |
-| id             	| A unique identifier             |
-| metric_name      	| Name to be used for describing a Metric |
-| metric_description      	| Short Description of a Metric Definition |
-| [unit_type](./unit_type.md)      	| Expresses and measures physical quantities used in various infrastructures, service providers, and projects.|
-| [metric_type](./metric_type.md)      	| Defines how the physical quantities have been collected |
+| Field           | Description                          |
+|------------------ |---------------------------------------- |
+| id              | A unique identifier.             |
+| metric_name       | Name to be used for describing a Metric. |
+| metric_description       | Short Description of a Metric Definition. |
+| [unit_type](./unit_type.md)| Quantifies metrics across various entities*.|
+| [metric_type](./metric_type.md)| How metrics have been collected. |
 
-### [POST] - Create a Metric Definition
+\* _entities can be: infrastructures, service providers, and projects_
 
-Upon creating a new Metric Definition, the client should be able to forward a Metric to the Accounting System API.
-The client can submit a new Metric Definition by executing the following POST request:
+## [POST] - Create a Metric Definition
+
+Upon creating a new Metric Definition, the client should be able to forward
+a Metric to the Accounting System API.
+The client can submit a new Metric Definition by executing the following POST
+request:
 
 ```
 POST /accounting-system/metric-definitions
@@ -37,7 +49,8 @@ Authorization: Bearer {token}
 }
 ```
 
-Upon inserting the record into the database, the API returns the Metric Definition enhanced with the metric_definition_id :
+Upon inserting the record into the database, the API returns the Metric
+Definition enhanced with the metric_definition_id:
 
 Success Response `201 CREATED`
 
@@ -52,9 +65,11 @@ Success Response `201 CREATED`
 }
 ```
 
-### [GET] - Fetch a Metric Definition
+## [GET] - Fetch a Metric Definition
 
-The client should be able to fetch an already created Metric Definition. Having the id of a Metric Definition, the client can request the relevant to that id Metric Definition by executing the following request:
+The client should be able to fetch an already created Metric Definition. Having
+the id of a Metric Definition, the client can request the relevant to that id
+Metric Definition by executing the following request:
 
 ```
 GET /accounting-system/metric-definitions/{metric_definition_id}
@@ -65,6 +80,7 @@ Authorization: Bearer {token}
 The response returned to the client is the following:
 
 Success Response `200 OK`
+
 ```
 {
     "id" : "61dff744ba5b5f60791bd09d",
@@ -75,11 +91,13 @@ Success Response `200 OK`
 }
 ```
 
-### [PATCH] - Update a Metric Definition
+## [PATCH] - Update a Metric Definition
 
-The client can update a Metric Definition using the following PATCH request. The URL should be filled in with the metric definition id to be updated.
+The client can update a Metric Definition using the following PATCH request.
+The URL should be filled in with the metric definition id to be updated.
 
-Bear in mind that you cannot update an existing Metric Definition if there are Metrics assigned to it.
+Bear in mind that you cannot update an existing Metric Definition if there
+are Metrics assigned to it.
 
 ```
 PATCH /accounting-system/metric-definitions/{metric_definition_id}
@@ -102,7 +120,9 @@ Success Response `200 OK`
 }
 ```
 
-In order to update the resource properties, the body of the request must contain an updated representation of Metric Definition. For example, to edit the metric type, send the following request:
+In order to update the resource properties, the body of the request must
+contain an updated representation of Metric Definition. For example, to
+edit the metric type, send the following request:
 
 ```
 PATCH /accounting-system/metric-definitions/{metric_definition_id}
@@ -115,11 +135,14 @@ Authorization: Bearer {token}
 }
 ```
 
-You can update a part or all attributes of the Metric Definition. The empty or null values are ignored.
+You can update a part or all attributes of the Metric Definition. The
+empty or null values are ignored.
 
-### [DELETE]  - Delete a Metric Definition
+## [DELETE]  - Delete a Metric Definition
 
-You can only delete a Metric Definition that does not have any Metrics assigned to it. If the Metric Definition has no Metrics, you can safely delete it.
+You can only delete a Metric Definition that does not have any Metrics
+assigned to it. If the Metric Definition has no Metrics, you can safely
+delete it.
 
 Metric Definition can be deleted by executing the following request:
 
@@ -132,6 +155,7 @@ Authorization: Bearer {token}
 If the operation is successful, you get the following response:
 
 Success Response `200 OK`
+
 ```
 {
    "code": 200,
@@ -139,11 +163,10 @@ Success Response `200 OK`
 }
 ```
 
+## [GET]  - Fetch all the Metric Definitions
 
-### [GET]  - Fetch all the Metric Definitions
-
-You can also fetch all the Metric Definitions that exist to the accounting system.
-
+You can also fetch all the Metric Definitions that exist to the
+accounting system.
 
 ```
 GET /accounting-system/metric-definitions
@@ -186,15 +209,19 @@ If the operation is successful, you get the following response:
 }
 ```
 
-### [POST] - Search for Metric Definitions
- 
-You can search on Installations, to find the ones corresponding to the given search criteria. Metric Definitions can be searched by executing the following request:
- 
-``` 
+## [POST] - Search for Metric Definitions
+
+You can search on Installations, to find the ones corresponding to the given
+search criteria. Metric Definitions can be searched by executing the following
+request:
+
+```
 POST accounting-system/metric-definition/search
 Content-Type: application/json
 ```
-#### Example 1: 
+
+### Example 1
+
 ```
 {
   "type": "query",
@@ -204,7 +231,7 @@ Content-Type: application/json
 }
 ```
 
-#### Example 2: 
+### Example 2
 
 ```
 {
@@ -235,11 +262,13 @@ Content-Type: application/json
         }
       ]
     }
-    
+
 ```
- 
-The context of the request should be a json object. The syntax of the json object , is described <b> <a href="https://argoeu.github.io/argo-accounting/docs/guides/search-filter">here</a></b>
+
+The context of the request should be a JSON object. The syntax of the JSON
+object is described [**here**](https://argoeu.github.io/argo-accounting/docs/guides/search-filter).
 If the operation is successful, you get a list of metrics, for example:
+
 ```
 {
     "size_of_page": 1,
@@ -259,6 +288,6 @@ If the operation is successful, you get a list of metrics, for example:
 }
 ```
 
-### Errors
+## Errors
 
 Please refer to section [Errors](./api_errors) to see all possible Errors.

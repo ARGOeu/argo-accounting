@@ -4,7 +4,10 @@ title: Metric
 sidebar_position: 6
 ---
 
-In order to register a new Metric in the Accounting System, first you have to complete the following steps:
+# Metric
+
+In order to register a new Metric in the Accounting System, first you have to
+complete the following steps:
 
 - Create a new Metric Definition
 - Register your Project
@@ -12,19 +15,20 @@ In order to register a new Metric in the Accounting System, first you have to co
 - Use a Provider from EOSC-Portal or create a new Provider through AS API
 - Create a new Installation
 
-Once you have completed the above steps, you can submit a new metric in the Accounting System.
+Once you have completed the above steps, you can submit a new metric in the
+Accounting System.
 
 The Metric consists of the following attributes:
 
-| Field          	| Description   	                      | 
-|------------------	|---------------------------------------- |
-| id             	| Unique ID of the Metric             |
-| [metric_definition_id](./metric_definition.md)       	| Reference Id from the metric definition |
-| time_period_start      	    | Timestamp of the starting date time (Zulu timestamp) |
-| time_period_end      	|Timestamp of the end date time (Zulu timestamp)|
-| value      	| Value of the metric for the given period (decimal value) |
+| Field           | Description                          |
+|------------------ |---------------------------------------- |
+| id              | Unique ID of the Metric.          |
+| [metric_definition_id](./metric_definition.md)|Points to Metric Definition ID.|
+| time_period_start | Timestamp of the starting date time (Zulu timestamp). |
+| time_period_end       |Timestamp of the end date time (Zulu timestamp).|
+| value       | Value of the metric for the given period (decimal value). |
 
-### [POST] - Create a new Metric
+## [POST] - Create a new Metric
 
 You can create a new Metric by executing the following POST request:
 
@@ -37,12 +41,13 @@ Authorization: Bearer {token}
 {
 "metric_definition_id" : "62973fea0f41a20c683e9014",
 "time_period_start": "2020-12-20T09:13:07Z",
-"time_period_end": "2020-12-25T11:14:07Z",  
+"time_period_end": "2020-12-25T11:14:07Z",
 "value": 700
 }
 ```
 
-Upon inserting the record into the database, the API returns the Metric enhanced with the metric id :
+Upon inserting the record into the database, the API returns the Metric
+enhanced with the metric id :
 
 Success Response `201 CREATED`
 
@@ -56,11 +61,13 @@ Success Response `201 CREATED`
 }
 ```
 
+## [DELETE] - Delete an existing Metric
 
-### [DELETE] - Delete an existing Metric
-
-The client should be able to delete an existing Metric. As a result, the Accounting System API has to offer an operation deleting the Metric that the client wants.
-Subsequently, the registered Metric can be deleted by executing the following request:
+The client should be able to delete an existing Metric. As a result, the
+Accounting System API has to offer an operation deleting the Metric that
+the client wants.
+Subsequently, the registered Metric can be deleted by executing the following
+request:
 
 ```
 DELETE /accounting-system/installations/{installation_id}/metrics/{metric_id}
@@ -68,18 +75,19 @@ DELETE /accounting-system/installations/{installation_id}/metrics/{metric_id}
 Authorization: Bearer {token}
 ```
 
-Upon the successful deletion, the API will return the following informative response:
+Upon the successful deletion, the API will return the following informative
+response:
 
 Success Response `200 OK`
 
 ```
 {
    "code": 200,
-   "message: "The Metric has been deleted successfully." 
+   "message: "The Metric has been deleted successfully."
 }
 ```
 
-### [PATCH] - Update an existing Metric
+## [PATCH] - Update an existing Metric
 
 The following endpoint is used to update the values of an existing Metric:
 
@@ -96,7 +104,9 @@ Authorization: Bearer {token}
 }
 ```
 
-In order to update the resource properties, the body of the request must contain an updated representation of Metric. You can update a part or all attributes of the Metric. The empty or null values are ignored.
+In order to update the resource properties, the body of the request must
+contain an updated representation of Metric. You can update a part or all
+attributes of the Metric. The empty or null values are ignored.
 The response will be the updated entity :
 
 Success Response `200 OK`
@@ -107,9 +117,10 @@ Success Response `200 OK`
 }
 ```
 
-### [GET] - Fetch an existing Metric
+## [GET] - Fetch an existing Metric
 
-Having the id of a Metric, the client can request the relevant to that id Metric by executing the following request:
+Having the id of a Metric, the client can request the relevant to that id
+Metric by executing the following request:
 
 ```
 GET /accounting-system/installations/{installation_id}/metrics/{metric_id}
@@ -122,24 +133,27 @@ The response is as follows:
 Success Response `200 OK`
 
 ```
-{    
+{
 "metric_id": "72983kea0h41a20c683e3589",
-"metric_definition_id": "62973fea0f41a20c683e9014", 
-"time_period_start": "2020-12-20T09:13:07Z", 
-"time_period_end": "2020-12-25T11:14:07Z",   
+"metric_definition_id": "62973fea0f41a20c683e9014",
+"time_period_start": "2020-12-20T09:13:07Z",
+"time_period_end": "2020-12-25T11:14:07Z",
 "value": 55
 }
 ```
 
-### [POST] - Search for Metrics
- 
-You can search on Metrics, to find the ones corresponding to the given search criteria. Metrics  can be searched by executing the following request:
- 
-``` 
+## [POST] - Search for Metrics
+
+You can search on Metrics, to find the ones corresponding to the given search
+criteria. Metrics  can be searched by executing the following request:
+
+```
 POST accounting-system/metrics/search
 Content-Type: application/json
 ```
-#### Example 1: 
+
+### Example 1
+
 ```
 {
   "type": "query",
@@ -149,7 +163,7 @@ Content-Type: application/json
 }
 ```
 
-#### Example 2: 
+### Example 2
 
 ```
 {
@@ -183,9 +197,11 @@ Content-Type: application/json
   ]
 }
 ```
- 
-The context of the request should be a json object. The syntax of the json object , is described <b> <a href="https://argoeu.github.io/argo-accounting/docs/guides/search-filter">here</a></b>
+
+The context of the request should be a JSON object. The syntax of the JSON
+object is described [**here**](https://argoeu.github.io/argo-accounting/docs/guides/search-filter).
 If the operation is successful, you get a list of metrics, for example:
+
 ```
 {
     "size_of_page": 3,
@@ -258,7 +274,6 @@ If the operation is successful, you get a list of metrics, for example:
 }
 ```
 
-
-### Errors
+## Errors
 
 Please refer to section [Errors](./api_errors) to see all possible Errors.
