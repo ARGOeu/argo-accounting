@@ -26,7 +26,11 @@ According to [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) , the
 
 ---
 
-### Unreleased - Added
+## 1.6.0 - 2025-03-13
+
+---
+
+### 1.6.0 - Added
 
 - [#190](https://github.com/ARGOeu/argo-accounting/pull/190) - ACC-256 Add
   start/end field in metrics retrieval API calls for user and group ids.
@@ -43,12 +47,12 @@ According to [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) , the
 - [#206](https://github.com/ARGOeu/argo-accounting/pull/206) - ACC-317 API 
   to fetch Document Counts by Time Period in MongoDB.
 - 
-### Unreleased - Changed
+### 1.6.0 - Changed
 
 - [#191](https://github.com/ARGOeu/argo-accounting/pull/191) - ACC-252
   Registered clients should not be visible to everyone.
 
-### Unreleased - Fixed
+### 1.6.0 - Fixed
 
 - [#193](https://github.com/ARGOeu/argo-accounting/pull/193) - ACC-274 Update
   Group ID Path Name to Resolve Conflict with User ID Path.
