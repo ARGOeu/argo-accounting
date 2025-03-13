@@ -1,5 +1,6 @@
 package org.accounting.system.services;
 
+import com.mongodb.client.model.Filters;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.NotFoundException;
@@ -23,8 +24,10 @@ import org.accounting.system.repositories.installation.InstallationRepository;
 import org.accounting.system.repositories.metric.MetricRepository;
 import org.accounting.system.repositories.project.ProjectModulator;
 import org.accounting.system.repositories.project.ProjectRepository;
+import org.bson.types.ObjectId;
 import org.eclipse.microprofile.rest.client.inject.RestClient;
 
+import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -236,5 +239,22 @@ public class SystemAdminService {
     public ProjectProjection updateProject(UpdateProjectRequest request, String id) {
 
         return projectRepository.updateProject(request, id);
+    }
+
+    /**
+     * Retrieves the number of documents inserted in a collection within the specified time period.
+     * The method extracts timestamps from MongoDB ObjectIds and filters records based on the given date range. The response includes the count of collection documents.
+     *
+     * @param collectionName The collection name.
+     * @param start          The start date in the format "YYYY-MM-DD". This defines the lower bound of the time range.
+     * @param end            The end date in the format "YYYY-MM-DD". This defines the upper bound of the time range.
+     * @return The count of documents in collection within the specified range.
+     **/
+    public long countDocuments(String collectionName, Date start, Date end) {
+
+        var startId = new ObjectId(Long.toHexString(start.getTime() / 1000) + "0000000000000000");
+        var endId = new ObjectId(Long.toHexString(end.getTime() / 1000) + "0000000000000000");
+
+        return projectRepository.getMongoCollection(collectionName).countDocuments(Filters.and(Filters.gte("_id", startId), Filters.lt("_id", endId)));
     }
 }

@@ -16,6 +16,7 @@ import org.accounting.system.repositories.client.ClientRepository;
 import org.accounting.system.services.authorization.RoleService;
 
 import java.time.LocalDateTime;
+import java.util.Date;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -128,5 +129,10 @@ public class ClientService {
                 .collect(Collectors.toSet());
 
         return roleService.mergeRoles(roles);
+    }
+
+    public long countDocuments(Date start, Date end) {
+
+        return clientRepository.countDocuments(start, end);
     }
 }
