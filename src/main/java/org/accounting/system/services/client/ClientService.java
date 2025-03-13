@@ -1,6 +1,5 @@
 package org.accounting.system.services.client;
 
-import io.quarkus.mongodb.panache.PanacheQuery;
 import io.quarkus.panache.common.Page;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
@@ -16,7 +15,8 @@ import org.accounting.system.repositories.authorization.RoleRepository;
 import org.accounting.system.repositories.client.ClientRepository;
 import org.accounting.system.services.authorization.RoleService;
 
-import java.util.Optional;
+import java.time.LocalDateTime;
+import java.util.Date;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -43,7 +43,7 @@ public class ClientService {
      */
     public ClientResponseDto register(String id, String name, String email){
 
-        Optional<Client> optionalClient = clientRepository.findByIdOptional(id);
+        var optionalClient = clientRepository.findByIdOptional(id);
 
         Client client;
 
@@ -59,6 +59,7 @@ public class ClientService {
             client.setName(name);
             client.setEmail(email);
             client.setCreatorId(id);
+            client.setRegisteredOn(LocalDateTime.now());
             client.setRoles(Set.of("collection_reader"));
         }
 
@@ -77,8 +78,8 @@ public class ClientService {
      */
     public PageResource<ClientResponseDto> findAllClientsPageable(int page, int size, UriInfo uriInfo){
 
-        PanacheQuery<Client> panacheQuery = clientRepository
-                .find("systemAdmin = ?1 ", false)
+        var panacheQuery = clientRepository
+                .findAll()
                 .page(Page.of(page, size));
 
         return new PageResource<>(panacheQuery, ClientMapper.INSTANCE.clientsToResponse(panacheQuery.list()), uriInfo);
@@ -128,5 +129,10 @@ public class ClientService {
                 .collect(Collectors.toSet());
 
         return roleService.mergeRoles(roles);
+    }
+
+    public long countDocuments(Date start, Date end) {
+
+        return clientRepository.countDocuments(start, end);
     }
 }

@@ -3,15 +3,22 @@ id: unit_type
 title: Unit Types
 sidebar_position: 6
 ---
-To manage the Unit Types via a website, please visit the <a href="https://accounting.eosc-portal.eu/unit-types">Unit Types</a> tab.
 
-Please note that all available actions are described in this section. The role that the client has obtained may not grant them access to some or all actions.
+# Unit Types
 
-Please refer to Unit Type [collection](/docs/api/unit_type.md) for more details.
+To manage the Unit Types via a website, please visit the
+[Unit Types](https://accounting.eosc-portal.eu/unit-types) tab.
 
-### View all the Unit Types
+Please note that all available actions are described in this section. The role
+that the client has obtained may not grant them access to some or all actions.
 
-To view all the Unit Types, you should visit the <a href="https://accounting.eosc-portal.eu/unit-types">Unit Types</a> tab on the Accounting User Interface.
+Please refer to Unit Type [collection](/docs/api/unit_type.md) for more
+details.
+
+## View all the Unit Types
+
+To view all the Unit Types, you should visit the [Unit Types](https://accounting.eosc-portal.eu/unit-types)
+tab on the Accounting User Interface.
 Then, all the created Unit Types by any client are displayed.
 
 ![](assets/unit_type/unit_types.png)

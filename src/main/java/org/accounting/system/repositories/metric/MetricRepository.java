@@ -137,9 +137,25 @@ public class MetricRepository extends AccessibleModulator<Metric, ObjectId> {
 
         Bson lookup = Aggregates.lookup("MetricDefinition", "metric_definition_id", "_id", "metric_definition");
 
-        if(ObjectUtils.allNotNull(start, end) && Utility.isDate(start, end) && Utility.isBefore(start, end)) {
-            filters = filters.append(Filters.and(Filters.gte("time_period_start", Utility.stringToInstant(start)), Filters.lte("time_period_start", Utility.stringToInstant(end))));
-            filters = filters.append(Filters.and(Filters.gte("time_period_end", Utility.stringToInstant(start)), Filters.lte("time_period_end", Utility.stringToInstant(end))));
+        if(ObjectUtils.allNotNull(start, end)) {
+
+            if(Utility.isDate(start, end) && Utility.isBefore(start, end)){
+
+
+                filters = filters.append(Filters.and(Filters.gte("time_period_start", Utility.stringToInstant(start)), Filters.lte("time_period_start", Utility.stringToInstant(end))));
+                filters = filters.append(Filters.and(Filters.gte("time_period_end", Utility.stringToInstant(start)), Filters.lte("time_period_end", Utility.stringToInstant(end))));
+            }
+
+        } else if(ObjectUtils.isNotEmpty(start)){
+
+            if(Utility.isDate(start)){
+
+
+                filters = filters.append(Filters.and(Filters.gte("time_period_start", Utility.startToInstant(start))));
+            }
+        } else if(ObjectUtils.isNotEmpty(end)){
+
+            filters = filters.append(Filters.and(Filters.lte("time_period_end", Utility.endToInstant(end))));
         }
 
         if(StringUtils.isNotEmpty(metricDefinitionId)){
@@ -168,23 +184,44 @@ public class MetricRepository extends AccessibleModulator<Metric, ObjectId> {
         return projectionQuery;
     }
 
-    public PanacheQuery<MetricProjection> findByProjectIdAndGroupId(final String externalId, final String groupId, int page, int size) {
+    public PanacheQuery<MetricProjection> findByProjectIdAndGroupId(final String externalId, final String groupId, int page, int size, String start, String end) {
 
         var filters = Array.of(Filters.regex("resource_id", "\\b" + externalId + "\\b"+"(?![-])"));
 
         var addField = new Document("$addFields", new Document("metric_definition_id", new Document("$toObjectId", "$metric_definition_id")));
 
-        Bson lookup = Aggregates.lookup("MetricDefinition", "metric_definition_id", "_id", "metric_definition");
+        var lookup = Aggregates.lookup("MetricDefinition", "metric_definition_id", "_id", "metric_definition");
 
         filters = filters.append(Filters.eq("group_id", groupId));
 
-        Bson regex = Aggregates.match(Filters.and(filters));
+        if(ObjectUtils.allNotNull(start, end)) {
 
-        List<MetricProjection> projections = getMongoCollection()
+            if(Utility.isDate(start, end) && Utility.isBefore(start, end)){
+
+
+                filters = filters.append(Filters.and(Filters.gte("time_period_start", Utility.stringToInstant(start)), Filters.lte("time_period_start", Utility.stringToInstant(end))));
+                filters = filters.append(Filters.and(Filters.gte("time_period_end", Utility.stringToInstant(start)), Filters.lte("time_period_end", Utility.stringToInstant(end))));
+            }
+
+        } else if(ObjectUtils.isNotEmpty(start)){
+
+            if(Utility.isDate(start)){
+
+
+                filters = filters.append(Filters.and(Filters.gte("time_period_start", Utility.startToInstant(start))));
+            }
+        } else if(ObjectUtils.isNotEmpty(end)){
+
+               filters = filters.append(Filters.and(Filters.lte("time_period_end", Utility.endToInstant(end))));
+        }
+
+        var regex = Aggregates.match(Filters.and(filters));
+
+        var projections = getMongoCollection()
                 .aggregate(List
                         .of(regex, addField, Aggregates.skip(size * (page)), Aggregates.limit(size), lookup), MetricProjection.class).into(new ArrayList<>());
 
-        Document count = getMongoCollection()
+       var count = getMongoCollection()
                 .aggregate(List
                         .of(regex, addField, Aggregates.count())).first();
 
@@ -199,7 +236,7 @@ public class MetricRepository extends AccessibleModulator<Metric, ObjectId> {
         return projectionQuery;
     }
 
-    public PanacheQuery<MetricProjection> findByProjectIdAndUserId(final String externalId, final String userId, int page, int size) {
+    public PanacheQuery<MetricProjection> findByProjectIdAndUserId(final String externalId, final String userId, int page, int size, String start, String end) {
 
         var filters = Array.of(Filters.regex("resource_id", "\\b" + externalId + "\\b"+"(?![-])"));
 
@@ -208,6 +245,27 @@ public class MetricRepository extends AccessibleModulator<Metric, ObjectId> {
         Bson lookup = Aggregates.lookup("MetricDefinition", "metric_definition_id", "_id", "metric_definition");
 
         filters = filters.append(Filters.eq("user_id", userId));
+
+        if(ObjectUtils.allNotNull(start, end)) {
+
+            if(Utility.isDate(start, end) && Utility.isBefore(start, end)){
+
+
+                filters = filters.append(Filters.and(Filters.gte("time_period_start", Utility.stringToInstant(start)), Filters.lte("time_period_start", Utility.stringToInstant(end))));
+                filters = filters.append(Filters.and(Filters.gte("time_period_end", Utility.stringToInstant(start)), Filters.lte("time_period_end", Utility.stringToInstant(end))));
+            }
+
+        } else if(ObjectUtils.isNotEmpty(start)){
+
+            if(Utility.isDate(start)){
+
+
+                filters = filters.append(Filters.and(Filters.gte("time_period_start", Utility.startToInstant(start))));
+            }
+        } else if(ObjectUtils.isNotEmpty(end)){
+
+            filters = filters.append(Filters.and(Filters.lte("time_period_end", Utility.endToInstant(end))));
+        }
 
         Bson regex = Aggregates.match(Filters.and(filters));
 
@@ -250,5 +308,9 @@ public class MetricRepository extends AccessibleModulator<Metric, ObjectId> {
         super.update(entity);
 
         return entity;
+    }
+
+    public void deleteByProjectId(String projectId) {
+        delete("project_id", projectId);
     }
 }

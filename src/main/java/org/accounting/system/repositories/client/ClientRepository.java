@@ -1,6 +1,7 @@
 package org.accounting.system.repositories.client;
 
 import com.mongodb.client.model.Aggregates;
+import com.mongodb.client.model.Filters;
 import io.quarkus.mongodb.panache.PanacheMongoRepository;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.ws.rs.ForbiddenException;
@@ -8,10 +9,13 @@ import org.accounting.system.entities.client.Client;
 import org.accounting.system.enums.ApiMessage;
 import org.bson.Document;
 import org.bson.conversions.Bson;
+import org.bson.types.ObjectId;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.List;
 import java.util.Set;
 
@@ -74,13 +78,14 @@ public class ClientRepository extends ClientModulator {
 
         }, ()->{
 
-            Client client = new Client();
+            var client = new Client();
 
             client.setSystemAdmin(true);
             client.setEmail(email);
             client.setName(name);
             client.setId(vopersonId);
             client.setRoles(Set.of("collection_owner"));
+            client.setRegisteredOn(LocalDateTime.now());
             persist(client);
         });
     }
@@ -113,5 +118,13 @@ public class ClientRepository extends ClientModulator {
                 .into(new ArrayList<>());
 
         return projections;
+    }
+
+    public long countDocuments(Date start, Date end) {
+
+        var startId = new ObjectId(Long.toHexString(start.getTime() / 1000) + "0000000000000000");
+        var endId = new ObjectId(Long.toHexString(end.getTime() / 1000) + "0000000000000000");
+
+        return getMongoCollection().countDocuments(Filters.and(Filters.gte("registeredOn", start), Filters.lt("registeredOn", end)));
     }
 }

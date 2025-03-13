@@ -547,4 +547,9 @@ public class InstallationRepository {
 
         return projectionQuery;
     }
+
+    public boolean resourceExists(String resourceId) {
+
+        return projectRepository.getMongoCollection().countDocuments(Filters.eq("providers.installations.resource", resourceId)) > 0;
+    }
 }

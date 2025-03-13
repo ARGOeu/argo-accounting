@@ -60,8 +60,7 @@ public class InstallationRequestDto {
             implementation = String.class,
             description = "Unit of access. It must point to an existing Metric Definition. Obviously, you can add " +
                     "different Metrics to an Installation, but this attribute expresses the primary Unit of Access.",
-            example = "507f1f77bcf86cd799439011",
-            required = true
+            example = "507f1f77bcf86cd799439011"
     )
     @JsonProperty("unit_of_access")
     public String unitOfAccess;

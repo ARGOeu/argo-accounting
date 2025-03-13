@@ -125,6 +125,20 @@ public class Utility {
         return localDateTimeStart.toInstant(ZoneOffset.UTC);
     }
 
+    public static Instant startToInstant(String date){
+
+        LocalDate localDateStart = LocalDate.parse(date);
+        LocalDateTime localDateTimeStart = localDateStart.atStartOfDay();
+        return localDateTimeStart.toInstant(ZoneOffset.UTC);
+    }
+
+    public static Instant endToInstant(String date){
+
+        LocalDate localDateStart = LocalDate.parse(date);
+        LocalDateTime localDateTimeStart = localDateStart.atTime(23, 59, 59, 999999999);
+        return localDateTimeStart.toInstant(ZoneOffset.UTC);
+    }
+
     public static boolean isBefore(String start, String end){
 
         if(stringToInstant(start).isBefore(stringToInstant(end))){

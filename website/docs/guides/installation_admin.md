@@ -4,89 +4,110 @@ title: Installation Admin
 sidebar_position: 5
 ---
 
-import Tabs from '@theme/Tabs';
-import TabItem from '@theme/TabItem';
+# Installation Admin
 
-### Before you start 
+## Before you start
 
-You can manage a Provider assigned to a specific Project.<br/>
+You can manage a Provider assigned to a specific Project.
 
-**1.** [Register](/docs/guides/register.md) to Accounting Service.<br/>
-**2.** Contact the administrator of the Project or the administrator of the Project's Provider, that this Installation is associated with, to assign you the Installation Admin role upon the installation you want.
+**1.** [Register](/docs/guides/register.md) to Accounting Service.
 
+**2.** Contact the administrator of the Project or the administrator of the
+Project's Provider, that this Installation is associated with, to assign you
+the Installation Admin role upon the installation you want.
 
-In the Accounting Service, the **_installation_admin_** role is the main role for managing an Installation. This role permits the user to perform any operation, on a specific Installation.
+In the Accounting Service, the **_installation_admin_** role is the main role
+for managing an Installation. This role permits the user to perform any
+operation on a specific Installation.
 
-Below we describe the actions an **_installation_admin_** can either perform through the Accounting User Interface or a simple HTTP request.
+Below we describe the actions an **_installation_admin_** can either perform
+through the Accounting User Interface or a simple HTTP request.
 
-## Actions 
+## Actions
+
+### View all the Installations you have access to
 
 ---
 
-:::info View all the Installations you have access to
+- **User Interface**
+  To perform this action via the website, please click [here](https://accounting.eosc-portal.eu/installations).
 
-<Tabs>
-  <TabItem value="ui" label="User Interface">To perform this action via the website, please click <a href="https://accounting.eosc-portal.eu/installations">here</a>.</TabItem>
-  <TabItem value="http" label="HTTP Request">It's currently under development.</TabItem>
-</Tabs>
+- **HTTP Request**
+  It's currently under development.
 
-:::
+### Update the Installations you have access to
 
-:::info Update the Installations you have access to
+---
 
-<Tabs>
-  <TabItem value="ui" label="User Interface">To perform this action via the website, please click <a href="https://accounting.eosc-portal.eu/installations">here</a> and follow the provided <a href="https://argoeu.github.io/argo-accounting/docs/guides/ui_actions/installation#update-an-existing-installation">instructions</a>.</TabItem>
-  <TabItem value="http" label="HTTP Request">To syntax the HTTP request, please visit the corresponding <a href="https://argoeu.github.io/argo-accounting/docs/api/installation#patch---update-an-existing-installation">document</a>.</TabItem>
-</Tabs>
+- **User Interface**
+  To perform this action via the website, please click [here](https://accounting.eosc-portal.eu/installations)
+and follow the provided [instructions](https://argoeu.github.io/argo-accounting/docs/guides/ui_actions/installation#update-an-existing-installation).
 
-:::
+- **HTTP Request**
+  To syntax the HTTP request, please visit the corresponding [document](https://argoeu.github.io/argo-accounting/docs/api/installation#patch---update-an-existing-installation).
 
-:::info Delete the Installations you have access to
+### Delete the Installations you have access to
 
-<Tabs>
-  <TabItem value="ui" label="User Interface">To perform this action via the website, please click <a href="https://accounting.eosc-portal.eu/installations">here</a> and follow the provided <a href="https://argoeu.github.io/argo-accounting/docs/guides/ui_actions/installation#delete-an-existing-installation">instructions</a>.</TabItem>
-  <TabItem value="http" label="HTTP Request">To syntax the HTTP request, please visit the corresponding <a href="https://argoeu.github.io/argo-accounting/docs/api/installation#delete---delete-an-existing-installation">document</a>.</TabItem>
-</Tabs>
+---
 
-:::
+- **User Interface**
+  To perform this action via the website, please click [here](https://accounting.eosc-portal.eu/installations)
+and follow the provided [instructions](https://argoeu.github.io/argo-accounting/docs/guides/ui_actions/installation#delete-an-existing-installation).
 
-:::info Collect Metrics from a specific Installation
+- **HTTP Request**
+  To syntax the HTTP request, please visit the corresponding [document](https://argoeu.github.io/argo-accounting/docs/api/installation#delete---delete-an-existing-installation).
 
-<Tabs>
-  <TabItem value="ui" label="User Interface">To perform this action via the website, please click <a href="https://accounting.eosc-portal.eu/installations">here</a> and follow the provided <a href="https://argoeu.github.io/argo-accounting/docs/guides/ui_actions/installation#collect-metrics-from-specific-installation">instructions</a>.</TabItem>
-  <TabItem value="http" label="HTTP Request">To syntax the HTTP request, please visit the corresponding <a href="https://argoeu.github.io/argo-accounting/docs/api/collect_metrics#get---collecting-metrics-from-specific-installation">document</a>.</TabItem>
-</Tabs>
+### Collect Metrics from a specific Installation
 
-:::
+---
 
-:::info Add a new Metric to a specific Installation
+- **User Interface**
+  To perform this action via the website, please click [here](https://accounting.eosc-portal.eu/installations)
+and follow the provided [instructions](https://argoeu.github.io/argo-accounting/docs/guides/ui_actions/installation#collect-metrics-from-specific-installation).
 
-<Tabs>
-  <TabItem value="info" label="Info">You can add Metrics to all the Installations you have been granted as installation admin.</TabItem>
-  <TabItem value="ui" label="User Interface">To perform this action via the website, please click <a href="https://accounting.eosc-portal.eu/installations">here</a> and follow the provided <a href="https://argoeu.github.io/argo-accounting/docs/guides/ui_actions/installation#add-a-new-metric">instructions</a>.</TabItem>
-  <TabItem value="http" label="HTTP Request">To syntax the HTTP request, please visit the corresponding <a href="https://argoeu.github.io/argo-accounting/docs/api/metric#post---create-a-new-metric">document</a>.</TabItem>
-</Tabs>
+- **HTTP Request**
+  To syntax the HTTP request, please visit the corresponding [document](https://argoeu.github.io/argo-accounting/docs/api/collect_metrics#get---collecting-metrics-from-specific-installation).
 
-:::
+### Add a new Metric to a specific Installation
 
-:::info Update a Metric belonging to a specific Installation
+---
 
-<Tabs>
-  <TabItem value="info" label="Info">You can edit all Metrics belonging to the Installation you have been granted as installation admin.</TabItem>
-  <TabItem value="ui" label="User Interface">To perform this action via the website, please click <a href="https://accounting.eosc-portal.eu/installations">here</a> and follow the provided <a href="https://argoeu.github.io/argo-accounting/docs/guides/ui_actions/installation#update-an-existing-metric">instructions</a>.</TabItem>
-  <TabItem value="http" label="HTTP Request">To syntax the HTTP request, please visit the corresponding <a href="https://argoeu.github.io/argo-accounting/docs/api/metric#patch---update-an-existing-metric">document</a>.</TabItem>
-</Tabs>
+You can add Metrics to all the Installations you have been granted as
+installation admin.
 
-:::
+- **User Interface**
+  To perform this action via the website, please click [here](https://accounting.eosc-portal.eu/installations)
+and follow the provided [instructions](https://argoeu.github.io/argo-accounting/docs/guides/ui_actions/installation#add-a-new-metric).
 
-:::info Delete a Metric belonging to a specific Installation
+- **HTTP Request**
+  To syntax the HTTP request, please visit the corresponding [document](https://argoeu.github.io/argo-accounting/docs/api/metric#post---create-a-new-metric).
 
-<Tabs>
-  <TabItem value="info" label="Info">You can delete all Metrics belonging to the Installation you have been granted as installation admin.</TabItem>
-  <TabItem value="ui" label="User Interface">To perform this action via the website, please click <a href="https://accounting.eosc-portal.eu/installations">here</a> and follow the provided <a href="https://argoeu.github.io/argo-accounting/docs/guides/ui_actions/installation#delete-an-existing-metric">instructions</a>.</TabItem>
-  <TabItem value="http" label="HTTP Request">To syntax the HTTP request, please visit the corresponding <a href="https://argoeu.github.io/argo-accounting/docs/api/metric#delete---delete-an-existing-metric">document</a>.</TabItem>
-</Tabs>
+### Update a Metric belonging to a specific Installation
 
-:::
+---
+
+You can edit all Metrics belonging to the Installation you have been
+granted as installation admin.
+
+- **User Interface**
+  To perform this action via the website, please click [here](https://accounting.eosc-portal.eu/installations)
+and follow the provided [instructions](https://argoeu.github.io/argo-accounting/docs/guides/ui_actions/installation#update-an-existing-metric).
+
+- **HTTP Request**
+  To syntax the HTTP request, please visit the corresponding [document](https://argoeu.github.io/argo-accounting/docs/api/metric#patch---update-an-existing-metric).
+
+### Delete a Metric belonging to a specific Installation
+
+---
+
+You can delete all Metrics belonging to the Installation you have been granted
+as installation admin.
+
+- **User Interface**
+  To perform this action via the website, please click [here](https://accounting.eosc-portal.eu/installations)
+and follow the provided [instructions](https://argoeu.github.io/argo-accounting/docs/guides/ui_actions/installation#delete-an-existing-metric).
+
+- **HTTP Request**
+  To syntax the HTTP request, please visit the corresponding [document](https://argoeu.github.io/argo-accounting/docs/api/metric#delete---delete-an-existing-metric).
 
 ---

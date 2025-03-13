@@ -4,32 +4,44 @@ title: Provider
 sidebar_position: 4
 ---
 
-As Provider, we refer to the Organisation that offers at least one installation to a specific project.
+# Provider
 
-The Provider can either be registered by communicating with EOSC Resource Catalogue, or you can create a new Provider by using the endpoints the Accounting Service provides.
+As Provider, we refer to the Organisation that offers at least one installation
+to a specific project.
 
+The Provider can either be registered by communicating with EOSC Resource
+Catalogue, or you can create a new Provider by using the endpoints the
+Accounting Service provides.
 
-### Registering Provider by following the EOSC Onboarding Process at https://providers.eosc-portal.eu/becomeAProvider
+## Registering Provider by following the EOSC Onboarding Process at [becomeAProvider](https://providers.eosc-portal.eu/becomeAProvider)
 
-The Accounting System communicates with EOSC Providers to retrieve the available Providers. 
-A cron job, which runs every day at 12 am, collects the Providers and stores them in the database. From the response we receive we keep specific information which is stored in the collection named Provider. The collection has the following structure:
+The Accounting System communicates with EOSC Providers to retrieve the available
+Providers.
+A cron job, which runs every day at 12 am, collects the Providers and stores them
+in the database. From the response we receive we keep specific information
+which is stored in the collection named Provider. The collection has the
+following structure:
 
-| Field          	| Description   	      | 
-|------------------	|-------------------------|
-| id             	| Provider ID             |
-| name          	| Provider name           |
-| website      	    | Url of Provider website |
-| abbreviation      | Provider abbreviation   |
-| logo      	    | Url of Provider logo    |
+| Field           | Description                |
+|-----------------|----------------------------|
+| id              | Provider ID.               |
+| name            | Provider name.             |
+| website         | Url of Provider website.   |
+| abbreviation    | Provider abbreviation.     |
+| logo            | Url of Provider logo.      |
 
-### Registering Provider through Accounting System API
+## Registering Provider through Accounting System API
 
-If the Provider is not registered in the EOSC Resource Catalogue, the API offers the functionality to create a new one. Below, we will describe the available operations regarding the Provider that you can interact with.
+If the Provider is not registered in the EOSC Resource Catalogue, the API
+offers
+the functionality to create a new one. Below, we will describe the available
+operations regarding the Provider that you can interact with.
 
-**Bear in mind that** the Provider response contains the property `creator_id`. If the `creator_id` is empty, the Provider comes from the EOSC Resource Catalogue.
-Otherwise, it was generated through the Accounting Service.
+**Bear in mind that** the Provider response contains the property `creator_id`.
+If the `creator_id` is empty, the Provider comes from the EOSC Resource
+Catalogue. Otherwise, it was generated through the Accounting Service.
 
-### [POST] - Create a new Provider
+## [POST] - Create a new Provider
 
 You can submit a new Provider by executing the following POST request:
 
@@ -63,15 +75,18 @@ Success Response `201 OK`
 }
 ```
 
-### [DELETE] - Delete an existing Provider
+## [DELETE] - Delete an existing Provider
 
-You can also delete an existing Provider registered through the Accounting System API by executing the following request:
+You can also delete an existing Provider registered through the Accounting
+System API by executing the following request:
 
 ```
 DELETE /accounting-system/providers/{provider_id}
 
 Authorization: Bearer {token}
+
 ```
+
 If the deletion is successful the following response is returned:
 
 Success Response `200 OK`
@@ -83,11 +98,13 @@ Success Response `200 OK`
 }
 ```
 
-**Finally, it should be noted that deleting Providers which derive from the EOSC Resource Catalogue  is not allowed.**
+**Finally, it should be noted that deleting Providers which derive from the
+EOSC Resource Catalogue  is not allowed.**
 
-### [PATCH] - Update an existing Provider
+## [PATCH] - Update an existing Provider
 
-You can update an existing Provider registered through the Accounting System API by executing the following request:
+You can update an existing Provider registered through the Accounting System
+API by executing the following request:
 
 ```
 PATCH /accounting-system/providers/{provider_id}
@@ -102,8 +119,12 @@ Authorization: Bearer {token}
   "abbreviation" : "abbreviation to be updated",
   "logo" : "logo to be updated"
 }
+
 ```
-The body of the request must contain an updated representation of Provider. You can update a part or all attributes of the Provider. The empty or null values are ignored.
+
+The body of the request must contain an updated representation of Provider.
+You can update a part or all attributes of the Provider. The empty or null
+values are ignored.
 
 The response will be the updated entity :
 
@@ -115,11 +136,13 @@ Success Response `200 OK`
 }
 ```
 
-**Finally, it should be noted that updating Providers which derive from the EOSC Resource Catalogue is not allowed.**
+**Finally, it should be noted that updating Providers which derive from the
+EOSC Resource Catalogue is not allowed.**
 
-### [GET] - Fetch a registered Provider
+## [GET] - Fetch a registered Provider
 
-You can either fetch a Provider registered through the Accounting System API or EOSC Resource Catalogue by executing the following GET HTTP request:
+You can either fetch a Provider registered through the Accounting System
+API or EOSC Resource Catalogue by executing the following GET HTTP request:
 
 ```
 GET /accounting-system/providers/{provider_id}
@@ -142,9 +165,11 @@ Success Response `200 OK`
 }
 ```
 
-### [GET] - Fetch all registered Providers
+## [GET] - Fetch all registered Providers
 
-Essentially, the following endpoint returns all Providers available on the EOSC Resource Catalogue as well as all Providers registered through the Accounting System API. By default, the first page of 10 Providers will be returned.
+Essentially, the following endpoint returns all Providers available on the EOSC
+Resource Catalogue as well as all Providers registered through the Accounting
+System API. By default, the first page of 10 Providers will be returned.
 
 ```
 GET /accounting-system/providers
@@ -152,7 +177,8 @@ GET /accounting-system/providers
 Authorization: Bearer {token}
 ```
 
-You can tune the default values by using the query parameters page and size as shown in the example below.
+You can tune the default values by using the query parameters page and size as
+shown in the example below.
 
 ```
 GET /accounting-system/providers?page=2&size=15
@@ -173,7 +199,8 @@ Success Response `200 OK`
    "content": [
        {
            "id": "ubora",
-           "name": "Open Biomedical Engineering e-platform for Innovation through Education",
+           "name": "Open Biomedical Engineering e-platform for Innovation
+                   through Education",
            "website": "http://ubora-biomedical.org/",
            "abbreviation": "UBORA",
            "logo": "http://ubora-biomedical.org/wp-content/uploads/2017/01/UBORA-Logo-Final-JPEGb.jpg",
@@ -316,18 +343,21 @@ Success Response `200 OK`
 }
 ```
 
-### [POST] - Access Control Entry for a particular Provider of a specific Project
+## [POST] - Access Control Entry for a particular Provider of a specific Project
 
-Any client can have different responsibilities at different Providers. The actions the client can perform at each Provider are determined by the role and the permissions it has.
+Any client can have different responsibilities at different Providers. The
+actions the client can perform at each Provider are determined by the role
+and the permissions it has.
 
-To grant a role to a client on a specific Provider of a Project, you have to execute the following request:
+To grant a role to a client on a specific Provider of a Project, you have to
+execute the following request:
 
 ```
 POST /accounting-system/projects/{project_id}/providers/{provider_id}/acl/{who}
 
 Content-Type: application/json
 Authorization: Bearer {token}
- 
+
 {
   "roles":[
      {role_name}
@@ -348,17 +378,18 @@ Success Response `200 OK`
 }
 ```
 
+## [POST] - Search for Providers
 
-
-### [POST] - Search for Providers
- 
-You can search on Providers, to find the ones corresponding to the given search criteria. Providers  can be searched by executing the following request:
+You can search on Providers, to find the ones corresponding to the given search
+criteria. Providers  can be searched by executing the following request:
 
 ```
 POST accounting-system/providers/search
 Content-Type: application/json
 ```
-#### Example 1: 
+
+### Example 1
+
 ```
 {
 
@@ -368,10 +399,9 @@ Content-Type: application/json
            "operand": "eq"
    }
 ```
-         
 
+### Example 2
 
-#### Example 2: 
 ```
 {
   "type": "filter",
@@ -392,13 +422,13 @@ Content-Type: application/json
            "operand": "eq"
    }
   ]
-} 
+}
 ```
 
+The context of the request should be a JSON object. The syntax of the JSON
+object is described [**here**](https://argoeu.github.io/argo-accounting/docs/guides/search-filter).
+If the operation is successful, you get a list of providers.
 
-The context of the request should be a json object. The syntax of the json object , is described <b> <a href="https://argoeu.github.io/argo-accounting/docs/guides/search-filter">here</a></b>
- 
-If the operation is successful, you get a list of providers
 ```
 {
    "size_of_page": 2,
@@ -425,10 +455,10 @@ If the operation is successful, you get a list of providers
 
 ```
 
-
 Otherwise, an empty response will be returned.
-**Keep in mind that** to execute the above operation, you must have been assigned a role containing the Provider Acl permission.
+**Keep in mind that** to execute the above operation, you must have been
+assigned a role containing the Provider Acl permission.
 
-### Errors
+## Errors
 
 Please refer to section [Errors](./api_errors) to see all possible Errors.

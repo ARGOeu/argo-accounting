@@ -4,9 +4,12 @@ title: Accounting System API
 sidebar_position: 2
 ---
 
-The Accounting System is a platform that is responsible for collecting, aggregating, and exchanging the metrics between different infrastructures, providers, and projects.
+The Accounting System is a platform that is responsible for collecting,
+aggregating, and exchanging the metrics between different infrastructures,
+providers, and projects.
 
-Essentially, the main functions of the platform are expressed by a REST API. Therefore, the primary duties of the API are the following:
+Essentially, the main functions of the platform are expressed by a REST
+API. Therefore, the primary duties of the API are the following:
 
 - Accepting input from several different resources.
 - Storing the input into a database.
@@ -14,4 +17,6 @@ Essentially, the main functions of the platform are expressed by a REST API. The
 - Offering the aggregated input to several different clients.
 - Request accounting data for a specific time period.
 
-In addition, API resources must only be obtainable by authenticated clients. For this reason, every client who wants access to API resources should be authenticated. 
+In addition, API resources must only be obtainable by authenticated
+clients. For this reason, every client who wants access to API resources
+should be authenticated.

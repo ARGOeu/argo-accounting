@@ -69,7 +69,14 @@ public class InstallationProjection {
     }
 
     public MetricDefinition getMetricDefinition() {
-        return metricDefinitions.get(0);
+
+        if(metricDefinitions.isEmpty()){
+
+            return null;
+        } else {
+
+            return metricDefinitions.get(0);
+        }
     }
 
     public void setMetricDefinition(MetricDefinition metricDefinition) {
