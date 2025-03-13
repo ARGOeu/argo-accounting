@@ -40,7 +40,9 @@ According to [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) , the
   call to delete a project.
 - [#203](https://github.com/ARGOeu/argo-accounting/pull/203) - ACC-299 Add API
   call to delete a resource.
-
+- [#206](https://github.com/ARGOeu/argo-accounting/pull/206) - ACC-317 API 
+  to fetch Document Counts by Time Period in MongoDB.
+- 
 ### Unreleased - Changed
 
 - [#191](https://github.com/ARGOeu/argo-accounting/pull/191) - ACC-252

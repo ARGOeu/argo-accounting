@@ -22,6 +22,7 @@ import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.UriInfo;
 import org.accounting.system.beans.RequestUserContext;
 import org.accounting.system.constraints.NotFoundEntity;
+import org.accounting.system.dtos.CountDocumentResponse;
 import org.accounting.system.dtos.InformativeResponse;
 import org.accounting.system.dtos.VersionDto;
 import org.accounting.system.dtos.admin.ProjectRegistrationRequest;
@@ -52,6 +53,8 @@ import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
 import org.eclipse.microprofile.openapi.annotations.security.SecurityRequirement;
 import org.eclipse.microprofile.openapi.annotations.security.SecurityScheme;
 import org.eclipse.microprofile.openapi.annotations.tags.Tag;
+
+import java.text.SimpleDateFormat;
 
 import static org.eclipse.microprofile.openapi.annotations.enums.ParameterIn.QUERY;
 
@@ -634,5 +637,73 @@ public class SystemAdminEndpoint {
         versionDto.version = version;
 
         return Response.status(Response.Status.OK).entity(versionDto).build();
+    }
+
+    @Tag(name = "System Administrator")
+    @Operation(
+            summary = "Get document count for a specific time period.",
+            description = "Returns the number of documents inserted in Metric Definition, Metric, and User collections within the given start and end dates.")
+    @APIResponse(
+            responseCode = "200",
+            description = "Document count retrieved successfully.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = CountDocumentResponse.class)))
+    @APIResponse(
+            responseCode = "400",
+            description = "Invalid date format.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "500",
+            description = "Internal Server Errors.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @SecurityRequirement(name = "Authentication")
+    @GET
+    @Path("/documents/count")
+    @Produces(value = MediaType.APPLICATION_JSON)
+    @SystemAdmin
+    public Response getDocuments(@Parameter(description = "Start date in YYYY-MM-DD format.", required = true, example = "2024-03-01") @QueryParam("startDate") String start,
+                                 @Parameter(description = "End date in YYYY-MM-DD format.", required = true, example = "2024-03-10") @QueryParam("endDate") String end){
+
+        try {
+
+            var sdf = new SimpleDateFormat("yyyy-MM-dd");
+            var startDate = sdf.parse(start);
+            var endDate = sdf.parse(end);
+
+            // Validation: Start date should not be after the end date
+            if (startDate.after(endDate)) {
+
+                var error = new InformativeResponse();
+                error.message = "Invalid date range. Start date must be before end date.";
+                error.code = 400;
+
+                return Response.status(Response.Status.BAD_REQUEST)
+                        .entity(error)
+                        .build();
+            }
+
+            var response = new CountDocumentResponse();
+
+            response.metricDefinitionCount = systemAdminService.countDocuments("MetricDefinition", startDate, endDate);
+            response.metricCount = systemAdminService.countDocuments("Metric", startDate, endDate);
+            response.userCount = clientService.countDocuments(startDate, endDate);
+
+            return Response.ok(response).build();
+
+        } catch (Exception e) {
+
+            var error = new InformativeResponse();
+            error.message = "Invalid date format. Use yyyy-MM-dd";
+            error.code = 400;
+
+            return Response.status(Response.Status.BAD_REQUEST)
+                    .entity(error)
+                    .build();
+        }
     }
 }
