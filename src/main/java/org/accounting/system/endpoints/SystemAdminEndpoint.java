@@ -663,7 +663,7 @@ public class SystemAdminEndpoint {
                     implementation = InformativeResponse.class)))
     @SecurityRequirement(name = "Authentication")
     @GET
-    @Path("/documents/count")
+    @Path("/metrics")
     @Produces(value = MediaType.APPLICATION_JSON)
     @SystemAdmin
     public Response getDocuments(@Parameter(description = "Start date in YYYY-MM-DD format.", required = true, example = "2024-03-01") @QueryParam("startDate") String start,
