@@ -3,6 +3,7 @@ package org.accounting.system.services.client;
 import io.quarkus.panache.common.Page;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
+import jakarta.ws.rs.BadRequestException;
 import jakarta.ws.rs.NotFoundException;
 import jakarta.ws.rs.ServerErrorException;
 import jakarta.ws.rs.core.UriInfo;
@@ -103,6 +104,11 @@ public class ClientService {
      * @return A success message if the update was successful.
      */
     public InformativeResponse updateClient(String id, ClientUpdateRequest update){
+
+        if(StringUtils.isEmpty(update.registeredOn) && StringUtils.isEmpty(update.name) && StringUtils.isEmpty(update.email)){
+
+            throw new BadRequestException("The request body is empty.");
+        }
 
         LocalDateTime registeredOn = null;
 

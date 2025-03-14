@@ -16,6 +16,7 @@ import org.eclipse.microprofile.config.inject.ConfigProperty;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 import java.util.Objects;
@@ -124,7 +125,23 @@ public class ClientRepository extends ClientModulator {
 
     public long countDocuments(Date start, Date end) {
 
-        return getMongoCollection().countDocuments(Filters.and(Filters.gte("registeredOn", start), Filters.lte("registeredOn", end)));
+        return getMongoCollection().countDocuments(Filters.and(Filters.gte("registeredOn", start), Filters.lte("registeredOn", adjustEndDate(end))));
+    }
+
+    /**
+     * Adjusts the given date to the end of the day (23:59:59.999).
+     * @param date The original end date.
+     * @return A new Date set to 23:59:59.999 of the given day.
+     */
+    private Date adjustEndDate(Date date) {
+
+        var calendar = Calendar.getInstance();
+        calendar.setTime(date);
+        calendar.set(Calendar.HOUR_OF_DAY, 23);
+        calendar.set(Calendar.MINUTE, 59);
+        calendar.set(Calendar.SECOND, 59);
+        calendar.set(Calendar.MILLISECOND, 999);
+        return calendar.getTime();
     }
 
     /**
