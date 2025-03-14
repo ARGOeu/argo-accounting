@@ -2,14 +2,15 @@ package org.accounting.system.repositories.client;
 
 import com.mongodb.client.model.Aggregates;
 import com.mongodb.client.model.Filters;
+import com.mongodb.client.model.Updates;
 import io.quarkus.mongodb.panache.PanacheMongoRepository;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.ws.rs.ForbiddenException;
 import org.accounting.system.entities.client.Client;
 import org.accounting.system.enums.ApiMessage;
+import org.apache.commons.lang3.StringUtils;
 import org.bson.Document;
 import org.bson.conversions.Bson;
-import org.bson.types.ObjectId;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 
 import java.time.LocalDateTime;
@@ -17,6 +18,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 
 /**
@@ -122,9 +124,41 @@ public class ClientRepository extends ClientModulator {
 
     public long countDocuments(Date start, Date end) {
 
-        var startId = new ObjectId(Long.toHexString(start.getTime() / 1000) + "0000000000000000");
-        var endId = new ObjectId(Long.toHexString(end.getTime() / 1000) + "0000000000000000");
+        return getMongoCollection().countDocuments(Filters.and(Filters.gte("registeredOn", start), Filters.lte("registeredOn", end)));
+    }
 
-        return getMongoCollection().countDocuments(Filters.and(Filters.gte("registeredOn", start), Filters.lt("registeredOn", end)));
+    /**
+     * Updates an existing client's details in the database.
+     *
+     * @param clientID  The unique identifier of the client.
+     * @param name The client's name.
+     * @param email The client's email.
+     * @param registeredOn The client's registered datetime.
+     * @return {@code true} if the update was successful, {@code false} otherwise.
+     */
+    public boolean updateClient(String clientID, String name, String email, LocalDateTime registeredOn) {
+
+        Bson filter = Filters.eq("_id", clientID);
+
+        var list = new ArrayList<Bson>();
+
+        if(StringUtils.isNotEmpty(name)){
+
+            list.add(Updates.set("name", name));
+        }
+
+        if(StringUtils.isNotEmpty(email)){
+
+            list.add(Updates.set("email", email));
+        }
+
+        if(!Objects.isNull(registeredOn)){
+
+            list.add(Updates.set("registeredOn", registeredOn));
+        }
+
+        Bson updates = Updates.combine(list);
+
+        return getMongoCollection().updateOne(filter, updates).getModifiedCount() > 0;
     }
 }

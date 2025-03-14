@@ -255,6 +255,6 @@ public class SystemAdminService {
         var startId = new ObjectId(Long.toHexString(start.getTime() / 1000) + "0000000000000000");
         var endId = new ObjectId(Long.toHexString(end.getTime() / 1000) + "0000000000000000");
 
-        return projectRepository.getMongoCollection(collectionName).countDocuments(Filters.and(Filters.gte("_id", startId), Filters.lt("_id", endId)));
+        return projectRepository.getMongoCollection(collectionName).countDocuments(Filters.and(Filters.gte("_id", startId), Filters.lte("_id", endId)));
     }
 }
