@@ -1,5 +1,6 @@
 package org.accounting.system.dtos.client;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import org.eclipse.microprofile.openapi.annotations.enums.SchemaType;
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
@@ -41,6 +42,7 @@ public class ClientResponseDto {
             example = "2024-09-13T09:38:47.116"
     )
     @JsonProperty("registered_on")
+    @JsonInclude(JsonInclude.Include.NON_NULL)
     public String registeredOn;
 
     @Schema(

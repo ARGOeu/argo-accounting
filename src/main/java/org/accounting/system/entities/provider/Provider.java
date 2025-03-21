@@ -3,6 +3,9 @@ package org.accounting.system.entities.provider;
 import lombok.EqualsAndHashCode;
 import org.accounting.system.entities.Entity;
 import org.bson.codecs.pojo.annotations.BsonId;
+import org.bson.codecs.pojo.annotations.BsonProperty;
+
+import java.time.LocalDateTime;
 
 @EqualsAndHashCode(onlyExplicitlyIncluded = true, callSuper = false)
 public class Provider extends Entity {
@@ -14,6 +17,9 @@ public class Provider extends Entity {
     private String website;
     private String abbreviation;
     private String logo;
+
+    @BsonProperty("registered_on")
+    private LocalDateTime registeredOn;
 
     public String getId() {
         return id;
@@ -53,5 +59,13 @@ public class Provider extends Entity {
 
     public void setLogo(String logo) {
         this.logo = logo;
+    }
+
+    public LocalDateTime getRegisteredOn() {
+        return registeredOn;
+    }
+
+    public void setRegisteredOn(LocalDateTime registeredOn) {
+        this.registeredOn = registeredOn;
     }
 }

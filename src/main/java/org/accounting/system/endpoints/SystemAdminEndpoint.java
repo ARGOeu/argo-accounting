@@ -6,6 +6,7 @@ import jakarta.validation.Valid;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
+import jakarta.ws.rs.BadRequestException;
 import jakarta.ws.rs.Consumes;
 import jakarta.ws.rs.DELETE;
 import jakarta.ws.rs.DefaultValue;
@@ -34,6 +35,7 @@ import org.accounting.system.dtos.project.ProjectRequest;
 import org.accounting.system.dtos.project.UpdateProjectRequest;
 import org.accounting.system.dtos.resource.ResourceRequest;
 import org.accounting.system.dtos.resource.ResourceResponse;
+import org.accounting.system.entities.HierarchicalRelation;
 import org.accounting.system.entities.projections.normal.ProjectProjection;
 import org.accounting.system.interceptors.annotations.SystemAdmin;
 import org.accounting.system.repositories.ResourceRepository;
@@ -184,6 +186,11 @@ public class SystemAdminEndpoint {
     @Consumes(value = MediaType.APPLICATION_JSON)
     @SystemAdmin
     public Response createProject(@Valid @NotNull(message = "The request body is empty." ) ProjectRequest request, @Context UriInfo uriInfo) {
+
+        if(request.id.contains(HierarchicalRelation.PATH_SEPARATOR)){
+
+            throw new BadRequestException("Project ID should not contain a dot character.");
+        }
 
         var serverInfo = new AccountingUriInfo(serverUrl.concat(basePath).concat(uriInfo.getPath()));
 
