@@ -30,6 +30,9 @@ According to [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) , the
 
 - [#211](https://github.com/ARGOeu/argo-accounting/pull/211) - ACC-319 Create 
   an admin-only endpoint to update user information.
+- [#213](https://github.com/ARGOeu/argo-accounting/pull/213) - ACC-322 Fix Project 
+  and Provider not to accept full stop in id when are generated.
+
 
 ## 1.6.0 - 2025-03-13
 

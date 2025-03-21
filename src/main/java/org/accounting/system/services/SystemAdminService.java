@@ -27,6 +27,7 @@ import org.accounting.system.repositories.project.ProjectRepository;
 import org.bson.types.ObjectId;
 import org.eclipse.microprofile.rest.client.inject.RestClient;
 
+import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;
@@ -190,6 +191,7 @@ public class SystemAdminService {
         project.setStartDate(request.startDate);
         project.setCallIdentifier(request.callIdentifier);
         project.setCreatorId(who);
+        project.setRegisteredOn(LocalDateTime.now());
 
         projectRepository.persist(project);
 
