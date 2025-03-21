@@ -6,6 +6,7 @@ import jakarta.validation.Valid;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
+import jakarta.ws.rs.BadRequestException;
 import jakarta.ws.rs.Consumes;
 import jakarta.ws.rs.DELETE;
 import jakarta.ws.rs.DefaultValue;
@@ -29,10 +30,12 @@ import org.accounting.system.dtos.admin.ProjectRegistrationRequest;
 import org.accounting.system.dtos.authorization.request.AssignRoleRequestDto;
 import org.accounting.system.dtos.authorization.request.DetachRoleRequestDto;
 import org.accounting.system.dtos.client.ClientResponseDto;
+import org.accounting.system.dtos.client.ClientUpdateRequest;
 import org.accounting.system.dtos.project.ProjectRequest;
 import org.accounting.system.dtos.project.UpdateProjectRequest;
 import org.accounting.system.dtos.resource.ResourceRequest;
 import org.accounting.system.dtos.resource.ResourceResponse;
+import org.accounting.system.entities.HierarchicalRelation;
 import org.accounting.system.entities.projections.normal.ProjectProjection;
 import org.accounting.system.interceptors.annotations.SystemAdmin;
 import org.accounting.system.repositories.ResourceRepository;
@@ -183,6 +186,11 @@ public class SystemAdminEndpoint {
     @Consumes(value = MediaType.APPLICATION_JSON)
     @SystemAdmin
     public Response createProject(@Valid @NotNull(message = "The request body is empty." ) ProjectRequest request, @Context UriInfo uriInfo) {
+
+        if(request.id.contains(HierarchicalRelation.PATH_SEPARATOR)){
+
+            throw new BadRequestException("Project ID should not contain a dot character.");
+        }
 
         var serverInfo = new AccountingUriInfo(serverUrl.concat(basePath).concat(uriInfo.getPath()));
 
@@ -438,6 +446,18 @@ public class SystemAdminEndpoint {
                     type = SchemaType.OBJECT,
                     implementation = ClientEndpoint.PageableClientResponseDto.class)))
     @APIResponse(
+            responseCode = "401",
+            description = "Client has not been authenticated.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "403",
+            description = "The authenticated client is not permitted to perform the requested operation.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
             responseCode = "500",
             description = "Internal Server Errors.",
             content = @Content(schema = @Schema(
@@ -656,6 +676,18 @@ public class SystemAdminEndpoint {
                     type = SchemaType.OBJECT,
                     implementation = InformativeResponse.class)))
     @APIResponse(
+            responseCode = "401",
+            description = "Client has not been authenticated.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "403",
+            description = "The authenticated client is not permitted to perform the requested operation.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
             responseCode = "500",
             description = "Internal Server Errors.",
             content = @Content(schema = @Schema(
@@ -705,5 +737,61 @@ public class SystemAdminEndpoint {
                     .entity(error)
                     .build();
         }
+    }
+
+    @Tag(name = "System Administrator")
+    @Operation(
+            summary = "Update user information.",
+            description = "Allows administrators to update user details.")
+    @APIResponse(
+            responseCode = "200",
+            description = "User updated successfully.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "400",
+            description = "Invalid input data.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "401",
+            description = "Client has not been authenticated.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "403",
+            description = "The authenticated client is not permitted to perform the requested operation.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "404",
+            description = "User not found.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "500",
+            description = "Internal Server Errors.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @SecurityRequirement(name = "Authentication")
+    @PATCH
+    @Path("/clients/{client_id}")
+    @Produces(value = MediaType.APPLICATION_JSON)
+    @SystemAdmin
+    public Response updateClient( @Parameter(
+            description = "Unique identifier of the user to be updated.",
+            required = true,
+            example = "xyz@example.org",
+            schema = @Schema(type = SchemaType.STRING))
+                                    @PathParam("client_id") @Valid @NotFoundEntity(repository = ClientRepository.class, id = String.class, message = "There is no User with the following id:") String id,
+                                  @Valid @NotNull(message = "The request body is empty.") ClientUpdateRequest request){
+
+        return Response.ok().entity(clientService.updateClient(id, request)).build();
     }
 }

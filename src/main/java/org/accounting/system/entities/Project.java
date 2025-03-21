@@ -4,6 +4,8 @@ import lombok.EqualsAndHashCode;
 import org.bson.codecs.pojo.annotations.BsonId;
 import org.bson.codecs.pojo.annotations.BsonProperty;
 
+import java.time.LocalDateTime;
+
 @EqualsAndHashCode(onlyExplicitlyIncluded = true, callSuper = false)
 public class Project extends Entity{
 
@@ -24,6 +26,9 @@ public class Project extends Entity{
 
     @BsonProperty("call_identifier")
     private String callIdentifier;
+
+    @BsonProperty("registered_on")
+    private LocalDateTime registeredOn;
 
     public String getId() {
         return id;
@@ -71,5 +76,13 @@ public class Project extends Entity{
 
     public void setCallIdentifier(String callIdentifier) {
         this.callIdentifier = callIdentifier;
+    }
+
+    public LocalDateTime getRegisteredOn() {
+        return registeredOn;
+    }
+
+    public void setRegisteredOn(LocalDateTime registeredOn) {
+        this.registeredOn = registeredOn;
     }
 }

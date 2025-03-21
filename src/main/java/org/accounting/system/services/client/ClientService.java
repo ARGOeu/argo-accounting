@@ -3,19 +3,26 @@ package org.accounting.system.services.client;
 import io.quarkus.panache.common.Page;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
+import jakarta.ws.rs.BadRequestException;
 import jakarta.ws.rs.NotFoundException;
+import jakarta.ws.rs.ServerErrorException;
 import jakarta.ws.rs.core.UriInfo;
 import org.accounting.system.beans.RequestUserContext;
+import org.accounting.system.dtos.InformativeResponse;
 import org.accounting.system.dtos.authorization.CollectionAccessPermissionDto;
 import org.accounting.system.dtos.client.ClientResponseDto;
+import org.accounting.system.dtos.client.ClientUpdateRequest;
 import org.accounting.system.dtos.pagination.PageResource;
 import org.accounting.system.entities.client.Client;
 import org.accounting.system.mappers.ClientMapper;
 import org.accounting.system.repositories.authorization.RoleRepository;
 import org.accounting.system.repositories.client.ClientRepository;
 import org.accounting.system.services.authorization.RoleService;
+import org.apache.commons.lang3.StringUtils;
 
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 import java.util.Date;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -34,6 +41,9 @@ public class ClientService {
 
     @Inject
     RequestUserContext requestUserContext;
+
+    private static final DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss");
+
 
     /**
      * This method extracts specific information regarding the client from access token and stores it into the
@@ -83,6 +93,46 @@ public class ClientService {
                 .page(Page.of(page, size));
 
         return new PageResource<>(panacheQuery, ClientMapper.INSTANCE.clientsToResponse(panacheQuery.list()), uriInfo);
+    }
+
+
+    /**
+     * Updates an existing client's details.
+     *
+     * @param id  The unique identifier of the client.
+     * @param update The updated client information.
+     * @return A success message if the update was successful.
+     */
+    public InformativeResponse updateClient(String id, ClientUpdateRequest update){
+
+        if(StringUtils.isEmpty(update.registeredOn) && StringUtils.isEmpty(update.name) && StringUtils.isEmpty(update.email)){
+
+            throw new BadRequestException("The request body is empty.");
+        }
+
+        LocalDateTime registeredOn = null;
+
+        if(StringUtils.isNotEmpty(update.registeredOn)){
+            try {
+                registeredOn = LocalDateTime.parse(update.registeredOn, DATE_TIME_FORMATTER);
+            } catch (DateTimeParseException e) {
+                throw new IllegalArgumentException("Invalid date format. Must be yyyy-MM-dd'T'HH:mm:ss");
+            }
+        }
+
+        var response = new InformativeResponse();
+
+        boolean updated = clientRepository.updateClient(id, update.name, update.email, registeredOn);
+
+        if (updated) {
+
+            response.message = "Client updated successfully";
+            response.code = 200;
+            return response;
+        } else {
+
+            throw new ServerErrorException("No updates applied", 500);
+        }
     }
 
     /**

@@ -31,6 +31,7 @@ import org.accounting.system.util.QueryParser;
 import org.apache.commons.lang3.StringUtils;
 import org.bson.conversions.Bson;
 
+import java.time.LocalDateTime;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
@@ -73,6 +74,8 @@ public class ProviderService implements RoleAccessControlService {
     public ProviderResponseDto save(ProviderRequestDto request) {
 
         var provider = ProviderMapper.INSTANCE.requestToProvider(request);
+
+        provider.setRegisteredOn(LocalDateTime.now());
 
         providerRepository.save(provider);
 
