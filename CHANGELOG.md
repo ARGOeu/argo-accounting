@@ -26,7 +26,11 @@ According to [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) , the
 
 ---
 
-### Unreleased - Added
+## 1.6.1 - 2025-03-21
+
+---
+
+### 1.6.1 - Added
 
 - [#211](https://github.com/ARGOeu/argo-accounting/pull/211) - ACC-319 Create 
   an admin-only endpoint to update user information.
