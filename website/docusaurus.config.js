@@ -9,10 +9,8 @@ const copyrightMessage = `
    This work by
    <a rel="cc:attributionURL dct:creator" property="cc:attributionName" href="https://www.grnet.gr">
       National Infrastructures for Research and Technology - GRNET S.A.
-   </a> and
-   <a rel="cc:attributionURL dct:creator" property="cc:attributionName" href="https://www.srce.hr">
-      University of Zagreb University Computing Centre (SRCE)
-   </a> is licensed under
+   </a> 
+   is licensed under
    <a href="http://creativecommons.org/licenses/by/4.0/?ref=chooser-v1" target="_blank"
       rel="license noopener noreferrer" style="display:inline-block;">
       CC BY 4.0
