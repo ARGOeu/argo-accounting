@@ -5,6 +5,7 @@ import jakarta.inject.Inject;
 import jakarta.interceptor.AroundInvoke;
 import jakarta.interceptor.Interceptor;
 import jakarta.interceptor.InvocationContext;
+import jakarta.ws.rs.ForbiddenException;
 import org.accounting.system.beans.RequestUserContext;
 import org.accounting.system.interceptors.annotations.SystemAdmin;
 import org.accounting.system.repositories.client.ClientRepository;
@@ -33,7 +34,10 @@ public class SystemAdminInterceptor {
 
     private Object hasAccess(InvocationContext context) throws Exception {
 
-        clientRepository.isSystemAdmin(requestUserContext.getId());
+        if(!clientRepository.isSystemAdmin(requestUserContext.getId())){
+
+            throw new ForbiddenException("You cannot perform this operation");
+        }
 
         return context.proceed();
     }

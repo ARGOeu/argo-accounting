@@ -11,8 +11,6 @@ import org.accounting.system.dtos.project.UpdateProjectRequest;
 import org.accounting.system.dtos.resource.ResourceRequest;
 import org.accounting.system.dtos.resource.ResourceResponse;
 import org.accounting.system.entities.Project;
-import org.accounting.system.entities.acl.RoleAccessControl;
-import org.accounting.system.entities.client.Client;
 import org.accounting.system.entities.projections.normal.ProjectProjection;
 import org.accounting.system.exceptions.ConflictException;
 import org.accounting.system.mappers.ResourceMapper;
@@ -31,7 +29,6 @@ import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 @ApplicationScoped
 public class SystemAdminService {
@@ -93,22 +90,6 @@ public class SystemAdminService {
                     project.setCreatorId(who);
 
                     projectRepository.persist(project);
-
-                    var systemAdmins = clientRepository.getSystemAdmins();
-
-                    var systemAdminsAccessControls = systemAdmins
-                            .stream()
-                            .map(Client::getId)
-                            .map(id -> {
-
-                                var systemAdminAccessControl = new RoleAccessControl();
-                                systemAdminAccessControl.setWho(id);
-                                systemAdminAccessControl.setCreatorId(who);
-                                systemAdminAccessControl.setRoles(projectAdminRole);
-                                return systemAdminAccessControl;
-                            }).collect(Collectors.toSet());
-
-                    projectRepository.insertListOfRoleAccessControl(projectID, systemAdminsAccessControls);
 
                     success.add(projectID);
 
@@ -194,24 +175,6 @@ public class SystemAdminService {
         project.setRegisteredOn(LocalDateTime.now());
 
         projectRepository.persist(project);
-
-        var systemAdmins = clientRepository.getSystemAdmins();
-
-        var projectAdminRole = roleRepository.getRolesByName(Set.of("project_admin"));
-
-        var systemAdminsAccessControls = systemAdmins
-                .stream()
-                .map(Client::getId)
-                .map(id -> {
-
-                    var systemAdminAccessControl = new RoleAccessControl();
-                    systemAdminAccessControl.setWho(id);
-                    systemAdminAccessControl.setCreatorId(who);
-                    systemAdminAccessControl.setRoles(projectAdminRole);
-                    return systemAdminAccessControl;
-                }).collect(Collectors.toSet());
-
-        projectRepository.insertListOfRoleAccessControl(project.getId(), systemAdminsAccessControls);
 
         return projectRepository.fetchById(project.getId());
     }

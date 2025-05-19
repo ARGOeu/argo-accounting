@@ -5,12 +5,14 @@ import io.vavr.control.Try;
 import jakarta.enterprise.inject.spi.CDI;
 import jakarta.validation.ConstraintValidator;
 import jakarta.validation.ConstraintValidatorContext;
+import org.accounting.system.beans.RequestUserContext;
 import org.accounting.system.constraints.AccessInstallation;
 import org.accounting.system.entities.HierarchicalRelation;
 import org.accounting.system.enums.Collection;
 import org.accounting.system.enums.Operation;
 import org.accounting.system.exceptions.CustomValidationException;
 import org.accounting.system.repositories.HierarchicalRelationRepository;
+import org.accounting.system.repositories.client.ClientRepository;
 import org.accounting.system.repositories.installation.InstallationRepository;
 import org.accounting.system.repositories.project.ProjectRepository;
 import org.accounting.system.repositories.provider.ProviderRepository;
@@ -53,6 +55,16 @@ public class AccessInstallationValidator implements ConstraintValidator<AccessIn
         var projectRepository = CDI.current().select(ProjectRepository.class).get();
 
         var providerRepository = CDI.current().select(ProviderRepository.class).get();
+
+        var clientRepository = CDI.current().select(ClientRepository.class).get();
+
+        var requestUserContext = CDI.current().select(RequestUserContext.class).get();
+
+
+        if(clientRepository.isSystemAdmin(requestUserContext.getId())){
+
+            return true;
+        }
 
         Boolean access = Try
                 .of(()->projectRepository.accessibility(ids[0], collection, operation))

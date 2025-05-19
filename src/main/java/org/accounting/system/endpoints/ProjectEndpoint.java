@@ -1537,7 +1537,6 @@ public class ProjectEndpoint {
                     type = SchemaType.OBJECT,
                     implementation = InformativeResponse.class)))
     @SecurityRequirement(name = "Authentication")
-
     @GET
     @Path("/{project_id}/providers/{provider_id}/acl")
     @Produces(value = MediaType.APPLICATION_JSON)
@@ -1617,7 +1616,6 @@ public class ProjectEndpoint {
     @Path("/search")
     @Produces(value = MediaType.APPLICATION_JSON)
     @Consumes(value = MediaType.APPLICATION_JSON)
-
     public Response search(
             @NotEmpty(message = "The request body is empty.") @RequestBody(content = @Content(
                     schema = @Schema(implementation = String.class),
@@ -1684,12 +1682,6 @@ public class ProjectEndpoint {
                     type = SchemaType.OBJECT,
                     implementation = PageableProjectProjection.class)))
     @APIResponse(
-            responseCode = "400",
-            description = "Bad Request.",
-            content = @Content(schema = @Schema(
-                    type = SchemaType.OBJECT,
-                    implementation = InformativeResponse.class)))
-    @APIResponse(
             responseCode = "401",
             description = "Client has not been authenticated.",
             content = @Content(schema = @Schema(
@@ -1714,11 +1706,9 @@ public class ProjectEndpoint {
                     type = SchemaType.OBJECT,
                     implementation = InformativeResponse.class)))
     @SecurityRequirement(name = "Authentication")
-
     @GET
     @Produces(value = MediaType.APPLICATION_JSON)
     @Consumes(value = MediaType.APPLICATION_JSON)
-
     public Response getAll(
 
             @Parameter(name = "page", in = QUERY,

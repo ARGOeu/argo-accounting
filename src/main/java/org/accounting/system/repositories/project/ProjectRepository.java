@@ -94,6 +94,27 @@ public class ProjectRepository extends ProjectModulator {
         return projectionQuery;
     }
 
+    public PanacheQuery<ProjectProjection> fetchAllForSystemAdmin(int page, int size) {
+
+        var projects = getMongoCollection()
+                .aggregate(List.of(Aggregates.skip(size * (page)), Aggregates.limit(size)), ProjectProjection.class)
+                .into(new ArrayList<>());
+
+        Document count = getMongoCollection()
+                .aggregate(List.of(Aggregates.count()))
+                .first();
+
+        var projectionQuery = new MongoQuery<ProjectProjection>();
+
+        projectionQuery.list = projects;
+        projectionQuery.index = page;
+        projectionQuery.size = size;
+        projectionQuery.count = count == null ? 0L : Long.parseLong(count.get("count").toString());
+        projectionQuery.page = Page.of(page, size);
+
+        return projectionQuery;
+    }
+
     public Optional<RoleAccessControl> fetchRoleAccessControl(String id, String who) {
 
         var eq = Aggregates
