@@ -1,5 +1,6 @@
 package org.accounting.system.endpoints;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import io.quarkus.security.Authenticated;
 import jakarta.inject.Inject;
 import jakarta.validation.Valid;
@@ -41,6 +42,7 @@ import org.accounting.system.interceptors.annotations.SystemAdmin;
 import org.accounting.system.repositories.ResourceRepository;
 import org.accounting.system.repositories.client.ClientRepository;
 import org.accounting.system.repositories.project.ProjectRepository;
+import org.accounting.system.services.ProjectService;
 import org.accounting.system.services.SystemAdminService;
 import org.accounting.system.services.client.ClientService;
 import org.accounting.system.util.AccountingUriInfo;
@@ -57,6 +59,7 @@ import org.eclipse.microprofile.openapi.annotations.security.SecurityRequirement
 import org.eclipse.microprofile.openapi.annotations.security.SecurityScheme;
 import org.eclipse.microprofile.openapi.annotations.tags.Tag;
 
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 
 import static org.eclipse.microprofile.openapi.annotations.enums.ParameterIn.QUERY;
@@ -86,6 +89,9 @@ public class SystemAdminEndpoint {
 
     @ConfigProperty(name = "api.server.url")
     String serverUrl;
+
+    @Inject
+    ProjectService projectService;
 
     @Inject
     RequestUserContext requestUserContext;
@@ -793,5 +799,63 @@ public class SystemAdminEndpoint {
                                   @Valid @NotNull(message = "The request body is empty.") ClientUpdateRequest request){
 
         return Response.ok().entity(clientService.updateClient(id, request)).build();
+    }
+
+    @Tag(name = "System Administrator")
+    @Operation(
+            summary = "Returns all Projects.",
+            description = "Returns all Projects." )
+
+    @APIResponse(
+            responseCode = "200",
+            description = "The corresponding Projects.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = ProjectEndpoint.PageableProjectProjection.class)))
+    @APIResponse(
+            responseCode = "401",
+            description = "Client has not been authenticated.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "403",
+            description = "The authenticated client is not permitted to perform the requested operation.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "415",
+            description = "Cannot consume content type.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "500",
+            description = "Internal Server Errors.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @SecurityRequirement(name = "Authentication")
+    @GET
+    @Path("/projects")
+    @Produces(value = MediaType.APPLICATION_JSON)
+    @Consumes(value = MediaType.APPLICATION_JSON)
+    @SystemAdmin
+    public Response getAll(
+
+            @Parameter(name = "page", in = QUERY,
+                    description = "Indicates the page number. Page number must be >= 1.") @DefaultValue("1") @Min(value = 1, message = "Page number must be >= 1.") @QueryParam("page") int page,
+            @Parameter(name = "size", in = QUERY,
+                    description = "The page size.") @DefaultValue("10") @Min(value = 1, message = "Page size must be between 1 and 100.")
+            @Max(value = 100, message = "Page size must be between 1 and 100.") @QueryParam("size") int size,
+            @Context UriInfo uriInfo
+    ) throws ParseException, NoSuchFieldException, org.json.simple.parser.ParseException, JsonProcessingException {
+
+        var serverInfo = new AccountingUriInfo(serverUrl.concat(basePath).concat(uriInfo.getPath()));
+
+        var results= projectService.getAllForSystemAdmin( page - 1, size, serverInfo);
+
+        return Response.ok().entity(results).build();
     }
 }

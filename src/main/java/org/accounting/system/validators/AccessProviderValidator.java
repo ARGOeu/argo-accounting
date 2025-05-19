@@ -7,11 +7,13 @@ import jakarta.validation.ConstraintValidator;
 import jakarta.validation.ConstraintValidatorContext;
 import jakarta.validation.constraintvalidation.SupportedValidationTarget;
 import jakarta.validation.constraintvalidation.ValidationTarget;
+import org.accounting.system.beans.RequestUserContext;
 import org.accounting.system.constraints.AccessProvider;
 import org.accounting.system.dtos.installation.InstallationRequestDto;
 import org.accounting.system.enums.Collection;
 import org.accounting.system.enums.Operation;
 import org.accounting.system.exceptions.CustomValidationException;
+import org.accounting.system.repositories.client.ClientRepository;
 import org.accounting.system.repositories.metricdefinition.MetricDefinitionRepository;
 import org.accounting.system.repositories.project.ProjectRepository;
 import org.accounting.system.repositories.provider.ProviderRepository;
@@ -77,6 +79,18 @@ public class AccessProviderValidator implements ConstraintValidator<AccessProvid
                 .getOrElseThrow(()->new CustomValidationException("There is no Provider with the following id: "+provider, HttpResponseStatus.NOT_FOUND));
 
         providerRepository.findByIdOptional(provider).orElseThrow(()->new CustomValidationException("There is no Provider with the following id: "+provider, HttpResponseStatus.NOT_FOUND));
+
+
+        var clientRepository = CDI.current().select(ClientRepository.class).get();
+
+
+        var requestUserContext = CDI.current().select(RequestUserContext.class).get();
+
+
+        if(clientRepository.isSystemAdmin(requestUserContext.getId())){
+
+            return true;
+        }
 
         Boolean access = Try
                 .of(()->projectRepository.accessibility(project, collection, operation))

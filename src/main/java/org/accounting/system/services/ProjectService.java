@@ -200,4 +200,11 @@ public class ProjectService implements RoleAccessControlService {
 
         return new PageResource<>(panacheQuery, responses, uriInfo);
     }
+
+    public PageResource<ProjectProjection> getAllForSystemAdmin(int page, int size, UriInfo uriInfo) {
+
+        var projectionQuery = projectRepository.fetchAllForSystemAdmin(page, size);
+
+        return new PageResource<>(projectionQuery, projectionQuery.list(), uriInfo);
+    }
 }

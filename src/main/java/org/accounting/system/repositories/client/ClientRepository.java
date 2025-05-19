@@ -46,18 +46,20 @@ public class ClientRepository extends ClientModulator {
     @ConfigProperty(name = "api.accounting.system.admin.email", defaultValue = "")
     String email;
 
-    public void isSystemAdmin(String vopersonId){
+    public boolean isSystemAdmin(String vopersonId){
 
         var client = findByIdOptional(vopersonId);
 
         if(client.isEmpty()){
 
-            throw new ForbiddenException("You cannot perform this operation");
+            return false;
         } else if(!client.get().isSystemAdmin()){
 
-            throw new ForbiddenException("You cannot perform this operation");
-        }
+            return false;
+        } else {
 
+            return true;
+        }
     }
 
     public void addSystemAdmins(){
@@ -91,10 +93,6 @@ public class ClientRepository extends ClientModulator {
             client.setRegisteredOn(LocalDateTime.now());
             persist(client);
         });
-    }
-
-    public List<Client> getSystemAdmins(){
-        return find("systemAdmin = ?1", true).list();
     }
 
     public Set<String> getClientRoles(String vopersonId){
