@@ -48,9 +48,18 @@ public class ClientResponseDto {
     @Schema(
             type = SchemaType.BOOLEAN,
             implementation = Boolean.class,
-            description = "Whether a client is system admin or not",
+            description = "Whether a client is system admin or not.",
             example = "false"
     )
     @JsonProperty("system_admin")
     public boolean systemAdmin;
+
+    @Schema(
+            type = SchemaType.STRING,
+            implementation = String.class,
+            description = "The issuer URI that issued the access token the client receives.",
+            example = "http://localhost:58080/realms/quarkus"
+    )
+    @JsonProperty("issuer")
+    public String issuer;
 }

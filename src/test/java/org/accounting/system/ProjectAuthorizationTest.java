@@ -52,7 +52,8 @@ public class ProjectAuthorizationTest extends PrepareTest {
     @OidcSecurity(introspectionRequired = true,
             introspection = {
                     @TokenIntrospection(key = "voperson_id", value = "project_admin@example.org"),
-                    @TokenIntrospection(key = "sub", value = "project_admin@example.org")
+                    @TokenIntrospection(key = "sub", value = "project_admin@example.org"),
+                    @TokenIntrospection(key = "iss", value = "http://localhost:58080/realms/quarkus")
             },
             userinfo = {
                     @UserInfo(key = "name", value = "project_admin"),
@@ -111,7 +112,8 @@ public class ProjectAuthorizationTest extends PrepareTest {
     @OidcSecurity(introspectionRequired = true,
             introspection = {
                     @TokenIntrospection(key = "voperson_id", value = "project_admin@example.org"),
-                    @TokenIntrospection(key = "sub", value = "project_admin@example.org")
+                    @TokenIntrospection(key = "sub", value = "project_admin@example.org"),
+                    @TokenIntrospection(key = "iss", value = "http://localhost:58080/realms/quarkus")
             },
             userinfo = {
                     @UserInfo(key = "name", value = "project_admin"),
@@ -164,7 +166,8 @@ public class ProjectAuthorizationTest extends PrepareTest {
     @OidcSecurity(introspectionRequired = true,
             introspection = {
                     @TokenIntrospection(key = "voperson_id", value = "project_admin@example.org"),
-                    @TokenIntrospection(key = "sub", value = "project_admin@example.org")
+                    @TokenIntrospection(key = "sub", value = "project_admin@example.org"),
+                    @TokenIntrospection(key = "iss", value = "http://localhost:58080/realms/quarkus")
             },
             userinfo = {
                     @UserInfo(key = "name", value = "project_admin"),
@@ -240,7 +243,8 @@ public class ProjectAuthorizationTest extends PrepareTest {
     @OidcSecurity(introspectionRequired = true,
             introspection = {
                     @TokenIntrospection(key = "voperson_id", value = "provider_admin@example.org"),
-                    @TokenIntrospection(key = "sub", value = "provider_admin@example.org")
+                    @TokenIntrospection(key = "sub", value = "provider_admin@example.org"),
+                    @TokenIntrospection(key = "iss", value = "http://localhost:58080/realms/quarkus")
             },
             userinfo = {
                     @UserInfo(key = "name", value = "provider_admin"),
@@ -309,7 +313,8 @@ public class ProjectAuthorizationTest extends PrepareTest {
     @OidcSecurity(introspectionRequired = true,
             introspection = {
                     @TokenIntrospection(key = "voperson_id", value = "provider_admin@example.org"),
-                    @TokenIntrospection(key = "sub", value = "provider_admin@example.org")
+                    @TokenIntrospection(key = "sub", value = "provider_admin@example.org"),
+                    @TokenIntrospection(key = "iss", value = "http://localhost:58080/realms/quarkus")
             },
             userinfo = {
                     @UserInfo(key = "name", value = "provider_admin"),

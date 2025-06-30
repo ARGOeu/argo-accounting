@@ -70,9 +70,9 @@ public class PrepareTest {
 
         clientRepository.addSystemAdmin("admin_voperson_id", "admin", "admin@email.com");
 
-        clientService.register("creator_voperson_id", "creator", "creator@email.com");
-        clientService.register("project_admin@example.org", "project_admin", "project_admin@example.org");
-        clientService.register("provider_admin@example.org", "provider_admin", "provider_admin@example.org");
+        clientService.register("creator_voperson_id", "creator", "creator@email.com", "http://localhost:58080/realm/quarkus");
+        clientService.register("project_admin@example.org", "project_admin", "project_admin@example.org", "http://localhost:58080/realm/quarkus");
+        clientService.register("provider_admin@example.org", "provider_admin", "provider_admin@example.org", "http://localhost:58080/realm/quarkus");
         clientAccessAlwaysRepository.assignRolesToRegisteredClient("creator_voperson_id", Set.of("metric_definition_creator"));
     }
 
