@@ -7,6 +7,7 @@ import jakarta.ws.rs.BadRequestException;
 import lombok.Getter;
 import lombok.Setter;
 import org.accounting.system.enums.AccessType;
+import org.accounting.system.repositories.OidcTenantConfigRepository;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 
 import java.util.Optional;
@@ -15,24 +16,40 @@ import java.util.Optional;
 public class RequestUserContext {
 
     @ConfigProperty(name = "person.key.to.retrieve.id.from.access.token")
+    @Getter
     String personKey;
 
     @ConfigProperty(name = "service.key.to.retrieve.id.from.access.token")
+    @Getter
     String serviceKey;
 
     @Inject
     private final TokenIntrospection tokenIntrospection;
 
+    @Inject
+    private final OidcTenantConfigRepository oidcTenantConfigRepository;
+
     @Getter
     @Setter
     private AccessType accessType;
 
-    public RequestUserContext(TokenIntrospection tokenIntrospection) {
+    public RequestUserContext(TokenIntrospection tokenIntrospection, OidcTenantConfigRepository oidcTenantConfigRepository) {
 
         this.tokenIntrospection = tokenIntrospection;
+        this.oidcTenantConfigRepository = oidcTenantConfigRepository;
     }
 
     public String getId(){
+
+        var optional = oidcTenantConfigRepository.fetchOidcTenantConfigByIssuer(tokenIntrospection.getJsonObject().getString("iss"));
+
+        if(optional.isPresent()){
+
+            var config = optional.get();
+
+            personKey = config.getUserIdTokenClaim();
+            serviceKey = config.getServiceIdTokenClaim();
+        }
 
         try {
 
@@ -73,5 +90,10 @@ public class RequestUserContext {
 
             return Optional.empty();
         }
+    }
+
+    public String getIssuer(){
+
+        return tokenIntrospection.getJsonObject().getString("iss");
     }
 }

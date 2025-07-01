@@ -32,13 +32,18 @@ import org.accounting.system.dtos.authorization.request.AssignRoleRequestDto;
 import org.accounting.system.dtos.authorization.request.DetachRoleRequestDto;
 import org.accounting.system.dtos.client.ClientResponseDto;
 import org.accounting.system.dtos.client.ClientUpdateRequest;
+import org.accounting.system.dtos.pagination.PageResource;
 import org.accounting.system.dtos.project.ProjectRequest;
 import org.accounting.system.dtos.project.UpdateProjectRequest;
 import org.accounting.system.dtos.resource.ResourceRequest;
 import org.accounting.system.dtos.resource.ResourceResponse;
+import org.accounting.system.dtos.tenant.OidcTenantConfigRequest;
+import org.accounting.system.dtos.tenant.OidcTenantConfigResponse;
+import org.accounting.system.dtos.tenant.UpdateOidcTenantConfig;
 import org.accounting.system.entities.HierarchicalRelation;
 import org.accounting.system.entities.projections.normal.ProjectProjection;
 import org.accounting.system.interceptors.annotations.SystemAdmin;
+import org.accounting.system.repositories.OidcTenantConfigRepository;
 import org.accounting.system.repositories.ResourceRepository;
 import org.accounting.system.repositories.client.ClientRepository;
 import org.accounting.system.repositories.project.ProjectRepository;
@@ -61,6 +66,7 @@ import org.eclipse.microprofile.openapi.annotations.tags.Tag;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.List;
 
 import static org.eclipse.microprofile.openapi.annotations.enums.ParameterIn.QUERY;
 
@@ -857,5 +863,302 @@ public class SystemAdminEndpoint {
         var results= projectService.getAllForSystemAdmin( page - 1, size, serverInfo);
 
         return Response.ok().entity(results).build();
+    }
+
+    @Tag(name = "System Administrator")
+    @Operation(
+            summary = "Create a new OIDC tenant configuration.",
+            description = "Create a new OIDC tenant configuration. Accessible only by system administrators.")
+    @APIResponse(
+            responseCode = "201",
+            description = "Tenant configuration created successfully.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = OidcTenantConfigResponse.class)))
+    @APIResponse(
+            responseCode = "400",
+            description = "Invalid tenant configuration.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "401",
+            description = "Client has not been authenticated.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "403",
+            description = "The authenticated client is not permitted to perform the requested operation.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "409",
+            description = "OIDC tenant configuration already exists.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "500",
+            description = "Internal Server Errors.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @SecurityRequirement(name = "Authentication")
+    @POST
+    @Path("/oidc-tenants")
+    @Produces(value = MediaType.APPLICATION_JSON)
+    @Consumes(value = MediaType.APPLICATION_JSON)
+    @SystemAdmin
+    public Response createOidcTenantConfig(@Valid @NotNull(message = "The request body is empty." ) OidcTenantConfigRequest request, @Context UriInfo uriInfo) {
+
+        var serverInfo = new AccountingUriInfo(serverUrl.concat(basePath).concat(uriInfo.getPath()));
+
+        var response = systemAdminService.createOidcTenantConfig(request);
+
+        return Response.created(serverInfo.getAbsolutePathBuilder().path(response.id).build()).entity(response).build();
+    }
+
+    @Tag(name = "System Administrator")
+    @Operation(
+            summary = "Returns the available OIDC tenant configurations.",
+            description = "This operation fetches the registered Accounting System OIDC tenant configurations. By default, the first page of 10 oidc tenant configurations will be returned. " +
+                    "You can tune the default values by using the query parameters page and size.")
+    @APIResponse(
+            responseCode = "200",
+            description = "Array of available OIDC tenant configurations.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = PageableOidcTenantConfigResponseDto.class)))
+    @APIResponse(
+            responseCode = "401",
+            description = "Client has not been authenticated.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "403",
+            description = "The authenticated client is not permitted to perform the requested operation.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "500",
+            description = "Internal Server Errors.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @SecurityRequirement(name = "Authentication")
+    @GET
+    @Path("/oidc-tenants")
+    @Produces(value = MediaType.APPLICATION_JSON)
+    @SystemAdmin
+    public Response getOidcTenantConfig(@Parameter(name = "page", in = QUERY,
+            description = "Indicates the page number. Page number must be >= 1.") @DefaultValue("1") @Min(value = 1, message = "Page number must be >= 1.") @QueryParam("page") int page,
+                               @Parameter(name = "size", in = QUERY,
+                                       description = "The page size.") @DefaultValue("10") @Min(value = 1, message = "Page size must be between 1 and 100.")
+                               @Max(value = 100, message = "Page size must be between 1 and 100.") @QueryParam("size") int size,
+                               @Context UriInfo uriInfo){
+
+        var serverInfo = new AccountingUriInfo(serverUrl.concat(basePath).concat(uriInfo.getPath()));
+
+        return Response.ok().entity(systemAdminService.findAllOidcConfigPageable(page-1, size, serverInfo)).build();
+    }
+
+    @Tag(name = "System Administrator")
+    @Operation(
+            summary = "Returns an existing OIDC tenant configuration.",
+            description = "This operation accepts the id of a OIDC tenant configuration and fetches from the database the corresponding record.")
+    @APIResponse(
+            responseCode = "200",
+            description = "The corresponding OIDC tenant configuration.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = OidcTenantConfigResponse.class)))
+    @APIResponse(
+            responseCode = "401",
+            description = "Client has not been authenticated.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "403",
+            description = "The authenticated client is not permitted to perform the requested operation.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "404",
+            description = "OIDC tenant configuration has not been found.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "500",
+            description = "Internal Server Errors.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @SecurityRequirement(name = "Authentication")
+    @GET
+    @Path("/oidc-tenants/{id}")
+    @Produces(value = MediaType.APPLICATION_JSON)
+    @SystemAdmin
+    public Response get(
+            @Parameter(
+                    description = "The OIDC tenant configuration to be retrieved.",
+                    required = true,
+                    example = "507f1f77bcf86cd799439011",
+                    schema = @Schema(type = SchemaType.STRING))
+            @PathParam("id") @Valid @NotFoundEntity(repository = OidcTenantConfigRepository.class, message = "There is no OIDC tenant configuration with the following id:") String id) {
+
+        var response = systemAdminService.fetchOidcTenantConfig(id);
+
+        return Response.ok().entity(response).build();
+    }
+
+    @Tag(name = "System Administrator")
+    @Operation(
+            summary = "Delete an existing OIDC tenant configuration.",
+            description = "Delete an existing OIDC tenant configuration.")
+    @APIResponse(
+            responseCode = "200",
+            description = "OIDC tenant configuration deleted successfully.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "401",
+            description = "Client has not been authenticated.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "403",
+            description = "The authenticated client is not permitted to perform the requested operation.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "404",
+            description = "Not Found.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "500",
+            description = "Internal Server Errors.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @SecurityRequirement(name = "Authentication")
+    @DELETE
+    @Path("/oidc-tenants/{id}")
+    @Produces(value = MediaType.APPLICATION_JSON)
+    @SystemAdmin
+    public Response deleteOidcTenantConfig(@Parameter(
+            description = "The OIDC tenant configuration to be deleted.",
+            required = true,
+            example = "507f1f77bcf86cd799439011",
+            schema = @Schema(type = SchemaType.STRING))
+                                  @PathParam("id") @Valid
+                                  @NotFoundEntity(repository = OidcTenantConfigRepository.class, message = "There is no OIDC tenant configuration with the following id:") String id) {
+
+        systemAdminService.deleteOidcTenantConfig(id);
+
+        var response = new InformativeResponse();
+        response.code = 200;
+        response.message = "OIDC tenant configuration deleted successfully.";
+
+        return Response.ok().entity(response).build();
+    }
+
+    @Tag(name = "System Administrator")
+    @Operation(
+            summary = "Update an existing OIDC tenant configuration.",
+            description = "Update an existing OIDC tenant configuration. " +
+                    "You can update a part or all attributes of OIDC tenant configuration. The empty or null values are ignored. ")
+    @APIResponse(
+            responseCode = "200",
+            description = "OIDC tenant configuration was updated successfully.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = OidcTenantConfigResponse.class)))
+    @APIResponse(
+            responseCode = "400",
+            description = "Bad Request.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "401",
+            description = "Client has not been authenticated.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "403",
+            description = "The authenticated client is not permitted to perform the requested operation.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "404",
+            description = "OIDC tenant configuration has not been found.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "409",
+            description = "OIDC tenant configuration not allowed to be updated.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "415",
+            description = "Cannot consume content type.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "500",
+            description = "Internal Server Errors.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @SecurityRequirement(name = "Authentication")
+    @PATCH
+    @Path("/oidc-tenants/{id}")
+    @Produces(value = MediaType.APPLICATION_JSON)
+    @Consumes(value = MediaType.APPLICATION_JSON)
+    @SystemAdmin
+    public Response updateOidcTenantConfig(
+            @Parameter(
+                    description = "The OIDC tenant configuration to be updated.",
+                    required = true,
+                    example = "507f1f77bcf86cd799439011",
+                    schema = @Schema(type = SchemaType.STRING))
+            @PathParam("id") @Valid @NotFoundEntity(repository = OidcTenantConfigRepository.class, message = "There is no OIDC tenant configuration with the following id:") String id,
+            @Valid @NotNull(message = "The request body is empty.") UpdateOidcTenantConfig request) {
+
+        var response = systemAdminService.updateOidcTenantConfig(request, id);
+
+        return Response.ok().entity(response).build();
+    }
+
+    public static class PageableOidcTenantConfigResponseDto extends PageResource<OidcTenantConfigResponse> {
+
+        private List<OidcTenantConfigResponse> content;
+
+        @Override
+        public List<OidcTenantConfigResponse> getContent() {
+            return content;
+        }
+
+        @Override
+        public void setContent(List<OidcTenantConfigResponse> content) {
+            this.content = content;
+        }
     }
 }

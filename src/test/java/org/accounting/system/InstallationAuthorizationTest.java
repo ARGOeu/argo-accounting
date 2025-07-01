@@ -41,7 +41,8 @@ public class InstallationAuthorizationTest extends PrepareTest {
     @OidcSecurity(introspectionRequired = true,
             introspection = {
                     @TokenIntrospection(key = "voperson_id", value = "provider_admin@example.org"),
-                    @TokenIntrospection(key = "sub", value = "provider_admin@example.org")
+                    @TokenIntrospection(key = "sub", value = "provider_admin@example.org"),
+                    @TokenIntrospection(key = "iss", value = "http://localhost:58080/realms/quarkus")
             },
             userinfo = {
                     @UserInfo(key = "name", value = "provider_admin"),

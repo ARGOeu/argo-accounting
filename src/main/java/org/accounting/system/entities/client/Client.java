@@ -24,4 +24,6 @@ public class Client extends Entity {
     private Set<String> roles;
 
     private LocalDateTime registeredOn;
+
+    private String issuer;
 }

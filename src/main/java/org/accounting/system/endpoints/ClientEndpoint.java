@@ -101,7 +101,7 @@ public class ClientEndpoint {
     @Produces(value = MediaType.APPLICATION_JSON)
     public Response clientRegistration() {
 
-        var response = clientService.register(requestUserContext.getId(), requestUserContext.getName().orElse(""), requestUserContext.getEmail().orElse(""));
+        var response = clientService.register(requestUserContext.getId(), requestUserContext.getName().orElse(""), requestUserContext.getEmail().orElse(""), requestUserContext.getIssuer());
 
         return Response.ok().entity(response).build();
     }

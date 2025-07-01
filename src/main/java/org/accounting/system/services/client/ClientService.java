@@ -51,7 +51,7 @@ public class ClientService {
      *
      * @return The registered client has been turned into a response body.
      */
-    public ClientResponseDto register(String id, String name, String email){
+    public ClientResponseDto register(String id, String name, String email, String issuer){
 
         var optionalClient = clientRepository.findByIdOptional(id);
 
@@ -62,6 +62,7 @@ public class ClientService {
             client = optionalClient.get();
             client.setEmail(email);
             client.setName(name);
+            client.setIssuer(issuer);
         } else {
             client = new Client();
 
@@ -71,6 +72,7 @@ public class ClientService {
             client.setCreatorId(id);
             client.setRegisteredOn(LocalDateTime.now());
             client.setRoles(Set.of("collection_reader"));
+            client.setIssuer(issuer);
         }
 
         clientRepository.persistOrUpdate(client);
