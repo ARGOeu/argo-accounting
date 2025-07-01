@@ -1,10 +1,12 @@
 ---
 id: installation_admin
 title: Installation Admin
-sidebar_position: 5
+sidebar_position: 6
 ---
 
 # Installation Admin
+
+![Logo](./img/installation.png)
 
 ## Before you start
 

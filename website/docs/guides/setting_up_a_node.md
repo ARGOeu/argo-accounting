@@ -1,19 +1,34 @@
 ---
-id: setting_up_a_project
-title: Setting up a Project
-sidebar_position: 2
+id: setting_up_a_node
+title: Setting up a Node
+sidebar_position: 3
 ---
 
-# Setting up a Project
+# Setting up a Node
 
-![Logo](./img/project.png)
+![Logo](./img/node.png)
 
-To be able to set up a particular Project, you must be the `Project Admin`
-of that Project.
-See [here](/docs/guides/api_actions/projects.md) how you can obtain that
-role.
+In order to set up a particular Node within the system, you must be the officially designated representative of that Node. In the context of the Accounting System, this role is referred to as the `Project Admin.` See [here](/docs/guides/api_actions/projects.md) how you can obtain that role.
 
-## Step 1: Associate Providers with the Project
+## Step 1: Configure OIDC Tenant for Node Authentication
+
+Before users can authenticate, system administrators must register the OpenID Connect (OIDC) tenant configuration with the Accounting System. As a Node Admin, you are responsible for providing this configuration. To initiate the process, a representative of your Node should contact the system administrators and share the following OIDC tenant information:
+
+- **issuer**: `http://localhost:58080/realms/quarkus`  
+- **tenant_id**: `default`  
+- **client_id**: `backend-service`  
+- **secret**: `secret`  
+- **authorization_path**: `/protocol/openid-connect/auth`  
+- **introspection_path**: `/protocol/openid-connect/token/introspect`  
+- **user_info_path**: `/protocol/openid-connect/userinfo`  
+- **token_path**: `/protocol/openid-connect/token`  
+- **auth_server_url**: `http://localhost:58080/realms/quarkus`  
+- **user_id_token_claim**: `voperson_id`  
+- **service_id_token_claim**: `client_id`
+
+
+## Step 2: Associate Providers with the Node
+
 
 ### Create a new Provider
 
@@ -26,18 +41,18 @@ and follow the provided [instructions](https://argoeu.github.io/argo-accounting/
 - **HTTP Request**
   To syntax the HTTP request, please visit the corresponding [document](https://argoeu.github.io/argo-accounting/docs/api/provider#post---create-a-new-provider).
 
-### Connect Providers with the Project
+### Connect Providers with the Node
 
 ---
 
 - **User Interface**
-  To perform this action via the website, please click [here](https://accounting.eosc-portal.eu/projects)
-and follow the provided [instructions](https://argoeu.github.io/argo-accounting/docs/guides/ui_actions/project#associate-providers-with-a-specific-project).
+  To perform this action via the website, please click [here](https://accounting.eosc-portal.eu/nodes)
+and follow the provided [instructions](https://argoeu.github.io/argo-accounting/docs/guides/ui_actions/node#associate-providers-with-a-specific-node).
 
 - **HTTP Request**
-  To syntax the HTTP request, please visit the corresponding [document](https://argoeu.github.io/argo-accounting/docs/api/project#post---associate-providers-with-a-specific-project).
+  To syntax the HTTP request, please visit the corresponding [document](https://argoeu.github.io/argo-accounting/docs/api/node#post---associate-providers-with-a-specific-node).
 
-## Step 2: Create a new Installation and assign it to the associated Providers
+## Step 3: Create a new Installation and assign it to the associated Providers
 
 > **Note**
 >
@@ -77,14 +92,14 @@ and follow the provided [instructions](https://argoeu.github.io/argo-accounting/
 - **HTTP Request**
   To syntax the HTTP request, please visit the corresponding [document](https://argoeu.github.io/argo-accounting/docs/api/installation#post---create-a-new-installation).
 
-## Step 3: Add Metrics
+## Step 4: Add Metrics
 
-### Add Metrics to a particular Project
+### Add Metrics to a particular Node
 
 ---
 
 - **User Interface**
-  To perform this action via the website, please follow the provided [instructions](https://argoeu.github.io/argo-accounting/docs/guides/ui_actions/project#manage-project-metrics).
+  To perform this action via the website, please follow the provided [instructions](https://argoeu.github.io/argo-accounting/docs/guides/ui_actions/node#manage-node-metrics).
 
 - **HTTP Request**
   To syntax the HTTP request, please visit the corresponding [document](https://argoeu.github.io/argo-accounting/docs/api/metric#post---create-a-new-metric).
@@ -110,3 +125,6 @@ and follow the provided [instructions](https://argoeu.github.io/argo-accounting/
   To syntax the HTTP request, please visit the corresponding [document](https://argoeu.github.io/argo-accounting/docs/api/metric#post---create-a-new-metric).
 
 ---
+
+
+
