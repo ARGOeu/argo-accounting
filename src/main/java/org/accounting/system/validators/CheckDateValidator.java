@@ -4,7 +4,7 @@ import jakarta.validation.ConstraintValidator;
 import jakarta.validation.ConstraintValidatorContext;
 import org.accounting.system.constraints.CheckDateFormat;
 
-import java.text.SimpleDateFormat;
+import java.time.format.DateTimeFormatter;
 
 public class CheckDateValidator implements ConstraintValidator<CheckDateFormat, String> {
 
@@ -22,10 +22,10 @@ public class CheckDateValidator implements ConstraintValidator<CheckDateFormat, 
         }
 
         try {
-            new SimpleDateFormat(pattern).parse(object);
+            var formatter = DateTimeFormatter.ofPattern(pattern);
+            formatter.parse(object);
             return true;
         } catch (Exception e) {
-            e.printStackTrace();
             return false;
         }
     }

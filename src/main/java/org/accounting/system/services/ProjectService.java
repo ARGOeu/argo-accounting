@@ -13,7 +13,6 @@ import org.accounting.system.dtos.installation.InstallationResponseDto;
 import org.accounting.system.dtos.metricdefinition.MetricDefinitionResponseDto;
 import org.accounting.system.dtos.pagination.PageResource;
 import org.accounting.system.entities.Project;
-import org.accounting.system.entities.authorization.Role;
 import org.accounting.system.entities.projections.InstallationProjection;
 import org.accounting.system.entities.projections.normal.ProjectProjection;
 import org.accounting.system.entities.projections.permissions.ProjectProjectionWithPermissions;
@@ -142,11 +141,7 @@ public class ProjectService implements RoleAccessControlService {
 
         var updated = projectRepository.fetchRoleAccessControl(projectID, who);
 
-        var response = AccessControlMapper.INSTANCE.roleAccessControlToResponse(updated.get());
-
-        response.roles = updated.get().getRoles().stream().map(Role::getName).collect(Collectors.toSet());
-
-        return response;
+        return AccessControlMapper.INSTANCE.roleAccessControlToResponse(updated.get());
     }
 
     @Override
@@ -170,11 +165,7 @@ public class ProjectService implements RoleAccessControlService {
 
         optional.orElseThrow(() -> new NotFoundException("There is no Access Control."));
 
-        var response = AccessControlMapper.INSTANCE.roleAccessControlToResponse(optional.get());
-
-        response.roles = optional.get().getRoles().stream().map(Role::getName).collect(Collectors.toSet());
-
-        return response;
+        return AccessControlMapper.INSTANCE.roleAccessControlToResponse(optional.get());
     }
 
     @Override
@@ -187,15 +178,7 @@ public class ProjectService implements RoleAccessControlService {
         var responses = panacheQuery
                 .list()
                 .stream()
-                .map(acl->{
-
-                    var response = AccessControlMapper.INSTANCE.roleAccessControlToResponse(acl);
-
-                    response.roles = acl.getRoles().stream().map(Role::getName).collect(Collectors.toSet());
-
-                    return response;
-
-                })
+                .map(AccessControlMapper.INSTANCE::roleAccessControlToResponse)
                 .collect(Collectors.toList());
 
         return new PageResource<>(panacheQuery, responses, uriInfo);
