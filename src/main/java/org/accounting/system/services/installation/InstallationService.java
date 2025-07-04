@@ -17,9 +17,9 @@ import org.accounting.system.dtos.metricdefinition.MetricDefinitionResponseDto;
 import org.accounting.system.dtos.pagination.PageResource;
 import org.accounting.system.endpoints.InstallationEndpoint;
 import org.accounting.system.entities.HierarchicalRelation;
-import org.accounting.system.entities.authorization.Role;
 import org.accounting.system.entities.installation.Installation;
 import org.accounting.system.entities.projections.InstallationProjection;
+import org.accounting.system.entities.projections.InstallationReport;
 import org.accounting.system.exceptions.ConflictException;
 import org.accounting.system.mappers.AccessControlMapper;
 import org.accounting.system.mappers.InstallationMapper;
@@ -278,11 +278,7 @@ public class InstallationService implements RoleAccessControlService {
 
         var updated = installationRepository.fetchRoleAccessControl(ids[0], ids[1], ids[2], who);
 
-        var response = AccessControlMapper.INSTANCE.roleAccessControlToResponse(updated.get());
-
-        response.roles = updated.get().getRoles().stream().map(Role::getName).collect(Collectors.toSet());
-
-        return response;
+        return AccessControlMapper.INSTANCE.roleAccessControlToResponse(updated.get());
     }
 
     @Override
@@ -314,11 +310,7 @@ public class InstallationService implements RoleAccessControlService {
 
         optional.orElseThrow(() -> new NotFoundException("There is no Access Control."));
 
-        var response = AccessControlMapper.INSTANCE.roleAccessControlToResponse(optional.get());
-
-        response.roles = optional.get().getRoles().stream().map(Role::getName).collect(Collectors.toSet());
-
-        return response;
+        return AccessControlMapper.INSTANCE.roleAccessControlToResponse(optional.get());
     }
 
     @Override
@@ -335,15 +327,7 @@ public class InstallationService implements RoleAccessControlService {
         var responses = panacheQuery
                 .list()
                 .stream()
-                .map(acl->{
-
-                    var response = AccessControlMapper.INSTANCE.roleAccessControlToResponse(acl);
-
-                    response.roles = acl.getRoles().stream().map(Role::getName).collect(Collectors.toSet());
-
-                    return response;
-
-                })
+                .map(AccessControlMapper.INSTANCE::roleAccessControlToResponse)
                 .collect(Collectors.toList());
 
         return new PageResource<>(panacheQuery, responses, uriInfo);
@@ -371,5 +355,11 @@ public class InstallationService implements RoleAccessControlService {
         return new PageResource<>(projection, MetricDefinitionMapper.INSTANCE.metricDefinitionsToResponse(projection.list()), uriInfo);
     }
 
+    public InstallationReport installationReport(String installationId, String start, String end){
+
+        var installation = fetchInstallation(installationId);
+
+        return installationRepository.installationReport(installation, start, end);
+    }
 }
 

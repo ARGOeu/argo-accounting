@@ -60,7 +60,6 @@ public class AccessInstallationValidator implements ConstraintValidator<AccessIn
 
         var requestUserContext = CDI.current().select(RequestUserContext.class).get();
 
-
         if(clientRepository.isSystemAdmin(requestUserContext.getId())){
 
             return true;

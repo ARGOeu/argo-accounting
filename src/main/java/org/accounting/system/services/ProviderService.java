@@ -15,7 +15,6 @@ import org.accounting.system.dtos.pagination.PageResource;
 import org.accounting.system.dtos.provider.ProviderRequestDto;
 import org.accounting.system.dtos.provider.ProviderResponseDto;
 import org.accounting.system.dtos.provider.UpdateProviderRequestDto;
-import org.accounting.system.entities.authorization.Role;
 import org.accounting.system.entities.projections.InstallationProjection;
 import org.accounting.system.entities.projections.ProviderProjectionWithProjectInfo;
 import org.accounting.system.entities.provider.Provider;
@@ -226,11 +225,8 @@ public class ProviderService implements RoleAccessControlService {
 
         var updated = providerRepository.fetchRoleAccessControl(projectID, providerID, who);
 
-        var response = AccessControlMapper.INSTANCE.roleAccessControlToResponse(updated.get());
 
-        response.roles = updated.get().getRoles().stream().map(Role::getName).collect(Collectors.toSet());
-
-        return response;
+        return AccessControlMapper.INSTANCE.roleAccessControlToResponse(updated.get());
     }
 
     @Override
@@ -258,11 +254,7 @@ public class ProviderService implements RoleAccessControlService {
 
         optional.orElseThrow(() -> new NotFoundException("There is no Access Control."));
 
-        var response = AccessControlMapper.INSTANCE.roleAccessControlToResponse(optional.get());
-
-        response.roles = optional.get().getRoles().stream().map(Role::getName).collect(Collectors.toSet());
-
-        return response;
+        return AccessControlMapper.INSTANCE.roleAccessControlToResponse(optional.get());
     }
 
     public  PageResource< ProviderResponseDto> searchProviders(String json, int page, int size, UriInfo uriInfo) throws  NoSuchFieldException, org.json.simple.parser.ParseException {
@@ -291,15 +283,7 @@ public class ProviderService implements RoleAccessControlService {
         var responses = panacheQuery
                 .list()
                 .stream()
-                .map(acl->{
-
-                    var response = AccessControlMapper.INSTANCE.roleAccessControlToResponse(acl);
-
-                    response.roles = acl.getRoles().stream().map(Role::getName).collect(Collectors.toSet());
-
-                    return response;
-
-                })
+                .map(AccessControlMapper.INSTANCE::roleAccessControlToResponse)
                 .collect(Collectors.toList());
 
         return new PageResource<>(panacheQuery, responses, uriInfo);

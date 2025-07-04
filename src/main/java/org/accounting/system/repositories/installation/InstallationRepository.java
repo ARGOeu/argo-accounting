@@ -9,6 +9,7 @@ import com.mongodb.client.model.UpdateOptions;
 import com.mongodb.client.model.Updates;
 import io.quarkus.mongodb.panache.PanacheQuery;
 import io.quarkus.panache.common.Page;
+import io.vavr.collection.Array;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import org.accounting.system.beans.RequestUserContext;
@@ -19,16 +20,20 @@ import org.accounting.system.entities.acl.RoleAccessControl;
 import org.accounting.system.entities.authorization.Role;
 import org.accounting.system.entities.installation.Installation;
 import org.accounting.system.entities.projections.InstallationProjection;
+import org.accounting.system.entities.projections.InstallationReport;
+import org.accounting.system.entities.projections.MetricReportProjection;
 import org.accounting.system.entities.projections.MongoQuery;
 import org.accounting.system.enums.AccessType;
 import org.accounting.system.enums.Collection;
 import org.accounting.system.enums.Operation;
 import org.accounting.system.enums.RelationType;
 import org.accounting.system.exceptions.ConflictException;
+import org.accounting.system.mappers.AccessControlMapper;
 import org.accounting.system.mappers.InstallationMapper;
 import org.accounting.system.repositories.HierarchicalRelationRepository;
 import org.accounting.system.repositories.metric.MetricRepository;
 import org.accounting.system.repositories.project.ProjectRepository;
+import org.accounting.system.util.Utility;
 import org.bson.Document;
 import org.bson.conversions.Bson;
 import org.bson.types.ObjectId;
@@ -319,6 +324,36 @@ public class InstallationRepository {
         return projectionQuery;
     }
 
+    public List<RoleAccessControl> fetchAllRoleAccessControls(String projectID, String providerID, String installationID){
+
+        var project = Aggregates
+                .match(Filters.eq("_id", projectID));
+
+        var unwind = Aggregates.unwind("$providers");
+
+        var provider = Aggregates
+                .match(Filters.eq("providers._id", providerID));
+
+        var replaceRoot = Aggregates
+                .replaceRoot("$providers");
+
+        var unwindInstallations = Aggregates.unwind("$installations");
+
+        var eqInstallation = Aggregates
+                .match(Filters.eq("installations._id", installationID));
+
+        var replaceRootToInstallation = Aggregates.replaceRoot("$installations");
+
+        var unwindAcl = Aggregates.unwind("$roleAccessControls");
+
+        var replaceRootToAcl = Aggregates.replaceRoot("$roleAccessControls");
+
+        return projectRepository
+                .getMongoCollection()
+                .aggregate(List.of(project, unwind, provider, replaceRoot, unwindInstallations, eqInstallation, replaceRootToInstallation, unwindAcl, replaceRootToAcl), RoleAccessControl.class)
+                .into(new ArrayList<>());
+    }
+
     public Optional<RoleAccessControl> fetchRoleAccessControl(String projectID, String providerID, String installationID, String who) {
 
         var project = Aggregates
@@ -551,5 +586,48 @@ public class InstallationRepository {
     public boolean resourceExists(String resourceId) {
 
         return projectRepository.getMongoCollection().countDocuments(Filters.eq("providers.installations.resource", resourceId)) > 0;
+    }
+
+    public InstallationReport installationReport(Installation installation, String start, String end){
+
+        var filters = Array.of(Filters.regex("resource_id", "\\b" + installation.getProject() + HierarchicalRelation.PATH_SEPARATOR + installation.getOrganisation() + HierarchicalRelation.PATH_SEPARATOR + installation.getId() + "\\b"+"(?![-])"),
+                Filters.and(Filters.gte("time_period_start", Utility.stringToInstant(start)), Filters.lte("time_period_start", Utility.stringToInstant(end))),
+                Filters.and(Filters.gte("time_period_end", Utility.stringToInstant(start)), Filters.lte("time_period_end", Utility.stringToInstant(end))));
+
+        var addField = new Document("$addFields", new Document("metric_definition_id", new Document("$toObjectId", "$metric_definition_id")));
+
+        var lookup = Aggregates.lookup("MetricDefinition", "_id", "_id", "metric_definition");
+
+        var group = Aggregates.group("$metric_definition_id", Accumulators.sum("totalValue", "$value"));
+
+        var unwind = Aggregates.unwind("$metric_definition");
+
+        var projection = Aggregates.project(Projections.fields(
+                Projections.computed("metricDefinitionId", new Document("$toString", "$_id")),
+                Projections.computed("metricName", "$metric_definition.metric_name"),
+                Projections.computed("metricDescription", "$metric_definition.metric_description"),
+                Projections.computed("unitType", "$metric_definition.unit_type"),
+                Projections.computed("metricType", "$metric_definition.metric_type"),
+                Projections.include("totalValue")
+        ));
+
+        var regex = Aggregates.match(Filters.and(filters));
+
+        var roleAccessControls = fetchAllRoleAccessControls(installation.getProject(), installation.getOrganisation(), installation.getId());
+
+        var data = metricRepository.getMongoCollection()
+                .aggregate(List.of(regex, addField, group, lookup, unwind, projection), MetricReportProjection.class).into(new ArrayList<>());
+
+        var report = new InstallationReport();
+
+        report.data = data;
+        report.permissions = AccessControlMapper.INSTANCE.roleAccessControlToResponse(roleAccessControls);
+        report.project = installation.getProject();
+        report.provider = installation.getOrganisation();
+        report.infrastructure = installation.getInfrastructure();
+        report.installation = installation.getInstallation();
+        report.resource = installation.getResource() == null ? "" : installation.getResource();
+
+        return report;
     }
 }
