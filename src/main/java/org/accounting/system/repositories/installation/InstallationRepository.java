@@ -615,8 +615,10 @@ public class InstallationRepository {
 
         var roleAccessControls = fetchAllRoleAccessControls(installation.getProject(), installation.getOrganisation(), installation.getId());
 
-        var data = metricRepository.getMongoCollection()
-                .aggregate(List.of(regex, addField, group, lookup, unwind, projection), MetricReportProjection.class).into(new ArrayList<>());
+        var data = metricRepository
+                .getMongoCollection()
+                .aggregate(List.of(regex, addField, group, lookup, unwind, projection), MetricReportProjection.class)
+                .into(new ArrayList<>());
 
         var report = new InstallationReport();
 
@@ -627,6 +629,7 @@ public class InstallationRepository {
         report.infrastructure = installation.getInfrastructure();
         report.installation = installation.getInstallation();
         report.resource = installation.getResource() == null ? "" : installation.getResource();
+        report.installationId = installation.getId();
 
         return report;
     }

@@ -13,6 +13,15 @@ public class InstallationReport {
     @Schema(
             type = SchemaType.STRING,
             implementation = String.class,
+            description = "The installation ID.",
+            example = "507f1f77bcf86cd799439011"
+    )
+    @JsonProperty("installation_id")
+    public String installationId;
+
+    @Schema(
+            type = SchemaType.STRING,
+            implementation = String.class,
             description = "The Project that this Installation belongs to.",
             example = "447535"
     )
