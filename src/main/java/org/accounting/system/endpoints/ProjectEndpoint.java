@@ -37,6 +37,7 @@ import org.accounting.system.dtos.project.AssociateProjectProviderRequestDto;
 import org.accounting.system.dtos.project.DissociateProjectProviderRequestDto;
 import org.accounting.system.entities.HierarchicalRelation;
 import org.accounting.system.entities.projections.MetricProjection;
+import org.accounting.system.entities.projections.ProjectReport;
 import org.accounting.system.entities.projections.ProviderReport;
 import org.accounting.system.entities.projections.normal.ProjectProjection;
 import org.accounting.system.enums.Collection;
@@ -1816,6 +1817,84 @@ public class ProjectEndpoint {
         var results= projectService.getAll( page - 1, size, serverInfo);
 
         return Response.ok().entity(results).build();
+    }
+
+    @Tag(name = "Project")
+    @Operation(
+            summary = "Get Project report with metrics and access controls.",
+            description = "Returns a report for a specific Project and time period, including aggregated metric values and role-based access control information.")
+    @APIResponse(
+            responseCode = "200",
+            description = "Project report retrieved successfully.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = ProjectReport.class)))
+    @APIResponse(
+            responseCode = "401",
+            description = "Client has not been authenticated.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "403",
+            description = "The authenticated client is not permitted to perform the requested operation.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "404",
+            description = "Not found.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "500",
+            description = "Internal Server Errors.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @SecurityRequirement(name = "Authentication")
+    @GET
+    @Path("/{project_id}/report")
+    @Produces(value = MediaType.APPLICATION_JSON)
+    public Response projectReport(
+            @Parameter(
+                    description = "Τhe Project id.",
+                    required = true,
+                    example = "704029",
+                    schema = @Schema(type = SchemaType.STRING))
+            @PathParam("project_id")
+            @Valid
+            @AccessProject(collection = Collection.Metric, operation = READ) String projectId,
+            @Parameter(
+                    name = "start",
+                    description = "Start date in yyyy-MM-dd format",
+                    required = true,
+                    example = "2024-01-01"
+            )
+            @QueryParam("start")
+            @Valid
+            @NotEmpty(message = "start may not be empty.")
+            @CheckDateFormat(pattern = "yyyy-MM-dd", message = "Valid date format is yyyy-MM-dd.") String start,
+
+            @Parameter(
+                    name = "end",
+                    description = "End date in yyyy-MM-dd format",
+                    required = true,
+                    example = "2024-12-31"
+            )
+            @QueryParam("end")
+            @Valid
+            @NotEmpty(message = "end may not be empty.")
+            @CheckDateFormat(pattern = "yyyy-MM-dd", message = "Valid date format is yyyy-MM-dd.") String end) {
+
+        if (LocalDate.parse(start).isAfter(LocalDate.parse(end))) {
+            throw new BadRequestException("Start date must be before or equal to end date.");
+        }
+
+        var response = projectService.projectReport(projectId, start, end);
+
+        return Response.ok().entity(response).build();
     }
 
     public static class PageableProjectProjection extends PageResource<ProjectProjection> {

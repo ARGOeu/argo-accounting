@@ -14,6 +14,7 @@ import org.accounting.system.dtos.metricdefinition.MetricDefinitionResponseDto;
 import org.accounting.system.dtos.pagination.PageResource;
 import org.accounting.system.entities.Project;
 import org.accounting.system.entities.projections.InstallationProjection;
+import org.accounting.system.entities.projections.ProjectReport;
 import org.accounting.system.entities.projections.normal.ProjectProjection;
 import org.accounting.system.entities.projections.permissions.ProjectProjectionWithPermissions;
 import org.accounting.system.exceptions.ConflictException;
@@ -189,5 +190,11 @@ public class ProjectService implements RoleAccessControlService {
         var projectionQuery = projectRepository.fetchAllForSystemAdmin(page, size);
 
         return new PageResource<>(projectionQuery, projectionQuery.list(), uriInfo);
+    }
+
+    public ProjectReport projectReport(String projectId, String start, String end){
+
+
+        return projectRepository.projectReport(projectId, start, end);
     }
 }
