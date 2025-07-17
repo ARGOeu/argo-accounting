@@ -38,6 +38,8 @@ According to [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) , the
   Report.
 - [#225](https://github.com/ARGOeu/argo-accounting/pull/225) - ACC-362 Project
   Report.
+- [#226](https://github.com/ARGOeu/argo-accounting/pull/226) - ACC-369 Aggregated 
+  Provider report.
 
 ## 1.6.1 - 2025-03-21
 

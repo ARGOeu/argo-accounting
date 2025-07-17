@@ -6,6 +6,7 @@ import jakarta.inject.Inject;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 import jakarta.ws.rs.BadRequestException;
 import jakarta.ws.rs.Consumes;
@@ -22,6 +23,7 @@ import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.UriInfo;
+import org.accounting.system.constraints.CheckDateFormat;
 import org.accounting.system.constraints.NotFoundEntity;
 import org.accounting.system.dtos.InformativeResponse;
 import org.accounting.system.dtos.pagination.PageResource;
@@ -30,6 +32,7 @@ import org.accounting.system.dtos.provider.ProviderResponseDto;
 import org.accounting.system.dtos.provider.UpdateProviderRequestDto;
 import org.accounting.system.entities.HierarchicalRelation;
 import org.accounting.system.entities.projections.ProviderProjectionWithProjectInfo;
+import org.accounting.system.entities.projections.ProviderReport;
 import org.accounting.system.enums.Collection;
 import org.accounting.system.enums.Operation;
 import org.accounting.system.interceptors.annotations.AccessPermission;
@@ -51,6 +54,7 @@ import org.eclipse.microprofile.openapi.annotations.security.SecurityScheme;
 import org.eclipse.microprofile.openapi.annotations.tags.Tag;
 
 import java.text.ParseException;
+import java.time.LocalDate;
 import java.util.List;
 
 import static org.eclipse.microprofile.openapi.annotations.enums.ParameterIn.QUERY;
@@ -433,7 +437,6 @@ public class ProviderEndpoint {
     @Path("/search")
     @Produces(value = MediaType.APPLICATION_JSON)
     @Consumes(value = MediaType.APPLICATION_JSON)
-
     public Response search(
             @Valid @NotNull(message = "The request body is empty.") @RequestBody(content = @Content(
                     schema = @Schema(implementation = String.class),
@@ -485,23 +488,98 @@ public class ProviderEndpoint {
                     type = SchemaType.OBJECT,
                     implementation = InformativeResponse.class)))
     @SecurityRequirement(name = "Authentication")
-
     @GET
     @Path("/all")
     @Produces(value = MediaType.APPLICATION_JSON)
     @Consumes(value = MediaType.APPLICATION_JSON)
-
     public Response getProvidersAssigned(
 
             @Parameter(name = "page", in = QUERY,
                     description = "Indicates the page number. Page number must be >= 1.") @DefaultValue("1") @Min(value = 1, message = "Page number must be >= 1.") @QueryParam("page") int page,
             @Parameter(name = "size", in = QUERY,
                     description = "The page size.") @DefaultValue("10") @Min(value = 1, message = "Page size must be between 1 and 100.")
-            @Max(value = 100, message = "Page size must be between 1 and 100.") @QueryParam("size") int size, @Context UriInfo uriInfo) throws ParseException, NoSuchFieldException, org.json.simple.parser.ParseException, JsonProcessingException {
+            @Max(value = 100, message = "Page size must be between 1 and 100.") @QueryParam("size") int size, @Context UriInfo uriInfo) {
 
         var serverInfo = new AccountingUriInfo(serverUrl.concat(basePath).concat(uriInfo.getPath()));
 
         var response = providerService.getSystemProviders( page - 1, size, serverInfo);
+
+        return Response.ok().entity(response).build();
+    }
+
+    @Tag(name = "Provider")
+    @org.eclipse.microprofile.openapi.annotations.Operation(
+            summary = "Get Provider report with metrics and access controls.",
+            description = "Returns a report for a specific Provider and time period, including aggregated metric values and role-based access control information.")
+    @APIResponse(
+            responseCode = "200",
+            description = "Provider report retrieved successfully.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.ARRAY,
+                    implementation = ProviderReport.class)))
+    @APIResponse(
+            responseCode = "401",
+            description = "Client has not been authenticated.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "403",
+            description = "The authenticated client is not permitted to perform the requested operation.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "404",
+            description = "Not found.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "500",
+            description = "Internal Server Errors.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @SecurityRequirement(name = "Authentication")
+    @GET
+    @Path("/{provider_id}/report")
+    @Produces(value = MediaType.APPLICATION_JSON)
+    @AccessPermission(collection = Collection.Provider, operation = Operation.READ)
+    public Response providerReport(
+            @Parameter(
+                    description = "Τhe Provider id.",
+                    required = true,
+                    example = "grnet",
+                    schema = @Schema(type = SchemaType.STRING))
+            @PathParam("provider_id") @Valid @NotFoundEntity(repository = ProviderRepository.class, id = String.class, message = "There is no Provider with the following id:") String providerId,
+            @Parameter(
+                    name = "start",
+                    description = "Start date in yyyy-MM-dd format",
+                    required = true,
+                    example = "2024-01-01"
+            )
+            @QueryParam("start")
+            @Valid
+            @NotEmpty(message = "start may not be empty.")
+            @CheckDateFormat(pattern = "yyyy-MM-dd", message = "Valid date format is yyyy-MM-dd.") String start,
+
+            @Parameter(
+                    name = "end",
+                    description = "End date in yyyy-MM-dd format",
+                    required = true,
+                    example = "2024-12-31"
+            )
+            @QueryParam("end")
+            @Valid
+            @NotEmpty(message = "end may not be empty.")
+            @CheckDateFormat(pattern = "yyyy-MM-dd", message = "Valid date format is yyyy-MM-dd.") String end) {
+
+        if (LocalDate.parse(start).isAfter(LocalDate.parse(end))) {
+            throw new BadRequestException("Start date must be before or equal to end date.");
+        }
+
+        var response = providerService.providerReport(providerId, start, end);
 
         return Response.ok().entity(response).build();
     }
@@ -517,22 +595,6 @@ public class ProviderEndpoint {
 
         @Override
         public void setContent(List<ProviderResponseDto> content) {
-            this.content = content;
-        }
-
-    }
-
-    public static class PageableProviderProjectionWithProjectInfo extends PageResource<ProviderProjectionWithProjectInfo> {
-
-        private List<ProviderProjectionWithProjectInfo> content;
-
-        @Override
-        public List<ProviderProjectionWithProjectInfo> getContent() {
-            return content;
-        }
-
-        @Override
-        public void setContent(List<ProviderProjectionWithProjectInfo> content) {
             this.content = content;
         }
 
