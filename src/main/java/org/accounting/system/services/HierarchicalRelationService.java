@@ -15,6 +15,8 @@ import org.accounting.system.repositories.provider.ProviderRepository;
 import org.accounting.system.services.installation.InstallationService;
 import org.apache.commons.lang3.StringUtils;
 
+import java.util.Set;
+
 
 @ApplicationScoped
 public class HierarchicalRelationService {
@@ -95,5 +97,10 @@ public class HierarchicalRelationService {
     public boolean providerBelongsToAnyProject(String providerId){
 
         return hierarchicalRelationRepository.exist(providerId);
+    }
+
+    public Set<String> getProjectsByProvider(String providerId) {
+
+        return hierarchicalRelationRepository.getProjectsByProvider(providerId);
     }
 }
