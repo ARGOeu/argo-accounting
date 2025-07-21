@@ -8,6 +8,7 @@ import lombok.Getter;
 import lombok.Setter;
 import org.accounting.system.enums.AccessType;
 import org.accounting.system.repositories.OidcTenantConfigRepository;
+import org.apache.commons.codec.digest.DigestUtils;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 
 import java.util.Optional;
@@ -39,7 +40,7 @@ public class RequestUserContext {
         this.oidcTenantConfigRepository = oidcTenantConfigRepository;
     }
 
-    public String getId(){
+    public String getId() {
 
         var optional = oidcTenantConfigRepository.fetchOidcTenantConfigByIssuer(tokenIntrospection.getJsonObject().getString("iss"));
 
@@ -53,13 +54,17 @@ public class RequestUserContext {
 
         try {
 
-            return tokenIntrospection.getJsonObject().getString(personKey);
+            var input = tokenIntrospection.getJsonObject().getString(personKey)+ "|" +tokenIntrospection.getJsonObject().getString("iss");
+
+            return DigestUtils.sha256Hex(input);
 
         } catch (Exception e) {
 
             try{
 
-                return tokenIntrospection.getJsonObject().getString(serviceKey);
+                var input = tokenIntrospection.getJsonObject().getString(serviceKey)+ "|" +tokenIntrospection.getJsonObject().getString("iss");
+
+                return DigestUtils.sha256Hex(input);
 
             } catch (Exception ex){
 
