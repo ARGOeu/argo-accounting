@@ -16,6 +16,7 @@ import java.util.Optional;
 @RequestScoped
 public class RequestUserContext {
 
+
     @ConfigProperty(name = "person.key.to.retrieve.id.from.access.token")
     @Getter
     String personKey;
@@ -25,24 +26,18 @@ public class RequestUserContext {
     String serviceKey;
 
     @Inject
-    private final TokenIntrospection tokenIntrospection;
+    TokenIntrospection tokenIntrospection;
 
     @Inject
-    private final OidcTenantConfigRepository oidcTenantConfigRepository;
+    OidcTenantConfigRepository oidcTenantConfigRepository;
 
     @Getter
     @Setter
     private AccessType accessType;
 
-    public RequestUserContext(TokenIntrospection tokenIntrospection, OidcTenantConfigRepository oidcTenantConfigRepository) {
-
-        this.tokenIntrospection = tokenIntrospection;
-        this.oidcTenantConfigRepository = oidcTenantConfigRepository;
-    }
-
     public String getId() {
 
-        var optional = oidcTenantConfigRepository.fetchOidcTenantConfigByIssuer(tokenIntrospection.getJsonObject().getString("iss"));
+        var optional = oidcTenantConfigRepository.fetchOidcTenantConfigByIssuer(getIssuer());
 
         if(optional.isPresent()){
 
@@ -54,7 +49,7 @@ public class RequestUserContext {
 
         try {
 
-            var input = tokenIntrospection.getJsonObject().getString(personKey)+ "|" +tokenIntrospection.getJsonObject().getString("iss");
+            var input = tokenIntrospection.getJsonObject().getString(personKey)+ "|" + getIssuer();
 
             return DigestUtils.sha256Hex(input);
 
@@ -62,7 +57,7 @@ public class RequestUserContext {
 
             try{
 
-                var input = tokenIntrospection.getJsonObject().getString(serviceKey)+ "|" +tokenIntrospection.getJsonObject().getString("iss");
+                var input = tokenIntrospection.getJsonObject().getString(serviceKey)+ "|" + getIssuer();
 
                 return DigestUtils.sha256Hex(input);
 
