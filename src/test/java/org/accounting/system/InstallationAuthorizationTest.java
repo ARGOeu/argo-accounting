@@ -81,7 +81,7 @@ public class InstallationAuthorizationTest extends PrepareTest {
                 .basePath("accounting-system/projects")
                 .contentType(ContentType.JSON)
                 .body(acl)
-                .post("/{project_id}/providers/{provider_id}/acl/{who}", "777536", "sites", "provider_admin@example.org")
+                .post("/{project_id}/providers/{provider_id}/acl/{who}", "777536", "sites", "2ba5ad4cc037343cfa53ba6633becd68ea4c5d7805f3f1bf172d66c1d9440768")
                 .then()
                 .assertThat()
                 .statusCode(200)
