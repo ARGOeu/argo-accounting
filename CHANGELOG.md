@@ -41,6 +41,7 @@ According to [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) , the
 - [#226](https://github.com/ARGOeu/argo-accounting/pull/226) - ACC-369 Aggregated 
   Provider report.
 - [#227](https://github.com/ARGOeu/argo-accounting/pull/227) - ACC-366 Add issuer
+  in the client's id.
 
 ## 1.6.1 - 2025-03-21
 
