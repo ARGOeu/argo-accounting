@@ -1,10 +1,18 @@
 ---
 id: project_admin
 title: Project Admin
-sidebar_position: 3
+sidebar_position: 4
 ---
 
 # Project Admin
+
+A `Project Admin` is authorized to manage either a dedicated project or an associated Node within the system. In this context, the terms `Project` and `Node` are used interchangeably, depending on the operational scope.
+
+## Administering at the Project Scope
+![Logo](./img/project.png)
+
+## Administering at the Node Scope
+![Logo](./img/node.png)
 
 ## Before you start
 

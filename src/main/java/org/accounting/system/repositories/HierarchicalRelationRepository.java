@@ -11,11 +11,16 @@ import org.accounting.system.repositories.modulators.AbstractAccessModulator;
 import org.bson.Document;
 import org.bson.conversions.Bson;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
+import java.util.regex.Pattern;
 
 @ApplicationScoped
 public class HierarchicalRelationRepository extends AbstractAccessModulator<HierarchicalRelation, String> {
@@ -118,5 +123,29 @@ public class HierarchicalRelationRepository extends AbstractAccessModulator<Hier
 
        var filter = Filters.regex("_id", "^" + projectId);
        getMongoCollection().deleteMany(filter);
+    }
+
+    public Set<String> getProjectsByProvider(String providerId) {
+
+        Pattern regexPattern = Pattern.compile("^[^.]+\\." + providerId + "\\.[^.]+$");
+
+        var pipeline = Arrays.asList(
+                Aggregates.match(Filters.regex("_id", regexPattern)),
+                Aggregates.project(new Document("project_id",
+                        new Document("$arrayElemAt", Arrays.asList(
+                                new Document("$split", Arrays.asList("$_id", ".")), 0
+                        ))
+                )),
+                Aggregates.group("$project_id")
+        );
+
+        var results = getMongoCollection().aggregate(pipeline).into(new ArrayList<>());
+
+        Set<String> projectIds = new HashSet<>();
+        for (Document doc : results) {
+            projectIds.add(doc.getString("_id"));
+        }
+
+        return projectIds;
     }
 }

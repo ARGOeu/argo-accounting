@@ -7,6 +7,8 @@ import jakarta.ws.rs.BadRequestException;
 import lombok.Getter;
 import lombok.Setter;
 import org.accounting.system.enums.AccessType;
+import org.accounting.system.repositories.OidcTenantConfigRepository;
+import org.apache.commons.codec.digest.DigestUtils;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 
 import java.util.Optional;
@@ -14,35 +16,50 @@ import java.util.Optional;
 @RequestScoped
 public class RequestUserContext {
 
+
     @ConfigProperty(name = "person.key.to.retrieve.id.from.access.token")
+    @Getter
     String personKey;
 
     @ConfigProperty(name = "service.key.to.retrieve.id.from.access.token")
+    @Getter
     String serviceKey;
 
     @Inject
-    private final TokenIntrospection tokenIntrospection;
+    TokenIntrospection tokenIntrospection;
+
+    @Inject
+    OidcTenantConfigRepository oidcTenantConfigRepository;
 
     @Getter
     @Setter
     private AccessType accessType;
 
-    public RequestUserContext(TokenIntrospection tokenIntrospection) {
+    public String getId() {
 
-        this.tokenIntrospection = tokenIntrospection;
-    }
+        var optional = oidcTenantConfigRepository.fetchOidcTenantConfigByIssuer(getIssuer());
 
-    public String getId(){
+        if(optional.isPresent()){
+
+            var config = optional.get();
+
+            personKey = config.getUserIdTokenClaim();
+            serviceKey = config.getServiceIdTokenClaim();
+        }
 
         try {
 
-            return tokenIntrospection.getJsonObject().getString(personKey);
+            var input = tokenIntrospection.getJsonObject().getString(personKey)+ "|" + getIssuer();
+
+            return DigestUtils.sha256Hex(input);
 
         } catch (Exception e) {
 
             try{
 
-                return tokenIntrospection.getJsonObject().getString(serviceKey);
+                var input = tokenIntrospection.getJsonObject().getString(serviceKey)+ "|" + getIssuer();
+
+                return DigestUtils.sha256Hex(input);
 
             } catch (Exception ex){
 
@@ -73,5 +90,10 @@ public class RequestUserContext {
 
             return Optional.empty();
         }
+    }
+
+    public String getIssuer(){
+
+        return tokenIntrospection.getJsonObject().getString("iss");
     }
 }

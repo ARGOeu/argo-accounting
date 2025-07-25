@@ -25,6 +25,7 @@ import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.UriInfo;
 import org.accounting.system.constraints.AccessProject;
 import org.accounting.system.constraints.AccessProvider;
+import org.accounting.system.constraints.CheckDateFormat;
 import org.accounting.system.constraints.NotFoundEntity;
 import org.accounting.system.dtos.InformativeResponse;
 import org.accounting.system.dtos.acl.role.RoleAccessControlRequestDto;
@@ -36,6 +37,8 @@ import org.accounting.system.dtos.project.AssociateProjectProviderRequestDto;
 import org.accounting.system.dtos.project.DissociateProjectProviderRequestDto;
 import org.accounting.system.entities.HierarchicalRelation;
 import org.accounting.system.entities.projections.MetricProjection;
+import org.accounting.system.entities.projections.ProjectReport;
+import org.accounting.system.entities.projections.ProviderReport;
 import org.accounting.system.entities.projections.normal.ProjectProjection;
 import org.accounting.system.enums.Collection;
 import org.accounting.system.repositories.client.ClientRepository;
@@ -64,6 +67,7 @@ import org.eclipse.microprofile.openapi.annotations.security.SecurityScheme;
 import org.eclipse.microprofile.openapi.annotations.tags.Tag;
 
 import java.text.ParseException;
+import java.time.LocalDate;
 import java.util.List;
 
 import static org.accounting.system.enums.Operation.ACL;
@@ -389,6 +393,12 @@ public class ProjectEndpoint {
                     type = SchemaType.OBJECT,
                     implementation = InformativeResponse.class)))
     @APIResponse(
+            responseCode = "403",
+            description = "The authenticated client is not permitted to perform the requested operation.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
             responseCode = "404",
             description = "Not found.",
             content = @Content(schema = @Schema(
@@ -436,6 +446,89 @@ public class ProjectEndpoint {
         var serverInfo = new AccountingUriInfo(serverUrl.concat(basePath).concat(uriInfo.getPath()));
 
         var response = metricService.fetchAllMetrics(projectId + HierarchicalRelation.PATH_SEPARATOR + providerId, page - 1, size, serverInfo, start, end, metricDefinitionId);
+
+        return Response.ok().entity(response).build();
+    }
+
+    @Tag(name = "Provider")
+    @Operation(
+            summary = "Get Provider report with metrics and access controls.",
+            description = "Returns a report for a specific Provider and time period, including aggregated metric values and role-based access control information.")
+    @APIResponse(
+            responseCode = "200",
+            description = "Provider report retrieved successfully.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = ProviderReport.class)))
+    @APIResponse(
+            responseCode = "401",
+            description = "Client has not been authenticated.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "403",
+            description = "The authenticated client is not permitted to perform the requested operation.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "404",
+            description = "Not found.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "500",
+            description = "Internal Server Errors.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @SecurityRequirement(name = "Authentication")
+    @GET
+    @Path("/{project_id}/providers/{provider_id}/report")
+    @Produces(value = MediaType.APPLICATION_JSON)
+    @AccessProvider(collection = Collection.Metric, operation = READ)
+    public Response providerReport(
+            @Parameter(
+                    description = "Τhe Project id.",
+                    required = true,
+                    example = "704029",
+                    schema = @Schema(type = SchemaType.STRING))
+            @PathParam("project_id") String projectId,
+            @Parameter(
+                    description = "Τhe Provider id.",
+                    required = true,
+                    example = "grnet",
+                    schema = @Schema(type = SchemaType.STRING))
+            @PathParam("provider_id") String providerId,
+            @Parameter(
+                    name = "start",
+                    description = "Start date in yyyy-MM-dd format",
+                    required = true,
+                    example = "2024-01-01"
+            )
+            @QueryParam("start")
+            @Valid
+            @NotEmpty(message = "start may not be empty.")
+            @CheckDateFormat(pattern = "yyyy-MM-dd", message = "Valid date format is yyyy-MM-dd.") String start,
+
+            @Parameter(
+                    name = "end",
+                    description = "End date in yyyy-MM-dd format",
+                    required = true,
+                    example = "2024-12-31"
+            )
+            @QueryParam("end")
+            @Valid
+            @NotEmpty(message = "end may not be empty.")
+            @CheckDateFormat(pattern = "yyyy-MM-dd", message = "Valid date format is yyyy-MM-dd.") String end) {
+
+        if (LocalDate.parse(start).isAfter(LocalDate.parse(end))) {
+            throw new BadRequestException("Start date must be before or equal to end date.");
+        }
+
+        var response = providerService.providerReport(projectId, providerId, start, end);
 
         return Response.ok().entity(response).build();
     }
@@ -1537,7 +1630,6 @@ public class ProjectEndpoint {
                     type = SchemaType.OBJECT,
                     implementation = InformativeResponse.class)))
     @SecurityRequirement(name = "Authentication")
-
     @GET
     @Path("/{project_id}/providers/{provider_id}/acl")
     @Produces(value = MediaType.APPLICATION_JSON)
@@ -1617,7 +1709,6 @@ public class ProjectEndpoint {
     @Path("/search")
     @Produces(value = MediaType.APPLICATION_JSON)
     @Consumes(value = MediaType.APPLICATION_JSON)
-
     public Response search(
             @NotEmpty(message = "The request body is empty.") @RequestBody(content = @Content(
                     schema = @Schema(implementation = String.class),
@@ -1684,12 +1775,6 @@ public class ProjectEndpoint {
                     type = SchemaType.OBJECT,
                     implementation = PageableProjectProjection.class)))
     @APIResponse(
-            responseCode = "400",
-            description = "Bad Request.",
-            content = @Content(schema = @Schema(
-                    type = SchemaType.OBJECT,
-                    implementation = InformativeResponse.class)))
-    @APIResponse(
             responseCode = "401",
             description = "Client has not been authenticated.",
             content = @Content(schema = @Schema(
@@ -1714,11 +1799,9 @@ public class ProjectEndpoint {
                     type = SchemaType.OBJECT,
                     implementation = InformativeResponse.class)))
     @SecurityRequirement(name = "Authentication")
-
     @GET
     @Produces(value = MediaType.APPLICATION_JSON)
     @Consumes(value = MediaType.APPLICATION_JSON)
-
     public Response getAll(
 
             @Parameter(name = "page", in = QUERY,
@@ -1734,6 +1817,84 @@ public class ProjectEndpoint {
         var results= projectService.getAll( page - 1, size, serverInfo);
 
         return Response.ok().entity(results).build();
+    }
+
+    @Tag(name = "Project")
+    @Operation(
+            summary = "Get Project report with metrics and access controls.",
+            description = "Returns a report for a specific Project and time period, including aggregated metric values and role-based access control information.")
+    @APIResponse(
+            responseCode = "200",
+            description = "Project report retrieved successfully.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = ProjectReport.class)))
+    @APIResponse(
+            responseCode = "401",
+            description = "Client has not been authenticated.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "403",
+            description = "The authenticated client is not permitted to perform the requested operation.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "404",
+            description = "Not found.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "500",
+            description = "Internal Server Errors.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @SecurityRequirement(name = "Authentication")
+    @GET
+    @Path("/{project_id}/report")
+    @Produces(value = MediaType.APPLICATION_JSON)
+    public Response projectReport(
+            @Parameter(
+                    description = "Τhe Project id.",
+                    required = true,
+                    example = "704029",
+                    schema = @Schema(type = SchemaType.STRING))
+            @PathParam("project_id")
+            @Valid
+            @AccessProject(collection = Collection.Metric, operation = READ) String projectId,
+            @Parameter(
+                    name = "start",
+                    description = "Start date in yyyy-MM-dd format",
+                    required = true,
+                    example = "2024-01-01"
+            )
+            @QueryParam("start")
+            @Valid
+            @NotEmpty(message = "start may not be empty.")
+            @CheckDateFormat(pattern = "yyyy-MM-dd", message = "Valid date format is yyyy-MM-dd.") String start,
+
+            @Parameter(
+                    name = "end",
+                    description = "End date in yyyy-MM-dd format",
+                    required = true,
+                    example = "2024-12-31"
+            )
+            @QueryParam("end")
+            @Valid
+            @NotEmpty(message = "end may not be empty.")
+            @CheckDateFormat(pattern = "yyyy-MM-dd", message = "Valid date format is yyyy-MM-dd.") String end) {
+
+        if (LocalDate.parse(start).isAfter(LocalDate.parse(end))) {
+            throw new BadRequestException("Start date must be before or equal to end date.");
+        }
+
+        var response = projectService.projectReport(projectId, start, end);
+
+        return Response.ok().entity(response).build();
     }
 
     public static class PageableProjectProjection extends PageResource<ProjectProjection> {

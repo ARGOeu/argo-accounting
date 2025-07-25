@@ -159,8 +159,8 @@ public class MetricEndpoint {
     ) String json, @Parameter(name = "page", in = QUERY,
             description = "Indicates the page number. Page number must be >= 1.") @DefaultValue("1") @Min(value = 1, message = "Page number must be >= 1.") @QueryParam("page") int page,
                            @Parameter(name = "size", in = QUERY,
-                                   description = "The page size.") @DefaultValue("10") @Min(value = 1, message = "Page size must be between 1 and 100.")
-                           @Max(value = 100, message = "Page size must be between 1 and 100.")  @QueryParam("size") int size, @Context UriInfo uriInfo) throws NoSuchFieldException, ParseException, org.json.simple.parser.ParseException {
+                                   description = "The page size.") @DefaultValue("10") @Min(value = 1, message = "Page size must be between 1 and 1000.")
+                           @Max(value = 1000, message = "Page size must be between 1 and 1000.")  @QueryParam("size") int size, @Context UriInfo uriInfo) throws NoSuchFieldException, ParseException, org.json.simple.parser.ParseException {
 
         var serverInfo = new AccountingUriInfo(serverUrl.concat(basePath).concat(uriInfo.getPath()));
 

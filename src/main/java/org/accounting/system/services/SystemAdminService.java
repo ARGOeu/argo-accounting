@@ -1,22 +1,28 @@
 package org.accounting.system.services;
 
 import com.mongodb.client.model.Filters;
+import io.quarkus.panache.common.Page;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.NotFoundException;
+import jakarta.ws.rs.core.UriInfo;
 import org.accounting.system.clients.ProjectClient;
 import org.accounting.system.dtos.InformativeResponse;
+import org.accounting.system.dtos.pagination.PageResource;
 import org.accounting.system.dtos.project.ProjectRequest;
 import org.accounting.system.dtos.project.UpdateProjectRequest;
 import org.accounting.system.dtos.resource.ResourceRequest;
 import org.accounting.system.dtos.resource.ResourceResponse;
+import org.accounting.system.dtos.tenant.OidcTenantConfigRequest;
+import org.accounting.system.dtos.tenant.OidcTenantConfigResponse;
+import org.accounting.system.dtos.tenant.UpdateOidcTenantConfig;
 import org.accounting.system.entities.Project;
-import org.accounting.system.entities.acl.RoleAccessControl;
-import org.accounting.system.entities.client.Client;
 import org.accounting.system.entities.projections.normal.ProjectProjection;
 import org.accounting.system.exceptions.ConflictException;
+import org.accounting.system.mappers.OidcTenantConfigMapper;
 import org.accounting.system.mappers.ResourceMapper;
 import org.accounting.system.repositories.HierarchicalRelationRepository;
+import org.accounting.system.repositories.OidcTenantConfigRepository;
 import org.accounting.system.repositories.ResourceRepository;
 import org.accounting.system.repositories.authorization.RoleRepository;
 import org.accounting.system.repositories.client.ClientRepository;
@@ -24,6 +30,7 @@ import org.accounting.system.repositories.installation.InstallationRepository;
 import org.accounting.system.repositories.metric.MetricRepository;
 import org.accounting.system.repositories.project.ProjectModulator;
 import org.accounting.system.repositories.project.ProjectRepository;
+import org.apache.commons.lang3.StringUtils;
 import org.bson.types.ObjectId;
 import org.eclipse.microprofile.rest.client.inject.RestClient;
 
@@ -31,7 +38,6 @@ import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 @ApplicationScoped
 public class SystemAdminService {
@@ -60,6 +66,9 @@ public class SystemAdminService {
 
     @Inject
     InstallationRepository installationRepository;
+
+    @Inject
+    OidcTenantConfigRepository oidcTenantConfigRepository;
 
 
     /**
@@ -93,22 +102,6 @@ public class SystemAdminService {
                     project.setCreatorId(who);
 
                     projectRepository.persist(project);
-
-                    var systemAdmins = clientRepository.getSystemAdmins();
-
-                    var systemAdminsAccessControls = systemAdmins
-                            .stream()
-                            .map(Client::getId)
-                            .map(id -> {
-
-                                var systemAdminAccessControl = new RoleAccessControl();
-                                systemAdminAccessControl.setWho(id);
-                                systemAdminAccessControl.setCreatorId(who);
-                                systemAdminAccessControl.setRoles(projectAdminRole);
-                                return systemAdminAccessControl;
-                            }).collect(Collectors.toSet());
-
-                    projectRepository.insertListOfRoleAccessControl(projectID, systemAdminsAccessControls);
 
                     success.add(projectID);
 
@@ -195,32 +188,14 @@ public class SystemAdminService {
 
         projectRepository.persist(project);
 
-        var systemAdmins = clientRepository.getSystemAdmins();
-
-        var projectAdminRole = roleRepository.getRolesByName(Set.of("project_admin"));
-
-        var systemAdminsAccessControls = systemAdmins
-                .stream()
-                .map(Client::getId)
-                .map(id -> {
-
-                    var systemAdminAccessControl = new RoleAccessControl();
-                    systemAdminAccessControl.setWho(id);
-                    systemAdminAccessControl.setCreatorId(who);
-                    systemAdminAccessControl.setRoles(projectAdminRole);
-                    return systemAdminAccessControl;
-                }).collect(Collectors.toSet());
-
-        projectRepository.insertListOfRoleAccessControl(project.getId(), systemAdminsAccessControls);
-
         return projectRepository.fetchById(project.getId());
     }
 
     /**
      * Creates a new Resource.
      *
-     * @param request The data transfer object containing project details.
-     * @return The created Project.
+     * @param request The data transfer object containing resource details.
+     * @return The created Resource.
      */
     public ResourceResponse createResource(ResourceRequest request) {
 
@@ -258,5 +233,78 @@ public class SystemAdminService {
         var endId = new ObjectId(Long.toHexString(end.getTime() / 1000) + "0000000000000000");
 
         return projectRepository.getMongoCollection(collectionName).countDocuments(Filters.and(Filters.gte("_id", startId), Filters.lte("_id", endId)));
+    }
+
+    /**
+     * Creates a new OIDC tenant configuration.
+     *
+     * @param request The data transfer object containing tenant configuration.
+     * @return The created OIDC tenant configuration.
+     */
+    public OidcTenantConfigResponse createOidcTenantConfig(OidcTenantConfigRequest request) {
+
+        var optionalIssuer = oidcTenantConfigRepository.fetchOidcTenantConfigByIssuer(request.issuer);
+
+        if (optionalIssuer.isPresent()) {
+
+            throw new ConflictException(String.format("OIDC tenant configuration with issuer [%s] has already been registered in Accounting Service.", request.issuer));
+        }
+
+        var optionalTenantId = oidcTenantConfigRepository.fetchOidcTenantConfigByTenant(request.tenantId);
+
+        if (optionalTenantId.isPresent()) {
+
+            throw new ConflictException(String.format("OIDC tenant configuration with tenant ID [%s] has already been registered in Accounting Service.", request.tenantId));
+        }
+
+        var config = OidcTenantConfigMapper.INSTANCE.dtoToConfig(request);
+
+        oidcTenantConfigRepository.persist(config);
+
+        return OidcTenantConfigMapper.INSTANCE.configToDto(config);
+    }
+
+    public OidcTenantConfigResponse fetchOidcTenantConfig(String id){
+
+        var config = oidcTenantConfigRepository.findById(new ObjectId(id));
+
+        return OidcTenantConfigMapper.INSTANCE.configToDto(config);
+    }
+
+    public PageResource<OidcTenantConfigResponse> findAllOidcConfigPageable(int page, int size, UriInfo uriInfo){
+
+        var panacheQuery = oidcTenantConfigRepository
+                .findAll()
+                .page(Page.of(page, size));
+
+        return new PageResource<>(panacheQuery, OidcTenantConfigMapper.INSTANCE.configsToResponse(panacheQuery.list()), uriInfo);
+    }
+
+    public void deleteOidcTenantConfig(String id){
+
+        oidcTenantConfigRepository.deleteById(new ObjectId(id));
+    }
+
+    public OidcTenantConfigResponse updateOidcTenantConfig(UpdateOidcTenantConfig request, String id) {
+
+        var entity = oidcTenantConfigRepository.findById(new ObjectId(id));
+
+        if (StringUtils.isNotEmpty(request.tenantId) && !request.tenantId.equals(entity.getTenantId())) {
+            if (oidcTenantConfigRepository.fetchOidcTenantConfigByTenant(request.tenantId).isPresent()) {
+                throw new ConflictException("Tenant ID already in use.");
+            }
+        }
+
+        if (StringUtils.isNotEmpty(request.issuer) && !request.issuer.equals(entity.getIssuer())) {
+            if (oidcTenantConfigRepository.fetchOidcTenantConfigByIssuer(request.issuer).isPresent()) {
+                throw new ConflictException("Issuer already in use.");
+            }
+        }
+
+        OidcTenantConfigMapper.INSTANCE.updateConfigFromDto(request, entity);
+
+        oidcTenantConfigRepository.update(entity);
+
+        return OidcTenantConfigMapper.INSTANCE.configToDto(entity);
     }
 }

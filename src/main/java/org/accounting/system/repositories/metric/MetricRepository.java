@@ -83,17 +83,17 @@ public class MetricRepository extends AccessibleModulator<Metric, ObjectId> {
     }
 
     public MongoQuery<MetricProjection> searchMetrics(Bson searchDoc,List<String> installationsIds,int page, int size) {
-        var installations=Aggregates.match(Filters.in("resource_id",installationsIds));
+        var installations=Aggregates.match(Filters.in("resource_id", installationsIds));
 
         var addField = new Document("$addFields", new Document("metric_definition_id", new Document("$toObjectId", "$metric_definition_id")));
 
         Bson lookup = Aggregates.lookup("MetricDefinition", "metric_definition_id", "_id", "metric_definition");
 
         var metrics= getMongoCollection()
-                .aggregate(List.of(installations,Aggregates.match(searchDoc),addField,Aggregates.skip(size * (page)), Aggregates.limit(size), lookup),MetricProjection.class)
+                .aggregate(List.of(installations,Aggregates.match(searchDoc), addField, Aggregates.skip(size * (page)), Aggregates.limit(size), lookup), MetricProjection.class)
                 .into(new ArrayList<>());
         Document count = getMongoCollection()
-                .aggregate(List.of(installations,Aggregates.match(searchDoc),addField,Aggregates.count()))
+                .aggregate(List.of(installations,Aggregates.match(searchDoc), addField, Aggregates.count()))
                 .first();
         var projectionQuery = new MongoQuery<MetricProjection>();
 

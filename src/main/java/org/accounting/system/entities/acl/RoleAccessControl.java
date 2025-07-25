@@ -3,6 +3,7 @@ package org.accounting.system.entities.acl;
 import lombok.EqualsAndHashCode;
 import org.accounting.system.entities.authorization.Role;
 
+import java.util.HashSet;
 import java.util.Set;
 
 
@@ -12,7 +13,7 @@ public class RoleAccessControl extends AccessControl {
     /**
      * The {@link #roles permissions} component is a set of {@link Role roles}.
      */
-    private Set<Role> roles;
+    private Set<Role> roles = new HashSet<>();
 
     public Set<Role> getRoles() {
         return roles;

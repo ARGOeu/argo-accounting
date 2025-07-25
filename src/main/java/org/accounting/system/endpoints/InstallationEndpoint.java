@@ -25,6 +25,7 @@ import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.UriInfo;
 import org.accounting.system.constraints.AccessInstallation;
 import org.accounting.system.constraints.AccessProvider;
+import org.accounting.system.constraints.CheckDateFormat;
 import org.accounting.system.constraints.NotFoundEntity;
 import org.accounting.system.dtos.InformativeResponse;
 import org.accounting.system.dtos.acl.role.RoleAccessControlRequestDto;
@@ -38,6 +39,7 @@ import org.accounting.system.dtos.metric.MetricResponseDto;
 import org.accounting.system.dtos.metric.UpdateMetricRequestDto;
 import org.accounting.system.dtos.pagination.PageResource;
 import org.accounting.system.entities.HierarchicalRelation;
+import org.accounting.system.entities.projections.InstallationReport;
 import org.accounting.system.entities.projections.MetricProjection;
 import org.accounting.system.enums.Collection;
 import org.accounting.system.repositories.client.ClientRepository;
@@ -66,6 +68,7 @@ import org.eclipse.microprofile.openapi.annotations.security.SecurityScheme;
 import org.eclipse.microprofile.openapi.annotations.tags.Tag;
 
 import java.text.ParseException;
+import java.time.LocalDate;
 import java.util.List;
 
 import static org.accounting.system.enums.Operation.ACL;
@@ -1005,7 +1008,6 @@ public class InstallationEndpoint {
                     type = SchemaType.OBJECT,
                     implementation = InformativeResponse.class)))
     @SecurityRequirement(name = "Authentication")
-
     @GET
     @Path("/{installation_id}/metrics")
     @Timed(name = "checksMetricRetrievalOfInstallation", description = "A measure of how long it takes to retrieve Metrics under an Installation.", unit = MetricUnits.MILLISECONDS)
@@ -1226,7 +1228,6 @@ public class InstallationEndpoint {
                     type = SchemaType.OBJECT,
                     implementation = InformativeResponse.class)))
     @SecurityRequirement(name = "Authentication")
-
     @GET
     @Path("/all")
     @Produces(value = MediaType.APPLICATION_JSON)
@@ -1243,6 +1244,83 @@ public class InstallationEndpoint {
         var response = installationService.getAllInstallations( page - 1, size, serverInfo);
 
         return Response.ok().entity(response).build();
+    }
+
+    @Tag(name = "Installation")
+    @org.eclipse.microprofile.openapi.annotations.Operation(
+            summary = "Get installation report with metrics and access controls.",
+            description = "Returns a report for a specific installation and time period, including aggregated metric values and role-based access control information.")
+    @APIResponse(
+            responseCode = "200",
+            description = "Installation report retrieved successfully.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InstallationReport.class)))
+    @APIResponse(
+            responseCode = "401",
+            description = "Client has not been authenticated.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "403",
+            description = "The authenticated client is not permitted to perform the requested operation.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "404",
+            description = "Not found.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "500",
+            description = "Internal Server Errors.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @SecurityRequirement(name = "Authentication")
+    @GET
+    @Path("/{installation_id}/report")
+    @Produces(value = MediaType.APPLICATION_JSON)
+    public Response report(
+            @Parameter(
+                    description = "The ID of the installation.",
+                    required = true,
+                    example = "507f1f77bcf86cd799439011",
+                    schema = @Schema(type = SchemaType.STRING))
+            @PathParam("installation_id") @Valid @AccessInstallation(collection = Collection.Metric, operation = READ) String installationId,
+
+            @Parameter(
+                    name = "start",
+                    description = "Start date in yyyy-MM-dd format",
+                    required = true,
+                    example = "2024-01-01"
+            )
+            @QueryParam("start")
+            @Valid
+            @NotEmpty(message = "start may not be empty.")
+            @CheckDateFormat(pattern = "yyyy-MM-dd", message = "Valid date format is yyyy-MM-dd.") String start,
+
+            @Parameter(
+                    name = "end",
+                    description = "End date in yyyy-MM-dd format",
+                    required = true,
+                    example = "2024-12-31"
+            )
+            @QueryParam("end")
+            @Valid
+            @NotEmpty(message = "end may not be empty.")
+            @CheckDateFormat(pattern = "yyyy-MM-dd", message = "Valid date format is yyyy-MM-dd.") String end) {
+
+        if (LocalDate.parse(start).isAfter(LocalDate.parse(end))) {
+            throw new BadRequestException("Start date must be before or equal to end date.");
+        }
+
+        var report = installationService.installationReport(installationId, start, end);
+
+        return Response.ok().entity(report).build();
     }
 
     public static class PageableInstallationResponseDto extends PageResource<InstallationResponseDto> {

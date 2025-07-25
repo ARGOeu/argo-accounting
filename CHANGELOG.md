@@ -26,7 +26,32 @@ According to [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) , the
 
 ---
 
-### Unreleased - Added
+## 1.7.0 - 2025-07-25
+
+---
+
+## 1.7.0 - Added
+
+- [#219](https://github.com/ARGOeu/argo-accounting/pull/219) - ACC-345 Sys Admin 
+  should be able to manage all projects.
+- [#221](https://github.com/ARGOeu/argo-accounting/pull/221) - ACC-355 Implement multitenancy 
+  via supporting different OIDC providers.
+- [#223](https://github.com/ARGOeu/argo-accounting/pull/223) - ACC-360 Installation
+  Report.
+- [#224](https://github.com/ARGOeu/argo-accounting/pull/224) - ACC-361 Provider
+  Report.
+- [#225](https://github.com/ARGOeu/argo-accounting/pull/225) - ACC-362 Project
+  Report.
+- [#226](https://github.com/ARGOeu/argo-accounting/pull/226) - ACC-369 Aggregated 
+  Provider report.
+- [#227](https://github.com/ARGOeu/argo-accounting/pull/227) - ACC-366 Add issuer 
+  in the client's id.
+
+## 1.6.1 - 2025-03-21
+
+---
+
+### 1.6.1 - Added
 
 - [#211](https://github.com/ARGOeu/argo-accounting/pull/211) - ACC-319 Create 
   an admin-only endpoint to update user information.

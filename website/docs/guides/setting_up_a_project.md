@@ -6,30 +6,14 @@ sidebar_position: 2
 
 # Setting up a Project
 
+![Logo](./img/project.png)
+
 To be able to set up a particular Project, you must be the `Project Admin`
 of that Project.
 See [here](/docs/guides/api_actions/projects.md) how you can obtain that
 role.
 
-Consider that you can execute the following actions either through the User
-Interface or directly via an HTTP request to the Accounting Service.
-
 ## Step 1: Associate Providers with the Project
-
-> **Note**
-> 📝 You can either use the Providers
-[registered in the EOSC Resource Catalogue](https://argoeu.github.io/argo-accounting/docs/api/provider#registering-provider-by-following-the-eosc-onboarding-process-at-httpsproviderseosc-portaleubecomeaprovider)
-or create a new one.
-
-### View all the Providers
-
----
-
-- **User Interface**
-  View Providers on the [website](https://accounting.eosc-portal.eu/providers).
-
-- **HTTP Request**
-  To syntax the HTTP request, please visit the corresponding [document](https://argoeu.github.io/argo-accounting/docs/api/provider#get---fetch-all-registered-providers).
 
 ### Create a new Provider
 
@@ -42,7 +26,7 @@ and follow the provided [instructions](https://argoeu.github.io/argo-accounting/
 - **HTTP Request**
   To syntax the HTTP request, please visit the corresponding [document](https://argoeu.github.io/argo-accounting/docs/api/provider#post---create-a-new-provider).
 
-### Associate Providers with the Project
+### Connect Providers with the Project
 
 ---
 

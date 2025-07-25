@@ -68,12 +68,12 @@ public class PrepareTest {
 
         providerRepository.persistOrUpdate(ProviderMapper.INSTANCE.eoscProvidersToProviders(response.results));
 
-        clientRepository.addSystemAdmin("admin_voperson_id", "admin", "admin@email.com");
+        clientRepository.addSystemAdmin("6b6a782e0374dc4a743ff02409df46af681f25dc01e3297f2637ba8f8409a9bd", "admin", "admin@email.com");
 
-        clientService.register("creator_voperson_id", "creator", "creator@email.com");
-        clientService.register("project_admin@example.org", "project_admin", "project_admin@example.org");
-        clientService.register("provider_admin@example.org", "provider_admin", "provider_admin@example.org");
-        clientAccessAlwaysRepository.assignRolesToRegisteredClient("creator_voperson_id", Set.of("metric_definition_creator"));
+        clientService.register("f2e411a7ab877643ab82f637778230973df4cbee013f2a2a333dac7157addc55", "creator", "creator@email.com", "http://localhost:58080/realm/quarkus");
+        clientService.register("b4b181f7e2ac034e11a1552be109efa50efd82115d64e1fd6acda9f0b3d63587", "project_admin", "project_admin@example.org", "http://localhost:58080/realm/quarkus");
+        clientService.register("2ba5ad4cc037343cfa53ba6633becd68ea4c5d7805f3f1bf172d66c1d9440768", "provider_admin", "provider_admin@example.org", "http://localhost:58080/realm/quarkus");
+        clientAccessAlwaysRepository.assignRolesToRegisteredClient("f2e411a7ab877643ab82f637778230973df4cbee013f2a2a333dac7157addc55", Set.of("metric_definition_creator"));
     }
 
     @BeforeEach

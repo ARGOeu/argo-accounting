@@ -1,10 +1,12 @@
 ---
 id: provider_admin
 title: Provider Admin
-sidebar_position: 4
+sidebar_position: 5
 ---
 
 # Provider Admin
+
+![Logo](./img/provider.png)
 
 ## Before you start
 

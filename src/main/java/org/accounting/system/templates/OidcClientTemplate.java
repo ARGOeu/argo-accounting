@@ -31,6 +31,10 @@ public class OidcClientTemplate {
     @ConfigProperty(name = "api.html.keycloak.javascript.adapter")
     String keycloakServerJavascriptAdapter;
 
+    @ConfigProperty(name = "client.scope")
+    String clientScope;
+
+
     @GET
     @Produces(MediaType.TEXT_HTML)
     @Operation(hidden = true)
@@ -44,7 +48,9 @@ public class OidcClientTemplate {
                         "keycloak_server_client_id",
                         keycloakServerClientId,
                         "keycloak_server_javascript_adapter",
-                        keycloakServerJavascriptAdapter)
+                        keycloakServerJavascriptAdapter,
+                        "client_scope",
+                        clientScope)
                 .render();
     }
 }

@@ -52,7 +52,8 @@ public class ProjectAuthorizationTest extends PrepareTest {
     @OidcSecurity(introspectionRequired = true,
             introspection = {
                     @TokenIntrospection(key = "voperson_id", value = "project_admin@example.org"),
-                    @TokenIntrospection(key = "sub", value = "project_admin@example.org")
+                    @TokenIntrospection(key = "sub", value = "project_admin@example.org"),
+                    @TokenIntrospection(key = "iss", value = "http://localhost:58080/realms/quarkus")
             },
             userinfo = {
                     @UserInfo(key = "name", value = "project_admin"),
@@ -81,7 +82,7 @@ public class ProjectAuthorizationTest extends PrepareTest {
                 .oauth2(getAccessToken("admin"))
                 .contentType(ContentType.JSON)
                 .body(acl)
-                .post("/{id}/acl/{who}", "777536", "project_admin@example.org")
+                .post("/{id}/acl/{who}", "777536", "b4b181f7e2ac034e11a1552be109efa50efd82115d64e1fd6acda9f0b3d63587")
                 .then()
                 .assertThat()
                 .statusCode(200)
@@ -111,7 +112,8 @@ public class ProjectAuthorizationTest extends PrepareTest {
     @OidcSecurity(introspectionRequired = true,
             introspection = {
                     @TokenIntrospection(key = "voperson_id", value = "project_admin@example.org"),
-                    @TokenIntrospection(key = "sub", value = "project_admin@example.org")
+                    @TokenIntrospection(key = "sub", value = "project_admin@example.org"),
+                    @TokenIntrospection(key = "iss", value = "http://localhost:58080/realms/quarkus")
             },
             userinfo = {
                     @UserInfo(key = "name", value = "project_admin"),
@@ -164,7 +166,8 @@ public class ProjectAuthorizationTest extends PrepareTest {
     @OidcSecurity(introspectionRequired = true,
             introspection = {
                     @TokenIntrospection(key = "voperson_id", value = "project_admin@example.org"),
-                    @TokenIntrospection(key = "sub", value = "project_admin@example.org")
+                    @TokenIntrospection(key = "sub", value = "project_admin@example.org"),
+                    @TokenIntrospection(key = "iss", value = "http://localhost:58080/realms/quarkus")
             },
             userinfo = {
                     @UserInfo(key = "name", value = "project_admin"),
@@ -240,7 +243,8 @@ public class ProjectAuthorizationTest extends PrepareTest {
     @OidcSecurity(introspectionRequired = true,
             introspection = {
                     @TokenIntrospection(key = "voperson_id", value = "provider_admin@example.org"),
-                    @TokenIntrospection(key = "sub", value = "provider_admin@example.org")
+                    @TokenIntrospection(key = "sub", value = "provider_admin@example.org"),
+                    @TokenIntrospection(key = "iss", value = "http://localhost:58080/realms/quarkus")
             },
             userinfo = {
                     @UserInfo(key = "name", value = "provider_admin"),
@@ -294,7 +298,7 @@ public class ProjectAuthorizationTest extends PrepareTest {
 
         assertEquals(ApiMessage.UNAUTHORIZED_CLIENT.message, informativeResponse.message);
 
-        grantProviderAccess("777536", "grnet", "admin", "provider_admin@example.org");
+        grantProviderAccess("777536", "grnet", "admin", "2ba5ad4cc037343cfa53ba6633becd68ea4c5d7805f3f1bf172d66c1d9440768");
 
         var providerAdminMetrics = given()
                 .get("/{project_id}/providers/{provider_id}/metrics", "777536", "grnet");
@@ -309,7 +313,8 @@ public class ProjectAuthorizationTest extends PrepareTest {
     @OidcSecurity(introspectionRequired = true,
             introspection = {
                     @TokenIntrospection(key = "voperson_id", value = "provider_admin@example.org"),
-                    @TokenIntrospection(key = "sub", value = "provider_admin@example.org")
+                    @TokenIntrospection(key = "sub", value = "provider_admin@example.org"),
+                    @TokenIntrospection(key = "iss", value = "http://localhost:58080/realms/quarkus")
             },
             userinfo = {
                     @UserInfo(key = "name", value = "provider_admin"),
@@ -321,7 +326,7 @@ public class ProjectAuthorizationTest extends PrepareTest {
         projectRepository.associateProjectWithProviders("777536", Set.of("grnet"));
 
         // admin grant Provider Access to provider_admin@example.org
-        grantProviderAccess("777536", "grnet", "admin","provider_admin@example.org");
+        grantProviderAccess("777536", "grnet", "admin","2ba5ad4cc037343cfa53ba6633becd68ea4c5d7805f3f1bf172d66c1d9440768");
 
         var metricDefinitionResponse = createMetricDefinition("admin");
 

@@ -6,6 +6,7 @@ import jakarta.inject.Inject;
 import jakarta.ws.rs.ForbiddenException;
 import jakarta.ws.rs.NotFoundException;
 import jakarta.ws.rs.core.UriInfo;
+import org.accounting.system.beans.RequestUserContext;
 import org.accounting.system.dtos.acl.role.RoleAccessControlRequestDto;
 import org.accounting.system.dtos.acl.role.RoleAccessControlResponseDto;
 import org.accounting.system.dtos.acl.role.RoleAccessControlUpdateDto;
@@ -15,10 +16,11 @@ import org.accounting.system.dtos.pagination.PageResource;
 import org.accounting.system.dtos.provider.ProviderRequestDto;
 import org.accounting.system.dtos.provider.ProviderResponseDto;
 import org.accounting.system.dtos.provider.UpdateProviderRequestDto;
-import org.accounting.system.entities.authorization.Role;
 import org.accounting.system.entities.projections.InstallationProjection;
 import org.accounting.system.entities.projections.ProviderProjectionWithProjectInfo;
+import org.accounting.system.entities.projections.ProviderReport;
 import org.accounting.system.entities.provider.Provider;
+import org.accounting.system.enums.AccessType;
 import org.accounting.system.exceptions.ConflictException;
 import org.accounting.system.mappers.AccessControlMapper;
 import org.accounting.system.mappers.InstallationMapper;
@@ -32,6 +34,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.bson.conversions.Bson;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
@@ -48,6 +51,9 @@ public class ProviderService implements RoleAccessControlService {
     HierarchicalRelationService hierarchicalRelationService;
     @Inject
     QueryParser queryParser;
+
+    @Inject
+    RequestUserContext requestUserContext;
 
     /**
      * Returns the N Providers from the given page.
@@ -226,11 +232,8 @@ public class ProviderService implements RoleAccessControlService {
 
         var updated = providerRepository.fetchRoleAccessControl(projectID, providerID, who);
 
-        var response = AccessControlMapper.INSTANCE.roleAccessControlToResponse(updated.get());
 
-        response.roles = updated.get().getRoles().stream().map(Role::getName).collect(Collectors.toSet());
-
-        return response;
+        return AccessControlMapper.INSTANCE.roleAccessControlToResponse(updated.get());
     }
 
     @Override
@@ -258,11 +261,7 @@ public class ProviderService implements RoleAccessControlService {
 
         optional.orElseThrow(() -> new NotFoundException("There is no Access Control."));
 
-        var response = AccessControlMapper.INSTANCE.roleAccessControlToResponse(optional.get());
-
-        response.roles = optional.get().getRoles().stream().map(Role::getName).collect(Collectors.toSet());
-
-        return response;
+        return AccessControlMapper.INSTANCE.roleAccessControlToResponse(optional.get());
     }
 
     public  PageResource< ProviderResponseDto> searchProviders(String json, int page, int size, UriInfo uriInfo) throws  NoSuchFieldException, org.json.simple.parser.ParseException {
@@ -291,15 +290,7 @@ public class ProviderService implements RoleAccessControlService {
         var responses = panacheQuery
                 .list()
                 .stream()
-                .map(acl->{
-
-                    var response = AccessControlMapper.INSTANCE.roleAccessControlToResponse(acl);
-
-                    response.roles = acl.getRoles().stream().map(Role::getName).collect(Collectors.toSet());
-
-                    return response;
-
-                })
+                .map(AccessControlMapper.INSTANCE::roleAccessControlToResponse)
                 .collect(Collectors.toList());
 
         return new PageResource<>(panacheQuery, responses, uriInfo);
@@ -310,5 +301,38 @@ public class ProviderService implements RoleAccessControlService {
         var projection = providerRepository.fetchAllMetricDefinitions(projectId, providerId, page, size);
 
         return new PageResource<>(projection, MetricDefinitionMapper.INSTANCE.metricDefinitionsToResponse(projection.list()), uriInfo);
+    }
+
+    public ProviderReport providerReport(String projectId, String providerId, String start, String end){
+
+        return providerRepository.providerReport(projectId, providerId, start, end);
+    }
+
+    public List<ProviderReport> providerReport(String providerId, String start, String end){
+
+        if(requestUserContext.getAccessType().equals(AccessType.ALWAYS)){
+
+            return access(providerId, start, end);
+        } else if (requestUserContext.getAccessType().equals(AccessType.ENTITY)) {
+
+            var provider  = providerRepository.findById(providerId);
+
+            if(provider.getCreatorId().equals(requestUserContext.getId())){
+
+                return access(providerId, start, end);
+            }
+
+            throw new ForbiddenException("You cannot access this Provider.");
+
+        } else {
+            throw new ForbiddenException("You cannot access this Provider.");
+        }
+    }
+
+    private List<ProviderReport> access(String providerId, String start, String end){
+
+        var projects = hierarchicalRelationService.getProjectsByProvider(providerId);
+
+        return  projects.stream().map(project->providerRepository.providerReport(project, providerId, start, end)).filter(Objects::nonNull).collect(Collectors.toList());
     }
 }

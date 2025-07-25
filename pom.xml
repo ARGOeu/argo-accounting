@@ -4,7 +4,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>org.grnet</groupId>
   <artifactId>accounting-system</artifactId>
-  <version>1.6.0</version>
+  <version>1.7.0</version>
   <properties>
     <apache.common3.version>3.12.0</apache.common3.version>
     <compiler-plugin.version>3.8.1</compiler-plugin.version>
@@ -196,6 +196,11 @@
     <dependency>
       <groupId>io.quarkus</groupId>
       <artifactId>quarkus-smallrye-metrics</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>commons-codec</groupId>
+      <artifactId>commons-codec</artifactId>
+      <version>1.18.0</version>
     </dependency>
   </dependencies>
   <build>
