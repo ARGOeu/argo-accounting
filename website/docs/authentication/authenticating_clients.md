@@ -10,6 +10,7 @@ These resources are protected and can only be accessed if a client is sending
 a bearer token along with the request, which must be valid and trusted by the
 Accounting System API.
 
+
 The EOSC Core Infrastructure Proxy offers various Identity Providers where the
 authentication process can be performed. Once you log in to your preferable
 Identity Provider, you obtain an access token. Using this token, you can
