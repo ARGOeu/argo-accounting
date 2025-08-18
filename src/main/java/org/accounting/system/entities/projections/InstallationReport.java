@@ -1,7 +1,6 @@
 package org.accounting.system.entities.projections;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import org.accounting.system.dtos.acl.role.RoleAccessControlResponseDto;
 import org.eclipse.microprofile.openapi.annotations.enums.SchemaType;
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
 
@@ -71,12 +70,4 @@ public class InstallationReport {
     )
     @JsonProperty("data")
     public List<MetricReportProjection> data;
-
-    @Schema(
-            type = SchemaType.ARRAY,
-            implementation = RoleAccessControlResponseDto.class,
-            description = "Role-based access control configuration for the installation."
-    )
-    @JsonProperty("permissions")
-    public List<RoleAccessControlResponseDto> permissions;
 }
