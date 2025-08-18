@@ -28,7 +28,6 @@ import org.accounting.system.enums.Collection;
 import org.accounting.system.enums.Operation;
 import org.accounting.system.enums.RelationType;
 import org.accounting.system.exceptions.ConflictException;
-import org.accounting.system.mappers.AccessControlMapper;
 import org.accounting.system.mappers.InstallationMapper;
 import org.accounting.system.repositories.HierarchicalRelationRepository;
 import org.accounting.system.repositories.metric.MetricRepository;
@@ -613,7 +612,6 @@ public class InstallationRepository {
 
         var regex = Aggregates.match(Filters.and(filters));
 
-        var roleAccessControls = fetchAllRoleAccessControls(installation.getProject(), installation.getOrganisation(), installation.getId());
 
         var data = metricRepository
                 .getMongoCollection()
@@ -623,7 +621,6 @@ public class InstallationRepository {
         var report = new InstallationReport();
 
         report.data = data;
-        report.permissions = AccessControlMapper.INSTANCE.roleAccessControlToResponse(roleAccessControls);
         report.project = installation.getProject();
         report.provider = installation.getOrganisation();
         report.infrastructure = installation.getInfrastructure();

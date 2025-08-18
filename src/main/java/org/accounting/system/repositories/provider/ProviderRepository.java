@@ -448,21 +448,6 @@ public class ProviderRepository extends AccessibleModulator<Provider, String> {
 
         var unwindInstallation = Aggregates.unwind("$installation");
 
-        var lookupPermissions = new Document("$lookup",
-                new Document("from", "Project")
-                        .append("let", new Document("installationId", "$_id"))
-                        .append("pipeline", List.of(
-                                new Document("$unwind", "$providers"),
-                                new Document("$unwind", "$providers.installations"),
-                                new Document("$match", new Document("$expr",
-                                        new Document("$eq", List.of("$$installationId", "$providers.installations._id"))
-                                )),
-                                new Document("$unwind", "$providers.installations.roleAccessControls"),
-                                new Document("$replaceRoot", new Document("newRoot", "$providers.installations.roleAccessControls"))
-                        ))
-                        .append("as", "permissions")
-        );
-
         var finalProjection = Aggregates.project(Projections.fields(
                 Projections.computed("project", "$installation.project"),
                 Projections.computed("provider", "$installation.organisation"),
@@ -470,25 +455,9 @@ public class ProviderRepository extends AccessibleModulator<Provider, String> {
                 Projections.computed("installation", "$installation.installation"),
                 Projections.computed("installationId", "$installation._id"),
                 Projections.computed("resource", new Document("$ifNull", List.of("$installation.resource", ""))),
-                Projections.include("data"),
-                Projections.include("permissions")
+                Projections.include("data")
         ));
 
-        var mapRolesToNames = Aggregates.addFields(new Field<>("permissions",
-                new Document("$map", new Document()
-                        .append("input", "$permissions")
-                        .append("as", "perm")
-                        .append("in", new Document()
-                                .append("who", "$$perm.who")
-                                .append("roles", new Document(
-                                        "$map", new Document()
-                                        .append("input", "$$perm.roles")
-                                        .append("as", "role")
-                                        .append("in", "$$role.name")
-                                ))
-                        )
-                )
-        ));
 
         var groupByProvider = Aggregates.group("$provider",
                 Accumulators.push("data", new Document()
@@ -499,7 +468,6 @@ public class ProviderRepository extends AccessibleModulator<Provider, String> {
                         .append("infrastructure", "$infrastructure")
                         .append("resource", "$resource")
                         .append("data", "$data")
-                        .append("permissions", "$permissions")
                 )
         );
 
@@ -507,54 +475,20 @@ public class ProviderRepository extends AccessibleModulator<Provider, String> {
 
         var unwindProvider = Aggregates.unwind("$provider");
 
-        var lookupProviderPermissions = new Document("$lookup",
-                new Document("from", "Project")
-                        .append("let", new Document("providerId", "$provider._id"))
-                        .append("pipeline", List.of(
-                                new Document("$unwind", "$providers"),
-                                new Document("$match", new Document("$expr",
-                                        new Document("$eq", List.of("$$providerId", "$providers._id"))
-                                )),
-                                new Document("$unwind", "$providers.roleAccessControls"),
-                                new Document("$replaceRoot", new Document("newRoot", "$providers.roleAccessControls"))
-                        ))
-                        .append("as", "permissions")
-        );
-
-        var mapProviderPermissions = Aggregates.addFields(new Field<>("permissions",
-                new Document("$map", new Document()
-                        .append("input", "$permissions")
-                        .append("as", "perm")
-                        .append("in", new Document()
-                                .append("who", "$$perm.who")
-                                .append("roles", new Document("$map", new Document()
-                                        .append("input", "$$perm.roles")
-                                        .append("as", "role")
-                                        .append("in", "$$role.name")
-                                ))
-                        )
-                )
-        ));
-
         var finalProviderProjection = Aggregates.project(Projections.fields(
                 Projections.computed("provider_id", "$provider._id"),
                 Projections.computed("abbreviation", new Document("$ifNull", List.of("$provider.abbreviation", ""))),
                 Projections.computed("logo", new Document("$ifNull", List.of("$provider.logo", ""))),
                 Projections.computed("name", "$provider.name"),
                 Projections.computed("website", new Document("$ifNull", List.of("$provider.website", ""))),
-                Projections.include("data"),
-                Projections.include("permissions")
+                Projections.include("data")
         ));
-
 
         return metricRepository.getMongoCollection()
                 .aggregate(List.of(regex, addField, group, extractFields,
                         lookup, unwind, projection, finalGroup,
                         lookupInstallation, unwindInstallation,
-                        lookupPermissions, mapRolesToNames,
                         finalProjection, groupByProvider, lookupProvider, unwindProvider,
-                        lookupProviderPermissions,
-                        mapProviderPermissions,
                         finalProviderProjection), ProviderReport.class).first();
 
     }

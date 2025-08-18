@@ -26,6 +26,11 @@ According to [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) , the
 
 ---
 
+## Unreleased - Removed
+
+- [#233](https://github.com/ARGOeu/argo-accounting/pull/233) - ACC-370 Remove
+  data concerning permissions in reports.
+
 ## 1.7.0 - 2025-07-25
 
 ---
