@@ -468,7 +468,8 @@ public class ProviderRepository extends AccessibleModulator<Provider, String> {
                         .append("infrastructure", "$infrastructure")
                         .append("resource", "$resource")
                         .append("data", "$data")
-                )
+                ),
+                Accumulators.push("allMetrics", "$data")
         );
 
         var lookupProvider = Aggregates.lookup("Provider", "_id", "_id", "provider");
@@ -481,15 +482,61 @@ public class ProviderRepository extends AccessibleModulator<Provider, String> {
                 Projections.computed("logo", new Document("$ifNull", List.of("$provider.logo", ""))),
                 Projections.computed("name", "$provider.name"),
                 Projections.computed("website", new Document("$ifNull", List.of("$provider.website", ""))),
-                Projections.include("data")
+                Projections.include("data"),
+                Projections.computed("aggregatedMetrics", new Document("$reduce", new Document()
+                        .append("input", "$allMetrics")
+                        .append("initialValue", new ArrayList<>())
+                        .append("in", new Document("$concatArrays", Arrays.asList("$$value", "$$this")))
+                ))));
+
+        var agg = Aggregates.unwind("$aggregatedMetrics");
+
+        var gagg = Aggregates.group(new Document("provider_id", "$provider_id").append("metric_definition_id", "$aggregatedMetrics.metricDefinitionId"), Accumulators.sum("totalValue", "$aggregatedMetrics.totalValue"),
+                Accumulators.first("metricDefinitionId", "$aggregatedMetrics.metricDefinitionId"),
+                Accumulators.first("metricName", "$aggregatedMetrics.metricName"),
+                Accumulators.first("metricDescription", "$aggregatedMetrics.metricDescription"),
+                Accumulators.first("metricType", "$aggregatedMetrics.metricType"),
+                Accumulators.first("unitType", "$aggregatedMetrics.unitType"),
+                Accumulators.first("name", "$name"),
+                Accumulators.first("website", "$website"),
+                Accumulators.first("abbreviation", "$abbreviation"),
+                Accumulators.first("logo", "$logo"),
+                Accumulators.first("data", "$data")
+        );
+
+        var gpafggg = Aggregates.project(Projections.fields(
+                Projections.computed("provider_id", "$_id.provider_id"),
+                Projections.include("name", "website", "abbreviation", "logo", "data", "unitType", "metricType", "metricDescription", "metricName", "metricDefinitionId", "totalValue")
         ));
 
-        return metricRepository.getMongoCollection()
+        var gpagg = Aggregates.group(
+                "$provider_id",
+                Accumulators.first("name", "$name"),
+                Accumulators.first("website", "$website"),
+                Accumulators.first("abbreviation", "$abbreviation"),
+                Accumulators.first("logo", "$logo"),
+                Accumulators.first("data", "$data"),
+                Accumulators.first("provider_id", "$provider_id"),
+                Accumulators.push("aggregatedMetrics", new Document()
+                        .append("metricDefinitionId", "$_id.metric_definition_id")
+                        .append("metricName", "$metricName")
+                        .append("metricDescription", "$metricDescription")
+                        .append("unitType", "$unitType")
+                        .append("metricType", "$metricType")
+                        .append("totalValue", "$totalValue")
+                )
+        );
+
+
+        var report =  metricRepository.getMongoCollection()
                 .aggregate(List.of(regex, addField, group, extractFields,
                         lookup, unwind, projection, finalGroup,
                         lookupInstallation, unwindInstallation,
                         finalProjection, groupByProvider, lookupProvider, unwindProvider,
-                        finalProviderProjection), ProviderReport.class).first();
+                        finalProviderProjection, agg, gagg, gpafggg, gpagg), ProviderReport.class).first();
+
+
+        return report;
 
     }
 }
