@@ -65,6 +65,14 @@ public class ProjectReport {
 
     @Schema(
             type = SchemaType.ARRAY,
+            implementation = MetricReportProjection.class,
+            description = "List of aggregated metrics at Project level."
+    )
+    @JsonProperty("aggregated_metrics")
+    public List<MetricReportProjection> aggregatedMetrics;
+
+    @Schema(
+            type = SchemaType.ARRAY,
             implementation = ProviderReport.class,
             description = "List of aggregated metrics by Provider."
     )

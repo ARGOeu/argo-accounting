@@ -56,6 +56,14 @@ public class ProviderReport {
 
     @Schema(
             type = SchemaType.ARRAY,
+            implementation = MetricReportProjection.class,
+            description = "List of aggregated metrics at Provider level."
+    )
+    @JsonProperty("aggregated_metrics")
+    public List<MetricReportProjection> aggregatedMetrics;
+
+    @Schema(
+            type = SchemaType.ARRAY,
             implementation = InstallationReport.class,
             description = "List of aggregated metrics by Installation."
     )
