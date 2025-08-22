@@ -86,7 +86,6 @@ import static org.eclipse.microprofile.openapi.annotations.enums.ParameterIn.QUE
         scheme = "bearer",
         bearerFormat = "JWT",
         in = SecuritySchemeIn.HEADER)
-
 public class InstallationEndpoint {
 
     @ConfigProperty(name = "quarkus.resteasy-reactive.path")
@@ -217,7 +216,6 @@ public class InstallationEndpoint {
                     type = SchemaType.OBJECT,
                     implementation = InformativeResponse.class)))
     @SecurityRequirement(name = "Authentication")
-
     @DELETE()
     @Path("/{id}")
     @Produces(value = MediaType.APPLICATION_JSON)
@@ -1066,7 +1064,6 @@ public class InstallationEndpoint {
                     type = SchemaType.OBJECT,
                     implementation = InformativeResponse.class)))
     @SecurityRequirement(name = "Authentication")
-
     @GET
     @Path("/{installation_id}/metric-definitions")
     @Produces(value = MediaType.APPLICATION_JSON)
@@ -1133,12 +1130,10 @@ public class InstallationEndpoint {
                     type = SchemaType.OBJECT,
                     implementation = InformativeResponse.class)))
     @SecurityRequirement(name = "Authentication")
-
     @POST
     @Path("/search")
     @Produces(value = MediaType.APPLICATION_JSON)
     @Consumes(value = MediaType.APPLICATION_JSON)
-
     public Response search(
             @NotEmpty(message = "The request body is empty.") @RequestBody(content = @Content(
                     schema = @Schema(implementation = String.class),
@@ -1196,9 +1191,8 @@ public class InstallationEndpoint {
         }
         var response= installationService.searchInstallation(json, page - 1, size, serverInfo);
        return Response.ok(response).build();
-
-
     }
+
     @Tag(name = "Installation")
     @org.eclipse.microprofile.openapi.annotations.Operation(
             summary = "get all installations",

@@ -64,6 +64,15 @@ public class InstallationReport {
     public String resource;
 
     @Schema(
+            type = SchemaType.STRING,
+            implementation = String.class,
+            description = "The external installation ID.",
+            example = "installation-45583"
+    )
+    @JsonProperty("external_id")
+    public String externalId;
+
+    @Schema(
             type = SchemaType.ARRAY,
             implementation = MetricReportProjection.class,
             description = "List of aggregated metrics by Metric Definition."

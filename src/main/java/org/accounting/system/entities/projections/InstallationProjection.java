@@ -28,6 +28,9 @@ public class InstallationProjection {
 
     private String resource;
 
+    @BsonProperty("external_id")
+    private String externalId;
+
     public String getId() {
         return id;
     }
@@ -97,5 +100,13 @@ public class InstallationProjection {
 
     public void setResource(String resource) {
         this.resource = resource;
+    }
+
+    public String getExternalId() {
+        return externalId;
+    }
+
+    public void setExternalId(String externalId) {
+        this.externalId = externalId;
     }
 }

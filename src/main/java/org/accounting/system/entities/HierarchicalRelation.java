@@ -18,6 +18,8 @@ public class HierarchicalRelation extends Entity {
 
     public RelationType relationType;
 
+    public String externalUniqueIdentifier;
+
     @BsonIgnore
     public Collection<HierarchicalRelation> hierarchicalRelations = new HashSet<>();
 
@@ -30,9 +32,10 @@ public class HierarchicalRelation extends Entity {
         this.relationType = relationType;
     }
 
-    public HierarchicalRelation(final String externalId, final HierarchicalRelation hierarchicalRelation, final RelationType relationType) {
+    public HierarchicalRelation(final String externalId, final HierarchicalRelation hierarchicalRelation, final RelationType relationType, final String externalUniqueIdentifier) {
         this.externalId = externalId;
         this.id = hierarchicalRelation.id + PATH_SEPARATOR + externalId;
         this.relationType = relationType;
+        this.externalUniqueIdentifier = externalUniqueIdentifier;
     }
 }

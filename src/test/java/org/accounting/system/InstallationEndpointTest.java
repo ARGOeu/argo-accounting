@@ -732,7 +732,7 @@ public class InstallationEndpointTest extends PrepareTest {
 
         var metricDefinitionResponse = createMetricDefinition(requestForMetricDefinition, "admin");
 
-        var request= new InstallationRequestDto();
+        var request = new InstallationRequestDto();
 
         request.project = "777536";
         request.organisation = "grnet";
@@ -754,8 +754,18 @@ public class InstallationEndpointTest extends PrepareTest {
         var requestForUpdating = new InstallationRequestDto();
 
         requestForUpdating.infrastructure = "okeanos-knossos";
-        requestForUpdating.installation = "GRNET-KNS";
+        requestForUpdating.installation = "GRNET-KNS-2";
         requestForUpdating.unitOfAccess = metricDefinitionResponse1.id;
+
+        var request1 = new InstallationRequestDto();
+
+        request1.project = "777536";
+        request1.organisation = "grnet";
+        request1.infrastructure = "okeanos-knossos";
+        request1.installation = "GRNET-KNS-2";
+        request1.unitOfAccess = metricDefinitionResponse.id;
+
+        var installation2 = createInstallation(request1, "admin");
 
         var informativeResponse = given()
                 .auth()
@@ -769,7 +779,7 @@ public class InstallationEndpointTest extends PrepareTest {
                 .extract()
                 .as(InformativeResponse.class);
 
-        assertEquals("There is an Installation with the following combination : {777536, grnet, "+requestForUpdating.installation+"}. Its id is "+installation.id, informativeResponse.message);
+        assertEquals("There is an Installation with the following combination : {777536, grnet, "+requestForUpdating.installation+"}. Its id is "+installation2.id, informativeResponse.message);
     }
 
     private InstallationResponseDto createInstallation(InstallationRequestDto request, String user){

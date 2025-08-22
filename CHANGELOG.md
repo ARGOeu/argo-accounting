@@ -35,7 +35,8 @@ According to [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) , the
 
 - [#234](https://github.com/ARGOeu/argo-accounting/pull/234) - ACC-373 Add
   "group by" feature in reports.
-
+- [#235](https://github.com/ARGOeu/argo-accounting/pull/235) - ACC-375 When
+  creating an installation, id should be overwritten.
 ## 1.7.0 - 2025-07-25
 
 ---
