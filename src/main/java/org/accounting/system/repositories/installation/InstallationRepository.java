@@ -27,7 +27,6 @@ import org.accounting.system.enums.AccessType;
 import org.accounting.system.enums.Collection;
 import org.accounting.system.enums.Operation;
 import org.accounting.system.enums.RelationType;
-import org.accounting.system.exceptions.ConflictException;
 import org.accounting.system.mappers.InstallationMapper;
 import org.accounting.system.repositories.HierarchicalRelationRepository;
 import org.accounting.system.repositories.metric.MetricRepository;
@@ -66,7 +65,7 @@ public class InstallationRepository {
     @Inject
     HierarchicalRelationRepository hierarchicalRelationRepository;
 
-    public void exist(String projectID, String providerID, String installationID){
+    public Optional<Installation> exist(String projectID, String providerID, String installationID){
 
         var project = Aggregates
                 .match(Filters.eq("_id", projectID));
@@ -86,12 +85,10 @@ public class InstallationRepository {
 
         var replaceRootToInstallation = Aggregates.replaceRoot("$installations");
 
-        var optional = Optional.ofNullable(projectRepository
+        return Optional.ofNullable(projectRepository
                 .getMongoCollection()
                 .aggregate(List.of(project, unwind, provider, replaceRoot, unwindInstallations, eqInstallation, unwindInstallations, replaceRootToInstallation), Installation.class)
                 .first());
-
-        optional.ifPresent(storedInstallation -> {throw new ConflictException("There is an Installation with the following combination : {"+projectID+", "+providerID+", "+installationID+"}. Its id is "+storedInstallation.getId().toString());});
     }
 
     /**
@@ -164,6 +161,32 @@ public class InstallationRepository {
                 .first();
     }
 
+    public Optional<Installation> fetchInstallationByExternalId(String projectID, String providerID, String externalInstallationId){
+
+        var project = Aggregates
+                .match(Filters.eq("_id", projectID));
+
+        var unwind = Aggregates.unwind("$providers");
+
+        var provider = Aggregates
+                .match(Filters.eq("providers._id", providerID));
+
+        var replaceRoot = Aggregates
+                .replaceRoot("$providers");
+
+        var unwindInstallations = Aggregates.unwind("$installations");
+
+        var eqInstallation = Aggregates
+                .match(Filters.eq("installations.external_id", externalInstallationId));
+
+        var replaceRootToInstallation = Aggregates.replaceRoot("$installations");
+
+        return Optional.ofNullable(projectRepository
+                .getMongoCollection()
+                .aggregate(List.of(project, unwind, provider, replaceRoot, unwindInstallations, eqInstallation, unwindInstallations, replaceRootToInstallation), Installation.class)
+                .first());
+    }
+
     public List<Installation> fetchInstallationProviders(String projectID, String providerID){
 
         var project = Aggregates
@@ -213,9 +236,9 @@ public class InstallationRepository {
 
         HierarchicalRelation project = new HierarchicalRelation(request.project, RelationType.PROJECT);
 
-        HierarchicalRelation provider = new HierarchicalRelation(request.organisation, project, RelationType.PROVIDER);
+        HierarchicalRelation provider = new HierarchicalRelation(request.organisation, project, RelationType.PROVIDER, request.organisation);
 
-        HierarchicalRelation hinstallation = new HierarchicalRelation(installation.getId(), provider, RelationType.INSTALLATION);
+        HierarchicalRelation hinstallation = new HierarchicalRelation(installation.getId(), provider, RelationType.INSTALLATION, request.externalId);
 
         hierarchicalRelationRepository.save(project);
         hierarchicalRelationRepository.save(provider);
@@ -627,6 +650,7 @@ public class InstallationRepository {
         report.installation = installation.getInstallation();
         report.resource = installation.getResource() == null ? "" : installation.getResource();
         report.installationId = installation.getId();
+        report.externalId = installation.getExternalId();
 
         return report;
     }

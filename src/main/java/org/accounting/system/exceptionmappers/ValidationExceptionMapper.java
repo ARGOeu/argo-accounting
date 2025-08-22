@@ -21,18 +21,23 @@ public class ValidationExceptionMapper implements ExceptionMapper<ValidationExce
 
         if (e.getCause() instanceof CustomValidationException) {
 
-            CustomValidationException exception = (CustomValidationException) e.getCause();
-            InformativeResponse response = new InformativeResponse();
+            var exception = (CustomValidationException) e.getCause();
+            var response = new InformativeResponse();
             response.message = exception.getMessage();
             response.code = exception.getStatus().code();
             return Response.status(exception.getStatus().code()).entity(response).build();
         } else if (e instanceof ResteasyReactiveViolationException) {
 
-            InformativeResponse response = new InformativeResponse();
+            var response = new InformativeResponse();
             response.message = ((ResteasyReactiveViolationException) e).getConstraintViolations().stream().findFirst().get().getMessageTemplate();
             response.code = Response.Status.BAD_REQUEST.getStatusCode();
             return Response.status(Response.Status.BAD_REQUEST).entity(response).build();
-        } else {
+        } else if (e instanceof CustomValidationException){
+            var response = new InformativeResponse();
+            response.code = ((CustomValidationException) e).getStatus().code();
+            response.message = e.getMessage();
+            return Response.status(((CustomValidationException) e).getStatus().code()).entity(response).build();
+        }else {
 
             InformativeResponse response = new InformativeResponse();
             response.message = e.getMessage();

@@ -66,6 +66,15 @@ public class InstallationResponseDto {
     public String resource;
 
     @Schema(
+            type = SchemaType.STRING,
+            implementation = String.class,
+            description = "Unique external Installation identifier.",
+            example = "installation-446655440000"
+    )
+    @JsonProperty("external_id")
+    public String externalId;
+
+    @Schema(
             type = SchemaType.OBJECT,
             implementation = MetricDefinitionResponseDto.class,
             description = "The primary Metric Registration.")
