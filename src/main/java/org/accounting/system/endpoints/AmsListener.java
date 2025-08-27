@@ -2,7 +2,6 @@ package org.accounting.system.endpoints;
 
 import jakarta.inject.Inject;
 import jakarta.ws.rs.Consumes;
-import jakarta.ws.rs.GET;
 import jakarta.ws.rs.POST;
 import jakarta.ws.rs.Path;
 import jakarta.ws.rs.Produces;
@@ -37,14 +36,5 @@ public class AmsListener {
         response.message = "AMS message has been successfully consumed";
 
         return Response.ok().entity(response).build();
-    }
-
-    @Operation(hidden = true)
-    @GET
-    @Path("ams_verification_hash")
-    @Produces(value = MediaType.TEXT_PLAIN)
-    public Response amsVerificationHash(){
-
-        return Response.ok().entity(hash).build();
     }
 }
