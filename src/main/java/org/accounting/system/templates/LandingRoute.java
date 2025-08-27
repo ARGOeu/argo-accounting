@@ -19,11 +19,22 @@ public class LandingRoute {
     @ConfigProperty(name = "api.html.swagger.documentation")
     String apiHtmlSwaggerDocumentation;
 
+    @ConfigProperty(name = "api.accounting.ams.verification.hash")
+    String hash;
+
     @Route(path = "/", methods = Route.HttpMethod.GET)
     public void landing(RoutingContext rc) {
         rc
                 .response()
                 .putHeader("content-type", "text/html")
                 .end(index.data("acc_oidc_client_url", apiHtmlOidcClientUrl, "acc_api_documentation", apiHtmlSwaggerDocumentation).render());
+    }
+
+    @Route(path = "/ams_verification_hash", methods = Route.HttpMethod.GET)
+    public void amsVerificationHash(RoutingContext rc) {
+        rc
+                .response()
+                .putHeader("content-type", "text/plain")
+                .end(hash);
     }
 }
