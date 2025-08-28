@@ -1,5 +1,6 @@
 package org.accounting.system.dtos.ams;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -7,6 +8,7 @@ import java.util.List;
 
 @Getter
 @Setter
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class ServiceCatalogueMessage {
     private boolean active;
     private String auditState;
@@ -52,7 +54,7 @@ public class ServiceCatalogueMessage {
         private boolean published;
         private String registeredAt;
         private String registeredBy;
-        private String terms;
+        private List<String> terms;
     }
 
     @Getter

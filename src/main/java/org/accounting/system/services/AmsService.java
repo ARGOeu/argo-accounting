@@ -35,8 +35,6 @@ public class AmsService {
             var serviceCatalogueMessage = mapper.readValue(decodedData, ServiceCatalogueMessage.class);
 
             LOG.info("Service catalogue message id : "+serviceCatalogueMessage.getId());
-            LOG.info("Latest on boarding info : "+serviceCatalogueMessage.getLatestOnboardingInfo().getActionType());
-            LOG.info("Latest update info : "+serviceCatalogueMessage.getLatestUpdateInfo().getActionType());
         } catch (JsonProcessingException e) {
             throw new ServerErrorException(e.getMessage(), 500);
         }
