@@ -23,6 +23,8 @@ public class AmsService {
 
         LOG.info("Message id : "+message.getMessage().getMessageId());
 
+        LOG.info("AMS Subscription : "+message.getSubscription());
+
         LOG.info("Message data : "+message.getMessage().getData());
 
         var decodedData = new String(Base64.getDecoder().decode(message.getMessage().getData()), StandardCharsets.UTF_8);
