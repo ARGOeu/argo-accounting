@@ -25,7 +25,7 @@ public class ServiceCatalogueMessage {
     private Service service;
     private String status;
     private boolean suspended;
-
+    private Provider provider;
 
     @Getter
     @Setter
@@ -148,5 +148,70 @@ public class ServiceCatalogueMessage {
             private String scientificDomain;
             private String scientificSubdomain;
         }
+    }
+
+    @Getter
+    @Setter
+    public class Provider {
+        private String id;
+        private String abbreviation;
+        private String name;
+        private String node;
+        private String website;
+        private boolean legalEntity;
+        private String legalStatus;
+        private String hostingLegalEntity;
+        private Object alternativeIdentifiers;
+        private String description;
+        private String logo;
+        private Object multimedia;
+        private Object scientificDomains;
+        private List<String> tags;
+        private List<String> structureTypes;
+        private Location location;
+        private Contact mainContact;
+        private List<Contact> publicContacts;
+        private String lifeCycleStatus;
+        private List<String> certifications;
+        private List<String> participatingCountries;
+        private List<String> affiliations;
+        private List<String> networks;
+        private String catalogueId;
+        private List<String> esfriDomains;
+        private String esfriType;
+        private Object merilScientificDomains;
+        private List<String> areasOfActivity;
+        private List<String> societalGrandChallenges;
+        private List<String> nationalRoadmaps;
+        private List<User> users;
+    }
+
+    @Getter
+    @Setter
+    public static class Location {
+        private String streetNameAndNumber;
+        private String postalCode;
+        private String city;
+        private String region;
+        private String country;
+    }
+
+    @Getter
+    @Setter
+    public static class Contact {
+        private String firstName;
+        private String lastName;
+        private String email;
+        private String phone;
+        private String position;
+    }
+
+    @Getter
+    @Setter
+    public static class User {
+        private String id;
+        private String email;
+        private String name;
+        private String surname;
     }
 }
