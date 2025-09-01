@@ -62,6 +62,10 @@ public class ClientRepository extends ClientModulator {
         }
     }
 
+    public Client getFirstSystemAdmin(){
+        return find("systemAdmin = ?1", Boolean.TRUE).stream().findFirst().get();
+    }
+
     public void addSystemAdmins(){
 
         String[] ids = Arrays.stream(vopersonId.split(",")).map(String::trim).toArray(String[]::new);

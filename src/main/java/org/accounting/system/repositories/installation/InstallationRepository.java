@@ -247,6 +247,29 @@ public class InstallationRepository {
         return installation;
     }
 
+    public Installation saveForAms(Installation installation) {
+
+        installation.setId(new ObjectId().toString());
+
+        var update = Updates.push("providers.$.installations", installation);
+
+        var eq = Filters.and(Filters.eq("_id",  installation.getProject()), Filters.eq("providers._id",  installation.getOrganisation()));
+
+        projectRepository.getMongoCollection().updateOne(eq, update);
+
+        HierarchicalRelation project = new HierarchicalRelation(installation.getProject(), RelationType.PROJECT);
+
+        HierarchicalRelation provider = new HierarchicalRelation(installation.getOrganisation(), project, RelationType.PROVIDER, installation.getOrganisation());
+
+        HierarchicalRelation hinstallation = new HierarchicalRelation(installation.getId(), provider, RelationType.INSTALLATION, installation.getExternalId());
+
+        hierarchicalRelationRepository.save(project);
+        hierarchicalRelationRepository.save(provider);
+        hierarchicalRelationRepository.save(hinstallation);
+
+        return installation;
+    }
+
     public Installation insertNewInstallation(InstallationRequestDto request){
 
         var installationToBeStored = InstallationMapper.INSTANCE.requestToInstallation(request);

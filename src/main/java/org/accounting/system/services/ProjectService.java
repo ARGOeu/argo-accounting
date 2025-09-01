@@ -29,6 +29,7 @@ import org.accounting.system.util.QueryParser;
 import org.bson.conversions.Bson;
 
 import java.util.ArrayList;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -196,5 +197,10 @@ public class ProjectService implements RoleAccessControlService {
 
 
         return projectRepository.projectReport(projectId, start, end);
+    }
+
+    public Optional<Project> findByIdOptional(String id){
+
+        return  projectRepository.findByIdOptional(id);
     }
 }
