@@ -94,4 +94,21 @@ Also, if the role assigned to you is administrative, you are permitted to
 perform all the actions described at this **[section](https://argoeu.github.io/argo-accounting/docs/guides/api_actions/installation)**
 on the Installations assigned to the Provider.
 
+### GET Provider Report
+
+You can get a report for a specific Provider in a defined time period.  
+The report contains aggregated metric values grouped by metric definitions for all Installations that belong to the Provider.
+
+Apply a request to the Accounting Service API by providing the Project ID, the Provider ID, and the desired time range (`start`, `end`).
+
+> 📝 **For more details on how to structure the request, see** [here](https://argoeu.github.io/argo-accounting/docs/api/provider#get---get-provider-report).
+
+
+### GET Global Provider Report
+
+You can get a global report of a Provider by applying a request to the Accounting
+Service API. The report contains aggregated metric values for all Installations for a specific time period, independently of a Project.
+
+> 📝 For more details on how to structure the request, see [here](https://argoeu.github.io/argo-accounting/docs/api/provider#get---get-global-provider-report).
+
 ---

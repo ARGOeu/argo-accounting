@@ -459,6 +459,141 @@ Otherwise, an empty response will be returned.
 **Keep in mind that** to execute the above operation, you must have been
 assigned a role containing the Provider Acl permission.
 
+## [GET] - Get Provider Report
+
+The report includes aggregated metric values grouped by metric definitions for all Installations belonging
+to a specific Provider.
+
+You can retrieve a report for a specific **Provider** within a defined time period:
+
+```
+GET /accounting-system/projects/{project_id}/providers/{provider_id}/report
+
+Authorization: Bearer {token}
+```
+
+
+**Parameters**
+
+- `project_id` *(required, path)* – The Project ID.  
+  Example: `704029`  
+- `provider_id` *(required, path)* – The Provider ID.  
+  Example: `grnet`  
+- `start` *(required, query)* – Start date in `yyyy-MM-dd` format.  
+  Example: `2024-01-01`  
+- `end` *(required, query)* – End date in `yyyy-MM-dd` format.  
+  Example: `2024-12-31`  
+
+**Success Response `200 OK`**
+
+```json
+{
+  "provider_id": "grnet",
+  "name": "Swedish Infrastructure for Ecosystem Science",
+  "website": "https://www.fieldsites.se/en-GB",
+  "abbreviation": "SITES",
+  "logo": "https://dst15js82dk7j.cloudfront.net/231546/95187636-P5q11.png",
+  "aggregated_metrics": [
+    {
+      "metric_definition_id": "507f1f77bcf86cd799439011",
+      "metric_name": "weight",
+      "metric_description": "The weight of a person",
+      "unit_type": "kg",
+      "metric_type": "aggregated",
+      "total_value": 1234.56
+    }
+  ],
+  "data": [
+    {
+      "installation_id": "507f1f77bcf86cd799439011",
+      "project": "447535",
+      "provider": "grnet",
+      "installation": "GRNET-KNS",
+      "infrastructure": "okeanos-knossos",
+      "resource": "unitartu.ut.rocket",
+      "external_id": "installation-45583",
+      "data": [
+        {
+          "metric_definition_id": "507f1f77bcf86cd799439011",
+          "metric_name": "weight",
+          "metric_description": "The weight of a person",
+          "unit_type": "kg",
+          "metric_type": "aggregated",
+          "total_value": 1234.56
+        }
+      ]
+    }
+  ]
+}
+```
+
+## [GET] - Get Global Provider Report
+
+The report includes aggregated metric values grouped by metric definitions for all Installations belonging
+to a specific Provider, independently of a Project.
+
+You can retrieve a report for a specific **Provider** within a defined time period:
+
+```
+GET /accounting-system/providers/{provider_id}/report
+
+Authorization: Bearer {token}
+```
+
+**Parameters**
+
+- `provider_id` *(required, path)* – The Provider ID.  
+  Example: `grnet`  
+- `start` *(required, query)* – Start date in `yyyy-MM-dd` format.  
+  Example: `2024-01-01`  
+- `end` *(required, query)* – End date in `yyyy-MM-dd` format.  
+  Example: `2024-12-31`  
+
+**Success Response `200 OK`**
+
+```json
+[
+  {
+    "provider_id": "grnet",
+    "name": "Swedish Infrastructure for Ecosystem Science",
+    "website": "https://www.fieldsites.se/en-GB",
+    "abbreviation": "SITES",
+    "logo": "https://dst15js82dk7j.cloudfront.net/231546/95187636-P5q11.png",
+    "aggregated_metrics": [
+      {
+        "metric_definition_id": "507f1f77bcf86cd799439011",
+        "metric_name": "weight",
+        "metric_description": "The weight of a person",
+        "unit_type": "kg",
+        "metric_type": "aggregated",
+        "total_value": 1234.56
+      }
+    ],
+    "data": [
+      {
+        "installation_id": "507f1f77bcf86cd799439011",
+        "project": "447535",
+        "provider": "grnet",
+        "installation": "GRNET-KNS",
+        "infrastructure": "okeanos-knossos",
+        "resource": "unitartu.ut.rocket",
+        "external_id": "installation-45583",
+        "data": [
+          {
+            "metric_definition_id": "507f1f77bcf86cd799439011",
+            "metric_name": "weight",
+            "metric_description": "The weight of a person",
+            "unit_type": "kg",
+            "metric_type": "aggregated",
+            "total_value": 1234.56
+          }
+        ]
+      }
+    ]
+  }
+]
+```
+
 ## Errors
 
 Please refer to section [Errors](./api_errors) to see all possible Errors.

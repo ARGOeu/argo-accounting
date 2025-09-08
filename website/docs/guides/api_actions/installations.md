@@ -55,4 +55,12 @@ place. In this case, you need to delete all the assigned Metrics first.
 
 > 📝 For more details on how to structure the request, see [here](https://argoeu.github.io/argo-accounting/docs/api/installation#delete---delete-an-existing-installation).
 
+### GET Installation Report
+
+You can get a report of an Installation by applying a request to the Accounting
+Service API. The report contains aggregated metric values grouped by metric definition for a specific time period.
+The report can be obtained using the external installation id as a query parameter.
+
+> 📝 For more details on how to structure the request, see [here](https://argoeu.github.io/argo-accounting/docs/api/installation#get---get-installation-report).
+
 ---
