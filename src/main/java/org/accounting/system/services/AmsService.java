@@ -11,7 +11,6 @@ import org.accounting.system.dtos.ams.ServiceCatalogueMessage;
 import org.accounting.system.entities.installation.Installation;
 import org.accounting.system.entities.provider.Provider;
 import org.accounting.system.enums.AMSMessageStatus;
-import org.accounting.system.repositories.client.ClientRepository;
 import org.accounting.system.repositories.installation.InstallationRepository;
 import org.accounting.system.repositories.provider.ProviderRepository;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
@@ -34,9 +33,6 @@ public class AmsService {
 
     @Inject
     InstallationRepository installationRepository;
-
-    @Inject
-    ClientRepository clientRepository;
 
     @ConfigProperty(name = "api.accounting.ams.project")
     String project;
@@ -104,7 +100,7 @@ public class AmsService {
 
         providerToBeSaved.setRegisteredOn(LocalDateTime.now());
 
-        providerToBeSaved.setCreatorId(clientRepository.getFirstSystemAdmin().getId());
+        providerToBeSaved.setCreatorId("from-ams");
 
         providerRepository.persist(providerToBeSaved);
 
@@ -119,7 +115,7 @@ public class AmsService {
         installation.setExternalId(service.getId());
         installation.setInfrastructure(service.getName());
         installation.setInstallation(service.getId());
-        installation.setCreatorId(clientRepository.getFirstSystemAdmin().getId());
+        installation.setCreatorId("from-ams");
 
         var optional = installationRepository.exist(installation.getProject(), installation.getOrganisation(), installation.getInstallation());
 

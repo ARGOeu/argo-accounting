@@ -584,13 +584,13 @@
         "voperson_id",
         "roles",
         "profile",
-        "email"
+        "email",
+        "entitlements"
       ],
       "optionalClientScopes": [
         "address",
         "phone",
         "offline_access",
-        "entitlements",
         "microprofile-jwt"
       ],
       "access": {
@@ -908,13 +908,13 @@
         "profile",
         "roles",
         "email",
-        "voperson_id"
+        "voperson_id",
+        "entitlements"
       ],
       "optionalClientScopes": [
         "address",
         "phone",
         "offline_access",
-        "entitlements",
         "microprofile-jwt"
       ]
     },
@@ -1068,11 +1068,11 @@
           "consentRequired": false,
           "config": {
             "aggregate.attrs": "false",
-            "multivalued": "false",
+            "multivalued": "true",
             "userinfo.token.claim": "true",
             "user.attribute": "entitlements",
-            "id.token.claim": "false",
-            "access.token.claim": "false",
+            "id.token.claim": "true",
+            "access.token.claim": "true",
             "claim.name": "entitlements"
           }
         }
@@ -1592,14 +1592,14 @@
     "roles",
     "web-origins",
     "acr",
-    "voperson_id"
+    "voperson_id",
+    "entitlements"
   ],
   "defaultOptionalClientScopes": [
     "offline_access",
     "address",
     "phone",
-    "microprofile-jwt",
-    "entitlements"
+    "microprofile-jwt"
   ],
   "browserSecurityHeaders": {
     "contentSecurityPolicyReportOnly": "",
@@ -2526,7 +2526,8 @@
       "emailVerified": false,
       "attributes": {
         "voperson_id": ["admin_voperson_id"],
-        "entitlements": ["urn:geant:eosc-federation.eu:group:services:LOT2:okd.eosc-node.eu:role=admin"]
+        "entitlements": ["urn:geant:eosc-federation.eu:group:services:LOT2:okd.eosc-node.eu:role=admin",
+          "urn:geant:sandbox.eosc-beyond.eu:core:integration:group:accounting:role=admin"]
       },
       "credentials": [
         {
@@ -2566,7 +2567,7 @@
       "emailVerified": false,
       "attributes": {
         "voperson_id": ["alice_voperson_id"],
-        "entitlements": ["urn:geant:eosc-federation.eu:res:okd.eosc-node.eu:projects:act:read"]
+        "entitlements": ["urn:geant:sandbox.eosc-beyond.eu:core:integration:group:accounting:operations:resources:role=admin"]
       },
       "credentials": [
         {
@@ -2602,7 +2603,7 @@
       "enabled": true,
       "attributes": {
         "voperson_id": ["bob_voperson_id"],
-        "entitlements": ["urn:geant:eosc-federation.eu:group:services:LOT2:okd.eosc-node.eu:role=admin"]
+        "entitlements": ["urn:geant:sandbox.eosc-beyond.eu:core:integration:group:accounting:operations:resources:role=viewer"]
       },
       "credentials": [
         {
@@ -2654,7 +2655,8 @@
       "username": "creator",
       "enabled": true,
       "attributes": {
-        "voperson_id": ["creator_voperson_id"]
+        "voperson_id": ["creator_voperson_id"],
+        "entitlements": ["urn:geant:sandbox.eosc-beyond.eu:core:integration:group:accounting:operations:resources:role=admin"]
       },
       "credentials": [
         {

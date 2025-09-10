@@ -5,13 +5,12 @@ import io.vavr.control.Try;
 import jakarta.enterprise.inject.spi.CDI;
 import jakarta.validation.ConstraintValidator;
 import jakarta.validation.ConstraintValidatorContext;
-import org.accounting.system.beans.RequestUserContext;
 import org.accounting.system.constraints.AccessProject;
-import org.accounting.system.enums.Collection;
-import org.accounting.system.enums.Operation;
 import org.accounting.system.exceptions.CustomValidationException;
-import org.accounting.system.repositories.client.ClientRepository;
 import org.accounting.system.repositories.project.ProjectRepository;
+import org.accounting.system.services.EntitlementService;
+
+import java.util.List;
 
 /**
  * This {@link AccessProjectValidator} defines the logic to validate the {@link AccessProject}.
@@ -24,16 +23,12 @@ public class AccessProjectValidator implements ConstraintValidator<AccessProject
 
     private boolean checkIfExists;
 
-    private Collection collection;
-
-    private Operation operation;
-
+    private String[] roles;
     @Override
     public void initialize(AccessProject constraintAnnotation) {
         this.message = constraintAnnotation.message();
         this.checkIfExists = constraintAnnotation.checkIfExists();
-        this.collection = constraintAnnotation.collection();
-        this.operation = constraintAnnotation.operation();
+        this.roles = constraintAnnotation.roles();
     }
 
     @Override
@@ -41,28 +36,27 @@ public class AccessProjectValidator implements ConstraintValidator<AccessProject
 
         var projectRepository = CDI.current().select(ProjectRepository.class).get();
 
+        var entitlementService = CDI.current().select(EntitlementService.class).get();
+
         if(checkIfExists){
             Try
                     .run(()->projectRepository.findByIdOptional(project).orElseThrow(()->new CustomValidationException("There is no Project with the following id: "+project, HttpResponseStatus.NOT_FOUND)))
                     .getOrElseThrow(()->new CustomValidationException("There is no Project with the following id: "+project, HttpResponseStatus.NOT_FOUND));
         }
 
-        var clientRepository = CDI.current().select(ClientRepository.class).get();
-
-        var requestUserContext = CDI.current().select(RequestUserContext.class).get();
-
-
-        if(clientRepository.isSystemAdmin(requestUserContext.getId())){
+        if(entitlementService.hasAccess("accounting", "admin", List.of())){
 
             return true;
         }
 
-        var access =  projectRepository.accessibility(project, collection, operation);
+        for(String role:roles){
 
-        if(!access){
-            throw new CustomValidationException(message, HttpResponseStatus.FORBIDDEN);
-        } else {
-            return true;
+            if(entitlementService.hasAccess("accounting", role, List.of(project))){
+
+                return true;
+            }
         }
+
+        throw new CustomValidationException(message, HttpResponseStatus.FORBIDDEN);
     }
 }

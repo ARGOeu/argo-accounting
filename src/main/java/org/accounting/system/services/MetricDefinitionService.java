@@ -5,27 +5,21 @@ import io.quarkus.mongodb.panache.PanacheQuery;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.core.UriInfo;
-import org.accounting.system.dtos.metric.MetricResponseDto;
 import org.accounting.system.dtos.metricdefinition.MetricDefinitionRequestDto;
 import org.accounting.system.dtos.metricdefinition.MetricDefinitionResponseDto;
 import org.accounting.system.dtos.metricdefinition.UpdateMetricDefinitionRequestDto;
 import org.accounting.system.dtos.pagination.PageResource;
 import org.accounting.system.endpoints.MetricDefinitionEndpoint;
-import org.accounting.system.entities.Metric;
 import org.accounting.system.entities.MetricDefinition;
 import org.accounting.system.exceptions.ConflictException;
 import org.accounting.system.mappers.MetricDefinitionMapper;
-import org.accounting.system.mappers.MetricMapper;
 import org.accounting.system.repositories.metric.MetricRepository;
 import org.accounting.system.repositories.metricdefinition.MetricDefinitionRepository;
 import org.accounting.system.util.QueryParser;
-import org.bson.conversions.Bson;
 import org.bson.types.ObjectId;
 import org.json.simple.parser.ParseException;
 
-import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 /**
  * This service exposes business logic, which uses the {@link MetricDefinitionRepository}.
@@ -163,32 +157,10 @@ public class MetricDefinitionService {
         }
     }
 
-    /**
-     * Returns the N Metrics, which have been assigned to the Metric Definition, from the given page.
-     *
-     * @param metricDefinitionId The Metric Definition id.
-     * @param page Indicates the page number.
-     * @param size The number of Metrics to be retrieved.
-     * @param uriInfo The current uri.
-     * @return An object represents the paginated results.
-     */
-    public PageResource<MetricResponseDto>  findMetricsByMetricDefinitionIdPageable(String metricDefinitionId, int page, int size, UriInfo uriInfo){
+    public PageResource<MetricDefinitionResponseDto> searchMetricDefinition( String json, int page, int size,UriInfo uriInfo) throws ParseException {
 
-        metricDefinitionRepository.fetchEntityById(new ObjectId(metricDefinitionId));
-
-        PanacheQuery<Metric> panacheQuery = metricRepository.findMetricsByMetricDefinitionIdPageable(metricDefinitionId, page, size);
-
-        return new PageResource<>(panacheQuery, MetricMapper.INSTANCE.metricsToResponse(panacheQuery.list()), uriInfo);
-    }
-
-    public PageResource<MetricDefinitionResponseDto> searchMetricDefinition( String json, boolean isAlwaysPermission, int page, int size,UriInfo uriInfo) throws ParseException, NoSuchFieldException {
-
-        List<String> entityIds=new ArrayList<>();
-        if(!isAlwaysPermission){
-            entityIds= fetchAllMetricDefinitions().stream().map(MetricDefinitionResponseDto::getId).collect(Collectors.toList());
-        }
-        Bson query=queryParser.parseFile(json, isAlwaysPermission, entityIds, MetricDefinition.class);
-        PanacheQuery<MetricDefinition> projectionQuery = metricDefinitionRepository.search(query,page,size);
+        var query = queryParser.parseFile(json);
+        var projectionQuery = metricDefinitionRepository.search(query,page,size);
         return new PageResource<>(projectionQuery, MetricDefinitionMapper.INSTANCE.metricDefinitionsToResponse(projectionQuery.list()), uriInfo);
 
     }

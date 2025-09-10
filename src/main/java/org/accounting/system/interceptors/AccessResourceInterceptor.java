@@ -9,31 +9,28 @@ import jakarta.interceptor.Interceptor;
 import jakarta.interceptor.InvocationContext;
 import jakarta.ws.rs.ForbiddenException;
 import org.accounting.system.enums.ApiMessage;
-import org.accounting.system.interceptors.annotations.AccessPermission;
-import org.accounting.system.services.authorization.RoleService;
-import org.accounting.system.util.Utility;
+import org.accounting.system.interceptors.annotations.AccessResource;
+import org.accounting.system.services.EntitlementService;
 
 import java.lang.annotation.Annotation;
-import java.util.Objects;
+import java.util.List;
 import java.util.Set;
 import java.util.stream.Stream;
 
-@AccessPermission
+@AccessResource
 @Interceptor
 @Priority(3000)
 /**
  * This interceptor checks whether the client has the appropriate permission to create, update, delete or read an entity.
  * It collects the {@link org.accounting.system.enums.Operation} and the {@link org.accounting.system.enums.Collection} from the
- * {@link AccessPermission} as well as the client role from {@link TokenIntrospection}, which contains the metadata of an access token.
+ * {@link AccessResource} as well as the client role from {@link TokenIntrospection}, which contains the metadata of an access token.
  * Combining this information, we execute a query to Role collection to inspect if this role can execute that operation to that specific collection.
  */
-public class AccessPermissionInterceptor {
+public class AccessResourceInterceptor {
 
     @Inject
-    RoleService roleService;
+    EntitlementService entitlementService;
 
-    @Inject
-    Utility utility;
 
     @AroundInvoke
     Object check(InvocationContext context) throws Exception {
@@ -43,27 +40,30 @@ public class AccessPermissionInterceptor {
 
     private Object hasAccess(InvocationContext context) throws Exception {
 
-        AccessPermission accessPermission = Stream
+        var accessResource = Stream
                 .of(context.getContextData().get(ArcInvocationContext.KEY_INTERCEPTOR_BINDINGS))
                 .map(annotations-> (Set<Annotation>) annotations)
                 .flatMap(java.util.Collection::stream)
-                .filter(annotation -> annotation.annotationType().equals(AccessPermission.class))
-                .map(annotation -> (AccessPermission) annotation)
+                .filter(annotation -> annotation.annotationType().equals(AccessResource.class))
+                .map(annotation -> (AccessResource) annotation)
                 .findFirst()
                 .get();
 
-        Set<String> providedRoles = utility.getRoles();
+        var roles = accessResource.roles();
 
-        if(Objects.isNull(providedRoles)){
-            throw new ForbiddenException(ApiMessage.UNAUTHORIZED_CLIENT.message);
+        if(entitlementService.hasAccess("accounting", "admin", List.of())){
+
+            return context.proceed();
         }
 
-        var access = roleService.hasAccess(providedRoles, accessPermission.collection(), accessPermission.operation());
+        for(String role:roles){
 
-        if(!access){
-            throw new ForbiddenException(ApiMessage.UNAUTHORIZED_CLIENT.message);
+            if(entitlementService.hasAccess("accounting", role, List.of("operations", "resources"))){
+
+                return context.proceed();
+            }
         }
 
-        return context.proceed();
+        throw new ForbiddenException(ApiMessage.UNAUTHORIZED_CLIENT.message);
     }
 }

@@ -40,16 +40,6 @@ public abstract class AbstractAccessModulator<E extends Entity, I> implements Pa
         return mongoClient.getDatabase(database).getCollection(collection);
     }
 
-    /**
-     * Checks if the given id can be identified by the subject of an access token.
-     *
-     * @param idToBeIdentified id to be identified
-     * @return
-     */
-    public boolean isIdentifiable(String idToBeIdentified){
-        return idToBeIdentified.equals(getRequestInformation().getId());
-    }
-
     public RequestUserContext getRequestInformation() {
         return requestInformation;
     }

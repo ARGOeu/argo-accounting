@@ -17,13 +17,10 @@ import org.accounting.system.mappers.MetricMapper;
 import org.accounting.system.repositories.installation.InstallationRepository;
 import org.accounting.system.repositories.metric.MetricRepository;
 import org.accounting.system.util.QueryParser;
-import org.bson.conversions.Bson;
 import org.bson.types.ObjectId;
 import org.json.simple.parser.ParseException;
 
 import java.time.Instant;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Optional;
 
 /**
@@ -154,11 +151,11 @@ public class MetricService {
         return metricRepository.findByIdOptional(new ObjectId(id));
     }
 
-    public PageResource<MetricProjection> searchMetrics(String json, int page, int size, UriInfo uriInfo) throws ParseException, NoSuchFieldException {
-       Bson query=queryParser.parseFile(json,true,new ArrayList<>(),Metric.class);
-        List<String> installationsIds=  installationRepository.fetchAllInstallationIds();
+    public PageResource<MetricProjection> searchMetrics(String json, int page, int size, UriInfo uriInfo) throws ParseException {
 
-        var metrics=metricRepository.searchMetrics(query,installationsIds,page,size);
+        var query = queryParser.parseFile(json);
+        var installationsIds = installationRepository.fetchAllInstallationIds();
+        var metrics = metricRepository.searchMetrics(query, installationsIds, page, size);
         return new PageResource<>(metrics, metrics.list(), uriInfo);
     }
 

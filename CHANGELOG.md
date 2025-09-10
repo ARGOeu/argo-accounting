@@ -39,6 +39,9 @@ According to [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) , the
   creating an installation, id should be overwritten.
 - [#240](https://github.com/ARGOeu/argo-accounting/pull/240) - ACC-365
   Implement Code (ACC Agent) to Process Events and Translate to ACC Calls.
+- [#242](https://github.com/ARGOeu/argo-accounting/pull/242) - ACC-227
+  Implement the changes mentioned in the previous task.
+
 
 ## 1.7.0 - 2025-07-25
 

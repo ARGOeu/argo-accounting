@@ -24,8 +24,6 @@ import org.accounting.system.mappers.ResourceMapper;
 import org.accounting.system.repositories.HierarchicalRelationRepository;
 import org.accounting.system.repositories.OidcTenantConfigRepository;
 import org.accounting.system.repositories.ResourceRepository;
-import org.accounting.system.repositories.authorization.RoleRepository;
-import org.accounting.system.repositories.client.ClientRepository;
 import org.accounting.system.repositories.installation.InstallationRepository;
 import org.accounting.system.repositories.metric.MetricRepository;
 import org.accounting.system.repositories.project.ProjectModulator;
@@ -41,12 +39,6 @@ import java.util.Set;
 
 @ApplicationScoped
 public class SystemAdminService {
-
-    @Inject
-    RoleRepository roleRepository;
-
-    @Inject
-    ClientRepository clientRepository;
 
     @Inject
     @RestClient
@@ -92,8 +84,6 @@ public class SystemAdminService {
             if (optional.isEmpty()) {
 
                 try {
-
-                    var projectAdminRole = roleRepository.getRolesByName(Set.of("project_admin"));
 
                     var function = ProjectModulator.openAire();
 
