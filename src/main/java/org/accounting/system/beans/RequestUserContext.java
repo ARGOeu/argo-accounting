@@ -5,13 +5,9 @@ import jakarta.enterprise.context.RequestScoped;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.BadRequestException;
 import lombok.Getter;
-import lombok.Setter;
-import org.accounting.system.enums.AccessType;
 import org.accounting.system.repositories.OidcTenantConfigRepository;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
-
-import java.util.Optional;
 
 @RequestScoped
 public class RequestUserContext {
@@ -30,10 +26,6 @@ public class RequestUserContext {
 
     @Inject
     OidcTenantConfigRepository oidcTenantConfigRepository;
-
-    @Getter
-    @Setter
-    private AccessType accessType;
 
     public String getId() {
 
@@ -65,30 +57,6 @@ public class RequestUserContext {
 
                 throw new BadRequestException(String.format("Unique identifiers [%s, %s] weren't present in the access token.", personKey, serviceKey));
             }
-        }
-    }
-
-    public Optional<String> getName(){
-
-        try {
-
-            return Optional.of(tokenIntrospection.getJsonObject().getString("name"));
-
-        } catch (Exception e) {
-
-            return Optional.empty();
-        }
-    }
-
-    public Optional<String> getEmail(){
-
-        try {
-
-            return Optional.of(tokenIntrospection.getJsonObject().getString("email"));
-
-        } catch (Exception e) {
-
-            return Optional.empty();
         }
     }
 

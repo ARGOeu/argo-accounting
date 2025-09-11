@@ -24,13 +24,4 @@ public class CountDocumentResponse {
     )
     @JsonProperty("metric_count")
     public long metricCount;
-
-    @Schema(
-            type = SchemaType.NUMBER,
-            implementation = Long.class,
-            description = "Number of documents in the User collection.",
-            example = "30"
-    )
-    @JsonProperty("user_count")
-    public long userCount;
 }

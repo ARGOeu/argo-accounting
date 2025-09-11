@@ -7,19 +7,17 @@ import jakarta.validation.ConstraintValidator;
 import jakarta.validation.ConstraintValidatorContext;
 import jakarta.validation.constraintvalidation.SupportedValidationTarget;
 import jakarta.validation.constraintvalidation.ValidationTarget;
-import org.accounting.system.beans.RequestUserContext;
 import org.accounting.system.constraints.AccessProvider;
 import org.accounting.system.dtos.installation.InstallationRequestDto;
-import org.accounting.system.enums.Collection;
-import org.accounting.system.enums.Operation;
 import org.accounting.system.exceptions.CustomValidationException;
-import org.accounting.system.repositories.client.ClientRepository;
 import org.accounting.system.repositories.metricdefinition.MetricDefinitionRepository;
 import org.accounting.system.repositories.project.ProjectRepository;
 import org.accounting.system.repositories.provider.ProviderRepository;
+import org.accounting.system.services.EntitlementService;
 import org.apache.commons.lang3.StringUtils;
 import org.bson.types.ObjectId;
 
+import java.util.List;
 import java.util.Objects;
 
 /**
@@ -32,15 +30,12 @@ public class AccessProviderValidator implements ConstraintValidator<AccessProvid
 
     private String message;
 
-    private Collection collection;
-
-    private Operation operation;
+    private String[] roles;
 
     @Override
     public void initialize(AccessProvider constraintAnnotation) {
         this.message = constraintAnnotation.message();
-        this.collection = constraintAnnotation.collection();
-        this.operation = constraintAnnotation.operation();
+        this.roles = constraintAnnotation.roles();
     }
 
     @Override
@@ -81,23 +76,44 @@ public class AccessProviderValidator implements ConstraintValidator<AccessProvid
         providerRepository.findByIdOptional(provider).orElseThrow(()->new CustomValidationException("There is no Provider with the following id: "+provider, HttpResponseStatus.NOT_FOUND));
 
 
-        var clientRepository = CDI.current().select(ClientRepository.class).get();
+        var entitlementService = CDI.current().select(EntitlementService.class).get();
 
 
-        var requestUserContext = CDI.current().select(RequestUserContext.class).get();
-
-
-        if(clientRepository.isSystemAdmin(requestUserContext.getId())){
+        if(entitlementService.hasAccess("accounting", "admin", List.of())){
 
             return true;
         }
 
         Boolean access = Try
-                .of(()->projectRepository.accessibility(project, collection, operation))
+                .of(()->{
+
+                    var enter = false;
+
+                    for(String role:roles) {
+
+                        if (entitlementService.hasAccess("accounting", role, List.of(project))) {
+
+                            enter = true;
+                        }
+                    }
+
+                    return enter;
+                })
                 .mapTry(projectAccess-> {
 
                     if(!projectAccess){
-                        return providerRepository.accessibility(project, provider, collection, operation);
+
+                        var enter = false;
+
+                        for(String role:roles) {
+
+                            if (entitlementService.hasAccess("accounting", role, List.of(project, provider)) || entitlementService.hasAccess("accounting", role, List.of("roles", "provider", provider))) {
+
+                                enter = true;
+                            }
+                        }
+
+                        return enter;
                     }
 
                     return projectAccess;

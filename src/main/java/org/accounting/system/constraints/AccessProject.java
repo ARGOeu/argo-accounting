@@ -1,10 +1,7 @@
 package org.accounting.system.constraints;
 
-import jakarta.enterprise.util.Nonbinding;
 import jakarta.validation.Constraint;
 import jakarta.validation.Payload;
-import org.accounting.system.enums.Collection;
-import org.accounting.system.enums.Operation;
 import org.accounting.system.validators.AccessProjectValidator;
 
 import java.lang.annotation.Documented;
@@ -23,6 +20,5 @@ public @interface AccessProject {
     Class<?>[] groups() default {};
     Class<? extends Payload>[] payload() default {};
     boolean checkIfExists() default true;
-    @Nonbinding Collection collection() default Collection.MetricDefinition;
-    @Nonbinding Operation operation() default Operation.CREATE;
+    String[] roles() default {};
 }

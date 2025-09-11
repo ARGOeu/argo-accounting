@@ -5,14 +5,13 @@ import io.quarkus.test.common.http.TestHTTPEndpoint;
 import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.test.junit.TestProfile;
 import io.quarkus.test.security.TestSecurity;
+import io.quarkus.test.security.oidc.Claim;
 import io.quarkus.test.security.oidc.OidcSecurity;
 import io.quarkus.test.security.oidc.TokenIntrospection;
 import io.quarkus.test.security.oidc.UserInfo;
 import io.restassured.http.ContentType;
 import jakarta.inject.Inject;
 import org.accounting.system.dtos.InformativeResponse;
-import org.accounting.system.dtos.acl.role.RoleAccessControlRequestDto;
-import org.accounting.system.dtos.client.ClientResponseDto;
 import org.accounting.system.dtos.installation.InstallationRequestDto;
 import org.accounting.system.dtos.installation.InstallationResponseDto;
 import org.accounting.system.dtos.metric.MetricRequestDto;
@@ -22,7 +21,6 @@ import org.accounting.system.dtos.metricdefinition.MetricDefinitionResponseDto;
 import org.accounting.system.dtos.pagination.PageResource;
 import org.accounting.system.dtos.project.AssociateProjectProviderRequestDto;
 import org.accounting.system.endpoints.ProjectEndpoint;
-import org.accounting.system.entities.projections.normal.ProjectProjection;
 import org.accounting.system.enums.ApiMessage;
 import org.accounting.system.repositories.project.ProjectRepository;
 import org.accounting.system.wiremock.ProjectWireMockServer;
@@ -46,66 +44,6 @@ public class ProjectAuthorizationTest extends PrepareTest {
 
     @Inject
     ProjectRepository projectRepository;
-
-    @Test
-    @TestSecurity(user = "project_admin")
-    @OidcSecurity(introspectionRequired = true,
-            introspection = {
-                    @TokenIntrospection(key = "voperson_id", value = "project_admin@example.org"),
-                    @TokenIntrospection(key = "sub", value = "project_admin@example.org"),
-                    @TokenIntrospection(key = "iss", value = "http://localhost:58080/realms/quarkus")
-            },
-            userinfo = {
-                    @UserInfo(key = "name", value = "project_admin"),
-                    @UserInfo(key = "email", value = "project_admin@example.org")
-            }
-    )
-    public void clientGrantsProjectAccessToOtherClient(){
-
-        // initially the client project_admin has no access to 777536
-        given()
-                .get("/{id}", "777536")
-                .then()
-                .assertThat()
-                .statusCode(403)
-                .extract()
-                .as(InformativeResponse.class);
-
-        // client system_admin gives access to client project_admin
-
-        var acl = new RoleAccessControlRequestDto();
-
-        acl.roles = Set.of("project_admin");
-
-        given()
-                .auth()
-                .oauth2(getAccessToken("admin"))
-                .contentType(ContentType.JSON)
-                .body(acl)
-                .post("/{id}/acl/{who}", "777536", "b4b181f7e2ac034e11a1552be109efa50efd82115d64e1fd6acda9f0b3d63587")
-                .then()
-                .assertThat()
-                .statusCode(200)
-                .extract()
-                .as(InformativeResponse.class);
-
-        // client project_admin has now access Project 777536
-
-        var project = given()
-                .get("/{id}", "777536")
-                .then()
-                .assertThat()
-                .statusCode(200)
-                .extract()
-                .as(ProjectProjection.class);
-
-        assertEquals(project.id, "777536");
-        assertEquals(project.acronym, "EOSC-hub");
-        assertEquals(project.title, "Integrating and managing services for the European Open Science Cloud");
-        assertEquals(project.startDate, "2018-01-01");
-        assertEquals(project.endDate, "2021-03-31");
-        assertEquals(project.callIdentifier, "H2020-EINFRA-2017");
-    }
 
     @Test
     @TestSecurity(user = "project_admin")
@@ -249,7 +187,11 @@ public class ProjectAuthorizationTest extends PrepareTest {
             userinfo = {
                     @UserInfo(key = "name", value = "provider_admin"),
                     @UserInfo(key = "email", value = "provider_admin@example.org")
+            },
+            claims = {
+                    @Claim(key = "entitlements", value = "[\\\"urn:geant:sandbox.eosc-beyond.eu:core:integration:group:accounting:777536:grnet:role=admin\\\"]"),
             }
+
     )
     public void metricsUnderAProvider(){
 
@@ -298,9 +240,9 @@ public class ProjectAuthorizationTest extends PrepareTest {
 
         assertEquals(ApiMessage.UNAUTHORIZED_CLIENT.message, informativeResponse.message);
 
-        grantProviderAccess("777536", "grnet", "admin", "2ba5ad4cc037343cfa53ba6633becd68ea4c5d7805f3f1bf172d66c1d9440768");
-
         var providerAdminMetrics = given()
+                .auth()
+                .oauth2(getAccessToken("admin"))
                 .get("/{project_id}/providers/{provider_id}/metrics", "777536", "grnet");
 
         var providerAdminMetricsPagination = providerAdminMetrics.body().as(PageResource.class);
@@ -325,9 +267,6 @@ public class ProjectAuthorizationTest extends PrepareTest {
 
         projectRepository.associateProjectWithProviders("777536", Set.of("grnet"));
 
-        // admin grant Provider Access to provider_admin@example.org
-        grantProviderAccess("777536", "grnet", "admin","2ba5ad4cc037343cfa53ba6633becd68ea4c5d7805f3f1bf172d66c1d9440768");
-
         var metricDefinitionResponse = createMetricDefinition("admin");
 
         // provider_admin@example.org can be able to create a Provider Installation
@@ -344,6 +283,8 @@ public class ProjectAuthorizationTest extends PrepareTest {
 
         // creating and assigning a new Metric
         given()
+                .auth()
+                .oauth2(getAccessToken("admin"))
                 .basePath("accounting-system/installations")
                 .body(metric)
                 .contentType(ContentType.JSON)
@@ -354,7 +295,6 @@ public class ProjectAuthorizationTest extends PrepareTest {
                 .extract()
                 .as(MetricResponseDto.class);
 
-        // provider_admin@example.org can be able to read the Provider Metrics
 
         var providerAdminMetrics = given()
                 .auth()
@@ -365,7 +305,6 @@ public class ProjectAuthorizationTest extends PrepareTest {
 
         assertEquals(1, providerAdminMetricsPagination.getTotalElements());
 
-        // installationadmin cannot be able to read the Provider Metrics
         var informativeResponse = given()
                 .auth()
                 .oauth2(getAccessToken("installationadmin"))
@@ -378,7 +317,6 @@ public class ProjectAuthorizationTest extends PrepareTest {
 
         assertEquals(ApiMessage.UNAUTHORIZED_CLIENT.message, informativeResponse.message);
 
-        // installationadmin cannot be able to read the Installation Metrics
         var informativeResponseFromInstallation = given()
                 .basePath("accounting-system/installations")
                 .auth()
@@ -392,69 +330,16 @@ public class ProjectAuthorizationTest extends PrepareTest {
 
         assertEquals(ApiMessage.UNAUTHORIZED_CLIENT.message, informativeResponseFromInstallation.message);
 
-        // installationadmin will be registered into Accounting System
-        var client = given()
-                .basePath("accounting-system/clients")
-                .auth()
-                .oauth2(getAccessToken("installationadmin"))
-                .post()
-                .then()
-                .assertThat()
-                .statusCode(200)
-                .extract()
-                .as(ClientResponseDto.class);
-
-        //provider_admin grants access to installationadmin to manage the Provider Installation
-        grantInstallationAccess(installation.id, client.id);
 
         var installationAdminMetrics = given()
                 .basePath("accounting-system/installations")
                 .auth()
-                .oauth2(getAccessToken("installationadmin"))
+                .oauth2(getAccessToken("admin"))
                 .get("/{installation_id}/metrics", installation.id);
 
         var installationAdminMetricsPagination = installationAdminMetrics.body().as(PageResource.class);
 
         assertEquals(1, installationAdminMetricsPagination.getTotalElements());
-    }
-
-    private void grantProviderAccess(String project, String provider, String user, String who){
-
-        var acl = new RoleAccessControlRequestDto();
-
-        acl.roles = Set.of("provider_admin");
-
-        given()
-                .auth()
-                .oauth2(getAccessToken(user))
-                .basePath("accounting-system/projects")
-                .contentType(ContentType.JSON)
-                .body(acl)
-                .post("/{project_id}/providers/{provider_id}/acl/{who}", project, provider, who)
-                .then()
-                .assertThat()
-                .statusCode(200)
-                .extract()
-                .as(InformativeResponse.class);
-    }
-
-    private void grantInstallationAccess(String installation, String who){
-
-        var acl = new RoleAccessControlRequestDto();
-
-        acl.roles = Set.of("installation_admin");
-
-        given()
-                .basePath("accounting-system/installations")
-                .contentType(ContentType.JSON)
-                .body(acl)
-                .post("/{installation_id}/acl/{who}", installation, who)
-                .then()
-                .assertThat()
-                .statusCode(200)
-                .extract()
-                .as(InformativeResponse.class);
-
     }
 
     private InstallationResponseDto createInstallationAuth(InstallationRequestDto request, String user){
@@ -526,6 +411,8 @@ public class ProjectAuthorizationTest extends PrepareTest {
 
 
         return given()
+                .auth()
+                .oauth2(getAccessToken("admin"))
                 .basePath("accounting-system/installations")
                 .body(request)
                 .contentType(ContentType.JSON)

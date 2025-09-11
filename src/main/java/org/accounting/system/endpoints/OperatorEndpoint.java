@@ -9,6 +9,7 @@ import org.accounting.system.dtos.InformativeResponse;
 import org.accounting.system.dtos.enums.EnumResponseDto;
 import org.accounting.system.enums.Operator;
 import org.accounting.system.mappers.EnumMapper;
+import org.eclipse.microprofile.openapi.annotations.Operation;
 import org.eclipse.microprofile.openapi.annotations.enums.SchemaType;
 import org.eclipse.microprofile.openapi.annotations.enums.SecuritySchemeIn;
 import org.eclipse.microprofile.openapi.annotations.enums.SecuritySchemeType;
@@ -35,7 +36,7 @@ public class OperatorEndpoint {
 
 
     @Tag(name = "Operator")
-    @org.eclipse.microprofile.openapi.annotations.Operation(
+    @Operation(
             summary = "Retrieve the operators that will be used to syntax an equation",
             description = "Retrieve the operators that will be used to syntax an equation")
     @APIResponse(
@@ -63,8 +64,6 @@ public class OperatorEndpoint {
                     type = SchemaType.OBJECT,
                     implementation = InformativeResponse.class)))
     @SecurityRequirement(name = "Authentication")
-
-
     @GET
     @Produces(value = MediaType.APPLICATION_JSON)
     public List<EnumResponseDto> getOperators() {

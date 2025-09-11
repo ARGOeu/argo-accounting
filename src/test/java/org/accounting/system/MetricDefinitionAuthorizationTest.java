@@ -54,7 +54,7 @@ public class MetricDefinitionAuthorizationTest extends PrepareTest {
         request.unitType = "TB";
         request.metricType = "aggregated";
 
-        var metricDefinitionResponse = createMetricDefinition(request, "alice");
+        var metricDefinitionResponse = createMetricDefinition(request, "evald");
 
         var informativeResponse = metricDefinitionResponse
                 .then()
@@ -115,7 +115,7 @@ public class MetricDefinitionAuthorizationTest extends PrepareTest {
         //then creator user is trying to update the Metric Definition that has been created by admin
         UpdateMetricDefinitionRequestDto update = new UpdateMetricDefinitionRequestDto();
 
-        var updateMetricDefinitionResponse = updateMetricDefinitionById(update, "creator", metricDefinitionResponseDto.id);
+        var updateMetricDefinitionResponse = updateMetricDefinitionById(update, "evald", metricDefinitionResponseDto.id);
 
         var informativeResponse = updateMetricDefinitionResponse
                 .then()
@@ -212,7 +212,7 @@ public class MetricDefinitionAuthorizationTest extends PrepareTest {
                 .extract()
                 .as(MetricDefinitionResponseDto.class);
 
-        var error = deleteMetricDefinition("alice", response.id);
+        var error = deleteMetricDefinition("evald", response.id);
 
         var informativeResponse = error
                 .then()
@@ -245,7 +245,7 @@ public class MetricDefinitionAuthorizationTest extends PrepareTest {
                 .as(MetricDefinitionResponseDto.class);
 
         // creator user is trying to delete the Metric Definition that has been created by admin user
-        var deleteCreatorResponse = deleteMetricDefinitionById("creator", metricDefinitionResponseDto.id);
+        var deleteCreatorResponse = deleteMetricDefinitionById("evald", metricDefinitionResponseDto.id);
 
         var informativeResponse = deleteCreatorResponse
                 .then()
@@ -256,7 +256,6 @@ public class MetricDefinitionAuthorizationTest extends PrepareTest {
 
         assertEquals(ApiMessage.UNAUTHORIZED_CLIENT.message, informativeResponse.message);
 
-        // creator user is creating a Metric Definition
         MetricDefinitionRequestDto request1= new MetricDefinitionRequestDto();
 
         request1.metricName = "metric1";
@@ -264,7 +263,7 @@ public class MetricDefinitionAuthorizationTest extends PrepareTest {
         request1.unitType = "TB";
         request1.metricType = "aggregated";
 
-        var creatorMetricDefinitionResponse = createMetricDefinition(request1, "creator");
+        var creatorMetricDefinitionResponse = createMetricDefinition(request1, "alice");
 
         var creatorMetricDefinitionResponseDto = creatorMetricDefinitionResponse
                 .then()
@@ -273,8 +272,7 @@ public class MetricDefinitionAuthorizationTest extends PrepareTest {
                 .extract()
                 .as(MetricDefinitionResponseDto.class);
 
-        // creator user is now trying to delete its Metric Definition
-        var deleteCreatorResponse1 = deleteMetricDefinitionById("creator", creatorMetricDefinitionResponseDto.id);
+        var deleteCreatorResponse1 = deleteMetricDefinitionById("alice", creatorMetricDefinitionResponseDto.id);
 
         var informativeResponse1 = deleteCreatorResponse1
                 .then()

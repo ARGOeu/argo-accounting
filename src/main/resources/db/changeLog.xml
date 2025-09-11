@@ -838,4 +838,9 @@
         </ext:createIndex>
     </changeSet>
 
+    <changeSet id="24" author="accounting-system">
+        <ext:dropCollection collectionName="Role"/>
+        <rollback/>
+    </changeSet>
+
 </databaseChangeLog>

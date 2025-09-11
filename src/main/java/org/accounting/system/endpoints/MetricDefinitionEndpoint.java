@@ -27,15 +27,13 @@ import org.accounting.system.dtos.metricdefinition.MetricDefinitionRequestDto;
 import org.accounting.system.dtos.metricdefinition.MetricDefinitionResponseDto;
 import org.accounting.system.dtos.metricdefinition.UpdateMetricDefinitionRequestDto;
 import org.accounting.system.dtos.pagination.PageResource;
-import org.accounting.system.enums.AccessType;
-import org.accounting.system.enums.Collection;
-import org.accounting.system.enums.Operation;
-import org.accounting.system.interceptors.annotations.AccessPermission;
+import org.accounting.system.interceptors.annotations.AccessResource;
 import org.accounting.system.repositories.metricdefinition.MetricDefinitionRepository;
 import org.accounting.system.services.MetricDefinitionService;
 import org.accounting.system.util.AccountingUriInfo;
 import org.accounting.system.util.Utility;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
+import org.eclipse.microprofile.openapi.annotations.Operation;
 import org.eclipse.microprofile.openapi.annotations.enums.SchemaType;
 import org.eclipse.microprofile.openapi.annotations.enums.SecuritySchemeIn;
 import org.eclipse.microprofile.openapi.annotations.enums.SecuritySchemeType;
@@ -86,7 +84,7 @@ public class MetricDefinitionEndpoint {
     }
 
     @Tag(name = "Metric Definition")
-    @org.eclipse.microprofile.openapi.annotations.Operation(
+    @Operation(
             operationId = "submit-metric-definition",
             summary = "Records a new Metric Definition.",
             description = "Retrieves and inserts a Metric Definition into the database. Typically, " +
@@ -142,11 +140,10 @@ public class MetricDefinitionEndpoint {
                     type = SchemaType.OBJECT,
                     implementation = InformativeResponse.class)))
     @SecurityRequirement(name = "Authentication")
-
     @POST
     @Produces(value = MediaType.APPLICATION_JSON)
     @Consumes(value = MediaType.APPLICATION_JSON)
-    @AccessPermission(collection = Collection.MetricDefinition, operation = Operation.CREATE)
+    @AccessResource(roles = {"admin"})
     public Response save(@Valid @NotNull(message = "The request body is empty.") MetricDefinitionRequestDto metricDefinitionRequestDto, @Context UriInfo uriInfo) {
 
         var serverInfo = new AccountingUriInfo(serverUrl.concat(basePath).concat(uriInfo.getPath()));
@@ -159,7 +156,7 @@ public class MetricDefinitionEndpoint {
     }
 
     @Tag(name = "Metric Definition")
-    @org.eclipse.microprofile.openapi.annotations.Operation(
+    @Operation(
             summary = "Returns the recorded Metric Definitions.",
             description = "This operation fetches all database records of Metric Definition. By default, the first page of 10 Metric Definitions will be returned. You can tune the default values by using the query parameters page and size.")
     @APIResponse(
@@ -187,10 +184,9 @@ public class MetricDefinitionEndpoint {
                     type = SchemaType.OBJECT,
                     implementation = InformativeResponse.class)))
     @SecurityRequirement(name = "Authentication")
-
     @GET
     @Produces(value = MediaType.APPLICATION_JSON)
-    @AccessPermission(collection = Collection.MetricDefinition, operation = Operation.READ)
+    @AccessResource(roles = {"admin", "viewer"})
     public Response getAll(@Parameter(name = "page", in = QUERY,
             description = "Indicates the page number. Page number must be >= 1.") @DefaultValue("1") @Min(value = 1, message = "Page number must be >= 1.") @QueryParam("page") int page,
                            @Parameter(name = "size", in = QUERY,
@@ -204,7 +200,7 @@ public class MetricDefinitionEndpoint {
     }
 
     @Tag(name = "Metric Definition")
-    @org.eclipse.microprofile.openapi.annotations.Operation(
+    @Operation(
             summary = "Returns an existing Metric Definition.",
             description = "This operation accepts the id of a Metric Definition and fetches from the database the corresponding record.")
     @APIResponse(
@@ -238,11 +234,10 @@ public class MetricDefinitionEndpoint {
                     type = SchemaType.OBJECT,
                     implementation = InformativeResponse.class)))
     @SecurityRequirement(name = "Authentication")
-
     @GET
     @Path("/{id}")
     @Produces(value = MediaType.APPLICATION_JSON)
-    @AccessPermission(collection = Collection.MetricDefinition, operation = Operation.READ)
+    @AccessResource(roles = {"admin", "viewer"})
     public Response get(
             @Parameter(
                     description = "The Metric Definition to be retrieved.",
@@ -257,7 +252,7 @@ public class MetricDefinitionEndpoint {
     }
 
     @Tag(name = "Metric Definition")
-    @org.eclipse.microprofile.openapi.annotations.Operation(
+    @Operation(
             summary = "Updates an existing Metric Definition.",
             description = "In order to update the resource properties, the body of the request must contain an updated representation of Metric Definition. " +
                     "You can update a part or all attributes of Metric Definition except for metric_definition_id. The empty or null values are ignored. " +
@@ -311,12 +306,11 @@ public class MetricDefinitionEndpoint {
                     type = SchemaType.OBJECT,
                     implementation = InformativeResponse.class)))
     @SecurityRequirement(name = "Authentication")
-
     @PATCH
     @Path("/{id}")
     @Produces(value = MediaType.APPLICATION_JSON)
     @Consumes(value = MediaType.APPLICATION_JSON)
-    @AccessPermission(collection = Collection.MetricDefinition, operation = Operation.UPDATE)
+    @AccessResource(roles = {"admin"})
     public Response update(
             @Parameter(
                     description = "The Metric Definition to be updated.",
@@ -333,7 +327,7 @@ public class MetricDefinitionEndpoint {
     }
 
     @Tag(name = "Metric Definition")
-    @org.eclipse.microprofile.openapi.annotations.Operation(
+    @Operation(
             summary = "Deletes an existing Metric Definition.",
             description = "You can only delete a Metric Definition that doesn’t have any assigned Metrics to it. If the Metric Definition has no Metrics, you can safely delete it.")
     @APIResponse(
@@ -367,11 +361,10 @@ public class MetricDefinitionEndpoint {
                     type = SchemaType.OBJECT,
                     implementation = InformativeResponse.class)))
     @SecurityRequirement(name = "Authentication")
-
     @DELETE
     @Path("/{id}")
     @Produces(value = MediaType.APPLICATION_JSON)
-    @AccessPermission(collection = Collection.MetricDefinition, operation = Operation.DELETE)
+    @AccessResource(roles = {"admin"})
     public Response delete(@Parameter(
             description = "The Metric Definition to be deleted.",
             required = true,
@@ -396,7 +389,7 @@ public class MetricDefinitionEndpoint {
     }
 
     @Tag(name = "Metric Definition")
-    @org.eclipse.microprofile.openapi.annotations.Operation(
+    @Operation(
             operationId = "search-metric-definition",
             summary = "Searches a new Metric Definition.",
             description = "Searches a metric definition ")
@@ -425,13 +418,11 @@ public class MetricDefinitionEndpoint {
                     type = SchemaType.OBJECT,
                     implementation = InformativeResponse.class)))
     @SecurityRequirement(name = "Authentication")
-
     @POST
     @Path("/search")
     @Produces(value = MediaType.APPLICATION_JSON)
     @Consumes(value = MediaType.APPLICATION_JSON)
-    @AccessPermission(operation = Operation.READ, collection = Collection.MetricDefinition)
-
+    @AccessResource(roles = {"admin", "viewer"})
     public Response search(@Valid @NotNull(message = "The request body is empty.") @DefaultValue("")   @RequestBody(description = "a json object to describe the search criteria",
 
 
@@ -491,7 +482,7 @@ public class MetricDefinitionEndpoint {
 
         var serverInfo = new AccountingUriInfo(serverUrl.concat(basePath).concat(uriInfo.getPath()));
 
-        var list = metricDefinitionService.searchMetricDefinition(json, requestInformation.getAccessType().equals(AccessType.ALWAYS), page - 1, size, serverInfo);
+        var list = metricDefinitionService.searchMetricDefinition(json, page - 1, size, serverInfo);
 
       return Response.ok().entity(list).build();
 

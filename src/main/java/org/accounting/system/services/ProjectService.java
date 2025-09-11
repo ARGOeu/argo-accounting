@@ -6,9 +6,6 @@ import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.NotFoundException;
 import jakarta.ws.rs.core.UriInfo;
-import org.accounting.system.dtos.acl.role.RoleAccessControlRequestDto;
-import org.accounting.system.dtos.acl.role.RoleAccessControlResponseDto;
-import org.accounting.system.dtos.acl.role.RoleAccessControlUpdateDto;
 import org.accounting.system.dtos.installation.InstallationResponseDto;
 import org.accounting.system.dtos.metricdefinition.MetricDefinitionResponseDto;
 import org.accounting.system.dtos.pagination.PageResource;
@@ -16,31 +13,19 @@ import org.accounting.system.entities.Project;
 import org.accounting.system.entities.projections.InstallationProjection;
 import org.accounting.system.entities.projections.ProjectReport;
 import org.accounting.system.entities.projections.normal.ProjectProjection;
-import org.accounting.system.entities.projections.permissions.ProjectProjectionWithPermissions;
-import org.accounting.system.exceptions.ConflictException;
-import org.accounting.system.interceptors.annotations.AdditionalPermissions;
-import org.accounting.system.mappers.AccessControlMapper;
 import org.accounting.system.mappers.InstallationMapper;
 import org.accounting.system.mappers.MetricDefinitionMapper;
-import org.accounting.system.repositories.authorization.RoleRepository;
 import org.accounting.system.repositories.project.ProjectRepository;
-import org.accounting.system.services.acl.RoleAccessControlService;
 import org.accounting.system.util.QueryParser;
-import org.bson.conversions.Bson;
 
-import java.util.ArrayList;
 import java.util.Optional;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 @ApplicationScoped
-public class ProjectService implements RoleAccessControlService {
+public class ProjectService {
 
     @Inject
     ProjectRepository projectRepository;
-
-    @Inject
-    RoleRepository roleRepository;
 
     @Inject
     QueryParser queryParser;
@@ -80,10 +65,10 @@ public class ProjectService implements RoleAccessControlService {
         return new PageResource<>(projectionQuery, InstallationMapper.INSTANCE.installationProjectionsToResponse(projectionQuery.list()), uriInfo);
     }
 
-    public  PageResource<ProjectProjection> searchProject(String json, int page, int size, UriInfo uriInfo) throws  NoSuchFieldException, org.json.simple.parser.ParseException {
-        Bson query=queryParser.parseFile(json, true, new ArrayList<>(), Project.class);
+    public  PageResource<ProjectProjection> searchProject(String json, int page, int size, UriInfo uriInfo) throws org.json.simple.parser.ParseException {
 
-        PanacheQuery<ProjectProjection> projectionQuery = projectRepository.searchProjects(query,page,size);
+        var query = queryParser.parseFile(json);
+        var projectionQuery = projectRepository.searchProjects(query,page,size);
         return new PageResource<>(projectionQuery, projectionQuery.list(), uriInfo);
     }
 
@@ -94,96 +79,11 @@ public class ProjectService implements RoleAccessControlService {
        return new PageResource<>(projectionQuery, projectionQuery.list(), uriInfo);
     }
 
-    public PageResource<ProjectProjectionWithPermissions> getClientPermissions(int page, int size, UriInfo uriInfo){
-
-        var projectionQuery = projectRepository.fetchClientPermissions(page, size);
-
-        return new PageResource<>(projectionQuery, projectionQuery.list(), uriInfo);
-    }
-
     public PageResource<MetricDefinitionResponseDto> fetchAllMetricDefinitions(String id, int page, int size, UriInfo uriInfo){
 
         var projection = projectRepository.fetchAllMetricDefinitions(id, page, size);
 
         return new PageResource<>(projection, MetricDefinitionMapper.INSTANCE.metricDefinitionsToResponse(projection.list()), uriInfo);
-    }
-
-    @Override
-    @AdditionalPermissions(role = "project_admin", additionalRoles = {"provider_creator", "metric_definition_creator", "unit_type_creator", "metric_type_creator"})
-    public void grantPermission(String who, RoleAccessControlRequestDto request, String... id) {
-
-        var projectID = id[0];
-
-        var optional = projectRepository.fetchRoleAccessControl(projectID, who);
-
-        if(optional.isPresent()){
-
-            throw new ConflictException("There is a Project Access Control for the client : "+who);
-        }
-
-        var accessControl = AccessControlMapper.INSTANCE.requestToRoleAccessControl(request);
-
-        accessControl.setWho(who);
-
-        accessControl.setRoles(roleRepository.getRolesByName(request.roles));
-
-        projectRepository.insertNewRoleAccessControl(projectID, accessControl);
-    }
-
-    @Override
-    public RoleAccessControlResponseDto modifyPermission(String who, RoleAccessControlUpdateDto updateDto, String... id) {
-
-        var projectID = id[0];
-
-        var optional = projectRepository.fetchRoleAccessControl(projectID, who);
-
-        optional.orElseThrow(() -> new NotFoundException("There is no Access Control."));
-
-        projectRepository.updateRoleAccessControl(projectID, who, roleRepository.getRolesByName(updateDto.roles));
-
-        var updated = projectRepository.fetchRoleAccessControl(projectID, who);
-
-        return AccessControlMapper.INSTANCE.roleAccessControlToResponse(updated.get());
-    }
-
-    @Override
-    public void deletePermission(String who, String... id) {
-
-        var projectID = id[0];
-
-        var optional = projectRepository.fetchRoleAccessControl(projectID, who);
-
-        optional.orElseThrow(() -> new NotFoundException("There is no Access Control."));
-
-        projectRepository.deleteRoleAccessControl(projectID, who);
-    }
-
-    @Override
-    public RoleAccessControlResponseDto fetchPermission(String who, String... id) {
-
-        var projectID = id[0];
-
-        var optional = projectRepository.fetchRoleAccessControl(projectID, who);
-
-        optional.orElseThrow(() -> new NotFoundException("There is no Access Control."));
-
-        return AccessControlMapper.INSTANCE.roleAccessControlToResponse(optional.get());
-    }
-
-    @Override
-    public PageResource<RoleAccessControlResponseDto> fetchAllPermissions(int page, int size, UriInfo uriInfo, String... id) {
-
-        var projectID = id[0];
-
-        var panacheQuery = projectRepository.fetchAllRoleAccessControls(projectID, page, size);
-
-        var responses = panacheQuery
-                .list()
-                .stream()
-                .map(AccessControlMapper.INSTANCE::roleAccessControlToResponse)
-                .collect(Collectors.toList());
-
-        return new PageResource<>(panacheQuery, responses, uriInfo);
     }
 
     public PageResource<ProjectProjection> getAllForSystemAdmin(int page, int size, UriInfo uriInfo) {

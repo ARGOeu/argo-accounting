@@ -4,18 +4,12 @@ import io.quarkus.test.common.QuarkusTestResource;
 import io.quarkus.test.common.http.TestHTTPEndpoint;
 import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.test.junit.TestProfile;
-import io.quarkus.test.security.TestSecurity;
-import io.quarkus.test.security.oidc.OidcSecurity;
-import io.quarkus.test.security.oidc.TokenIntrospection;
-import io.quarkus.test.security.oidc.UserInfo;
 import io.restassured.http.ContentType;
 import org.accounting.system.dtos.InformativeResponse;
-import org.accounting.system.dtos.acl.role.RoleAccessControlRequestDto;
 import org.accounting.system.dtos.installation.InstallationRequestDto;
 import org.accounting.system.dtos.installation.InstallationResponseDto;
 import org.accounting.system.dtos.metricdefinition.MetricDefinitionRequestDto;
 import org.accounting.system.dtos.metricdefinition.MetricDefinitionResponseDto;
-import org.accounting.system.dtos.pagination.PageResource;
 import org.accounting.system.endpoints.InstallationEndpoint;
 import org.accounting.system.enums.ApiMessage;
 import org.accounting.system.wiremock.ProjectWireMockServer;
@@ -35,102 +29,6 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 @QuarkusTestResource(ProviderWireMockServer.class)
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 public class InstallationAuthorizationTest extends PrepareTest {
-
-    @Test
-    @TestSecurity(user = "provider_admin")
-    @OidcSecurity(introspectionRequired = true,
-            introspection = {
-                    @TokenIntrospection(key = "voperson_id", value = "provider_admin@example.org"),
-                    @TokenIntrospection(key = "sub", value = "provider_admin@example.org"),
-                    @TokenIntrospection(key = "iss", value = "http://localhost:58080/realms/quarkus")
-            },
-            userinfo = {
-                    @UserInfo(key = "name", value = "provider_admin"),
-                    @UserInfo(key = "email", value = "provider_admin@example.org")
-            }
-    )
-    public void clientGrantAccessToOtherClientToManageAProvider(){
-
-        projectRepository.associateProjectWithProviders("777536", Set.of("grnet", "sites"));
-
-        // admin user will submit two installations
-
-        //the first installation has been created by admin
-
-        var metricDefinitionResponse = createMetricDefinition("admin");
-
-        var request = createInstallationRequest("777536", "grnet", "okeanos-knossos", "SECOND", metricDefinitionResponse.id);
-
-        createInstallation(request, "admin");
-
-        //the second installation has been created by admin
-
-        var request1 = createInstallationRequest("777536", "grnet", "okeanos-knossos", "GRNET-KNS", metricDefinitionResponse.id);
-
-        createInstallation(request1, "admin");
-
-        //the third installation has been created by provider_admin
-
-        var acl = new RoleAccessControlRequestDto();
-
-        acl.roles = Set.of("provider_admin");
-
-        given()
-                .auth()
-                .oauth2(getAccessToken("admin"))
-                .basePath("accounting-system/projects")
-                .contentType(ContentType.JSON)
-                .body(acl)
-                .post("/{project_id}/providers/{provider_id}/acl/{who}", "777536", "sites", "2ba5ad4cc037343cfa53ba6633becd68ea4c5d7805f3f1bf172d66c1d9440768")
-                .then()
-                .assertThat()
-                .statusCode(200)
-                .extract()
-                .as(InformativeResponse.class);
-
-        var request2 = createInstallationRequest("777536", "sites", "okeanos-knossos", "okeanos", metricDefinitionResponse.id);
-
-        given()
-                .body(request2)
-                .contentType(ContentType.JSON)
-                .post()
-                .then()
-                .assertThat()
-                .statusCode(201)
-                .extract()
-                .as(InstallationResponseDto.class);
-
-        //because admin can access all installations the size of list should be 3
-
-        PageResource pageResourceAdmin = given()
-                .basePath("accounting-system/projects")
-                .auth()
-                .oauth2(getAccessToken("admin"))
-                .get("/{project_id}/installations", "777536")
-                .body()
-                .as(PageResource.class);
-
-        assertEquals(3, pageResourceAdmin.getTotalElements());
-
-        given()
-                .basePath("accounting-system/projects")
-                .get("/{project_id}/installations", "777536")
-                .then()
-                .assertThat()
-                .statusCode(403);
-
-
-        PageResource pageResourceProviderAdmin = given()
-                .basePath("accounting-system/projects")
-                .auth()
-                .oauth2(getAccessToken("admin"))
-                .get("/{project_id}/providers/{provider_id}/installations", "777536", "sites")
-                .body()
-                .as(PageResource.class);
-
-
-        assertEquals(1, pageResourceProviderAdmin.getTotalElements());
-    }
 
     @Test
     public void getInstallation(){
