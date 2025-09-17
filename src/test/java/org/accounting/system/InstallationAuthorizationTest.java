@@ -12,8 +12,10 @@ import org.accounting.system.dtos.metricdefinition.MetricDefinitionRequestDto;
 import org.accounting.system.dtos.metricdefinition.MetricDefinitionResponseDto;
 import org.accounting.system.endpoints.InstallationEndpoint;
 import org.accounting.system.enums.ApiMessage;
+import org.accounting.system.wiremock.KeycloakWireMockServer;
 import org.accounting.system.wiremock.ProjectWireMockServer;
 import org.accounting.system.wiremock.ProviderWireMockServer;
+import org.accounting.system.wiremock.TokenWireMockServer;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 
@@ -28,6 +30,8 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 @QuarkusTestResource(ProjectWireMockServer.class)
 @QuarkusTestResource(ProviderWireMockServer.class)
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
+@QuarkusTestResource(KeycloakWireMockServer.class)
+@QuarkusTestResource(TokenWireMockServer.class)
 public class InstallationAuthorizationTest extends PrepareTest {
 
     @Test

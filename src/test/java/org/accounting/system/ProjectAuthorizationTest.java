@@ -23,8 +23,10 @@ import org.accounting.system.dtos.project.AssociateProjectProviderRequestDto;
 import org.accounting.system.endpoints.ProjectEndpoint;
 import org.accounting.system.enums.ApiMessage;
 import org.accounting.system.repositories.project.ProjectRepository;
+import org.accounting.system.wiremock.KeycloakWireMockServer;
 import org.accounting.system.wiremock.ProjectWireMockServer;
 import org.accounting.system.wiremock.ProviderWireMockServer;
+import org.accounting.system.wiremock.TokenWireMockServer;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 
@@ -39,6 +41,8 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 @TestHTTPEndpoint(ProjectEndpoint.class)
 @QuarkusTestResource(ProjectWireMockServer.class)
 @QuarkusTestResource(ProviderWireMockServer.class)
+@QuarkusTestResource(KeycloakWireMockServer.class)
+@QuarkusTestResource(TokenWireMockServer.class)
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 public class ProjectAuthorizationTest extends PrepareTest {
 

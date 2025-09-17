@@ -21,8 +21,10 @@ import org.accounting.system.dtos.metricdefinition.MetricDefinitionResponseDto;
 import org.accounting.system.dtos.pagination.PageResource;
 import org.accounting.system.endpoints.MetricEndpoint;
 import org.accounting.system.repositories.project.ProjectRepository;
+import org.accounting.system.wiremock.KeycloakWireMockServer;
 import org.accounting.system.wiremock.ProjectWireMockServer;
 import org.accounting.system.wiremock.ProviderWireMockServer;
+import org.accounting.system.wiremock.TokenWireMockServer;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 
@@ -41,6 +43,8 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 @QuarkusTestResource(ProjectWireMockServer.class)
 @QuarkusTestResource(ProviderWireMockServer.class)
+@QuarkusTestResource(KeycloakWireMockServer.class)
+@QuarkusTestResource(TokenWireMockServer.class)
 public class MetricEndpointTest extends PrepareTest {
 
     @Inject

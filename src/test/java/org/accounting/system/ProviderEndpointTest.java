@@ -12,8 +12,10 @@ import org.accounting.system.dtos.provider.ProviderResponseDto;
 import org.accounting.system.dtos.provider.UpdateProviderRequestDto;
 import org.accounting.system.endpoints.ProviderEndpoint;
 import org.accounting.system.services.ProjectService;
+import org.accounting.system.wiremock.KeycloakWireMockServer;
 import org.accounting.system.wiremock.ProjectWireMockServer;
 import org.accounting.system.wiremock.ProviderWireMockServer;
+import org.accounting.system.wiremock.TokenWireMockServer;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 
@@ -29,6 +31,8 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 @QuarkusTestResource(ProjectWireMockServer.class)
 @QuarkusTestResource(ProviderWireMockServer.class)
+@QuarkusTestResource(KeycloakWireMockServer.class)
+@QuarkusTestResource(TokenWireMockServer.class)
 public class ProviderEndpointTest extends PrepareTest {
 
     @Inject

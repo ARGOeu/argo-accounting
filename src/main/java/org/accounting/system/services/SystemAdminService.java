@@ -5,6 +5,7 @@ import io.quarkus.panache.common.Page;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.NotFoundException;
+import jakarta.ws.rs.ServerErrorException;
 import jakarta.ws.rs.core.UriInfo;
 import org.accounting.system.clients.ProjectClient;
 import org.accounting.system.dtos.InformativeResponse;
@@ -28,17 +29,22 @@ import org.accounting.system.repositories.installation.InstallationRepository;
 import org.accounting.system.repositories.metric.MetricRepository;
 import org.accounting.system.repositories.project.ProjectModulator;
 import org.accounting.system.repositories.project.ProjectRepository;
+import org.accounting.system.services.clients.GroupRequest;
 import org.apache.commons.lang3.StringUtils;
 import org.bson.types.ObjectId;
 import org.eclipse.microprofile.rest.client.inject.RestClient;
+import org.jboss.logging.Logger;
 
 import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 @ApplicationScoped
 public class SystemAdminService {
+
+    private static final Logger LOG = Logger.getLogger(SystemAdminService.class);
 
     @Inject
     @RestClient
@@ -61,6 +67,9 @@ public class SystemAdminService {
 
     @Inject
     OidcTenantConfigRepository oidcTenantConfigRepository;
+
+    @Inject
+    KeycloakService keycloakService;
 
 
     /**
@@ -129,6 +138,13 @@ public class SystemAdminService {
         hierarchicalRelationRepository.deleteByProjectId(id);
         projectRepository.deleteById(id);
 
+        try{
+
+            keycloakService.deleteGroup(keycloakService.getValueByKey("/accounting/"+id));
+        } catch (Exception e){
+
+            LOG.error("Group deletion failed with error : " + e.getMessage());
+        }
     }
 
     public void deleteResource(String id){
@@ -177,6 +193,30 @@ public class SystemAdminService {
         project.setRegisteredOn(LocalDateTime.now());
 
         projectRepository.persist(project);
+
+        try{
+            var groupRequest = new GroupRequest();
+            groupRequest.name = project.getId();
+
+            GroupRequest.Attributes attrs = new GroupRequest.Attributes();
+            attrs.description = List.of(project.getId());
+
+            groupRequest.attributes = attrs;
+            keycloakService.createSubGroup(keycloakService.getValueByKey("/accounting"), groupRequest);
+            var id = keycloakService.getValueByKey("/accounting/"+project.getId());
+            keycloakService.addRole(id, "admin");
+            keycloakService.addRole(id, "viewer");
+            var defaultConfigurationId = keycloakService.getValueByKey(id);
+            var defaultConfiguration = keycloakService.getConfiguration(id, defaultConfigurationId);
+            var groupRoles = List.of("admin", "viewer");
+            defaultConfiguration.setGroupRoles(groupRoles);
+            keycloakService.updateConfiguration(id, defaultConfiguration);
+        } catch (Exception e){
+
+            LOG.error("Group creation failed with error : " + e.getMessage());
+            deleteProject(project.getId());
+            throw new ServerErrorException("Group creation failed with error : " + e.getMessage(), 500);
+        }
 
         return projectRepository.fetchById(project.getId());
     }
