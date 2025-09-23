@@ -4,8 +4,8 @@ import io.quarkus.mongodb.panache.PanacheQuery;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.ForbiddenException;
+import jakarta.ws.rs.ServerErrorException;
 import jakarta.ws.rs.core.UriInfo;
-import org.accounting.system.beans.RequestUserContext;
 import org.accounting.system.dtos.installation.InstallationResponseDto;
 import org.accounting.system.dtos.metricdefinition.MetricDefinitionResponseDto;
 import org.accounting.system.dtos.pagination.PageResource;
@@ -21,8 +21,10 @@ import org.accounting.system.mappers.InstallationMapper;
 import org.accounting.system.mappers.MetricDefinitionMapper;
 import org.accounting.system.mappers.ProviderMapper;
 import org.accounting.system.repositories.provider.ProviderRepository;
+import org.accounting.system.services.clients.GroupRequest;
 import org.accounting.system.util.QueryParser;
 import org.apache.commons.lang3.StringUtils;
+import org.jboss.logging.Logger;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -31,6 +33,8 @@ import java.util.stream.Collectors;
 
 @ApplicationScoped
 public class ProviderService {
+
+    private static final Logger LOG = Logger.getLogger(ProviderService.class);
 
     @Inject
     ProviderRepository providerRepository;
@@ -41,7 +45,8 @@ public class ProviderService {
     QueryParser queryParser;
 
     @Inject
-    RequestUserContext requestUserContext;
+    KeycloakService keycloakService;
+
 
     /**
      * Returns the N Providers from the given page.
@@ -67,11 +72,45 @@ public class ProviderService {
      */
     public ProviderResponseDto save(ProviderRequestDto request) {
 
+        var group = keycloakService.getValueByKey("/accounting/roles/provider");
+
+        if(Objects.isNull(group)){
+
+            throw new ServerErrorException("The subgroup /accounting/roles/provider does not exist, so the provider cannot be saved. Please, create the subgroup /accounting/roles/provider!", 500);
+        }
+
         var provider = ProviderMapper.INSTANCE.requestToProvider(request);
 
         provider.setRegisteredOn(LocalDateTime.now());
 
         providerRepository.save(provider);
+
+        try{
+            var groupRequest = new GroupRequest();
+            groupRequest.name = provider.getId();
+
+            GroupRequest.Attributes attrs = new GroupRequest.Attributes();
+            attrs.description = List.of(provider.getId());
+
+            groupRequest.attributes = attrs;
+
+            keycloakService.createSubGroup(group, groupRequest);
+            var id = keycloakService.getValueByKey("/accounting/roles/provider/"+provider.getId());
+
+            keycloakService.addRole(id, "admin");
+            keycloakService.addRole(id, "viewer");
+
+            var defaultConfigurationId = keycloakService.getValueByKey(id);
+            var defaultConfiguration = keycloakService.getConfiguration(id, defaultConfigurationId);
+            var groupRoles = List.of("admin", "viewer");
+            defaultConfiguration.setGroupRoles(groupRoles);
+            keycloakService.updateConfiguration(id, defaultConfiguration);
+        } catch (Exception e){
+
+            LOG.error("Group creation failed with error : " + e.getMessage());
+            providerRepository.deleteById(provider.getId());
+            throw new ServerErrorException("Group creation failed with error : " + e.getMessage(), 500);
+        }
 
         return ProviderMapper.INSTANCE.providerToResponse(provider);
     }
@@ -104,7 +143,7 @@ public class ProviderService {
      * Delete a Provider by given id.
      * @param providerId The Provider to be deleted.
      * @return If the operation is successful or not.
-     * @throws ForbiddenException If the Providers derives from EOSC-Portal.
+     * @throws ForbiddenException If the Providers derive from EOSC-Portal.
      */
     public boolean delete(String providerId){
 
@@ -117,6 +156,14 @@ public class ProviderService {
 
         if(hierarchicalRelationService.providerBelongsToAnyProject(providerId)){
             throw new ForbiddenException("You cannot delete a Provider which belongs to a Project.");
+        }
+
+        try{
+
+            keycloakService.deleteGroup(keycloakService.getValueByKey("/accounting/roles/provider/"+providerId));
+        } catch (Exception e){
+
+            LOG.error("Group deletion failed with error : " + e.getMessage());
         }
 
         return providerRepository.deleteEntityById(providerId);

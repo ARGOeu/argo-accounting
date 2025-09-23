@@ -41,7 +41,8 @@ According to [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) , the
   Implement Code (ACC Agent) to Process Events and Translate to ACC Calls.
 - [#242](https://github.com/ARGOeu/argo-accounting/pull/242) - ACC-227
   Implement the changes mentioned in the previous task.
-
+- [#243](https://github.com/ARGOeu/argo-accounting/pull/243) - ACC-386
+  Auto-CUD keycloak groups based on ACC actions.
 
 ## 1.7.0 - 2025-07-25
 

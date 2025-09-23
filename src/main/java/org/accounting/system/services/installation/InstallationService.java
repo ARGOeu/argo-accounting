@@ -5,6 +5,7 @@ import jakarta.inject.Inject;
 import jakarta.validation.Payload;
 import jakarta.ws.rs.ForbiddenException;
 import jakarta.ws.rs.NotFoundException;
+import jakarta.ws.rs.ServerErrorException;
 import jakarta.ws.rs.core.UriInfo;
 import org.accounting.system.constraints.AccessInstallation;
 import org.accounting.system.dtos.installation.InstallationRequestDto;
@@ -28,12 +29,16 @@ import org.accounting.system.repositories.HierarchicalRelationRepository;
 import org.accounting.system.repositories.installation.InstallationRepository;
 import org.accounting.system.repositories.provider.ProviderRepository;
 import org.accounting.system.services.HierarchicalRelationService;
+import org.accounting.system.services.KeycloakService;
 import org.accounting.system.services.ResourceService;
+import org.accounting.system.services.clients.GroupRequest;
 import org.accounting.system.util.QueryParser;
 import org.accounting.system.validators.AccessInstallationValidator;
 import org.apache.commons.lang3.StringUtils;
+import org.jboss.logging.Logger;
 
 import java.lang.annotation.Annotation;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.regex.Pattern;
@@ -45,6 +50,9 @@ import java.util.regex.Pattern;
  */
 @ApplicationScoped
 public class InstallationService {
+
+    private static final Logger LOG = Logger.getLogger(InstallationService.class);
+
 
     @Inject
     InstallationRepository installationRepository;
@@ -59,6 +67,9 @@ public class InstallationService {
 
     @Inject
     ResourceService resourceService;
+
+    @Inject
+    KeycloakService keycloakService;
 
     /**
      * Maps the {@link InstallationRequestDto} to {@link Installation}.
@@ -87,6 +98,32 @@ public class InstallationService {
 
         var installation = installationRepository.save(request);
 
+        try{
+
+            var groupRequest = new GroupRequest();
+            groupRequest.name = installation.getId();
+
+            GroupRequest.Attributes attrs = new GroupRequest.Attributes();
+            attrs.description = List.of(String.format("Installation %s created in Project - %s and Provider - %s", installation.getInstallation(), installation.getProject(), installation.getOrganisation()));
+
+            groupRequest.attributes = attrs;
+            keycloakService.createSubGroup(keycloakService.getValueByKey(String.format("/accounting/%s/%s", installation.getProject(), installation.getOrganisation())), groupRequest);
+            var id = keycloakService.getValueByKey(String.format("/accounting/%s/%s/%s", installation.getProject(), installation.getOrganisation(), installation.getId()));
+            keycloakService.addRole(id, "admin");
+            keycloakService.addRole(id, "viewer");
+
+            var defaultConfigurationId = keycloakService.getValueByKey(id);
+            var defaultConfiguration = keycloakService.getConfiguration(id, defaultConfigurationId);
+            var groupRoles = List.of("admin", "viewer");
+            defaultConfiguration.setGroupRoles(groupRoles);
+            keycloakService.updateConfiguration(id, defaultConfiguration);
+        } catch (Exception e){
+
+            LOG.error("Group creation failed with error : " + e.getMessage());
+            delete(installation.getId());
+            throw new ServerErrorException("Group creation failed with error : " + e.getMessage(), 500);
+        }
+
         var installationProjection = fetchInstallationProjection(installation.getProject(), installation.getOrganisation(), installation.getId());
 
         return InstallationMapper.INSTANCE.installationProjectionToResponse(installationProjection);
@@ -110,6 +147,14 @@ public class InstallationService {
         installationRepository.deleteInstallation(installation.getProject(), installation.getOrganisation(), installation.getId());
 
         hierarchicalRelationRepository.delete("externalId", installationId);
+
+        try{
+
+            keycloakService.deleteGroup(keycloakService.getValueByKey(String.format("/accounting/%s/%s/%s", installation.getProject(), installation.getOrganisation(), installationId)));
+        } catch (Exception e){
+
+            LOG.error("Group deletion failed with error : " + e.getMessage());
+        }
     }
 
     /**

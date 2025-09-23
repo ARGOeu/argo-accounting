@@ -13,16 +13,22 @@ import org.accounting.system.entities.Project;
 import org.accounting.system.entities.projections.InstallationProjection;
 import org.accounting.system.entities.projections.ProjectReport;
 import org.accounting.system.entities.projections.normal.ProjectProjection;
+import org.accounting.system.entities.provider.Provider;
 import org.accounting.system.mappers.InstallationMapper;
 import org.accounting.system.mappers.MetricDefinitionMapper;
 import org.accounting.system.repositories.project.ProjectRepository;
+import org.accounting.system.services.clients.GroupRequest;
 import org.accounting.system.util.QueryParser;
+import org.jboss.logging.Logger;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
 @ApplicationScoped
 public class ProjectService {
+
+    private static final Logger LOG = Logger.getLogger(ProjectService.class);
 
     @Inject
     ProjectRepository projectRepository;
@@ -30,8 +36,11 @@ public class ProjectService {
     @Inject
     QueryParser queryParser;
 
+    @Inject
+    KeycloakService keycloakService;
+
     /**
-     * This method correlates the given Providers with a specific Project and creates an hierarchical structure with root
+     * This method correlates the given Providers with a specific Project and creates a hierarchical structure with root
      * the given Project and children the given Providers.
      *
      * @param projectId The Project id with which the Providers are going to be correlated.
@@ -40,7 +49,34 @@ public class ProjectService {
      */
     public void associateProjectWithProviders(String projectId, Set<String> providerIds){
 
-        projectRepository.associateProjectWithProviders(projectId, providerIds);
+        var providers = projectRepository.associateProjectWithProviders(projectId, providerIds);
+
+        for(Provider prov : providers){
+
+            try{
+
+                var groupRequest = new GroupRequest();
+                groupRequest.name = prov.getId();
+
+                GroupRequest.Attributes attrs = new GroupRequest.Attributes();
+                attrs.description = List.of(String.format("Provider %s associated with Project %s", prov.getId(), projectId));
+
+                groupRequest.attributes = attrs;
+                keycloakService.createSubGroup(keycloakService.getValueByKey(String.format("/accounting/%s", projectId)), groupRequest);
+                var id = keycloakService.getValueByKey(String.format("/accounting/%s/%s", projectId, prov.getId()));
+                keycloakService.addRole(id, "admin");
+                keycloakService.addRole(id, "viewer");
+
+                var defaultConfigurationId = keycloakService.getValueByKey(id);
+                var defaultConfiguration = keycloakService.getConfiguration(id, defaultConfigurationId);
+                var groupRoles = List.of("admin", "viewer");
+                defaultConfiguration.setGroupRoles(groupRoles);
+                keycloakService.updateConfiguration(id, defaultConfiguration);
+            } catch (Exception e){
+
+                LOG.error("Group creation failed with error : " + e.getMessage());
+            }
+        }
     }
 
     /**

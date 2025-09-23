@@ -297,7 +297,6 @@ public class SystemAdminEndpoint {
                     type = SchemaType.OBJECT,
                     implementation = InformativeResponse.class)))
     @SecurityRequirement(name = "Authentication")
-
     @POST
     @Path("/resources")
     @Produces(value = MediaType.APPLICATION_JSON)

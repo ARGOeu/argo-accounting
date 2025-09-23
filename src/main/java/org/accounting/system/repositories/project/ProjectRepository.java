@@ -152,7 +152,7 @@ public class ProjectRepository extends ProjectModulator {
         return projectionQuery;
     }
 
-    public void associateProjectWithProviders(String projectId, Set<String> providerIds){
+    public Set<Provider> associateProjectWithProviders(String projectId, Set<String> providerIds){
 
         var providerIdsToSet = new HashSet<>(providerIds);
 
@@ -183,6 +183,8 @@ public class ProjectRepository extends ProjectModulator {
                 });
 
         setProjectProviders(projectId, providers);
+
+        return providers;
     }
 
     public void setProjectProviders(String projectId, Set<Provider> providers){
