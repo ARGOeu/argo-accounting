@@ -5,8 +5,6 @@ import com.mongodb.client.model.Aggregates;
 import com.mongodb.client.model.Field;
 import com.mongodb.client.model.Filters;
 import com.mongodb.client.model.Projections;
-import com.mongodb.client.model.UpdateOptions;
-import com.mongodb.client.model.Updates;
 import io.quarkus.mongodb.panache.PanacheQuery;
 import io.quarkus.panache.common.Page;
 import io.vavr.collection.Array;
@@ -36,7 +34,6 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.Set;
 
 /**
  * {@link ProviderRepository This repository} encapsulates the logic required to access
@@ -309,6 +306,7 @@ public class ProviderRepository extends AccessibleModulator<Provider, String> {
                 Projections.computed("infrastructure", "$installation.infrastructure"),
                 Projections.computed("installation", "$installation.installation"),
                 Projections.computed("installationId", "$installation._id"),
+                Projections.computed("externalId", "$installation.external_id"),
                 Projections.computed("resource", new Document("$ifNull", List.of("$installation.resource", ""))),
                 Projections.include("data")
         ));
@@ -321,6 +319,7 @@ public class ProviderRepository extends AccessibleModulator<Provider, String> {
                         .append("provider", "$provider")
                         .append("installation", "$installation")
                         .append("infrastructure", "$infrastructure")
+                        .append("externalId", "$externalId")
                         .append("resource", "$resource")
                         .append("data", "$data")
                 ),

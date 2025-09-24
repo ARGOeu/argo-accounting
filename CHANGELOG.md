@@ -44,6 +44,11 @@ According to [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) , the
 - [#243](https://github.com/ARGOeu/argo-accounting/pull/243) - ACC-386
   Auto-CUD keycloak groups based on ACC actions.
 
+## Unreleased - Fixed
+
+- [#244](https://github.com/ARGOeu/argo-accounting/pull/244) - ACC-396
+  External_id attribute is null.
+
 ## 1.7.0 - 2025-07-25
 
 ---

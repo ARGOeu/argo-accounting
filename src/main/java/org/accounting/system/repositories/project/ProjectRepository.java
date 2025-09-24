@@ -404,6 +404,7 @@ public class ProjectRepository extends ProjectModulator {
                 Projections.computed("infrastructure", "$installation.infrastructure"),
                 Projections.computed("installation", "$installation.installation"),
                 Projections.computed("installationId", "$installation._id"),
+                Projections.computed("externalId", "$installation.external_id"),
                 Projections.computed("resource", new Document("$ifNull", List.of("$installation.resource", ""))),
                 Projections.include("data")
         ));
@@ -416,6 +417,7 @@ public class ProjectRepository extends ProjectModulator {
                         .append("provider", "$provider")
                         .append("installation", "$installation")
                         .append("infrastructure", "$infrastructure")
+                        .append("externalId", "$externalId")
                         .append("resource", "$resource")
                         .append("data", "$data")
                 ),
