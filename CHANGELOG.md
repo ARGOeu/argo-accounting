@@ -43,6 +43,8 @@ According to [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) , the
   Implement the changes mentioned in the previous task.
 - [#243](https://github.com/ARGOeu/argo-accounting/pull/243) - ACC-386
   Auto-CUD keycloak groups based on ACC actions.
+- [#245](https://github.com/ARGOeu/argo-accounting/pull/245) - ACC-389
+  Add a total aggregation to the provider representative report.
 
 ## Unreleased - Fixed
 

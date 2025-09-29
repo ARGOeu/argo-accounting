@@ -6,7 +6,7 @@ import org.eclipse.microprofile.openapi.annotations.media.Schema;
 
 import java.util.List;
 
-@Schema(name="ProviderReport", description="A report for a specific provider that includes aggregated metric values over a time period and associated role-based access control settings.")
+@Schema(name="ProviderReport", description="A report for a specific provider that includes aggregated metric values over a time period.")
 public class ProviderReport {
 
     @Schema(

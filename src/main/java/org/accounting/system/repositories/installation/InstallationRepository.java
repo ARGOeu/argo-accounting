@@ -408,7 +408,7 @@ public class InstallationRepository {
 
     public InstallationReport installationReport(Installation installation, String start, String end){
 
-        var filters = Array.of(Filters.regex("resource_id", "\\b" + installation.getProject() + HierarchicalRelation.PATH_SEPARATOR + installation.getOrganisation() + HierarchicalRelation.PATH_SEPARATOR + installation.getId() + "\\b"+"(?![-])"),
+        var filters = Array.of(Filters.regex("resource_id","^"+ installation.getProject() + HierarchicalRelation.PATH_SEPARATOR + installation.getOrganisation() + HierarchicalRelation.PATH_SEPARATOR + installation.getId() + "(?:\\.[^\\r\\n.]+)*$"),
                 Filters.and(Filters.gte("time_period_start", Utility.stringToInstant(start)), Filters.lte("time_period_start", Utility.stringToInstant(end))),
                 Filters.and(Filters.gte("time_period_end", Utility.stringToInstant(start)), Filters.lte("time_period_end", Utility.stringToInstant(end))));
 

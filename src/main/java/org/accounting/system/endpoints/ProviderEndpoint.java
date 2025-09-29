@@ -32,8 +32,8 @@ import org.accounting.system.dtos.provider.ProviderRequestDto;
 import org.accounting.system.dtos.provider.ProviderResponseDto;
 import org.accounting.system.dtos.provider.UpdateProviderRequestDto;
 import org.accounting.system.entities.HierarchicalRelation;
+import org.accounting.system.entities.projections.GenericProviderReport;
 import org.accounting.system.entities.projections.ProviderProjectionWithProjectInfo;
-import org.accounting.system.entities.projections.ProviderReport;
 import org.accounting.system.interceptors.annotations.AccessResource;
 import org.accounting.system.repositories.provider.ProviderRepository;
 import org.accounting.system.services.EntitlementService;
@@ -514,8 +514,8 @@ public class ProviderEndpoint {
             responseCode = "200",
             description = "Provider report retrieved successfully.",
             content = @Content(schema = @Schema(
-                    type = SchemaType.ARRAY,
-                    implementation = ProviderReport.class)))
+                    type = SchemaType.OBJECT,
+                    implementation = GenericProviderReport.class)))
     @APIResponse(
             responseCode = "401",
             description = "Client has not been authenticated.",

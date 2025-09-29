@@ -241,7 +241,7 @@ public class ProviderRepository extends AccessibleModulator<Provider, String> {
 
     public ProviderReport providerReport(String projectId, String providerId, String start, String end){
 
-        var filters = Array.of(Filters.regex("resource_id", "\\b" + projectId + HierarchicalRelation.PATH_SEPARATOR + providerId + "\\b"+"(?![-])"),
+        var filters = Array.of(Filters.regex("resource_id","^"+ projectId + HierarchicalRelation.PATH_SEPARATOR + providerId + "(?:\\.[^\\r\\n.]+)*$"),
                 Filters.and(Filters.gte("time_period_start", Utility.stringToInstant(start)), Filters.lte("time_period_start", Utility.stringToInstant(end))),
                 Filters.and(Filters.gte("time_period_end", Utility.stringToInstant(start)), Filters.lte("time_period_end", Utility.stringToInstant(end))));
 
