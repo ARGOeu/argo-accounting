@@ -12,7 +12,9 @@ import org.accounting.system.dtos.pagination.PageResource;
 import org.accounting.system.dtos.provider.ProviderRequestDto;
 import org.accounting.system.dtos.provider.ProviderResponseDto;
 import org.accounting.system.dtos.provider.UpdateProviderRequestDto;
+import org.accounting.system.entities.projections.GenericProviderReport;
 import org.accounting.system.entities.projections.InstallationProjection;
+import org.accounting.system.entities.projections.MetricReportProjection;
 import org.accounting.system.entities.projections.ProviderProjectionWithProjectInfo;
 import org.accounting.system.entities.projections.ProviderReport;
 import org.accounting.system.entities.provider.Provider;
@@ -27,6 +29,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.jboss.logging.Logger;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
@@ -255,9 +258,35 @@ public class ProviderService {
         return providerRepository.providerReport(projectId, providerId, start, end);
     }
 
-    public List<ProviderReport> providerReport(String providerId, String start, String end){
+    public GenericProviderReport providerReport(String providerId, String start, String end){
 
-        return access(providerId, start, end);
+        var reports = access(providerId, start, end);
+
+        var grouped = new ArrayList<>(
+                reports.stream().flatMap(r->r.aggregatedMetrics.stream())
+                        .collect(Collectors.toMap(
+                                m -> m.metricDefinitionId,
+                                m -> m,
+                                (m1, m2) -> {
+                                    var combined = new MetricReportProjection();
+                                    combined.metricDefinitionId = m1.metricDefinitionId;
+                                    combined.metricName = m1.metricName;
+                                    combined.metricDescription = m1.metricDescription;
+                                    combined.unitType = m1.unitType;
+                                    combined.metricType = m1.metricType;
+                                    combined.totalValue = m1.totalValue + m2.totalValue;
+                                    return combined;
+                                }
+                        ))
+                        .values()
+        );
+
+        var genericReport = new GenericProviderReport();
+
+        genericReport.reports = reports;
+        genericReport.aggregatedMetrics = grouped;
+
+        return genericReport;
     }
 
     private List<ProviderReport> access(String providerId, String start, String end){

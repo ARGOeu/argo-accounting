@@ -6,6 +6,7 @@ import jakarta.inject.Inject;
 import org.accounting.system.dtos.metric.MetricRequestDto;
 import org.accounting.system.entities.HierarchicalRelation;
 import org.accounting.system.entities.Metric;
+import org.accounting.system.enums.RelationType;
 import org.accounting.system.exceptions.ConflictException;
 import org.accounting.system.mappers.MetricMapper;
 import org.accounting.system.repositories.HierarchicalRelationRepository;
@@ -96,7 +97,7 @@ public class HierarchicalRelationService {
      */
     public boolean providerBelongsToAnyProject(String providerId){
 
-        return hierarchicalRelationRepository.exist(providerId);
+        return hierarchicalRelationRepository.fetchExternalHierarchicalRelation(providerId, RelationType.PROVIDER).isPresent();
     }
 
     public Set<String> getProjectsByProvider(String providerId) {
