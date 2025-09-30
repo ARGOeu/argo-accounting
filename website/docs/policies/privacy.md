@@ -1,7 +1,7 @@
 ---
 id: acc_privacy_policy
-title: Accounting Service Privacy Policy
-sidebar_position: 1
+title: ACC Privacy Policy
+sidebar_position: 2
 ---
 
 **Controller details**
