@@ -138,12 +138,14 @@ public class SystemAdminService {
         hierarchicalRelationRepository.deleteByProjectId(id);
         projectRepository.deleteById(id);
 
+        var key = "/accounting/"+id;
+
         try{
 
-            keycloakService.deleteGroup(keycloakService.getValueByKey("/accounting/"+id));
+            keycloakService.deleteGroup(keycloakService.getValueByKey(key));
         } catch (Exception e){
 
-            LOG.error("Group deletion failed with error : " + e.getMessage());
+            LOG.error(String.format("Group deletion %s failed with error : %s", key, e.getMessage()));
         }
     }
 

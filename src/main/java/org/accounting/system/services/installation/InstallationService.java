@@ -20,6 +20,7 @@ import org.accounting.system.entities.HierarchicalRelation;
 import org.accounting.system.entities.installation.Installation;
 import org.accounting.system.entities.projections.InstallationProjection;
 import org.accounting.system.entities.projections.InstallationReport;
+import org.accounting.system.entities.projections.MetricProjection;
 import org.accounting.system.enums.RelationType;
 import org.accounting.system.exceptions.ConflictException;
 import org.accounting.system.mappers.InstallationMapper;
@@ -27,6 +28,7 @@ import org.accounting.system.mappers.MetricDefinitionMapper;
 import org.accounting.system.mappers.MetricMapper;
 import org.accounting.system.repositories.HierarchicalRelationRepository;
 import org.accounting.system.repositories.installation.InstallationRepository;
+import org.accounting.system.repositories.metric.MetricRepository;
 import org.accounting.system.repositories.provider.ProviderRepository;
 import org.accounting.system.services.HierarchicalRelationService;
 import org.accounting.system.services.KeycloakService;
@@ -71,6 +73,9 @@ public class InstallationService {
     @Inject
     KeycloakService keycloakService;
 
+    @Inject
+    MetricRepository metricRepository;
+
     /**
      * Maps the {@link InstallationRequestDto} to {@link Installation}.
      * Then the {@link Installation} is stored in the mongo database.
@@ -78,7 +83,7 @@ public class InstallationService {
      * @param request The POST request body.
      * @return The stored Installation has been turned into a response body.
      */
-    public InstallationResponseDto save(InstallationRequestDto request) {
+    public InstallationResponseDto save(InstallationRequestDto request, String creatorId) {
 
         var optional = installationRepository.exist(request.project, request.organisation, request.installation);
 
@@ -96,7 +101,7 @@ public class InstallationService {
             throw new ConflictException("external_id already exists");
         }
 
-        var installation = installationRepository.save(request);
+        var installation = installationRepository.save(request, creatorId);
 
         try{
 
@@ -148,12 +153,13 @@ public class InstallationService {
 
         hierarchicalRelationRepository.delete("externalId", installationId);
 
+        var key = String.format("/accounting/%s/%s/%s", installation.getProject(), installation.getOrganisation(), installationId);
         try{
 
-            keycloakService.deleteGroup(keycloakService.getValueByKey(String.format("/accounting/%s/%s/%s", installation.getProject(), installation.getOrganisation(), installationId)));
+            keycloakService.deleteGroup(keycloakService.getValueByKey(key));
         } catch (Exception e){
 
-            LOG.error("Group deletion failed with error : " + e.getMessage());
+            LOG.error(String.format("Group deletion %s failed with error : %s", key, e.getMessage()));
         }
     }
 
@@ -334,6 +340,25 @@ public class InstallationService {
         var metric = hierarchicalRelationService.assignMetric(ids[2], request);
 
         return MetricMapper.INSTANCE.metricToResponse(metric);
+    }
+
+    public PageResource<MetricProjection> fetchAllMetricsByExternalId(String externalId, int page, int size, UriInfo uriInfo, String start, String end, String metricDefinitionId){
+
+        var optional = fetchExternalHierarchicalRelation(externalId);
+
+        if(optional.isEmpty()){
+            throw new NotFoundException("There is no Installation with external id: " +externalId);
+        }
+
+        var ids = optional.get().id.split(Pattern.quote(HierarchicalRelation.PATH_SEPARATOR));
+
+        var validator = getAccessInstallationValidator(new String[] {"admin", "viewer"});
+
+        validator.isValid(ids[2], null);
+
+        var projection = metricRepository.findByExternalId(ids[0] + HierarchicalRelation.PATH_SEPARATOR + ids[1] + HierarchicalRelation.PATH_SEPARATOR + ids[2], page, size, start, end, metricDefinitionId);
+
+        return new PageResource<>(projection, projection.list(), uriInfo);
     }
 
     private static AccessInstallationValidator getAccessInstallationValidator(String[] roles) {

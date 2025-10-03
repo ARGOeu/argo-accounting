@@ -72,7 +72,7 @@ public class ProjectEndpointTest extends PrepareTest {
     @Test
     public void assignMetric(){
 
-        projectRepository.associateProjectWithProviders("777536", Set.of("grnet"));
+        projectRepository.associateProjectWithProvider("777536","grnet");
 
         //Registering an installation
         var requestForMetricDefinition = new MetricDefinitionRequestDto();

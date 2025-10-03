@@ -155,4 +155,9 @@ public class HierarchicalRelationRepository extends AbstractAccessModulator<Hier
 
         return find("externalUniqueIdentifier = ?1 and relationType = ?2", externalId, relationType).firstResultOptional();
     }
+
+    public Optional<HierarchicalRelation> fetchHierarchicalRelation(String externalId, RelationType relationType){
+
+        return find("externalId = ?1 and relationType = ?2", externalId, relationType).firstResultOptional();
+    }
 }

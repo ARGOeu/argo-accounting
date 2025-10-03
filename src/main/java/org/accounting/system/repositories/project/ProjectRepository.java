@@ -6,13 +6,11 @@ import com.mongodb.client.model.Field;
 import com.mongodb.client.model.Filters;
 import com.mongodb.client.model.Projections;
 import com.mongodb.client.model.Updates;
-import com.pivovarit.function.ThrowingFunction;
 import io.quarkus.mongodb.panache.PanacheQuery;
 import io.quarkus.panache.common.Page;
 import io.vavr.collection.Array;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
-import jakarta.ws.rs.NotFoundException;
 import org.accounting.system.dtos.project.UpdateProjectRequest;
 import org.accounting.system.entities.HierarchicalRelation;
 import org.accounting.system.entities.MetricDefinition;
@@ -36,7 +34,6 @@ import org.bson.conversions.Bson;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -152,39 +149,27 @@ public class ProjectRepository extends ProjectModulator {
         return projectionQuery;
     }
 
-    public Set<Provider> associateProjectWithProviders(String projectId, Set<String> providerIds){
-
-        var providerIdsToSet = new HashSet<>(providerIds);
+    public void associateProjectWithProvider(String projectId, String providerId){
 
         var existingIds = fetchProjectProviders(projectId)
                 .stream()
                 .map(Provider::getId)
                 .collect(Collectors.toSet());
 
-        providerIdsToSet.removeAll(existingIds);
+        if(existingIds.contains(providerId)){
 
-        var providers = providerIdsToSet
-                .stream()
-                .map(ThrowingFunction.sneaky(id-> {
+            throw new ConflictException("This provider has already been associated with the Project : "+projectId);
+        }
 
-                    var optional = providerRepository.findByIdOptional(id).orElseThrow(()->new NotFoundException("There is no Provider with the following id: "+id));
-                    return optional;
-                }))
-                .collect(Collectors.toSet());
+        var provider = providerRepository.findById(providerId);
 
-        providers
-                .forEach(provider -> {
+        var project = new HierarchicalRelation(projectId, RelationType.PROJECT);
+        var hprovider = new HierarchicalRelation(provider.getId(), project, RelationType.PROVIDER, provider.getExternalId());
 
-                    HierarchicalRelation project = new HierarchicalRelation(projectId, RelationType.PROJECT);
-                    HierarchicalRelation hprovider = new HierarchicalRelation(provider.getId(), project, RelationType.PROVIDER, provider.getId());
+        hierarchicalRelationRepository.save(project);
+        hierarchicalRelationRepository.save(hprovider);
 
-                    hierarchicalRelationRepository.save(project);
-                    hierarchicalRelationRepository.save(hprovider);
-                });
-
-        setProjectProviders(projectId, providers);
-
-        return providers;
+        setProjectProviders(projectId, Set.of(provider));
     }
 
     public void setProjectProviders(String projectId, Set<Provider> providers){
@@ -210,24 +195,17 @@ public class ProjectRepository extends ProjectModulator {
         getMongoCollection().updateOne(query, update);
     }
 
-    public void dissociateProviderFromProject(String projectId, Set<String> providerIds){
+    public void dissociateProviderFromProject(String projectId, String providerId){
 
-        for(String provider: providerIds){
+        var installations = installationRepository.fetchInstallationProviders(projectId, providerId);
 
-            providerRepository.findByIdOptional(provider).orElseThrow(()->new NotFoundException("There is no Provider with the following id: "+provider));
-
-            var installations = installationRepository.fetchInstallationProviders(projectId, provider);
-
-            if(!installations.isEmpty()){
-                throw new ConflictException("Dissociation is not allowed. There are registered installations to {"+projectId+", "+provider+"}.");
-            }
+        if(!installations.isEmpty()){
+            throw new ConflictException("Dissociation is not allowed. There are registered installations to {"+projectId+", "+providerId+"}.");
         }
 
-        for(String provider: providerIds){
-            hierarchicalRelationRepository.delete("_id = ?1",projectId + HierarchicalRelation.PATH_SEPARATOR + provider);
-        }
+        hierarchicalRelationRepository.delete("_id = ?1",projectId + HierarchicalRelation.PATH_SEPARATOR + providerId);
 
-        deleteProjectProviders(projectId, providerIds);
+        deleteProjectProviders(projectId, Set.of(providerId));
     }
 
     public ProjectProjection fetchById(String projectId){
@@ -433,6 +411,7 @@ public class ProjectRepository extends ProjectModulator {
                 Projections.computed("abbreviation", new Document("$ifNull", List.of("$provider.abbreviation", ""))),
                 Projections.computed("logo", new Document("$ifNull", List.of("$provider.logo", ""))),
                 Projections.computed("name", "$provider.name"),
+                Projections.computed("externalId", "$provider.external_id"),
                 Projections.computed("website", new Document("$ifNull", List.of("$provider.website", ""))),
                 Projections.include("data"),
                 Projections.computed("aggregatedMetrics", new Document("$reduce", new Document()
@@ -452,13 +431,14 @@ public class ProjectRepository extends ProjectModulator {
                 Accumulators.first("name", "$name"),
                 Accumulators.first("website", "$website"),
                 Accumulators.first("abbreviation", "$abbreviation"),
+                Accumulators.first("externalId", "$externalId"),
                 Accumulators.first("logo", "$logo"),
                 Accumulators.first("data", "$data")
         );
 
         var gpafggg = Aggregates.project(Projections.fields(
                 Projections.computed("provider_id", "$_id.provider_id"),
-                Projections.include("name", "website", "abbreviation", "logo", "data", "unitType", "metricType", "metricDescription", "metricName", "metricDefinitionId", "totalValue")
+                Projections.include("name", "website", "abbreviation", "externalId", "logo", "data", "unitType", "metricType", "metricDescription", "metricName", "metricDefinitionId", "totalValue")
         ));
 
         var gpagg = Aggregates.group(
@@ -466,6 +446,7 @@ public class ProjectRepository extends ProjectModulator {
                 Accumulators.first("name", "$name"),
                 Accumulators.first("website", "$website"),
                 Accumulators.first("abbreviation", "$abbreviation"),
+                Accumulators.first("externalId", "$externalId"),
                 Accumulators.first("logo", "$logo"),
                 Accumulators.first("data", "$data"),
                 Accumulators.first("provider_id", "$provider_id"),

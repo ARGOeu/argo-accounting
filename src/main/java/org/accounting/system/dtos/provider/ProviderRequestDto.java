@@ -11,13 +11,12 @@ public class ProviderRequestDto {
     @Schema(
             type = SchemaType.STRING,
             implementation = String.class,
-            description = "The Provider ID.",
-            example = "sites",
-            required = true
+            description = "The Provider external ID.",
+            example = "sites"
     )
-    @JsonProperty("id")
-    @NotEmpty(message = "id may not be empty.")
-    public String id;
+    @JsonProperty("external_id")
+    public String externalId;
+
     @Schema(
             type = SchemaType.STRING,
             implementation = String.class,
@@ -28,6 +27,7 @@ public class ProviderRequestDto {
     @JsonProperty("name")
     @NotEmpty(message = "name may not be empty.")
     public String name;
+
     @Schema(
             type = SchemaType.STRING,
             implementation = String.class,
@@ -36,6 +36,7 @@ public class ProviderRequestDto {
     )
     @JsonProperty("website")
     public String website;
+
     @Schema(
             type = SchemaType.STRING,
             implementation = String.class,
@@ -44,6 +45,7 @@ public class ProviderRequestDto {
     )
     @JsonProperty("abbreviation")
     public String abbreviation;
+
     @Schema(
             type = SchemaType.STRING,
             implementation = String.class,

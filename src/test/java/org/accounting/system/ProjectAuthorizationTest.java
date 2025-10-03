@@ -19,7 +19,6 @@ import org.accounting.system.dtos.metric.MetricResponseDto;
 import org.accounting.system.dtos.metricdefinition.MetricDefinitionRequestDto;
 import org.accounting.system.dtos.metricdefinition.MetricDefinitionResponseDto;
 import org.accounting.system.dtos.pagination.PageResource;
-import org.accounting.system.dtos.project.AssociateProjectProviderRequestDto;
 import org.accounting.system.endpoints.ProjectEndpoint;
 import org.accounting.system.enums.ApiMessage;
 import org.accounting.system.repositories.project.ProjectRepository;
@@ -29,8 +28,6 @@ import org.accounting.system.wiremock.ProviderWireMockServer;
 import org.accounting.system.wiremock.TokenWireMockServer;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
-
-import java.util.Set;
 
 import static io.restassured.RestAssured.given;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -64,14 +61,10 @@ public class ProjectAuthorizationTest extends PrepareTest {
     )
     public void associateProjectWithProvidersForbidden(){
 
-        var associateProjectProviderRequestDto = new AssociateProjectProviderRequestDto();
-
-        associateProjectProviderRequestDto.providers = Set.of("grnet");
 
         var informativeResponse = given()
                 .contentType(ContentType.JSON)
-                .body(associateProjectProviderRequestDto)
-                .post("/{id}/associate", "777536")
+                .post("/{id}/associate/provider/{provider_id}", "777536", "grnet")
                 .then()
                 .assertThat()
                 .statusCode(403)
@@ -84,16 +77,11 @@ public class ProjectAuthorizationTest extends PrepareTest {
     @Test
     public void associateProjectWithProvidersNotFound(){
 
-        var associateProjectProviderRequestDto = new AssociateProjectProviderRequestDto();
-
-        associateProjectProviderRequestDto.providers = Set.of("not_found");
-
         var informativeResponse = given()
                 .auth()
                 .oauth2(getAccessToken("admin"))
                 .contentType(ContentType.JSON)
-                .body(associateProjectProviderRequestDto)
-                .post("/{id}/associate", "777536")
+                .post("/{id}/associate/provider/{provider_id}", "777536", "not_found")
                 .then()
                 .assertThat()
                 .statusCode(404)
@@ -118,7 +106,7 @@ public class ProjectAuthorizationTest extends PrepareTest {
     )
     public void metricsUnderAProject(){
 
-        projectRepository.associateProjectWithProviders("777536", Set.of("grnet"));
+        projectRepository.associateProjectWithProvider("777536", "grnet");
 
         //Registering an installation
         var requestForMetricDefinition = new MetricDefinitionRequestDto();
@@ -199,7 +187,7 @@ public class ProjectAuthorizationTest extends PrepareTest {
     )
     public void metricsUnderAProvider(){
 
-        projectRepository.associateProjectWithProviders("777536", Set.of("grnet"));
+        projectRepository.associateProjectWithProvider("777536","grnet");
 
         var metricDefinitionResponse = createMetricDefinition("admin");
 
@@ -269,7 +257,7 @@ public class ProjectAuthorizationTest extends PrepareTest {
     )
     public void metricsUnderAnInstallation(){
 
-        projectRepository.associateProjectWithProviders("777536", Set.of("grnet"));
+        projectRepository.associateProjectWithProvider("777536","grnet");
 
         var metricDefinitionResponse = createMetricDefinition("admin");
 

@@ -21,11 +21,11 @@ import org.accounting.system.entities.projections.InstallationReport;
 import org.accounting.system.entities.projections.MetricReportProjection;
 import org.accounting.system.entities.projections.MongoQuery;
 import org.accounting.system.enums.RelationType;
-import org.accounting.system.mappers.InstallationMapper;
 import org.accounting.system.repositories.HierarchicalRelationRepository;
 import org.accounting.system.repositories.metric.MetricRepository;
 import org.accounting.system.repositories.project.ProjectRepository;
 import org.accounting.system.util.Utility;
+import org.apache.commons.lang3.StringUtils;
 import org.bson.Document;
 import org.bson.conversions.Bson;
 import org.bson.types.ObjectId;
@@ -219,9 +219,9 @@ public class InstallationRepository {
         projectRepository.getMongoCollection().updateOne(eq, update, options);
     }
 
-    public Installation save(InstallationRequestDto request) {
+    public Installation save(InstallationRequestDto request, String creatorId) {
 
-        var installation = insertNewInstallation(request);
+        var installation = insertNewInstallation(request, creatorId);
 
         HierarchicalRelation project = new HierarchicalRelation(request.project, RelationType.PROJECT);
 
@@ -236,8 +236,17 @@ public class InstallationRepository {
         return installation;
     }
 
-    public Installation saveForAms(Installation installation) {
+    public Installation insertNewInstallation(InstallationRequestDto request, String creatorId){
 
+        var installation = new Installation();
+        installation.setProject(request.project);
+        installation.setOrganisation(request.organisation);
+        installation.setInfrastructure(request.infrastructure);
+        installation.setInstallation(request.installation);
+        installation.setResource(request.resource);
+        installation.setExternalId(request.externalId);
+        installation.setUnitOfAccess(StringUtils.isNotEmpty(request.unitOfAccess) ? new ObjectId(request.unitOfAccess) : null);
+        installation.setCreatorId(creatorId);
         installation.setId(new ObjectId().toString());
 
         var update = Updates.push("providers.$.installations", installation);
@@ -246,32 +255,7 @@ public class InstallationRepository {
 
         projectRepository.getMongoCollection().updateOne(eq, update);
 
-        HierarchicalRelation project = new HierarchicalRelation(installation.getProject(), RelationType.PROJECT);
-
-        HierarchicalRelation provider = new HierarchicalRelation(installation.getOrganisation(), project, RelationType.PROVIDER, installation.getOrganisation());
-
-        HierarchicalRelation hinstallation = new HierarchicalRelation(installation.getId(), provider, RelationType.INSTALLATION, installation.getExternalId());
-
-        hierarchicalRelationRepository.save(project);
-        hierarchicalRelationRepository.save(provider);
-        hierarchicalRelationRepository.save(hinstallation);
-
         return installation;
-    }
-
-    public Installation insertNewInstallation(InstallationRequestDto request){
-
-        var installationToBeStored = InstallationMapper.INSTANCE.requestToInstallation(request);
-
-        installationToBeStored.setId(new ObjectId().toString());
-
-        var update = Updates.push("providers.$.installations", installationToBeStored);
-
-        var eq = Filters.and(Filters.eq("_id",  installationToBeStored.getProject()), Filters.eq("providers._id",  installationToBeStored.getOrganisation()));
-
-        projectRepository.getMongoCollection().updateOne(eq, update);
-
-        return installationToBeStored;
     }
 
     public PanacheQuery<InstallationProjection> fetchAllInstallations(int page, int size) {

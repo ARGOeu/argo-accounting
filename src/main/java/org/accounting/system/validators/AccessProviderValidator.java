@@ -59,7 +59,7 @@ public class AccessProviderValidator implements ConstraintValidator<AccessProvid
         }
     }
 
-    private boolean access(String project, String provider){
+    public boolean access(String project, String provider){
 
         var projectRepository = CDI.current().select(ProjectRepository.class).get();
 

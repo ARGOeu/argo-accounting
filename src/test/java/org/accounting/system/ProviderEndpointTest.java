@@ -19,8 +19,6 @@ import org.accounting.system.wiremock.TokenWireMockServer;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 
-import java.util.Set;
-
 import static io.restassured.RestAssured.given;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
@@ -110,31 +108,10 @@ public class ProviderEndpointTest extends PrepareTest {
     }
 
     @Test
-    public void createProviderIdIsEmpty() {
-
-        var request= new ProviderRequestDto();
-        request.name = "test-name";
-
-        var response = given()
-                .auth()
-                .oauth2(getAccessToken("admin"))
-                .body(request)
-                .contentType(ContentType.JSON)
-                .post()
-                .then()
-                .assertThat()
-                .statusCode(400)
-                .extract()
-                .as(InformativeResponse.class);
-
-        assertEquals("id may not be empty.", response.message);
-    }
-
-    @Test
     public void createProviderNameIsEmpty() {
 
         var request= new ProviderRequestDto();
-        request.id = "test-provider-id";
+        request.website = "test-provider-id";
 
         var response = given()
                 .auth()
@@ -152,54 +129,10 @@ public class ProviderEndpointTest extends PrepareTest {
     }
 
     @Test
-    public void createProviderIdExists() {
-
-        var request= new ProviderRequestDto();
-        request.id = "sites";
-        request.name = "test-name";
-
-        var response = given()
-                .auth()
-                .oauth2(getAccessToken("admin"))
-                .body(request)
-                .contentType(ContentType.JSON)
-                .post()
-                .then()
-                .assertThat()
-                .statusCode(409)
-                .extract()
-                .as(InformativeResponse.class);
-
-        assertEquals("There is a Provider with id: "+request.id, response.message);
-    }
-
-    @Test
-    public void createProviderNameExists() {
-
-        var request= new ProviderRequestDto();
-        request.id = "test-id";
-        request.name = "Swedish Infrastructure for Ecosystem Science";
-
-        var response = given()
-                .auth()
-                .oauth2(getAccessToken("admin"))
-                .body(request)
-                .contentType(ContentType.JSON)
-                .post()
-                .then()
-                .assertThat()
-                .statusCode(409)
-                .extract()
-                .as(InformativeResponse.class);
-
-        assertEquals("There is a Provider with id: "+request.id, response.message);
-    }
-
-    @Test
     public void createProvider() {
 
         var request= new ProviderRequestDto();
-        request.id = "test-id";
+        request.externalId = "test-id";
         request.name = "test-name";
         request.abbreviation = "test-abbreviation";
         request.logo = "test-logo";
@@ -207,7 +140,7 @@ public class ProviderEndpointTest extends PrepareTest {
 
         var response = createProvider(request, "admin");
 
-        assertEquals(response.id, request.id);
+        assertEquals(response.externalId, request.externalId);
         assertEquals(response.name, request.name);
         assertEquals(response.abbreviation, request.abbreviation);
         assertEquals(response.logo, request.logo);
@@ -262,20 +195,20 @@ public class ProviderEndpointTest extends PrepareTest {
     public void deleteProviderBelongsToProjectProhibited() {
 
         var request= new ProviderRequestDto();
-        request.id = "delete-provider-id-prohibited";
+        request.externalId = "delete-provider-id-prohibited";
         request.name = "delete-provider-name-prohibited";
         request.abbreviation = "delete-provider-abbreviation-prohibited";
         request.logo = "delete-provider-logo-prohibited";
         request.website = "delete-provider-website-prohibited";
 
-        createProvider(request, "admin");
+        var provider = createProvider(request, "admin");
 
-        projectService.associateProjectWithProviders("777536", Set.of("delete-provider-id-prohibited"));
+        projectService.associateProjectWithProvider("777536", provider.id);
 
         var response = given()
                 .auth()
                 .oauth2(getAccessToken("admin"))
-                .delete("/{providerId}", request.id)
+                .delete("/{providerId}", provider.id)
                 .then()
                 .assertThat()
                 .statusCode(403)
@@ -289,18 +222,17 @@ public class ProviderEndpointTest extends PrepareTest {
     public void deleteProvider() {
 
         var request= new ProviderRequestDto();
-        request.id = "delete-provider-id";
         request.name = "delete-provider-name";
         request.abbreviation = "delete-provider-abbreviation";
         request.logo = "delete-provider-logo";
         request.website = "delete-provider-website";
 
-        createProvider(request, "admin");
+        var provider = createProvider(request, "admin");
 
         var response = given()
                 .auth()
                 .oauth2(getAccessToken("admin"))
-                .delete("/{providerId}", request.id)
+                .delete("/{providerId}", provider.id)
                 .then()
                 .assertThat()
                 .statusCode(200)
@@ -314,7 +246,6 @@ public class ProviderEndpointTest extends PrepareTest {
     public void updateProviderCannotConsumeContentType() {
 
         var request= new ProviderRequestDto();
-        request.id = "update-provider-no-content-type-id";
         request.name = "update-provider-no-content-type-name";
         request.abbreviation = "update-provider-no-content-type-abbreviation";
         request.logo = "update-provider-no-content-type-logo";
@@ -341,26 +272,25 @@ public class ProviderEndpointTest extends PrepareTest {
 
         var request= new ProviderRequestDto();
 
-        request.id = "update-provider-id-prohibited";
         request.name = "update-provider-name-prohibited";
         request.abbreviation = "update-provider-abbreviation-prohibited";
         request.logo = "update-provider-logo-prohibited";
         request.website = "update-provider-website-prohibited";
 
-        createProvider(request, "admin");
+        var provider = createProvider(request, "admin");
 
-        projectService.associateProjectWithProviders("777536", Set.of("update-provider-id-prohibited"));
+        projectService.associateProjectWithProvider("777536", provider.id);
 
         var requestForUpdating= new UpdateProviderRequestDto();
 
-        requestForUpdating.id = "update-provider-id-prohibited-new";
+        requestForUpdating.name = "update-provider-name-prohibited-new";
 
         var response = given()
                 .auth()
                 .oauth2(getAccessToken("admin"))
                 .contentType(ContentType.JSON)
                 .body(requestForUpdating)
-                .patch("/{providerId}", request.id)
+                .patch("/{providerId}", provider.id)
                 .then()
                 .assertThat()
                 .statusCode(403)
@@ -404,7 +334,6 @@ public class ProviderEndpointTest extends PrepareTest {
     public void updateProviderRequestBodyIsEmpty() {
 
         var request= new ProviderRequestDto();
-        request.id = "update-provider-request-body-is-empty-id";
         request.name = "update-provider-request-body-is-empty-name";
         request.abbreviation = "update-provider-request-body-is-empty-abbreviation";
         request.logo = "update-provider-request-body-is-empty-logo";
@@ -427,40 +356,9 @@ public class ProviderEndpointTest extends PrepareTest {
     }
 
     @Test
-    public void updateProviderIdExists() {
-
-        var request= new ProviderRequestDto();
-        request.id = "update-provider-id-exists-id";
-        request.name = "update-provider-id-exists-name";
-        request.abbreviation = "update-provider-id-exists-abbreviation";
-        request.logo = "update-provider-id-exists-logo";
-        request.website = "update-provider-id-exists-website";
-
-        var provider = createProvider(request, "admin");
-
-        var requestForUpdating = new UpdateProviderRequestDto();
-        requestForUpdating.id = "sites";
-
-        var response = given()
-                .auth()
-                .oauth2(getAccessToken("admin"))
-                .body(requestForUpdating)
-                .contentType(ContentType.JSON)
-                .patch("/{id}", provider.id)
-                .then()
-                .assertThat()
-                .statusCode(409)
-                .extract()
-                .as(InformativeResponse.class);
-
-        assertEquals("There is a Provider with id: sites", response.message);
-    }
-
-    @Test
     public void updateProviderNameExists() {
 
         var request= new ProviderRequestDto();
-        request.id = "update-provider-name-exists-id";
         request.name = "update-provider-name-exists-name";
         request.abbreviation = "update-provider-name-exists-abbreviation";
         request.logo = "update-provider-name-exists-logo";
@@ -490,7 +388,6 @@ public class ProviderEndpointTest extends PrepareTest {
     public void updateProviderProhibited() {
 
         var request= new UpdateProviderRequestDto();
-        request.id = "update-provider-prohibited-id";
         request.name = "update-provider-prohibited-name";
         request.abbreviation = "update-provider-prohibited-abbreviation";
         request.logo = "update-provider-prohibited-logo";
@@ -515,7 +412,6 @@ public class ProviderEndpointTest extends PrepareTest {
     public void updateProvider() {
 
         var request= new ProviderRequestDto();
-        request.id = "update-provider-id";
         request.name = "update-providers-name";
         request.abbreviation = "update-provider-abbreviation";
         request.logo = "update-provider-logo";
@@ -525,7 +421,6 @@ public class ProviderEndpointTest extends PrepareTest {
 
         var requestForUpdating= new UpdateProviderRequestDto();
 
-        requestForUpdating.id = "update-provider-id-new";
         requestForUpdating.name = "update-providers-name-new";
         requestForUpdating.abbreviation = "update-provider-abbreviation-new";
         requestForUpdating.logo = "update-provider-logo-new";
@@ -544,7 +439,6 @@ public class ProviderEndpointTest extends PrepareTest {
                 .extract()
                 .as(ProviderResponseDto.class);
 
-        assertEquals(requestForUpdating.id, updatedProvider.id);
         assertEquals(requestForUpdating.name, updatedProvider.name);
         assertEquals(requestForUpdating.abbreviation, updatedProvider.abbreviation);
         assertEquals(requestForUpdating.logo, updatedProvider.logo);

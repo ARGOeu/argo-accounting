@@ -23,6 +23,7 @@ import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.UriInfo;
+import org.accounting.system.beans.RequestUserContext;
 import org.accounting.system.constraints.AccessInstallation;
 import org.accounting.system.constraints.AccessProvider;
 import org.accounting.system.constraints.CheckDateFormat;
@@ -93,6 +94,9 @@ public class InstallationEndpoint {
     @Inject
     MetricService metricService;
 
+    @Inject
+    RequestUserContext requestUserContext;
+
     @Tag(name = "Installation")
     @Operation(
             summary = "Generates a new Installation.",
@@ -162,7 +166,7 @@ public class InstallationEndpoint {
             throw new BadRequestException(message);
         }
 
-        var response = installationService.save(installationRequestDto);
+        var response = installationService.save(installationRequestDto, requestUserContext.getId());
 
         return Response.created(serverInfo.getAbsolutePathBuilder().path(response.id).build()).entity(response).build();
     }
@@ -876,8 +880,8 @@ public class InstallationEndpoint {
 
     @Tag(name = "Installation")
     @Operation(
-            summary = "Get installation report with metrics and access controls.",
-            description = "Returns a report for a specific installation and time period, including aggregated metric values and role-based access control information.")
+            summary = "Get installation report with metrics.",
+            description = "Returns a report for a specific installation and time period, including aggregated metric values.")
     @APIResponse(
             responseCode = "200",
             description = "Installation report retrieved successfully.",

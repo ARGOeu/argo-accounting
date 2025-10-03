@@ -10,19 +10,12 @@ public class UpdateProviderRequestDto {
     @Schema(
             type = SchemaType.STRING,
             implementation = String.class,
-            description = "The Provider ID.",
-            example = "sites"
-    )
-    @JsonProperty("id")
-    public String id;
-    @Schema(
-            type = SchemaType.STRING,
-            implementation = String.class,
             description = "The Provider name.",
             example = "Swedish Infrastructure for Ecosystem Science"
     )
     @JsonProperty("name")
     public String name;
+
     @Schema(
             type = SchemaType.STRING,
             implementation = String.class,
@@ -31,6 +24,7 @@ public class UpdateProviderRequestDto {
     )
     @JsonProperty("website")
     public String website;
+
     @Schema(
             type = SchemaType.STRING,
             implementation = String.class,
@@ -39,6 +33,7 @@ public class UpdateProviderRequestDto {
     )
     @JsonProperty("abbreviation")
     public String abbreviation;
+
     @Schema(
             type = SchemaType.STRING,
             implementation = String.class,

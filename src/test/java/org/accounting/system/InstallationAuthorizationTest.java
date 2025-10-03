@@ -37,7 +37,8 @@ public class InstallationAuthorizationTest extends PrepareTest {
     @Test
     public void getInstallation(){
 
-        projectRepository.associateProjectWithProviders("777536", Set.of("grnet", "sites"));
+        projectRepository.associateProjectWithProvider("777536","grnet");
+        projectRepository.associateProjectWithProvider("777536", "sites");
 
         // admin user will submit one installation
 

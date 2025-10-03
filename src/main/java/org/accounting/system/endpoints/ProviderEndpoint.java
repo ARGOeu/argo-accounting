@@ -14,6 +14,7 @@ import jakarta.ws.rs.DELETE;
 import jakarta.ws.rs.DefaultValue;
 import jakarta.ws.rs.ForbiddenException;
 import jakarta.ws.rs.GET;
+import jakarta.ws.rs.NotFoundException;
 import jakarta.ws.rs.PATCH;
 import jakarta.ws.rs.POST;
 import jakarta.ws.rs.Path;
@@ -24,6 +25,7 @@ import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.UriInfo;
+import org.accounting.system.beans.RequestUserContext;
 import org.accounting.system.constraints.CheckDateFormat;
 import org.accounting.system.constraints.NotFoundEntity;
 import org.accounting.system.dtos.InformativeResponse;
@@ -31,7 +33,6 @@ import org.accounting.system.dtos.pagination.PageResource;
 import org.accounting.system.dtos.provider.ProviderRequestDto;
 import org.accounting.system.dtos.provider.ProviderResponseDto;
 import org.accounting.system.dtos.provider.UpdateProviderRequestDto;
-import org.accounting.system.entities.HierarchicalRelation;
 import org.accounting.system.entities.projections.GenericProviderReport;
 import org.accounting.system.entities.projections.ProviderProjectionWithProjectInfo;
 import org.accounting.system.interceptors.annotations.AccessResource;
@@ -82,6 +83,9 @@ public class ProviderEndpoint {
 
     @Inject
     EntitlementService entitlementService;
+
+    @Inject
+    RequestUserContext requestInformation;
 
     @Tag(name = "Provider")
     @Operation(
@@ -194,15 +198,9 @@ public class ProviderEndpoint {
 
         var serverInfo = new AccountingUriInfo(serverUrl.concat(basePath).concat(uriInfo.getPath()));
 
-        if(providerRequestDto.id.contains(HierarchicalRelation.PATH_SEPARATOR)){
-
-            throw new BadRequestException("Provider ID should not contain a dot character.");
-        }
-
-        providerService.existById(providerRequestDto.id);
         providerService.existByName(providerRequestDto.name);
 
-        var response = providerService.save(providerRequestDto);
+        var response = providerService.save(providerRequestDto, requestInformation.getId());
 
         return Response.created(serverInfo.getAbsolutePathBuilder().path(response.id).build()).entity(response).build();
     }
@@ -403,6 +401,54 @@ public class ProviderEndpoint {
 
     @Tag(name = "Provider")
     @Operation(
+            summary = "Returns an existing Provider by external id.",
+            description = "This operation accepts the external id of a Provider and fetches from the database the corresponding record.")
+    @APIResponse(
+            responseCode = "200",
+            description = "The corresponding Provider.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = ProviderResponseDto.class)))
+    @APIResponse(
+            responseCode = "401",
+            description = "Client has not been authenticated.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "403",
+            description = "The authenticated client is not permitted to perform the requested operation.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "404",
+            description = "Provider has not been found.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "500",
+            description = "Internal Server Errors.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @SecurityRequirement(name = "Authentication")
+    @GET
+    @Path("/external")
+    @Produces(value = MediaType.APPLICATION_JSON)
+    @AccessResource(roles = {"admin", "viewer"})
+    public Response getByExternalId(
+            @Parameter(name = "externalId", in = QUERY, required = true, example = "sites", allowReserved = true,
+                    description = "The external provider id.", schema = @Schema(type = SchemaType.STRING)) @QueryParam("externalId") @NotEmpty(message = "externalId may not be empty.") String externalId) {
+
+        var response = providerService.fetchProviderByExternal(externalId);
+
+        return Response.ok().entity(response).build();
+    }
+
+    @Tag(name = "Provider")
+    @Operation(
             summary = "Search",
             description = "Search")
     @APIResponse(
@@ -508,8 +554,8 @@ public class ProviderEndpoint {
 
     @Tag(name = "Provider")
     @Operation(
-            summary = "Get Provider report with metrics and access controls.",
-            description = "Returns a report for a specific Provider and time period, including aggregated metric values and role-based access control information.")
+            summary = "Get Provider report with metrics.",
+            description = "Returns a report for a specific Provider and time period, including aggregated metric values.")
     @APIResponse(
             responseCode = "200",
             description = "Provider report retrieved successfully.",
@@ -574,6 +620,7 @@ public class ProviderEndpoint {
             @CheckDateFormat(pattern = "yyyy-MM-dd", message = "Valid date format is yyyy-MM-dd.") String end) {
 
         if (LocalDate.parse(start).isAfter(LocalDate.parse(end))) {
+
             throw new BadRequestException("Start date must be before or equal to end date.");
         }
 
@@ -583,6 +630,91 @@ public class ProviderEndpoint {
         }
 
         var response = providerService.providerReport(providerId, start, end);
+
+        return Response.ok().entity(response).build();
+    }
+
+    @Tag(name = "Provider")
+    @Operation(
+            summary = "Get Provider report with metrics by external id.",
+            description = "Returns a report for a specific Provider and time period, including aggregated metric values by external id.")
+    @APIResponse(
+            responseCode = "200",
+            description = "Provider report retrieved successfully.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = GenericProviderReport.class)))
+    @APIResponse(
+            responseCode = "401",
+            description = "Client has not been authenticated.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "403",
+            description = "The authenticated client is not permitted to perform the requested operation.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "404",
+            description = "Not found.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "500",
+            description = "Internal Server Errors.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @SecurityRequirement(name = "Authentication")
+    @GET
+    @Path("/report/external")
+    @Produces(value = MediaType.APPLICATION_JSON)
+    public Response providerReportByExternalId(
+            @Parameter(name = "externalId", in = QUERY, required = true, example = "sites", allowReserved = true,
+                    description = "The external provider id.", schema = @Schema(type = SchemaType.STRING)) @QueryParam("externalId") @NotEmpty(message = "externalId may not be empty.") String externalId,
+            @Parameter(
+                    name = "start",
+                    description = "Start date in yyyy-MM-dd format",
+                    required = true,
+                    example = "2024-01-01"
+            )
+            @QueryParam("start")
+            @Valid
+            @NotEmpty(message = "start may not be empty.")
+            @CheckDateFormat(pattern = "yyyy-MM-dd", message = "Valid date format is yyyy-MM-dd.") String start,
+            @Parameter(
+                    name = "end",
+                    description = "End date in yyyy-MM-dd format",
+                    required = true,
+                    example = "2024-12-31"
+            )
+            @QueryParam("end")
+            @Valid
+            @NotEmpty(message = "end may not be empty.")
+            @CheckDateFormat(pattern = "yyyy-MM-dd", message = "Valid date format is yyyy-MM-dd.") String end) {
+
+        if (LocalDate.parse(start).isAfter(LocalDate.parse(end))) {
+            throw new BadRequestException("Start date must be before or equal to end date.");
+        }
+
+        var optional = providerService.fetchByExternalId(externalId);
+
+        if(optional.isEmpty()){
+
+            throw new NotFoundException("There is no Provider with external id : "+externalId);
+        }
+
+        var provider = optional.get();
+
+        if(!entitlementService.hasAccess("accounting","admin", List.of("roles", "provider", provider.getId()))){
+
+            throw new ForbiddenException("You have no access to execute this operation.");
+        }
+
+        var response = providerService.providerReport(provider.getId(), start, end);
 
         return Response.ok().entity(response).build();
     }
@@ -600,6 +732,5 @@ public class ProviderEndpoint {
         public void setContent(List<ProviderResponseDto> content) {
             this.content = content;
         }
-
     }
 }

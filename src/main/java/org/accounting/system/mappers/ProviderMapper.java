@@ -30,12 +30,9 @@ public interface ProviderMapper {
 
     List<ProviderResponseDto> providersToResponse(List<Provider> providers);
 
-    Provider requestToProvider(ProviderRequestDto request);
-
     @Mapping(target = "creatorId", expression = "java(StringUtils.isNotEmpty(provider.getCreatorId()) ? provider.getCreatorId() : StringUtils.EMPTY)")
     ProviderResponseDto providerToResponse(Provider provider);
 
-    @Mapping(target = "id", expression = "java(StringUtils.isNotEmpty(request.id) ? request.id : provider.getId())")
     @Mapping(target = "name", expression = "java(StringUtils.isNotEmpty(request.name) ? request.name : provider.getName())")
     @Mapping(target = "website", expression = "java(StringUtils.isNotEmpty(request.website) ? request.website : provider.getWebsite())")
     @Mapping(target = "abbreviation", expression = "java(StringUtils.isNotEmpty(request.abbreviation) ? request.abbreviation : provider.getAbbreviation())")
