@@ -45,6 +45,8 @@ According to [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) , the
   Auto-CUD keycloak groups based on ACC actions.
 - [#245](https://github.com/ARGOeu/argo-accounting/pull/245) - ACC-389
   Add a total aggregation to the provider representative report.
+- [#248](https://github.com/ARGOeu/argo-accounting/pull/248) - ACC-397
+  Add external id to the provider entity.
 
 ## Unreleased - Fixed
 

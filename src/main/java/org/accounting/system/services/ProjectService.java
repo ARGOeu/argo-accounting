@@ -13,7 +13,6 @@ import org.accounting.system.entities.Project;
 import org.accounting.system.entities.projections.InstallationProjection;
 import org.accounting.system.entities.projections.ProjectReport;
 import org.accounting.system.entities.projections.normal.ProjectProjection;
-import org.accounting.system.entities.provider.Provider;
 import org.accounting.system.mappers.InstallationMapper;
 import org.accounting.system.mappers.MetricDefinitionMapper;
 import org.accounting.system.repositories.project.ProjectRepository;
@@ -23,7 +22,6 @@ import org.jboss.logging.Logger;
 
 import java.util.List;
 import java.util.Optional;
-import java.util.Set;
 
 @ApplicationScoped
 public class ProjectService {
@@ -44,38 +42,36 @@ public class ProjectService {
      * the given Project and children the given Providers.
      *
      * @param projectId The Project id with which the Providers are going to be correlated.
-     * @param providerIds List of Providers which will be correlated with a specific Provider
+     * @param providerId Provider which will be correlated with a specific Project
      * @throws NotFoundException If a Provider doesn't exist
      */
-    public void associateProjectWithProviders(String projectId, Set<String> providerIds){
+    public void associateProjectWithProvider(String projectId, String providerId){
 
-        var providers = projectRepository.associateProjectWithProviders(projectId, providerIds);
+        projectRepository.associateProjectWithProvider(projectId, providerId);
 
-        for(Provider prov : providers){
+        try{
 
-            try{
+            var groupRequest = new GroupRequest();
+            groupRequest.name = providerId;
 
-                var groupRequest = new GroupRequest();
-                groupRequest.name = prov.getId();
+            GroupRequest.Attributes attrs = new GroupRequest.Attributes();
+            attrs.description = List.of(String.format("Provider %s associated with Project %s",providerId, projectId));
 
-                GroupRequest.Attributes attrs = new GroupRequest.Attributes();
-                attrs.description = List.of(String.format("Provider %s associated with Project %s", prov.getId(), projectId));
+            groupRequest.attributes = attrs;
+            keycloakService.createSubGroup(keycloakService.getValueByKey(String.format("/accounting/%s", projectId)), groupRequest);
+            var id = keycloakService.getValueByKey(String.format("/accounting/%s/%s", projectId, providerId));
+            keycloakService.addRole(id, "admin");
+            keycloakService.addRole(id, "viewer");
 
-                groupRequest.attributes = attrs;
-                keycloakService.createSubGroup(keycloakService.getValueByKey(String.format("/accounting/%s", projectId)), groupRequest);
-                var id = keycloakService.getValueByKey(String.format("/accounting/%s/%s", projectId, prov.getId()));
-                keycloakService.addRole(id, "admin");
-                keycloakService.addRole(id, "viewer");
+            var defaultConfigurationId = keycloakService.getValueByKey(id);
+            var defaultConfiguration = keycloakService.getConfiguration(id, defaultConfigurationId);
+            var groupRoles = List.of("admin", "viewer");
+            defaultConfiguration.setGroupRoles(groupRoles);
+            keycloakService.updateConfiguration(id, defaultConfiguration);
+        } catch (Exception e){
 
-                var defaultConfigurationId = keycloakService.getValueByKey(id);
-                var defaultConfiguration = keycloakService.getConfiguration(id, defaultConfigurationId);
-                var groupRoles = List.of("admin", "viewer");
-                defaultConfiguration.setGroupRoles(groupRoles);
-                keycloakService.updateConfiguration(id, defaultConfiguration);
-            } catch (Exception e){
-
-                LOG.error("Group creation failed with error : " + e.getMessage());
-            }
+            projectRepository.dissociateProviderFromProject(projectId, providerId);
+            LOG.error("Group creation failed with error : " + e.getMessage());
         }
     }
 
@@ -83,12 +79,23 @@ public class ProjectService {
      * This method dissociated Providers from a specific Project.
      *
      * @param projectId The Project id from which the Providers are going to be dissociated
-     * @param providerIds List of Providers which will be dissociated from a specific Provider
+     * @param providerId Provider which will be dissociated from a specific Provider
      */
-    public void dissociateProviderFromProject(String projectId, Set<String> providerIds){
+    public void dissociateProviderFromProject(String projectId, String providerId){
 
-        projectRepository.dissociateProviderFromProject(projectId, providerIds);
+        projectRepository.dissociateProviderFromProject(projectId, providerId);
+
+        var key = String.format("/accounting/%s/%s", projectId, providerId);
+
+        try{
+
+            keycloakService.deleteGroup(keycloakService.getValueByKey(key));
+        } catch (Exception e){
+
+            LOG.error(String.format("Group deletion %s failed with error : %s", key, e.getMessage()));
+        }
     }
+
     public ProjectProjection getById(final String id) {
 
          return projectRepository.fetchById(id);

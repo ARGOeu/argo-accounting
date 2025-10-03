@@ -30,7 +30,6 @@ import org.junit.jupiter.api.TestInstance;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
 
 import static io.restassured.RestAssured.given;
 import static org.hamcrest.core.Is.is;
@@ -296,7 +295,7 @@ public class MetricEndpointTest extends PrepareTest {
         request.installation = "SECOND";
         request.unitOfAccess = metricDefinitionResponse.id;
 
-        projectRepository.associateProjectWithProviders("777536", Set.of("grnet"));
+        projectRepository.associateProjectWithProvider("777536", "grnet");
 
         var installation = createInstallation(request, "admin");
 
@@ -360,7 +359,7 @@ public class MetricEndpointTest extends PrepareTest {
     @Test
     public void fetchInstallationMetricsDateFiltering() {
 
-        projectRepository.associateProjectWithProviders("777536", Set.of("grnet"));
+        projectRepository.associateProjectWithProvider("777536", "grnet");
 
         var installationId = assignMetricsToSpecificInstallation();
 
@@ -428,7 +427,7 @@ public class MetricEndpointTest extends PrepareTest {
     @Test
     public void fetchMetricsDateFiltering() {
 
-        projectRepository.associateProjectWithProviders("777536", Set.of("grnet"));
+        projectRepository.associateProjectWithProvider("777536", "grnet");
 
         assignMetricsToSpecificInstallation();
 
@@ -481,7 +480,7 @@ public class MetricEndpointTest extends PrepareTest {
     @Test
     public void fetchMetricsMetricDefinitionFiltering() {
 
-        projectRepository.associateProjectWithProviders("777536", Set.of("grnet"));
+        projectRepository.associateProjectWithProvider("777536", "grnet");
 
         var array = assignMetricsToSpecificInstallationMultipleMetricDefinitions();
 
@@ -1195,7 +1194,7 @@ public class MetricEndpointTest extends PrepareTest {
 
     private io.restassured.response.Response assignMetric(String user, MetricRequestDto body, List<String> installationId){
 
-        projectRepository.associateProjectWithProviders("777536", Set.of("grnet"));
+        projectRepository.associateProjectWithProvider("777536", "grnet");
 
         //Registering an installation
         var requestForMetricDefinition = new MetricDefinitionRequestDto();

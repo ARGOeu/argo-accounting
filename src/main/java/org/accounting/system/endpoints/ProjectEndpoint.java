@@ -7,7 +7,6 @@ import jakarta.validation.Valid;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotEmpty;
-import jakarta.validation.constraints.NotNull;
 import jakarta.ws.rs.BadRequestException;
 import jakarta.ws.rs.Consumes;
 import jakarta.ws.rs.DefaultValue;
@@ -28,8 +27,6 @@ import org.accounting.system.constraints.NotFoundEntity;
 import org.accounting.system.dtos.InformativeResponse;
 import org.accounting.system.dtos.installation.InstallationResponseDto;
 import org.accounting.system.dtos.pagination.PageResource;
-import org.accounting.system.dtos.project.AssociateProjectProviderRequestDto;
-import org.accounting.system.dtos.project.DissociateProjectProviderRequestDto;
 import org.accounting.system.entities.HierarchicalRelation;
 import org.accounting.system.entities.projections.MetricProjection;
 import org.accounting.system.entities.projections.ProjectReport;
@@ -37,6 +34,7 @@ import org.accounting.system.entities.projections.ProviderReport;
 import org.accounting.system.entities.projections.normal.ProjectProjection;
 import org.accounting.system.interceptors.annotations.AccessResource;
 import org.accounting.system.repositories.metricdefinition.MetricDefinitionRepository;
+import org.accounting.system.repositories.provider.ProviderRepository;
 import org.accounting.system.services.MetricService;
 import org.accounting.system.services.ProjectService;
 import org.accounting.system.services.ProviderService;
@@ -432,8 +430,8 @@ public class ProjectEndpoint {
 
     @Tag(name = "Provider")
     @Operation(
-            summary = "Get Provider report with metrics and access controls.",
-            description = "Returns a report for a specific Provider and time period, including aggregated metric values and role-based access control information.")
+            summary = "Get Provider report with metrics.",
+            description = "Returns a report for a specific Provider and time period, including aggregated metric values.")
     @APIResponse(
             responseCode = "200",
             description = "Provider report retrieved successfully.",
@@ -515,6 +513,152 @@ public class ProjectEndpoint {
 
     @Tag(name = "Provider")
     @Operation(
+            summary = "Get Provider report with metrics.",
+            description = "Returns a report for a specific Provider and time period, including aggregated metric values.")
+    @APIResponse(
+            responseCode = "200",
+            description = "Provider report retrieved successfully.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = ProviderReport.class)))
+    @APIResponse(
+            responseCode = "401",
+            description = "Client has not been authenticated.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "403",
+            description = "The authenticated client is not permitted to perform the requested operation.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "404",
+            description = "Not found.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "500",
+            description = "Internal Server Errors.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @SecurityRequirement(name = "Authentication")
+    @GET
+    @Path("/{project_id}/providers/external/report")
+    @Produces(value = MediaType.APPLICATION_JSON)
+    public Response providerReportByExternalId(
+            @Parameter(
+                    description = "Τhe Project id.",
+                    required = true,
+                    example = "704029",
+                    schema = @Schema(type = SchemaType.STRING))
+            @PathParam("project_id") String projectId,
+            @Parameter(name = "externalProviderId", in = QUERY, required = true, example = "sites", allowReserved = true,
+                    description = "The external provider id.", schema = @Schema(type = SchemaType.STRING)) @QueryParam("externalProviderId") @NotEmpty(message = "externalProviderId may not be empty.") String externalProviderId,
+            @Parameter(
+                    name = "start",
+                    description = "Start date in yyyy-MM-dd format",
+                    required = true,
+                    example = "2024-01-01"
+            )
+            @QueryParam("start")
+            @Valid
+            @NotEmpty(message = "start may not be empty.")
+            @CheckDateFormat(pattern = "yyyy-MM-dd", message = "Valid date format is yyyy-MM-dd.") String start,
+            @Parameter(
+                    name = "end",
+                    description = "End date in yyyy-MM-dd format",
+                    required = true,
+                    example = "2024-12-31"
+            )
+            @QueryParam("end")
+            @Valid
+            @NotEmpty(message = "end may not be empty.")
+            @CheckDateFormat(pattern = "yyyy-MM-dd", message = "Valid date format is yyyy-MM-dd.") String end) {
+
+        if (LocalDate.parse(start).isAfter(LocalDate.parse(end))) {
+            throw new BadRequestException("Start date must be before or equal to end date.");
+        }
+
+        var response = providerService.providerReportByExternalId(projectId, externalProviderId, start, end);
+
+        return Response.ok().entity(response).build();
+    }
+
+    @Tag(name = "Metric")
+    @Operation(
+            summary = "Returns all Metrics under a specific Provider by external Provider ID.",
+            description = "This operation is responsible for fetching all Metrics under a specific Provider. " +
+                    "By passing the Project ID to which the Provider belongs as well as the Provider external ID, you can retrieve all Metrics that have been assigned to this specific Provider. By default, the first page of 10 Metrics will be returned. " +
+                    "You can tune the default values by using the query parameters page and size.")
+    @APIResponse(
+            responseCode = "200",
+            description = "All Metrics.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = PageableMetricProjection.class)))
+    @APIResponse(
+            responseCode = "401",
+            description = "Client has not been authenticated.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "403",
+            description = "The authenticated client is not permitted to perform the requested operation.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "404",
+            description = "Not found.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "500",
+            description = "Internal Server Errors.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @SecurityRequirement(name = "Authentication")
+    @GET
+    @Path("/{project_id}/providers/external/metrics")
+    @Produces(value = MediaType.APPLICATION_JSON)
+    public Response getAllMetricsUnderAProviderByExternalId(
+            @Parameter(
+                    description = "Τhe Project id to which the Provider belongs.",
+                    required = true,
+                    example = "704029",
+                    schema = @Schema(type = SchemaType.STRING))
+            @PathParam("project_id") String projectId,
+            @Parameter(name = "externalProviderId", in = QUERY, required = true, example = "sites", allowReserved = true,
+                    description = "The external provider id.", schema = @Schema(type = SchemaType.STRING)) @QueryParam("externalProviderId") @NotEmpty(message = "externalProviderId may not be empty.") String externalProviderId,
+            @Parameter(name = "page", in = QUERY,
+                    description = "Indicates the page number. Page number must be >= 1.") @DefaultValue("1") @Min(value = 1, message = "Page number must be >= 1.") @QueryParam("page") int page,
+            @Parameter(name = "size", in = QUERY,
+                    description = "The page size.") @DefaultValue("10") @Min(value = 1, message = "Page size must be between 1 and 100.")
+            @Max(value = 100, message = "Page size must be between 1 and 100.") @QueryParam("size") int size,
+            @Parameter(name = "metric-definition-id", in = QUERY, schema = @Schema(type = SchemaType.STRING, defaultValue = ""),
+                    description = "The Metric Definition that the Metrics are related to.")  @QueryParam("metric-definition-id") @NotFoundEntity(repository = MetricDefinitionRepository.class, message = "There is no Metric Definition with the following id:") String metricDefinitionId,
+            @Parameter(name = "start", in = QUERY, schema = @Schema(type = SchemaType.STRING, defaultValue = ""),
+                    description = "The inclusive start date for the query in the format YYYY-MM-DD. Cannot be after end.")  @QueryParam("start") String start,
+            @Parameter(name = "end", in = QUERY, schema = @Schema(type = SchemaType.STRING, defaultValue = ""),
+                    description = "The inclusive end date for the query in the format YYYY-MM-DD. Cannot be before start.") @QueryParam("end") String end,
+            @Context UriInfo uriInfo) {
+
+        var serverInfo = new AccountingUriInfo(serverUrl.concat(basePath).concat(uriInfo.getPath()));
+
+        var response = providerService.fetchAllMetricsByExternalProviderId(projectId, externalProviderId, page - 1, size, serverInfo, start, end, metricDefinitionId);
+
+        return Response.ok().entity(response).build();
+    }
+
+    @Tag(name = "Provider")
+    @Operation(
             summary = "Returns Provider's Metric Definitions.",
             description = "This operation is responsible for returning Provider's Metric Definitions. " +
                     "By default, the first page of 10 Metric Definitions will be returned. " +
@@ -570,12 +714,12 @@ public class ProjectEndpoint {
 
     @Tag(name = "Project")
     @Operation(
-            summary = "Associate a Project with different Providers.",
+            summary = "Associate a Project with a Provider.",
             description = "There is a hierarchical relation between Project and Providers which can be expressed as follows: a Project can have a number of different Providers. " +
-                    "By passing a list of Provider ids to this operation, you can associate those Providers with a specific Project. Finally, it should be noted that any Provider can belong to more than one Project.")
+                    "You can associate a Provider with a specific Project. Finally, it should be noted that any Provider can belong to more than one Project.")
     @APIResponse(
             responseCode = "200",
-            description = "Providers have been successfully associated with the Project.",
+            description = "Provider has been successfully associated with the Project.",
             content = @Content(schema = @Schema(
                     type = SchemaType.OBJECT,
                     implementation = InformativeResponse.class)))
@@ -617,36 +761,41 @@ public class ProjectEndpoint {
                     implementation = InformativeResponse.class)))
     @SecurityRequirement(name = "Authentication")
     @POST
-    @Path("/{id}/associate")
+    @Path("/{id}/associate/provider/{provider_id}")
     @Produces(value = MediaType.APPLICATION_JSON)
     @Consumes(value = MediaType.APPLICATION_JSON)
     public Response associateProjectWithProviders(
             @Parameter(
-                    description = "The Project in which the Providers will be associated with.",
+                    description = "The Project in which the Provider will be associated with.",
                     required = true,
                     example = "888743",
                     schema = @Schema(type = SchemaType.STRING))
             @PathParam("id")
             @Valid
-            @AccessProject(roles = {"admin"}) String id, @Valid @NotNull(message = "The request body is empty.") AssociateProjectProviderRequestDto request) {
+            @AccessProject(roles = {"admin"}) String id,
+            @Parameter(
+            description = "The Provider to be associated.",
+            required = true,
+            example = "sites",
+            schema = @Schema(type = SchemaType.STRING)) @PathParam("provider_id") @Valid @NotFoundEntity(repository = ProviderRepository.class, id = String.class, message = "There is no Provider with the following id:") String providerId) {
 
-        projectService.associateProjectWithProviders(id, request.providers);
+        projectService.associateProjectWithProvider(id, providerId);
 
         InformativeResponse response = new InformativeResponse();
         response.code = 200;
-        response.message = "The following providers " + request.providers.toString() + " have been associated with Project " + id;
+        response.message = "The following provider " + providerId + " has been associated with Project " + id;
 
         return Response.ok().entity(response).build();
     }
 
     @Tag(name = "Project")
     @Operation(
-            summary = "Dissociate Providers from a Project.",
+            summary = "Dissociate a Provider from a Project.",
             description = "There is a hierarchical relation between Project and Providers which can be expressed as follows: a Project can have a number of different Providers. " +
-                    "By passing a list of Provider ids to this operation, you can correlate those Providers with a specific Project. Finally, it should be noted that any Provider can belong to more than one Project.")
+                    "You can dissociate a Provider from a specific Project.")
     @APIResponse(
             responseCode = "200",
-            description = "Providers have been successfully dissociated from the Project.",
+            description = "Provider has been successfully dissociated from the Project.",
             content = @Content(schema = @Schema(
                     type = SchemaType.OBJECT,
                     implementation = InformativeResponse.class)))
@@ -689,7 +838,7 @@ public class ProjectEndpoint {
     @SecurityRequirement(name = "Authentication")
     //TODO We have to generate a PATCH method as well
     @POST
-    @Path("/{id}/dissociate")
+    @Path("/{id}/dissociate/provider/{provider_id}")
     @Produces(value = MediaType.APPLICATION_JSON)
     @Consumes(value = MediaType.APPLICATION_JSON)
     public Response dissociateProvidersFromProject(
@@ -699,13 +848,18 @@ public class ProjectEndpoint {
                     example = "447535",
                     schema = @Schema(type = SchemaType.STRING))
             @PathParam("id") @Valid
-            @AccessProject(roles= {"admin"}) String id, @Valid @NotNull(message = "The request body is empty.") DissociateProjectProviderRequestDto request) {
+            @AccessProject(roles= {"admin"}) String id,
+            @Parameter(
+                    description = "The Provider to be associated.",
+                    required = true,
+                    example = "sites",
+                    schema = @Schema(type = SchemaType.STRING)) @PathParam("provider_id") @Valid @NotFoundEntity(repository = ProviderRepository.class, id = String.class, message = "There is no Provider with the following id:") String providerId) {
 
-        projectService.dissociateProviderFromProject(id, request.providers);
+        projectService.dissociateProviderFromProject(id, providerId);
 
         InformativeResponse response = new InformativeResponse();
         response.code = 200;
-        response.message = "The following providers " + request.providers.toString() + " have been dissociated from Project " + id;
+        response.message = "The following provider " + providerId + " has been dissociated from Project " + id;
 
         return Response.ok().entity(response).build();
     }
@@ -1036,8 +1190,8 @@ public class ProjectEndpoint {
 
     @Tag(name = "Project")
     @Operation(
-            summary = "Get Project report with metrics and access controls.",
-            description = "Returns a report for a specific Project and time period, including aggregated metric values and role-based access control information.")
+            summary = "Get Project report with metrics.",
+            description = "Returns a report for a specific Project and time period, including aggregated metric values.")
     @APIResponse(
             responseCode = "200",
             description = "Project report retrieved successfully.",

@@ -3,17 +3,22 @@ package org.accounting.system.services;
 import io.quarkus.mongodb.panache.PanacheQuery;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
+import jakarta.validation.Payload;
 import jakarta.ws.rs.ForbiddenException;
+import jakarta.ws.rs.NotFoundException;
 import jakarta.ws.rs.ServerErrorException;
 import jakarta.ws.rs.core.UriInfo;
+import org.accounting.system.constraints.AccessProvider;
 import org.accounting.system.dtos.installation.InstallationResponseDto;
 import org.accounting.system.dtos.metricdefinition.MetricDefinitionResponseDto;
 import org.accounting.system.dtos.pagination.PageResource;
 import org.accounting.system.dtos.provider.ProviderRequestDto;
 import org.accounting.system.dtos.provider.ProviderResponseDto;
 import org.accounting.system.dtos.provider.UpdateProviderRequestDto;
+import org.accounting.system.entities.HierarchicalRelation;
 import org.accounting.system.entities.projections.GenericProviderReport;
 import org.accounting.system.entities.projections.InstallationProjection;
+import org.accounting.system.entities.projections.MetricProjection;
 import org.accounting.system.entities.projections.MetricReportProjection;
 import org.accounting.system.entities.projections.ProviderProjectionWithProjectInfo;
 import org.accounting.system.entities.projections.ProviderReport;
@@ -22,16 +27,22 @@ import org.accounting.system.exceptions.ConflictException;
 import org.accounting.system.mappers.InstallationMapper;
 import org.accounting.system.mappers.MetricDefinitionMapper;
 import org.accounting.system.mappers.ProviderMapper;
+import org.accounting.system.repositories.metric.MetricRepository;
 import org.accounting.system.repositories.provider.ProviderRepository;
 import org.accounting.system.services.clients.GroupRequest;
 import org.accounting.system.util.QueryParser;
+import org.accounting.system.validators.AccessProviderValidator;
 import org.apache.commons.lang3.StringUtils;
+import org.bson.types.ObjectId;
 import org.jboss.logging.Logger;
 
+import java.lang.annotation.Annotation;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 @ApplicationScoped
@@ -50,6 +61,8 @@ public class ProviderService {
     @Inject
     KeycloakService keycloakService;
 
+    @Inject
+    MetricRepository metricRepository;
 
     /**
      * Returns the N Providers from the given page.
@@ -73,7 +86,7 @@ public class ProviderService {
      * @param request The POST request body.
      * @return The stored Provider has been turned into a response body.
      */
-    public ProviderResponseDto save(ProviderRequestDto request) {
+    public ProviderResponseDto save(ProviderRequestDto request, String creatorId) {
 
         var group = keycloakService.getValueByKey("/accounting/roles/provider");
 
@@ -82,9 +95,31 @@ public class ProviderService {
             throw new ServerErrorException("The subgroup /accounting/roles/provider does not exist, so the provider cannot be saved. Please, create the subgroup /accounting/roles/provider!", 500);
         }
 
-        var provider = ProviderMapper.INSTANCE.requestToProvider(request);
+        if (StringUtils.isEmpty(request.externalId)) {
+            request.externalId = UUID.randomUUID().toString();
+        }
+
+        if (providerRepository.findByExternalId(request.externalId).isPresent()) {
+            throw new ConflictException("external_id already exists");
+        }
+
+        var provider = new Provider();
 
         provider.setRegisteredOn(LocalDateTime.now());
+
+        provider.setId(new ObjectId().toString());
+
+        provider.setCreatorId(creatorId);
+
+        provider.setWebsite(request.website);
+
+        provider.setLogo(request.logo);
+
+        provider.setName(request.name);
+
+        provider.setExternalId(request.externalId);
+
+        provider.setAbbreviation(request.abbreviation);
 
         providerRepository.save(provider);
 
@@ -92,8 +127,8 @@ public class ProviderService {
             var groupRequest = new GroupRequest();
             groupRequest.name = provider.getId();
 
-            GroupRequest.Attributes attrs = new GroupRequest.Attributes();
-            attrs.description = List.of(provider.getId());
+            var attrs = new GroupRequest.Attributes();
+            attrs.description = List.of("Group for Provider "+provider.getName());
 
             groupRequest.attributes = attrs;
 
@@ -119,18 +154,6 @@ public class ProviderService {
     }
 
     /**
-     * Checks if a Provider with given id exists.
-     *
-     * @param id The Provider id.
-     * @throws ConflictException If Provider already exists.
-     */
-    public void existById(String id){
-
-        providerRepository.findByIdOptional(id)
-                .ifPresent(provider -> {throw new ConflictException("There is a Provider with id: "+id);});
-    }
-
-    /**
      * Checks if a Provider with given name exists.
      *
      * @param name The Provider name.
@@ -152,7 +175,6 @@ public class ProviderService {
 
         var provider = providerRepository.findById(providerId);
 
-        // if Provider's creator id is null then it derives from EOSC-Portal
         if(StringUtils.isEmpty(provider.getCreatorId())){
             throw new ForbiddenException("You cannot delete a Provider which derives from EOSC-Portal.");
         }
@@ -161,12 +183,14 @@ public class ProviderService {
             throw new ForbiddenException("You cannot delete a Provider which belongs to a Project.");
         }
 
+        var key = "/accounting/roles/provider/"+providerId;
+
         try{
 
-            keycloakService.deleteGroup(keycloakService.getValueByKey("/accounting/roles/provider/"+providerId));
+            keycloakService.deleteGroup(keycloakService.getValueByKey(key));
         } catch (Exception e){
 
-            LOG.error("Group deletion failed with error : " + e.getMessage());
+            LOG.error(String.format("Group deletion %s failed with error : %s", key, e.getMessage()));
         }
 
         return providerRepository.deleteEntityById(providerId);
@@ -183,12 +207,14 @@ public class ProviderService {
      */
     public ProviderResponseDto update(String id, UpdateProviderRequestDto request){
 
-        if(StringUtils.isNotEmpty(request.id)){
-            existById(request.id);
-        }
-
         if(StringUtils.isNotEmpty(request.name)){
-            existByName(request.name);
+
+            var optional = providerRepository.findByName(request.name);
+
+            if(optional.isPresent() && !optional.get().getId().equals(id)){
+
+                throw new ConflictException("There is a Provider with name: "+request.name);
+            }
         }
 
         var provider = providerRepository.updateEntity(id, request);
@@ -209,20 +235,15 @@ public class ProviderService {
         return ProviderMapper.INSTANCE.providerToResponse(provider);
     }
 
-    /**
-     * This method check whether the given Provider derived from EOSC-Portal or not.
-     *
-     * @param id The Provider ID.
-     * @throws ForbiddenException If provider derives from EOSC-Portal
-     */
-    public void derivesFromEoscPortal(String id){
+    public ProviderResponseDto fetchProviderByExternal(String externalProviderId){
 
-        Provider entity = providerRepository.findById(id);
+        var optional = providerRepository.findByExternalId(externalProviderId);
 
-        // if Provider's creator id is null then it derives from EOSC-Portal
-        if(Objects.isNull(entity.getCreatorId())){
-            throw new ForbiddenException("You cannot access a Provider which derives from EOSC-Portal.");
+        if(optional.isEmpty()){
+            throw new NotFoundException("There is no Provider with external id: " +externalProviderId);
         }
+
+        return ProviderMapper.INSTANCE.providerToResponse(optional.get());
     }
 
     public PageResource<InstallationResponseDto> findInstallationsByProvider(String projectId, String providerId, int page, int size, UriInfo uriInfo){
@@ -256,6 +277,82 @@ public class ProviderService {
     public ProviderReport providerReport(String projectId, String providerId, String start, String end){
 
         return providerRepository.providerReport(projectId, providerId, start, end);
+    }
+
+    public ProviderReport providerReportByExternalId(String projectId, String externalProviderId, String start, String end){
+
+        var optional = providerRepository.findByExternalId(externalProviderId);
+
+        if(optional.isEmpty()){
+            throw new NotFoundException("There is no Provider with external id: " +externalProviderId);
+        }
+
+        var provider = optional.get();
+
+        var validator = getAccessProviderValidator(new String[] {"admin", "viewer"});
+
+        validator.isValid(new String[] {projectId, provider.getId()}, null);
+
+        return providerRepository.providerReport(projectId, provider.getId(), start, end);
+    }
+
+    public PageResource<MetricProjection> fetchAllMetricsByExternalProviderId(String projectId, String externalProviderId, int page, int size, UriInfo uriInfo, String start, String end, String metricDefinitionId){
+
+
+        var optional = providerRepository.findByExternalId(externalProviderId);
+
+        if(optional.isEmpty()){
+            throw new NotFoundException("There is no Provider with external id: " +externalProviderId);
+        }
+
+        var provider = optional.get();
+
+        var validator = getAccessProviderValidator(new String[] {"admin", "viewer"});
+
+        validator.isValid(new String[] {projectId, provider.getId()}, null);
+
+        var projection = metricRepository.findByExternalId(projectId + HierarchicalRelation.PATH_SEPARATOR + provider.getId(), page, size, start, end, metricDefinitionId);
+
+        return new PageResource<>(projection, projection.list(), uriInfo);
+    }
+
+    private static AccessProviderValidator getAccessProviderValidator(String[] roles) {
+        var accessProvider = new AccessProvider(){
+
+            @Override
+            public Class<? extends Annotation> annotationType() {
+                return AccessProvider.class;
+            }
+
+            @Override
+            public String message() {
+                return "The authenticated client is not permitted to perform the requested operation.";
+            }
+
+            @Override
+            public Class<?>[] groups() {
+                return new Class[0];
+            }
+
+            @Override
+            public Class<? extends Payload>[] payload() {
+                return new Class[0];
+            }
+
+            @Override
+            public String[] roles() {
+                return roles;
+            }
+        };
+
+        var validator = new AccessProviderValidator();
+        validator.initialize(accessProvider);
+        return validator;
+    }
+
+    public Optional<Provider> fetchByExternalId(String externalId){
+
+        return providerRepository.findByExternalId(externalId);
     }
 
     public GenericProviderReport providerReport(String providerId, String start, String end){

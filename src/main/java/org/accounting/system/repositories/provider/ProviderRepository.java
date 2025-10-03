@@ -73,6 +73,11 @@ public class ProviderRepository extends AccessibleModulator<Provider, String> {
         return find("name = ?1", name).stream().findAny();
     }
 
+    public Optional<Provider> findByExternalId(String externalId){
+
+        return find("externalId = ?1", externalId).stream().findAny();
+    }
+
     public PanacheQuery<InstallationProjection> fetchProviderInstallations(String projectID, String providerID, int page, int size){
 
         var project = Aggregates
@@ -335,6 +340,7 @@ public class ProviderRepository extends AccessibleModulator<Provider, String> {
                 Projections.computed("abbreviation", new Document("$ifNull", List.of("$provider.abbreviation", ""))),
                 Projections.computed("logo", new Document("$ifNull", List.of("$provider.logo", ""))),
                 Projections.computed("name", "$provider.name"),
+                Projections.computed("externalId", "$provider.external_id"),
                 Projections.computed("website", new Document("$ifNull", List.of("$provider.website", ""))),
                 Projections.include("data"),
                 Projections.computed("aggregatedMetrics", new Document("$reduce", new Document()
@@ -354,13 +360,14 @@ public class ProviderRepository extends AccessibleModulator<Provider, String> {
                 Accumulators.first("name", "$name"),
                 Accumulators.first("website", "$website"),
                 Accumulators.first("abbreviation", "$abbreviation"),
+                Accumulators.first("externalId", "$externalId"),
                 Accumulators.first("logo", "$logo"),
                 Accumulators.first("data", "$data")
         );
 
         var gpafggg = Aggregates.project(Projections.fields(
                 Projections.computed("provider_id", "$_id.provider_id"),
-                Projections.include("name", "website", "abbreviation", "logo", "data", "unitType", "metricType", "metricDescription", "metricName", "metricDefinitionId", "totalValue")
+                Projections.include("name", "website", "abbreviation", "externalId", "logo", "data", "unitType", "metricType", "metricDescription", "metricName", "metricDefinitionId", "totalValue")
         ));
 
         var gpagg = Aggregates.group(
@@ -368,6 +375,7 @@ public class ProviderRepository extends AccessibleModulator<Provider, String> {
                 Accumulators.first("name", "$name"),
                 Accumulators.first("website", "$website"),
                 Accumulators.first("abbreviation", "$abbreviation"),
+                Accumulators.first("externalId", "$externalId"),
                 Accumulators.first("logo", "$logo"),
                 Accumulators.first("data", "$data"),
                 Accumulators.first("provider_id", "$provider_id"),
@@ -381,14 +389,12 @@ public class ProviderRepository extends AccessibleModulator<Provider, String> {
                 )
         );
 
-
         var report =  metricRepository.getMongoCollection()
                 .aggregate(List.of(regex, addField, group, extractFields,
                         lookup, unwind, projection, finalGroup,
                         lookupInstallation, unwindInstallation,
                         finalProjection, groupByProvider, lookupProvider, unwindProvider,
                         finalProviderProjection, agg, gagg, gpafggg, gpagg), ProviderReport.class).first();
-
 
         return report;
 

@@ -13,7 +13,7 @@ public class ProviderReport {
             type = SchemaType.STRING,
             implementation = String.class,
             description = "The provider ID.",
-            example = "grnet"
+            example = "327f1f77dcf86cd799439011"
     )
     @JsonProperty("provider_id")
     public String provider_id;
@@ -53,6 +53,15 @@ public class ProviderReport {
     )
     @JsonProperty("logo")
     public String logo;
+
+    @Schema(
+            type = SchemaType.STRING,
+            implementation = String.class,
+            description = "The provider external ID.",
+            example = "grnet"
+    )
+    @JsonProperty("external_id")
+    public String externalId;
 
     @Schema(
             type = SchemaType.ARRAY,

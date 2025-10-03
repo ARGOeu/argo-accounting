@@ -9,7 +9,6 @@ import org.accounting.system.constraints.AccessInstallation;
 import org.accounting.system.entities.HierarchicalRelation;
 import org.accounting.system.exceptions.CustomValidationException;
 import org.accounting.system.repositories.HierarchicalRelationRepository;
-import org.accounting.system.repositories.installation.InstallationRepository;
 import org.accounting.system.services.EntitlementService;
 
 import java.util.List;
@@ -33,8 +32,6 @@ public class AccessInstallationValidator implements ConstraintValidator<AccessIn
 
     @Override
     public boolean isValid(String installationId, ConstraintValidatorContext constraintValidatorContext) {
-
-        var installationRepository = CDI.current().select(InstallationRepository.class).get();
 
         var hierarchicalRelationRepository = CDI.current().select(HierarchicalRelationRepository.class).get();
 

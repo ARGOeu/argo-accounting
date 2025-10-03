@@ -8,19 +8,17 @@ import jakarta.ws.rs.BadRequestException;
 import jakarta.ws.rs.ServerErrorException;
 import org.accounting.system.dtos.ams.AmsMessage;
 import org.accounting.system.dtos.ams.ServiceCatalogueMessage;
-import org.accounting.system.entities.installation.Installation;
-import org.accounting.system.entities.provider.Provider;
+import org.accounting.system.dtos.installation.InstallationRequestDto;
+import org.accounting.system.dtos.provider.ProviderRequestDto;
 import org.accounting.system.enums.AMSMessageStatus;
-import org.accounting.system.repositories.installation.InstallationRepository;
 import org.accounting.system.repositories.provider.ProviderRepository;
+import org.accounting.system.services.installation.InstallationService;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.jboss.logging.Logger;
 
 import java.nio.charset.StandardCharsets;
-import java.time.LocalDateTime;
 import java.util.Base64;
 import java.util.Objects;
-import java.util.Set;
 
 @ApplicationScoped
 public class AmsService {
@@ -32,7 +30,11 @@ public class AmsService {
     ProjectService projectService;
 
     @Inject
-    InstallationRepository installationRepository;
+    ProviderService providerService;
+
+    @Inject
+    InstallationService installationService;
+
 
     @ConfigProperty(name = "api.accounting.ams.project")
     String project;
@@ -90,44 +92,29 @@ public class AmsService {
 
     private void createProvider(ServiceCatalogueMessage.Provider provider){
 
-        var providerToBeSaved = new Provider();
+        var toBeSaved = new ProviderRequestDto();
+        toBeSaved.name = provider.getName();
+        toBeSaved.abbreviation = provider.getAbbreviation();
+        toBeSaved.logo = provider.getLogo();
+        toBeSaved.website = provider.getWebsite();
+        toBeSaved.externalId = provider.getId();
 
-        providerToBeSaved.setId(Base64.getUrlEncoder().withoutPadding().encodeToString(provider.getId().getBytes()));
-        providerToBeSaved.setName(provider.getName());
-        providerToBeSaved.setAbbreviation(provider.getAbbreviation());
-        providerToBeSaved.setLogo(provider.getLogo());
-        providerToBeSaved.setWebsite(provider.getWebsite());
+        var response = providerService.save(toBeSaved, "from-ams");
 
-        providerToBeSaved.setRegisteredOn(LocalDateTime.now());
-
-        providerToBeSaved.setCreatorId("from-ams");
-
-        providerRepository.persist(providerToBeSaved);
-
-        projectService.associateProjectWithProviders(project, Set.of(providerToBeSaved.getId()));
+        projectService.associateProjectWithProvider(project, response.id);
     }
 
     private void createInstallation(ServiceCatalogueMessage.Service service){
 
-        var installation = new Installation();
-        installation.setProject(project);
-        installation.setOrganisation(Base64.getUrlEncoder().withoutPadding().encodeToString(service.getResourceOrganisation().getBytes()));
-        installation.setExternalId(service.getId());
-        installation.setInfrastructure(service.getName());
-        installation.setInstallation(service.getId());
-        installation.setCreatorId("from-ams");
+        var provider = providerRepository.findByExternalId(service.getResourceOrganisation());
 
-        var optional = installationRepository.exist(installation.getProject(), installation.getOrganisation(), installation.getInstallation());
+        var toBeSaved = new InstallationRequestDto();
+        toBeSaved.installation = service.getId();
+        toBeSaved.infrastructure = service.getName();
+        toBeSaved.externalId = service.getId();
+        toBeSaved.organisation = provider.get().getId();
+        toBeSaved.project = project;
 
-        if(optional.isPresent()){
-
-            return;
-        }
-
-        if (installationRepository.fetchInstallationByExternalId(installation.getProject(),  installation.getOrganisation(), installation.getExternalId()).isPresent()) {
-            return;
-        }
-
-        installationRepository.saveForAms(installation);
+        installationService.save(toBeSaved, "from-ams");
     }
 }

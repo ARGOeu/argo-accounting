@@ -97,7 +97,7 @@ public class HierarchicalRelationService {
      */
     public boolean providerBelongsToAnyProject(String providerId){
 
-        return hierarchicalRelationRepository.fetchExternalHierarchicalRelation(providerId, RelationType.PROVIDER).isPresent();
+        return hierarchicalRelationRepository.fetchHierarchicalRelation(providerId, RelationType.PROVIDER).isPresent();
     }
 
     public Set<String> getProjectsByProvider(String providerId) {

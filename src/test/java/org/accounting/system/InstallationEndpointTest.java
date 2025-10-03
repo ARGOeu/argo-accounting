@@ -19,8 +19,6 @@ import org.accounting.system.wiremock.TokenWireMockServer;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 
-import java.util.Set;
-
 import static io.restassured.RestAssured.given;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
@@ -230,7 +228,7 @@ public class InstallationEndpointTest extends PrepareTest {
     @Test
     public void createInstallationAlreadyExists() {
 
-        projectRepository.associateProjectWithProviders("777536", Set.of("grnet"));
+        projectRepository.associateProjectWithProvider("777536", "grnet");
 
         var requestForMetricDefinition = new MetricDefinitionRequestDto();
 
@@ -269,7 +267,7 @@ public class InstallationEndpointTest extends PrepareTest {
     @Test
     public void createInstallation() {
 
-        projectRepository.associateProjectWithProviders("777536", Set.of("grnet"));
+        projectRepository.associateProjectWithProvider("777536", "grnet");
 
         var requestForMetricDefinition = new MetricDefinitionRequestDto();
 
@@ -328,7 +326,7 @@ public class InstallationEndpointTest extends PrepareTest {
     @Test
     public void deleteInstallation(){
 
-        projectRepository.associateProjectWithProviders("777536", Set.of("grnet"));
+        projectRepository.associateProjectWithProvider("777536", "grnet");
 
         var requestForMetricDefinition = new MetricDefinitionRequestDto();
 
@@ -365,7 +363,7 @@ public class InstallationEndpointTest extends PrepareTest {
     @Test
     public void deleteInstallationNotAllowed(){
 
-        projectRepository.associateProjectWithProviders("777536", Set.of("grnet"));
+        projectRepository.associateProjectWithProvider("777536", "grnet");
 
         var requestForMetricDefinition = new MetricDefinitionRequestDto();
 
@@ -474,7 +472,7 @@ public class InstallationEndpointTest extends PrepareTest {
     @Test
     public void fetchInstallation() {
 
-        projectRepository.associateProjectWithProviders("777536", Set.of("grnet"));
+        projectRepository.associateProjectWithProvider("777536", "grnet");
 
         var requestForMetricDefinition = new MetricDefinitionRequestDto();
 
@@ -541,7 +539,7 @@ public class InstallationEndpointTest extends PrepareTest {
     @Test
     public void updateInstallationRequestBodyIsEmpty() {
 
-        projectRepository.associateProjectWithProviders("777536", Set.of("grnet"));
+        projectRepository.associateProjectWithProvider("777536", "grnet");
 
         var requestForMetricDefinition = new MetricDefinitionRequestDto();
 
@@ -579,7 +577,7 @@ public class InstallationEndpointTest extends PrepareTest {
     @Test
     public void updateInstallationNoMetricDefinition() {
 
-        projectRepository.associateProjectWithProviders("777536", Set.of("grnet"));
+        projectRepository.associateProjectWithProvider("777536", "grnet");
 
         var requestForMetricDefinition = new MetricDefinitionRequestDto();
 
@@ -621,7 +619,7 @@ public class InstallationEndpointTest extends PrepareTest {
     @Test
     public void updateInstallationPartial() {
 
-        projectRepository.associateProjectWithProviders("777536", Set.of("grnet"));
+        projectRepository.associateProjectWithProvider("777536", "grnet");
 
         var requestForMetricDefinition = new MetricDefinitionRequestDto();
 
@@ -668,7 +666,7 @@ public class InstallationEndpointTest extends PrepareTest {
     @Test
     public void updateInstallation() {
 
-        projectRepository.associateProjectWithProviders("777536", Set.of("grnet"));
+        projectRepository.associateProjectWithProvider("777536", "grnet");
 
         var requestForMetricDefinition = new MetricDefinitionRequestDto();
 
@@ -725,7 +723,7 @@ public class InstallationEndpointTest extends PrepareTest {
     @Test
     public void updateInstallationConflict() {
 
-        projectRepository.associateProjectWithProviders("777536", Set.of("grnet"));
+        projectRepository.associateProjectWithProvider("777536", "grnet");
 
         var requestForMetricDefinition = new MetricDefinitionRequestDto();
 
