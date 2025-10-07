@@ -23,7 +23,6 @@ import org.bson.types.ObjectId;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 /**
  * {@link MetricRepository This repository} encapsulates the logic required to access
@@ -39,11 +38,6 @@ import java.util.stream.Collectors;
  */
 @ApplicationScoped
 public class MetricRepository extends AccessibleModulator<Metric, ObjectId> {
-
-    public List<Metric> findMetricsByMetricDefinitionId(String metricDefinitionId) {
-
-        return find("metricDefinitionId = ?1", metricDefinitionId).stream().collect(Collectors.toList());
-    }
 
     /**
      * Executes a query to count the Metrics assigned to a Metric Definition.
