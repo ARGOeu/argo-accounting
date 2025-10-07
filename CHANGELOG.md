@@ -52,6 +52,8 @@ According to [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) , the
 
 - [#244](https://github.com/ARGOeu/argo-accounting/pull/244) - ACC-396
   External_id attribute is null.
+- [#249](https://github.com/ARGOeu/argo-accounting/pull/249) - ACC-404
+  Include the Provider's external_id in the hierarchical structure.
 
 ## 1.7.0 - 2025-07-25
 

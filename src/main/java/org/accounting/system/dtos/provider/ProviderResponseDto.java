@@ -11,7 +11,7 @@ public class ProviderResponseDto {
             type = SchemaType.STRING,
             implementation = String.class,
             description = "The Provider ID.",
-            example = "sites"
+            example = "607f1f77bcf86cd799439011"
     )
     @JsonProperty("id")
     public String id;
