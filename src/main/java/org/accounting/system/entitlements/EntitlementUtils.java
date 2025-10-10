@@ -14,8 +14,8 @@ public class EntitlementUtils {
         var m = PATTERN.matcher(raw);
         if (!m.matches()) return null;
 
-        var group = m.group(1); // π.χ. "accounting", "billing", κλπ
-        var hierarchyPart = m.group(2); // μπορεί να είναι null για sys admin
+        var group = m.group(1);
+        var hierarchyPart = m.group(2);
         List<String> hierarchy = new ArrayList<>();
         if (hierarchyPart != null) {
             for (var s : hierarchyPart.split(":")) {

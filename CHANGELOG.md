@@ -47,6 +47,8 @@ According to [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) , the
   Add a total aggregation to the provider representative report.
 - [#248](https://github.com/ARGOeu/argo-accounting/pull/248) - ACC-397
   Add external id to the provider entity.
+- [#250](https://github.com/ARGOeu/argo-accounting/pull/250) - ACC-402
+  Add Namespace and Parent Group Attributes to Default OIDC and newcomers OIDCs.
 
 ## Unreleased - Fixed
 

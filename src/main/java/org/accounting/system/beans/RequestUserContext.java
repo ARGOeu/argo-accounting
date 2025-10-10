@@ -21,6 +21,12 @@ public class RequestUserContext {
     @Getter
     String serviceKey;
 
+    @ConfigProperty(name = "api.group.management.namespace")
+    String namespace;
+
+    @ConfigProperty(name = "api.group.management.parent")
+    String parent;
+
     @Inject
     TokenIntrospection tokenIntrospection;
 
@@ -63,5 +69,31 @@ public class RequestUserContext {
     public String getIssuer(){
 
         return tokenIntrospection.getJsonObject().getString("iss");
+    }
+
+    public String getNamespace(){
+
+        var optionalTenant = oidcTenantConfigRepository.fetchOidcTenantConfigByIssuer(getIssuer());
+
+        if(optionalTenant.isEmpty()){
+
+            return namespace;
+        } else {
+
+            return optionalTenant.get().getGroupManagementNamespace();
+        }
+    }
+
+    public String getParent(){
+
+        var optionalTenant = oidcTenantConfigRepository.fetchOidcTenantConfigByIssuer(getIssuer());
+
+        if(optionalTenant.isEmpty()){
+
+            return parent;
+        } else {
+
+            return optionalTenant.get().getGroupManagementParent();
+        }
     }
 }

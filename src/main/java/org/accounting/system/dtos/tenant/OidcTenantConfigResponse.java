@@ -5,7 +5,6 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import org.eclipse.microprofile.openapi.annotations.enums.SchemaType;
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
 
-
 @Schema(name="OidcTenantConfig", description="An object represents the Oidc Tenant Configuration.")
 public class OidcTenantConfigResponse {
 
@@ -116,5 +115,23 @@ public class OidcTenantConfigResponse {
     )
     @JsonProperty("service_id_token_claim")
     public String serviceIdTokenClaim;
+
+    @Schema(
+            type = SchemaType.STRING,
+            implementation = String.class,
+            description = "The group management entitlement namespace.",
+            example = "urn:geant:sandbox.eosc-beyond.eu:core"
+    )
+    @JsonProperty("group_management_namespace")
+    public String groupManagementNamespace;
+
+    @Schema(
+            type = SchemaType.STRING,
+            implementation = String.class,
+            description = "The name of the parent group management.",
+            example = "accounting"
+    )
+    @JsonProperty("group_management_parent")
+    public String groupManagementParent;
 
 }

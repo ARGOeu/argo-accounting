@@ -7,6 +7,7 @@ import jakarta.validation.ConstraintValidator;
 import jakarta.validation.ConstraintValidatorContext;
 import jakarta.validation.constraintvalidation.SupportedValidationTarget;
 import jakarta.validation.constraintvalidation.ValidationTarget;
+import org.accounting.system.beans.RequestUserContext;
 import org.accounting.system.constraints.AccessProvider;
 import org.accounting.system.dtos.installation.InstallationRequestDto;
 import org.accounting.system.exceptions.CustomValidationException;
@@ -78,8 +79,9 @@ public class AccessProviderValidator implements ConstraintValidator<AccessProvid
 
         var entitlementService = CDI.current().select(EntitlementService.class).get();
 
+        var requestUserContext = CDI.current().select(RequestUserContext.class).get();
 
-        if(entitlementService.hasAccess("accounting", "admin", List.of())){
+        if(entitlementService.hasAccess(requestUserContext.getParent(), "admin", List.of())){
 
             return true;
         }
@@ -91,7 +93,7 @@ public class AccessProviderValidator implements ConstraintValidator<AccessProvid
 
                     for(String role:roles) {
 
-                        if (entitlementService.hasAccess("accounting", role, List.of(project))) {
+                        if (entitlementService.hasAccess(requestUserContext.getParent(), role, List.of(project))) {
 
                             enter = true;
                         }
@@ -107,7 +109,7 @@ public class AccessProviderValidator implements ConstraintValidator<AccessProvid
 
                         for(String role:roles) {
 
-                            if (entitlementService.hasAccess("accounting", role, List.of(project, provider)) || entitlementService.hasAccess("accounting", role, List.of("roles", "provider", provider))) {
+                            if (entitlementService.hasAccess(requestUserContext.getParent(), role, List.of(project, provider)) || entitlementService.hasAccess(requestUserContext.getParent(), role, List.of("roles", "provider", provider))) {
 
                                 enter = true;
                             }

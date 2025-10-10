@@ -5,6 +5,7 @@ import io.vavr.control.Try;
 import jakarta.enterprise.inject.spi.CDI;
 import jakarta.validation.ConstraintValidator;
 import jakarta.validation.ConstraintValidatorContext;
+import org.accounting.system.beans.RequestUserContext;
 import org.accounting.system.constraints.AccessProject;
 import org.accounting.system.exceptions.CustomValidationException;
 import org.accounting.system.repositories.project.ProjectRepository;
@@ -38,20 +39,22 @@ public class AccessProjectValidator implements ConstraintValidator<AccessProject
 
         var entitlementService = CDI.current().select(EntitlementService.class).get();
 
+        var requestUserContext = CDI.current().select(RequestUserContext.class).get();
+
         if(checkIfExists){
             Try
                     .run(()->projectRepository.findByIdOptional(project).orElseThrow(()->new CustomValidationException("There is no Project with the following id: "+project, HttpResponseStatus.NOT_FOUND)))
                     .getOrElseThrow(()->new CustomValidationException("There is no Project with the following id: "+project, HttpResponseStatus.NOT_FOUND));
         }
 
-        if(entitlementService.hasAccess("accounting", "admin", List.of())){
+        if(entitlementService.hasAccess(requestUserContext.getParent(), "admin", List.of())){
 
             return true;
         }
 
         for(String role:roles){
 
-            if(entitlementService.hasAccess("accounting", role, List.of(project))){
+            if(entitlementService.hasAccess(requestUserContext.getParent(), role, List.of(project))){
 
                 return true;
             }

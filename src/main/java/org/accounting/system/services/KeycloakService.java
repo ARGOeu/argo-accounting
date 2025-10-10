@@ -2,6 +2,7 @@ package org.accounting.system.services;
 
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
+import org.accounting.system.beans.RequestUserContext;
 import org.accounting.system.services.clients.Group;
 import org.accounting.system.services.clients.GroupMembership;
 import org.accounting.system.services.clients.GroupRequest;
@@ -25,6 +26,9 @@ public class KeycloakService {
     @RestClient
     KeycloakGroupClient groupClient;
 
+    @Inject
+    RequestUserContext requestUserContext;
+
     @ConfigProperty(name = "api.accounting.manage.groups.client.id")
     String clientId;
 
@@ -47,7 +51,7 @@ public class KeycloakService {
 
     public String getValueByKey(String key){
 
-        return groupsToMap("accounting").get(key);
+        return groupsToMap(requestUserContext.getParent()).get(key);
     }
 
     public void createSubGroup(String id, GroupRequest groupRequest){
