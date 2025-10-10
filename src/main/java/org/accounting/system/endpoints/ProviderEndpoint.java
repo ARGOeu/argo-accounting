@@ -624,7 +624,7 @@ public class ProviderEndpoint {
             throw new BadRequestException("Start date must be before or equal to end date.");
         }
 
-        if(!entitlementService.hasAccess("accounting","admin", List.of("roles", "provider", providerId))){
+        if(!entitlementService.hasAccess(requestInformation.getParent(),"admin", List.of("roles", "provider", providerId))){
 
             throw new ForbiddenException("You have no access to execute this operation.");
         }
@@ -709,7 +709,7 @@ public class ProviderEndpoint {
 
         var provider = optional.get();
 
-        if(!entitlementService.hasAccess("accounting","admin", List.of("roles", "provider", provider.getId()))){
+        if(!entitlementService.hasAccess(requestInformation.getParent(),"admin", List.of("roles", "provider", provider.getId()))){
 
             throw new ForbiddenException("You have no access to execute this operation.");
         }

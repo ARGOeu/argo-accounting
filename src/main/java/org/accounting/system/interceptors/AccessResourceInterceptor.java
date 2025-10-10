@@ -8,6 +8,7 @@ import jakarta.interceptor.AroundInvoke;
 import jakarta.interceptor.Interceptor;
 import jakarta.interceptor.InvocationContext;
 import jakarta.ws.rs.ForbiddenException;
+import org.accounting.system.beans.RequestUserContext;
 import org.accounting.system.enums.ApiMessage;
 import org.accounting.system.interceptors.annotations.AccessResource;
 import org.accounting.system.services.EntitlementService;
@@ -31,6 +32,8 @@ public class AccessResourceInterceptor {
     @Inject
     EntitlementService entitlementService;
 
+    @Inject
+    RequestUserContext requestUserContext;
 
     @AroundInvoke
     Object check(InvocationContext context) throws Exception {
@@ -51,14 +54,14 @@ public class AccessResourceInterceptor {
 
         var roles = accessResource.roles();
 
-        if(entitlementService.hasAccess("accounting", "admin", List.of())){
+        if(entitlementService.hasAccess(requestUserContext.getParent(), "admin", List.of())){
 
             return context.proceed();
         }
 
         for(String role:roles){
 
-            if(entitlementService.hasAccess("accounting", role, List.of("operations", "resources"))){
+            if(entitlementService.hasAccess(requestUserContext.getParent(), role, List.of("operations", "resources"))){
 
                 return context.proceed();
             }

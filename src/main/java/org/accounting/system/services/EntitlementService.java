@@ -3,6 +3,7 @@ package org.accounting.system.services;
 import io.quarkus.oidc.TokenIntrospection;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
+import org.accounting.system.beans.RequestUserContext;
 import org.accounting.system.entitlements.Entitlement;
 import org.accounting.system.entitlements.EntitlementUtils;
 
@@ -16,6 +17,9 @@ public class EntitlementService {
 
     @Inject
     TokenIntrospection tokenIntrospection;
+
+    @Inject
+    RequestUserContext requestUserContext;
 
     public boolean hasAccess(String group, String role, List<String> targetHierarchy) {
 
@@ -55,8 +59,10 @@ public class EntitlementService {
             return Collections.emptyList();
         } else {
 
-            var entitlements = rawEntitlements.stream()
+            var entitlements = rawEntitlements
+                    .stream()
                     .map(v -> v.toString().replace("\"", ""))
+                    .filter(s->s.startsWith(requestUserContext.getNamespace()))
                     .collect(Collectors.toList());
 
             return EntitlementUtils.parseEntitlements(entitlements);
