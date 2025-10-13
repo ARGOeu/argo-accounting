@@ -29,7 +29,7 @@ import org.accounting.system.mappers.MetricDefinitionMapper;
 import org.accounting.system.mappers.ProviderMapper;
 import org.accounting.system.repositories.metric.MetricRepository;
 import org.accounting.system.repositories.provider.ProviderRepository;
-import org.accounting.system.services.clients.GroupRequest;
+import org.accounting.system.services.groupmanagement.GroupManagementFactory;
 import org.accounting.system.util.QueryParser;
 import org.accounting.system.validators.AccessProviderValidator;
 import org.apache.commons.lang3.StringUtils;
@@ -59,7 +59,7 @@ public class ProviderService {
     QueryParser queryParser;
 
     @Inject
-    KeycloakService keycloakService;
+    GroupManagementFactory groupManagementFactory;
 
     @Inject
     MetricRepository metricRepository;
@@ -87,13 +87,6 @@ public class ProviderService {
      * @return The stored Provider has been turned into a response body.
      */
     public ProviderResponseDto save(ProviderRequestDto request, String creatorId) {
-
-        var group = keycloakService.getValueByKey("/accounting/roles/provider");
-
-        if(Objects.isNull(group)){
-
-            throw new ServerErrorException("The subgroup /accounting/roles/provider does not exist, so the provider cannot be saved. Please, create the subgroup /accounting/roles/provider!", 500);
-        }
 
         if (StringUtils.isEmpty(request.externalId)) {
             request.externalId = UUID.randomUUID().toString();
@@ -124,25 +117,9 @@ public class ProviderService {
         providerRepository.save(provider);
 
         try{
-            var groupRequest = new GroupRequest();
-            groupRequest.name = provider.getId();
 
-            var attrs = new GroupRequest.Attributes();
-            attrs.description = List.of("Group for Provider "+provider.getName());
+            groupManagementFactory.choose().createProviderGroup(provider.getId());
 
-            groupRequest.attributes = attrs;
-
-            keycloakService.createSubGroup(group, groupRequest);
-            var id = keycloakService.getValueByKey("/accounting/roles/provider/"+provider.getId());
-
-            keycloakService.addRole(id, "admin");
-            keycloakService.addRole(id, "viewer");
-
-            var defaultConfigurationId = keycloakService.getValueByKey(id);
-            var defaultConfiguration = keycloakService.getConfiguration(id, defaultConfigurationId);
-            var groupRoles = List.of("admin", "viewer");
-            defaultConfiguration.setGroupRoles(groupRoles);
-            keycloakService.updateConfiguration(id, defaultConfiguration);
         } catch (Exception e){
 
             LOG.error("Group creation failed with error : " + e.getMessage());
@@ -183,15 +160,7 @@ public class ProviderService {
             throw new ForbiddenException("You cannot delete a Provider which belongs to a Project.");
         }
 
-        var key = "/accounting/roles/provider/"+providerId;
-
-        try{
-
-            keycloakService.deleteGroup(keycloakService.getValueByKey(key));
-        } catch (Exception e){
-
-            LOG.error(String.format("Group deletion %s failed with error : %s", key, e.getMessage()));
-        }
+        groupManagementFactory.choose().deleteProviderGroup(provider.getId());
 
         return providerRepository.deleteEntityById(providerId);
     }
