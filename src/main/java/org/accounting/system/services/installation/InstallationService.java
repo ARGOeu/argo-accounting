@@ -31,16 +31,14 @@ import org.accounting.system.repositories.installation.InstallationRepository;
 import org.accounting.system.repositories.metric.MetricRepository;
 import org.accounting.system.repositories.provider.ProviderRepository;
 import org.accounting.system.services.HierarchicalRelationService;
-import org.accounting.system.services.KeycloakService;
 import org.accounting.system.services.ResourceService;
-import org.accounting.system.services.clients.GroupRequest;
+import org.accounting.system.services.groupmanagement.GroupManagementFactory;
 import org.accounting.system.util.QueryParser;
 import org.accounting.system.validators.AccessInstallationValidator;
 import org.apache.commons.lang3.StringUtils;
 import org.jboss.logging.Logger;
 
 import java.lang.annotation.Annotation;
-import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.regex.Pattern;
@@ -71,7 +69,7 @@ public class InstallationService {
     ResourceService resourceService;
 
     @Inject
-    KeycloakService keycloakService;
+    GroupManagementFactory groupManagementFactory;
 
     @Inject
     MetricRepository metricRepository;
@@ -105,23 +103,7 @@ public class InstallationService {
 
         try{
 
-            var groupRequest = new GroupRequest();
-            groupRequest.name = installation.getId();
-
-            GroupRequest.Attributes attrs = new GroupRequest.Attributes();
-            attrs.description = List.of(String.format("Installation %s created in Project - %s and Provider - %s", installation.getInstallation(), installation.getProject(), installation.getOrganisation()));
-
-            groupRequest.attributes = attrs;
-            keycloakService.createSubGroup(keycloakService.getValueByKey(String.format("/accounting/%s/%s", installation.getProject(), installation.getOrganisation())), groupRequest);
-            var id = keycloakService.getValueByKey(String.format("/accounting/%s/%s/%s", installation.getProject(), installation.getOrganisation(), installation.getId()));
-            keycloakService.addRole(id, "admin");
-            keycloakService.addRole(id, "viewer");
-
-            var defaultConfigurationId = keycloakService.getValueByKey(id);
-            var defaultConfiguration = keycloakService.getConfiguration(id, defaultConfigurationId);
-            var groupRoles = List.of("admin", "viewer");
-            defaultConfiguration.setGroupRoles(groupRoles);
-            keycloakService.updateConfiguration(id, defaultConfiguration);
+            groupManagementFactory.choose().createInstallationGroup(request.project, request.organisation, installation.getId());
         } catch (Exception e){
 
             LOG.error("Group creation failed with error : " + e.getMessage());
@@ -153,14 +135,8 @@ public class InstallationService {
 
         hierarchicalRelationRepository.delete("externalId", installationId);
 
-        var key = String.format("/accounting/%s/%s/%s", installation.getProject(), installation.getOrganisation(), installationId);
-        try{
+        groupManagementFactory.choose().deleteInstallationGroup(installation.getProject(), installation.getOrganisation(), installation.getId());
 
-            keycloakService.deleteGroup(keycloakService.getValueByKey(key));
-        } catch (Exception e){
-
-            LOG.error(String.format("Group deletion %s failed with error : %s", key, e.getMessage()));
-        }
     }
 
     /**

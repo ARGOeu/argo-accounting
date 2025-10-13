@@ -49,6 +49,8 @@ According to [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) , the
   Add external id to the provider entity.
 - [#250](https://github.com/ARGOeu/argo-accounting/pull/250) - ACC-402
   Add Namespace and Parent Group Attributes to Default OIDC and newcomers OIDCs.
+- [#251](https://github.com/ARGOeu/argo-accounting/pull/251) - ACC-405
+  Limit Auto-CUD groups to default OIDC.
 
 ## Unreleased - Fixed
 

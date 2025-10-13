@@ -16,11 +16,10 @@ import org.accounting.system.entities.projections.normal.ProjectProjection;
 import org.accounting.system.mappers.InstallationMapper;
 import org.accounting.system.mappers.MetricDefinitionMapper;
 import org.accounting.system.repositories.project.ProjectRepository;
-import org.accounting.system.services.clients.GroupRequest;
+import org.accounting.system.services.groupmanagement.GroupManagementFactory;
 import org.accounting.system.util.QueryParser;
 import org.jboss.logging.Logger;
 
-import java.util.List;
 import java.util.Optional;
 
 @ApplicationScoped
@@ -35,7 +34,7 @@ public class ProjectService {
     QueryParser queryParser;
 
     @Inject
-    KeycloakService keycloakService;
+    GroupManagementFactory groupManagementFactory;
 
     /**
      * This method correlates the given Providers with a specific Project and creates a hierarchical structure with root
@@ -51,23 +50,7 @@ public class ProjectService {
 
         try{
 
-            var groupRequest = new GroupRequest();
-            groupRequest.name = providerId;
-
-            GroupRequest.Attributes attrs = new GroupRequest.Attributes();
-            attrs.description = List.of(String.format("Provider %s associated with Project %s",providerId, projectId));
-
-            groupRequest.attributes = attrs;
-            keycloakService.createSubGroup(keycloakService.getValueByKey(String.format("/accounting/%s", projectId)), groupRequest);
-            var id = keycloakService.getValueByKey(String.format("/accounting/%s/%s", projectId, providerId));
-            keycloakService.addRole(id, "admin");
-            keycloakService.addRole(id, "viewer");
-
-            var defaultConfigurationId = keycloakService.getValueByKey(id);
-            var defaultConfiguration = keycloakService.getConfiguration(id, defaultConfigurationId);
-            var groupRoles = List.of("admin", "viewer");
-            defaultConfiguration.setGroupRoles(groupRoles);
-            keycloakService.updateConfiguration(id, defaultConfiguration);
+            groupManagementFactory.choose().createAssociationGroup(projectId, providerId);
         } catch (Exception e){
 
             projectRepository.dissociateProviderFromProject(projectId, providerId);
@@ -85,15 +68,7 @@ public class ProjectService {
 
         projectRepository.dissociateProviderFromProject(projectId, providerId);
 
-        var key = String.format("/accounting/%s/%s", projectId, providerId);
-
-        try{
-
-            keycloakService.deleteGroup(keycloakService.getValueByKey(key));
-        } catch (Exception e){
-
-            LOG.error(String.format("Group deletion %s failed with error : %s", key, e.getMessage()));
-        }
+        groupManagementFactory.choose().deleteAssociationGroup(projectId, providerId);
     }
 
     public ProjectProjection getById(final String id) {
