@@ -51,6 +51,8 @@ According to [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) , the
   Add Namespace and Parent Group Attributes to Default OIDC and newcomers OIDCs.
 - [#251](https://github.com/ARGOeu/argo-accounting/pull/251) - ACC-405
   Limit Auto-CUD groups to default OIDC.
+- [#253](https://github.com/ARGOeu/argo-accounting/pull/253) - ACC-406
+  Restrict Accounting System Admin Entitlement to Default OIDC.
 
 ## Unreleased - Fixed
 

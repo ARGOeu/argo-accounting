@@ -46,7 +46,7 @@ public class AccessInstallationValidator implements ConstraintValidator<AccessIn
 
         var requestUserContext = CDI.current().select(RequestUserContext.class).get();
 
-        if(entitlementService.hasAccess(requestUserContext.getParent(), "admin", List.of())){
+        if(requestUserContext.getOidcTenantConfig().isEmpty() && entitlementService.hasAccess(requestUserContext.getParent(), "admin", List.of())){
 
             return true;
         }
