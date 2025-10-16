@@ -13,33 +13,12 @@ The Provider can either be registered by communicating with EOSC Resource
 Catalogue, or you can create a new Provider by using the endpoints the
 Accounting Service provides.
 
-## Registering Provider by following the EOSC Onboarding Process at [becomeAProvider](https://providers.eosc-portal.eu/becomeAProvider)
-
-The Accounting System communicates with EOSC Providers to retrieve the available
-Providers.
-A cron job, which runs every day at 12 am, collects the Providers and stores them
-in the database. From the response we receive we keep specific information
-which is stored in the collection named Provider. The collection has the
-following structure:
-
-| Field           | Description                |
-|-----------------|----------------------------|
-| id              | Provider ID.               |
-| name            | Provider name.             |
-| website         | Url of Provider website.   |
-| abbreviation    | Provider abbreviation.     |
-| logo            | Url of Provider logo.      |
-
 ## Registering Provider through Accounting System API
 
 If the Provider is not registered in the EOSC Resource Catalogue, the API
 offers
 the functionality to create a new one. Below, we will describe the available
 operations regarding the Provider that you can interact with.
-
-**Bear in mind that** the Provider response contains the property `creator_id`.
-If the `creator_id` is empty, the Provider comes from the EOSC Resource
-Catalogue. Otherwise, it was generated through the Accounting Service.
 
 ## [POST] - Create a new Provider
 
@@ -343,7 +322,7 @@ Success Response `200 OK`
 }
 ```
 
-## [POST] - Access Control Entry for a particular Provider of a specific Project
+## [POST] - Access Control Entry for a particular Provider of a specific Project (legacy)
 
 Any client can have different responsibilities at different Providers. The
 actions the client can perform at each Provider are determined by the role
@@ -377,6 +356,11 @@ Success Response `200 OK`
    "message": "Provider Access Control was successfully created."
 }
 ```
+
+### Note
+
+See [Mapping of Roles to Entitlements](../authorization/accounting_system_roles#mapping-of-roles-to-entitlements) for new role assignment mechanism.
+
 
 ## [POST] - Search for Providers
 
@@ -597,3 +581,7 @@ Authorization: Bearer {token}
 ## Errors
 
 Please refer to section [Errors](./api_errors) to see all possible Errors.
+
+## Note
+
+Instead of the internal ID, you can use the external ID in the corresponding API calls.

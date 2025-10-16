@@ -20,19 +20,10 @@ oject with one or more  Providers. The following action is responsible for gener
 ating a hierarchical relationship between a Project and one or more Providers:
 
 ```
-POST /accounting-system/projects/{project_id}/associate
+POST /accounting-system/projects/{project_id}/dissociate/provider/{provider_id}
 
-Content-Type: application-json
+Content-Type: application/json
 Authorization: Bearer {token}
-
-{
-   "providers":[
-      "bioexcel",
-      "osmooc",
-      "grnet",
-      "sites"
-   ]
-}
 ```
 
 The response is:
@@ -40,11 +31,7 @@ The response is:
 Success Response `200 OK`
 
 ```
-{
-   "code": 200,
-   "message": "The following providers [bioexcel, osmooc, grnet, sites] have bee
-n associated with Project {project_id}"
-}
+Provider has been successfully associated with the Project.
 ```
 
 ## [POST] - Dissociate Providers from a Project
@@ -52,16 +39,10 @@ n associated with Project {project_id}"
 You can also dissociate one or more Providers from a Project:
 
 ```
-POST /accounting-system/projects/{project_id}/dissociate
+POST /accounting-system/projects/{project_id}/dissociate/provider/{provider_id}
 
-Content-Type: application-json
+Content-Type: application/json
 Authorization: Bearer {token}
-
-{
-   "providers":[
-      "grnet"
-   ]
-}
 ```
 
 The response is :
@@ -69,11 +50,7 @@ The response is :
 Success Response `200 OK`
 
 ```
-{
-   "code": 200,
-   "message": "The following providers [grnet] have been dissociated from Projec
-t {project_id}"
-}
+Provider has been successfully dissociated from the Project.
 ```
 
 If there are Installations registered to Provider, the dissociation is not allow
@@ -329,7 +306,7 @@ Success Response `200 OK`
 }
 ```
 
-## [POST] - Access Control Entry for a specific Project {#post-access-control}
+## [POST] - Access Control Entry for a specific Project {#post-access-control} (legacy)
 
 The general endpoint that is responsible for creating an Access Control entry fo
 r a Project is as follows:
@@ -369,6 +346,10 @@ e, and the permissions it has.
 
 **Keep in mind that** to execute the above operation, you must have been assigne
 d a role containing the Project Acl permission.
+
+### Note
+
+See [Mapping of Roles to Entitlements](../authorization/accounting_system_roles#mapping-of-roles-to-entitlements) for new role assignment mechanism.
 
 ## [POST] - Search for Projects
 

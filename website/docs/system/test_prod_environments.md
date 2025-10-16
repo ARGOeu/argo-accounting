@@ -1,7 +1,7 @@
 ---
 id: test_prod_environment
 title: Development and Production Environment
-sidebar_position: 1
+sidebar_position: 2
 slug: /
 ---
 
@@ -45,8 +45,6 @@ Our development environment consists of two components: the REST API and User
 Interface.
 The REST API is accessible via the development API URL, which is currently
 [https://api.devel.acc.argo.grnet.gr](https://api.devel.acc.argo.grnet.gr).
-The User Interface is accessible via the development UI URL, which is currently
-[https://accounting-eosc-dev.apps.wok3.in2p3.fr](https://accounting-eosc-dev.apps.wok3.in2p3.fr).
 
 This environment is dedicated to development and testing activities and is
 isolated from the production environment. Access to the development environment
@@ -60,12 +58,12 @@ Otherwise, just log in to development Accounting User Interface.
 Our production environment consists of two components: the REST API and
 User Interface.
 The REST API is accessible via the production API URL, which is currently
-[https://api.accounting.argo.grnet.gr](https://api.accounting.argo.grnet.gr).
-The User Interface is accessible via the production UI URL, which is currently
-[https://accounting.eosc-portal.eu](https://accounting.eosc-portal.eu).
+[https://api.acc.argo.grnet.gr](https://api.acc.argo.grnet.gr).
+The Graphical User Interface is accessible via the production URL, which is currently
+[https://ui.acc.argo.grnet.gr](https://ui.acc.argo.grnet.gr).
 
 Access to the production environment is restricted to authorized personnel
 only.
 If you require access to our production environment via the API, please
-identify yourself at the [production AAI Proxy](https://api.accounting.argo.grnet.gr/oidc-client/index.php).
+identify yourself at the [production AAI Proxy](https://api.acc.argo.grnet.gr/accounting-system/oidc-client).
 Otherwise, just log in to production Accounting User Interface.

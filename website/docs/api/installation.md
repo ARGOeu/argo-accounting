@@ -304,7 +304,7 @@ Success Response 200 OK
 }
 ```
 
-## [POST] - Access Control Entry for a particular Installation
+## [POST] - Access Control Entry for a particular Installation (legacy)
 
 The same goes for the Installations. Any client can have different
 responsibilities at different Installations. The actions the client can
@@ -342,6 +342,11 @@ Success Response `200 OK`
 
 **Keep in mind that** to execute the above operation, you must have been
 assigned a role containing the Installation Acl permission.
+
+### Note
+
+See [Mapping of Roles to Entitlements](../authorization/accounting_system_roles#mapping-of-roles-to-entitlements) for new role assignment mechanism.
+
 
 ## [POST] - Search for Installations
 
@@ -494,3 +499,7 @@ Authorization: Bearer {token}
 ## Errors
 
 Please refer to section [Errors](./api_errors) to see all possible Errors.
+
+## Note
+
+Instead of the internal ID, you can use the external ID in the corresponding API calls.
