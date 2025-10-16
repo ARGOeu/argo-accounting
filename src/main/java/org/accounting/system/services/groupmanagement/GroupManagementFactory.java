@@ -22,7 +22,7 @@ public class GroupManagementFactory {
 
     public GroupManagement choose(){
 
-        var optional = oidcTenantConfigRepository.fetchOidcTenantConfigByIssuer(requestUserContext.getIssuer());
+        var optional = requestUserContext.getOidcTenantConfig();
 
         if(optional.isEmpty()){
 

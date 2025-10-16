@@ -5,9 +5,12 @@ import jakarta.enterprise.context.RequestScoped;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.BadRequestException;
 import lombok.Getter;
+import org.accounting.system.entities.OidcTenantConfig;
 import org.accounting.system.repositories.OidcTenantConfigRepository;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
+
+import java.util.Optional;
 
 @RequestScoped
 public class RequestUserContext {
@@ -73,7 +76,7 @@ public class RequestUserContext {
 
     public String getNamespace(){
 
-        var optionalTenant = oidcTenantConfigRepository.fetchOidcTenantConfigByIssuer(getIssuer());
+        var optionalTenant = getOidcTenantConfig();
 
         if(optionalTenant.isEmpty()){
 
@@ -86,7 +89,7 @@ public class RequestUserContext {
 
     public String getParent(){
 
-        var optionalTenant = oidcTenantConfigRepository.fetchOidcTenantConfigByIssuer(getIssuer());
+        var optionalTenant = getOidcTenantConfig();
 
         if(optionalTenant.isEmpty()){
 
@@ -95,5 +98,10 @@ public class RequestUserContext {
 
             return optionalTenant.get().getGroupManagementParent();
         }
+    }
+
+    public Optional<OidcTenantConfig> getOidcTenantConfig(){
+
+        return oidcTenantConfigRepository.fetchOidcTenantConfigByIssuer(getIssuer());
     }
 }

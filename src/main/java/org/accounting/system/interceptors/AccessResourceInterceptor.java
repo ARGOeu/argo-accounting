@@ -54,7 +54,7 @@ public class AccessResourceInterceptor {
 
         var roles = accessResource.roles();
 
-        if(entitlementService.hasAccess(requestUserContext.getParent(), "admin", List.of())){
+        if(requestUserContext.getOidcTenantConfig().isEmpty() && entitlementService.hasAccess(requestUserContext.getParent(), "admin", List.of())){
 
             return context.proceed();
         }

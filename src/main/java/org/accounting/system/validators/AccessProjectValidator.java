@@ -47,7 +47,7 @@ public class AccessProjectValidator implements ConstraintValidator<AccessProject
                     .getOrElseThrow(()->new CustomValidationException("There is no Project with the following id: "+project, HttpResponseStatus.NOT_FOUND));
         }
 
-        if(entitlementService.hasAccess(requestUserContext.getParent(), "admin", List.of())){
+        if(requestUserContext.getOidcTenantConfig().isEmpty() && entitlementService.hasAccess(requestUserContext.getParent(), "admin", List.of())){
 
             return true;
         }
