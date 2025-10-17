@@ -26,12 +26,16 @@ According to [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) , the
 
 ---
 
-## Unreleased - Removed
+## 2.0.0 - 2025-10-17
+
+---
+
+## 2.0.0 - Removed
 
 - [#233](https://github.com/ARGOeu/argo-accounting/pull/233) - ACC-370 Remove
   data concerning permissions in reports.
 
-## Unreleased - Added
+## 2.0.0 - Added
 
 - [#234](https://github.com/ARGOeu/argo-accounting/pull/234) - ACC-373 Add
   "group by" feature in reports.
@@ -54,7 +58,7 @@ According to [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) , the
 - [#253](https://github.com/ARGOeu/argo-accounting/pull/253) - ACC-406
   Restrict Accounting System Admin Entitlement to Default OIDC.
 
-## Unreleased - Fixed
+## 2.0.0 - Fixed
 
 - [#244](https://github.com/ARGOeu/argo-accounting/pull/244) - ACC-396
   External_id attribute is null.
