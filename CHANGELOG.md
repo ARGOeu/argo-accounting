@@ -57,6 +57,8 @@ According to [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) , the
   Limit Auto-CUD groups to default OIDC.
 - [#253](https://github.com/ARGOeu/argo-accounting/pull/253) - ACC-406
   Restrict Accounting System Admin Entitlement to Default OIDC.
+- [#257](https://github.com/ARGOeu/argo-accounting/pull/257) - ACC-407
+  Upgrade to Quarkus 3.27.0.
 
 ## 2.0.0 - Fixed
 

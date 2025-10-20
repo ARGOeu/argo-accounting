@@ -40,3 +40,5 @@ nb-configuration.xml
 
 # dependencies
 /node_modules
+
+.java-version

@@ -51,7 +51,7 @@ public class MetricEndpoint {
     @Inject
     MetricService metricService;
 
-    @ConfigProperty(name = "quarkus.resteasy-reactive.path")
+    @ConfigProperty(name = "quarkus.rest.path")
     String basePath;
 
     @ConfigProperty(name = "api.server.url")
@@ -126,35 +126,35 @@ public class MetricEndpoint {
                     @ExampleObject(
                             name = "An example request with a combination of criteria of a search on metrics",
                             value = "{\n" +
-                                    "  \"type\": \"filter\",\n" +
-                                    "  \"operator\": \"OR\",\n" +
-                                    "  \"criteria\": [\n" +
-                                    "    {\n" +
-                                    "      \"type\": \"query\",\n" +
-                                    "      \"field\": \"value\",\n" +
-                                    "      \"values\": 60,\n" +
-                                    "      \"operand\": lt\n" +
-                                    "    },\n" +
-                                    "    {\n" +
-                                    "      \"type\": \"filter\",\n" +
-                                    "      \"operator\": \"AND\",\n" +
-                                    "      \"criteria\": [\n" +
-                                    "        {\n" +
-                                    "          \"type\": \"query\",\n" +
-                                    "          \"field\": \"time_period_start\",\n" +
-                                    "          \"values\": \"2022-01-05T09:13:07Z\",\n" +
-                                    "          \"operand\": \"gte\"\n" +
-                                    "        },\n" +
-                                    "        {\n" +
-                                    "          \"type\": \"query\",\n" +
-                                    "          \"field\": \"time_period_end\",\n" +
-                                    "          \"values\": \"2022-10-05T09:15:07Z\",\n" +
-                                    "          \"operand\": \"lt\"\n" +
-                                    "        }\n" +
-                                    "      ]\n" +
-                                    "    }\n" +
-                                    "  ]\n" +
-                                    "}\n",
+                            "  \"type\": \"filter\",\n" +
+                            "  \"operator\": \"OR\",\n" +
+                            "  \"criteria\": [\n" +
+                            "    {\n" +
+                            "      \"type\": \"query\",\n" +
+                            "      \"field\": \"value\",\n" +
+                            "      \"values\": 60,\n" +
+                            "      \"operand\": \"lt\"\n" +
+                            "    },\n" +
+                            "    {\n" +
+                            "      \"type\": \"filter\",\n" +
+                            "      \"operator\": \"AND\",\n" +
+                            "      \"criteria\": [\n" +
+                            "        {\n" +
+                            "          \"type\": \"query\",\n" +
+                            "          \"field\": \"time_period_start\",\n" +
+                            "          \"values\": \"2022-01-05T09:13:07Z\",\n" +
+                            "          \"operand\": \"gte\"\n" +
+                            "        },\n" +
+                            "        {\n" +
+                            "          \"type\": \"query\",\n" +
+                            "          \"field\": \"time_period_end\",\n" +
+                            "          \"values\": \"2022-10-05T09:15:07Z\",\n" +
+                            "          \"operand\": \"lt\"\n" +
+                            "        }\n" +
+                            "      ]\n" +
+                            "    }\n" +
+                            "  ]\n" +
+                            "}",
                             summary = "A complex search on Metrics ") })
     ) String json, @Parameter(name = "page", in = QUERY,
             description = "Indicates the page number. Page number must be >= 1.") @DefaultValue("1") @Min(value = 1, message = "Page number must be >= 1.") @QueryParam("page") int page,

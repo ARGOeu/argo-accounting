@@ -2,14 +2,18 @@ package org.accounting.system;
 
 import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.test.junit.TestProfile;
+import io.quarkus.test.keycloak.client.KeycloakTestClient;
 import io.restassured.http.ContentType;
 import io.restassured.response.Response;
+import jakarta.inject.Inject;
 import org.accounting.system.dtos.InformativeResponse;
 import org.accounting.system.dtos.metricdefinition.MetricDefinitionRequestDto;
 import org.accounting.system.dtos.metricdefinition.MetricDefinitionResponseDto;
 import org.accounting.system.dtos.metricdefinition.UpdateMetricDefinitionRequestDto;
 import org.accounting.system.dtos.pagination.PageResource;
 import org.accounting.system.enums.ApiMessage;
+import org.accounting.system.repositories.metricdefinition.MetricDefinitionRepository;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 
@@ -20,8 +24,22 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 @QuarkusTest
 @TestProfile(AccountingSystemTestProfile.class)
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
-public class MetricDefinitionAuthorizationTest extends PrepareTest {
+public class MetricDefinitionAuthorizationTest {
 
+    KeycloakTestClient keycloakClient = new KeycloakTestClient();
+
+    @Inject
+    MetricDefinitionRepository metricDefinitionRepository;
+
+    protected String getAccessToken(String userName) {
+        return keycloakClient.getAccessToken(userName);
+    }
+
+    @BeforeEach
+    void before() {
+
+        metricDefinitionRepository.deleteAll();
+    }
     @Test
     public void createMetricDefinitionInspectorForbidden(){
 

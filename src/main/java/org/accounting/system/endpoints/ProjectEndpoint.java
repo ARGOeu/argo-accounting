@@ -82,7 +82,7 @@ public class ProjectEndpoint {
     @Inject
     MetricService metricService;
 
-    @ConfigProperty(name = "quarkus.resteasy-reactive.path")
+    @ConfigProperty(name = "quarkus.rest.path")
     String basePath;
 
     @ConfigProperty(name = "api.server.url")
@@ -1084,31 +1084,31 @@ public class ProjectEndpoint {
                     mediaType = MediaType.APPLICATION_JSON,
                     examples = {
                             @ExampleObject(
-                                    name = "An example request of a search on projects",
+                                    name = "A simple example search request on projects",
                                     value = "{\n" +
                                             "            \"type\":\"query\",\n" +
                                             "            \"field\": \"acronym\",\n" +
-                                            "            \"values\": \"El_CapiTun\",\n" +
-                                            "            \"operand\": \"eq\"          \n" +
+                                            "            \"values\": \"Test1\",\n" +
+                                            "            \"operand\": \"eq\"\n" +
                                             "\n" +
                                             "}",
-                                    summary = "A complex search on Projects "),
+                                    summary = "A simple search on Projects "),
                             @ExampleObject(
-                                    name = "An example request of a search on projects",
+                                    name = "A complex example search request on projects",
                                     value = "{\n" +
                                             "  \"type\": \"filter\",\n" +
                                             "  \"operator\": \"OR\",\n" +
                                             "  \"criteria\": [{\n" +
                                             "            \"type\":\"query\",\n" +
                                             "            \"field\": \"title\",\n" +
-                                            "            \"values\": \"Functional and Molecular Characterisation of Breast Cancer Stem Cells\",\n" +
-                                            "            \"operand\": \"eq\"          \n" +
+                                            "            \"values\": \"Test2\",\n" +
+                                            "            \"operand\": \"eq\"\n" +
                                             "\n" +
                                             "},{\n" +
                                             "            \"type\":\"query\",\n" +
                                             "            \"field\": \"acronym\",\n" +
-                                            "            \"values\": \"El_CapiTun\",\n" +
-                                            "            \"operand\": \"eq\"          \n" +
+                                            "            \"values\": \"Test Project\",\n" +
+                                            "            \"operand\": \"eq\"\n" +
                                             "\n" +
                                             "}]}",
                                     summary = "A complex search on Projects ")})

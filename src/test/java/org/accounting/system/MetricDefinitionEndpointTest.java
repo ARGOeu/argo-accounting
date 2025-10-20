@@ -4,7 +4,9 @@ import io.quarkus.test.InjectMock;
 import io.quarkus.test.common.http.TestHTTPEndpoint;
 import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.test.junit.TestProfile;
+import io.quarkus.test.keycloak.client.KeycloakTestClient;
 import io.restassured.http.ContentType;
+import jakarta.inject.Inject;
 import org.accounting.system.dtos.InformativeResponse;
 import org.accounting.system.dtos.metricdefinition.MetricDefinitionRequestDto;
 import org.accounting.system.dtos.metricdefinition.MetricDefinitionResponseDto;
@@ -13,8 +15,10 @@ import org.accounting.system.dtos.pagination.PageResource;
 import org.accounting.system.endpoints.MetricDefinitionEndpoint;
 import org.accounting.system.entities.MetricDefinition;
 import org.accounting.system.mappers.MetricDefinitionMapper;
+import org.accounting.system.repositories.metricdefinition.MetricDefinitionRepository;
 import org.accounting.system.services.MetricService;
 import org.bson.types.ObjectId;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 import org.mockito.Mockito;
@@ -28,10 +32,25 @@ import static org.mockito.ArgumentMatchers.any;
 @TestProfile(AccountingSystemTestProfile.class)
 @TestHTTPEndpoint(MetricDefinitionEndpoint.class)
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
-public class MetricDefinitionEndpointTest extends PrepareTest{
+public class MetricDefinitionEndpointTest {
 
     @InjectMock
     MetricService metricService;
+
+    @Inject
+    MetricDefinitionRepository metricDefinitionRepository;
+
+    KeycloakTestClient keycloakClient = new KeycloakTestClient();
+
+    protected String getAccessToken(String userName) {
+        return keycloakClient.getAccessToken(userName);
+    }
+
+    @BeforeEach
+    void before() {
+
+        metricDefinitionRepository.deleteAll();
+    }
 
     @Test
     public void createMetricDefinitionNotAuthenticated() {
@@ -441,6 +460,8 @@ public class MetricDefinitionEndpointTest extends PrepareTest{
     @Test
     public void updateMetricDefinitionConflict() {
 
+        Mockito.when(metricService.countMetricsByMetricDefinitionId(any())).thenReturn(0L);
+
         var request= new MetricDefinitionRequestDto();
 
         request.metricName = "metric";
@@ -755,6 +776,9 @@ public class MetricDefinitionEndpointTest extends PrepareTest{
 
     @Test
     public void deleteMetricDefinition() {
+
+        Mockito.when(metricService.countMetricsByMetricDefinitionId(any())).thenReturn(0L);
+
 
         var request= new MetricDefinitionRequestDto();
 
