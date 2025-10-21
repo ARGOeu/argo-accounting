@@ -51,7 +51,7 @@ public class ResourceEndpoint {
     @Inject
     RequestUserContext requestInformation;
 
-    @ConfigProperty(name = "quarkus.resteasy-reactive.path")
+    @ConfigProperty(name = "quarkus.rest.path")
     String basePath;
 
     @ConfigProperty(name = "api.server.url")

@@ -65,18 +65,17 @@ public class CustomTenantConfigResolver implements TenantConfigResolver {
 
             var tenant = optionalTenant.get();
 
-            final var config = new OidcTenantConfig();
-            config.setAuthServerUrl(tenant.getAuthServerUrl());
-            config.setTenantId(tenant.getTenantId());
-            config.setClientId(tenant.getClientId());
-            config.setCredentials(new OidcTenantConfig.Credentials());
-            config.getCredentials().setSecret(tenant.getSecret());
-            config.setDiscoveryEnabled(false);
-            config.setAuthorizationPath(tenant.getAuthorizationPath());
-            config.setIntrospectionPath(tenant.getIntrospectionPath());
-            config.setUserInfoPath(tenant.getUserInfoPath());
-            config.setTokenPath(tenant.getTokenPath());
-            return config;
+            return OidcTenantConfig
+                    .authServerUrl(tenant.getAuthServerUrl())
+                    .tenantId(tenant.getTenantId())
+                    .clientId(tenant.getClientId())
+                    .discoveryEnabled(false)
+                    .authorizationPath(tenant.getAuthorizationPath())
+                    .userInfoPath(tenant.getUserInfoPath())
+                    .tokenPath(tenant.getTokenPath())
+                    .credentials(tenant.getSecret())
+                    .introspectionPath(tenant.getIntrospectionPath())
+                    .build();
         }
     }
 }

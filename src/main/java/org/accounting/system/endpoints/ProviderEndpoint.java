@@ -72,7 +72,7 @@ import static org.eclipse.microprofile.openapi.annotations.enums.ParameterIn.QUE
 
 public class ProviderEndpoint {
 
-    @ConfigProperty(name = "quarkus.resteasy-reactive.path")
+    @ConfigProperty(name = "quarkus.rest.path")
     String basePath;
 
     @ConfigProperty(name = "api.server.url")

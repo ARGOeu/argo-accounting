@@ -13,7 +13,7 @@ pipeline {
         stage('Accounting System API Packaging & Testing') {
             agent {
                 docker {
-                    image 'argo.registry:5000/epel-7-java11-mvn384'
+                    image 'argo.registry:5000/rocky9-java17-mvn3.9.9:latest'
                     args '-v $HOME/.m2:/root/.m2 -v /var/run/docker.sock:/var/run/docker.sock -u root:root'
                 }
             }

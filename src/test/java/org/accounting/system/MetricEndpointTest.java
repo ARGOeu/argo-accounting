@@ -4,13 +4,18 @@ import io.quarkus.test.common.QuarkusTestResource;
 import io.quarkus.test.common.http.TestHTTPEndpoint;
 import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.test.junit.TestProfile;
+import io.quarkus.test.keycloak.client.KeycloakTestClient;
 import io.restassured.RestAssured;
 import io.restassured.config.JsonConfig;
 import io.restassured.http.ContentType;
 import io.restassured.path.json.config.JsonPathConfig;
 import io.vavr.collection.Array;
 import jakarta.inject.Inject;
+import org.accounting.system.clients.ProviderClient;
+import org.accounting.system.clients.responses.eoscportal.Response;
+import org.accounting.system.clients.responses.eoscportal.Total;
 import org.accounting.system.dtos.InformativeResponse;
+import org.accounting.system.dtos.admin.ProjectRegistrationRequest;
 import org.accounting.system.dtos.installation.InstallationRequestDto;
 import org.accounting.system.dtos.installation.InstallationResponseDto;
 import org.accounting.system.dtos.metric.MetricRequestDto;
@@ -20,16 +25,26 @@ import org.accounting.system.dtos.metricdefinition.MetricDefinitionRequestDto;
 import org.accounting.system.dtos.metricdefinition.MetricDefinitionResponseDto;
 import org.accounting.system.dtos.pagination.PageResource;
 import org.accounting.system.endpoints.MetricEndpoint;
+import org.accounting.system.mappers.ProviderMapper;
+import org.accounting.system.repositories.metric.MetricRepository;
+import org.accounting.system.repositories.metricdefinition.MetricDefinitionRepository;
 import org.accounting.system.repositories.project.ProjectRepository;
+import org.accounting.system.repositories.provider.ProviderRepository;
 import org.accounting.system.wiremock.KeycloakWireMockServer;
 import org.accounting.system.wiremock.ProjectWireMockServer;
 import org.accounting.system.wiremock.ProviderWireMockServer;
 import org.accounting.system.wiremock.TokenWireMockServer;
+import org.eclipse.microprofile.rest.client.inject.RestClient;
+import org.json.simple.parser.ParseException;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
+import java.util.concurrent.ExecutionException;
 
 import static io.restassured.RestAssured.given;
 import static org.hamcrest.core.Is.is;
@@ -44,10 +59,61 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 @QuarkusTestResource(ProviderWireMockServer.class)
 @QuarkusTestResource(KeycloakWireMockServer.class)
 @QuarkusTestResource(TokenWireMockServer.class)
-public class MetricEndpointTest extends PrepareTest {
+public class MetricEndpointTest {
+
+    @Inject
+    @RestClient
+    ProviderClient providerClient;
+
+    @Inject
+    ProviderRepository providerRepository;
 
     @Inject
     ProjectRepository projectRepository;
+
+    @Inject
+    MetricDefinitionRepository metricDefinitionRepository;
+
+    @Inject
+    MetricRepository metricRepository;
+
+    KeycloakTestClient keycloakClient = new KeycloakTestClient();
+
+    protected String getAccessToken(String userName) {
+        return keycloakClient.getAccessToken(userName);
+    }
+
+    @BeforeAll
+    public void setup() throws ExecutionException, InterruptedException, ParseException {
+
+        Total total = providerClient.getTotalNumberOfProviders("all").toCompletableFuture().get();
+
+        Response response = providerClient.getAll("all", total.total).toCompletableFuture().get();
+
+        providerRepository.persistOrUpdate(ProviderMapper.INSTANCE.eoscProvidersToProviders(response.results));
+    }
+
+    @BeforeEach
+    public void before() throws ParseException {
+
+        metricDefinitionRepository.deleteAll();
+        projectRepository.deleteAll();
+        metricRepository.deleteAll();
+
+        var request = new ProjectRegistrationRequest();
+        request.projects = Set.of("777536", "101017567");
+
+        given()
+                .auth()
+                .oauth2(getAccessToken("admin"))
+                .basePath("accounting-system/admin")
+                .body(request)
+                .contentType(ContentType.JSON)
+                .post("/register-projects")
+                .then()
+                .assertThat()
+                .statusCode(200);
+    }
 
     @Test
     public void createMetricRequestNotAuthenticated() {

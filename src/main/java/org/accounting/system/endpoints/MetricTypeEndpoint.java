@@ -59,7 +59,7 @@ public class MetricTypeEndpoint {
     @Inject
     MetricTypeService metricTypeService;
 
-    @ConfigProperty(name = "quarkus.resteasy-reactive.path")
+    @ConfigProperty(name = "quarkus.rest.path")
     String basePath;
 
     @ConfigProperty(name = "api.server.url")

@@ -59,7 +59,7 @@ import static org.eclipse.microprofile.openapi.annotations.enums.ParameterIn.QUE
         in = SecuritySchemeIn.HEADER)
 public class ExternalInstallationEndpoint {
 
-    @ConfigProperty(name = "quarkus.resteasy-reactive.path")
+    @ConfigProperty(name = "quarkus.rest.path")
     String basePath;
 
     @ConfigProperty(name = "api.server.url")
