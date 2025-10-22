@@ -4,6 +4,7 @@ import com.mongodb.client.model.Filters;
 import io.quarkus.panache.common.Page;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
+import jakarta.ws.rs.BadRequestException;
 import jakarta.ws.rs.NotFoundException;
 import jakarta.ws.rs.ServerErrorException;
 import jakarta.ws.rs.core.UriInfo;
@@ -19,6 +20,7 @@ import org.accounting.system.dtos.tenant.OidcTenantConfigResponse;
 import org.accounting.system.dtos.tenant.UpdateOidcTenantConfig;
 import org.accounting.system.entities.Project;
 import org.accounting.system.entities.projections.normal.ProjectProjection;
+import org.accounting.system.enums.APISetting;
 import org.accounting.system.exceptions.ConflictException;
 import org.accounting.system.mappers.OidcTenantConfigMapper;
 import org.accounting.system.mappers.ResourceMapper;
@@ -29,7 +31,7 @@ import org.accounting.system.repositories.installation.InstallationRepository;
 import org.accounting.system.repositories.metric.MetricRepository;
 import org.accounting.system.repositories.project.ProjectModulator;
 import org.accounting.system.repositories.project.ProjectRepository;
-import org.accounting.system.services.groupmanagement.GroupManagementFactory;
+import org.accounting.system.services.groupmanagement.GroupManagementSelection;
 import org.apache.commons.lang3.StringUtils;
 import org.bson.types.ObjectId;
 import org.eclipse.microprofile.rest.client.inject.RestClient;
@@ -68,7 +70,7 @@ public class SystemAdminService {
     OidcTenantConfigRepository oidcTenantConfigRepository;
 
     @Inject
-    GroupManagementFactory groupManagementFactory;
+    GroupManagementSelection groupManagementSelection;
 
     /**
      * This method is responsible for registering several Projects into Accounting Service.
@@ -136,7 +138,7 @@ public class SystemAdminService {
         hierarchicalRelationRepository.deleteByProjectId(id);
         projectRepository.deleteById(id);
 
-        groupManagementFactory.choose().deleteProjectGroup(id);
+        groupManagementSelection.from().choose().deleteProjectGroup(id);
     }
 
     public void deleteResource(String id){
@@ -188,8 +190,7 @@ public class SystemAdminService {
 
         try{
 
-            groupManagementFactory.choose().createProjectGroup(project.getId());
-
+            groupManagementSelection.from().choose().createProjectGroup(project.getId());
         } catch (Exception e){
 
             LOG.error("Group creation failed with error : " + e.getMessage());
@@ -244,6 +245,14 @@ public class SystemAdminService {
         return projectRepository.getMongoCollection(collectionName).countDocuments(Filters.and(Filters.gte("_id", startId), Filters.lte("_id", endId)));
     }
 
+    public long countDocumentsByStringId(String collectionName, Date start, Date end) {
+
+        var startId = new ObjectId(Long.toHexString(start.getTime() / 1000) + "0000000000000000").toString();
+        var endId = new ObjectId(Long.toHexString(end.getTime() / 1000) + "0000000000000000").toString();
+
+        return projectRepository.getMongoCollection(collectionName).countDocuments(Filters.and(Filters.gte("_id", startId), Filters.lte("_id", endId)));
+    }
+
     /**
      * Creates a new OIDC tenant configuration.
      *
@@ -264,6 +273,10 @@ public class SystemAdminService {
         if (optionalTenantId.isPresent()) {
 
             throw new ConflictException(String.format("OIDC tenant configuration with tenant ID [%s] has already been registered in Accounting Service.", request.tenantId));
+        }
+
+        if (!APISetting.ENTITLEMENTS_MANAGEMENT.isValidValue(request.entitlementManagement)) {
+            throw new BadRequestException("Invalid value for entitlement management : " + request.entitlementManagement);
         }
 
         var config = OidcTenantConfigMapper.INSTANCE.dtoToConfig(request);
@@ -308,6 +321,15 @@ public class SystemAdminService {
             if (oidcTenantConfigRepository.fetchOidcTenantConfigByIssuer(request.issuer).isPresent()) {
                 throw new ConflictException("Issuer already in use.");
             }
+        }
+
+        if(StringUtils.isNotEmpty(request.entitlementManagement)){
+
+            if (!APISetting.ENTITLEMENTS_MANAGEMENT.isValidValue(request.entitlementManagement)) {
+                throw new BadRequestException("Invalid value for entitlement management : " + request.entitlementManagement);
+            }
+
+            entity.setEntitlementManagement(request.entitlementManagement);
         }
 
         OidcTenantConfigMapper.INSTANCE.updateConfigFromDto(request, entity);

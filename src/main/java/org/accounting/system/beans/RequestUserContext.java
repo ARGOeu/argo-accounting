@@ -6,8 +6,10 @@ import jakarta.inject.Inject;
 import jakarta.ws.rs.BadRequestException;
 import lombok.Getter;
 import org.accounting.system.entities.OidcTenantConfig;
+import org.accounting.system.entities.Setting;
+import org.accounting.system.enums.APISetting;
 import org.accounting.system.repositories.OidcTenantConfigRepository;
-import org.apache.commons.codec.digest.DigestUtils;
+import org.accounting.system.repositories.SettingRepository;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 
 import java.util.Optional;
@@ -36,6 +38,9 @@ public class RequestUserContext {
     @Inject
     OidcTenantConfigRepository oidcTenantConfigRepository;
 
+    @Inject
+    SettingRepository settingRepository;
+
     public String getId() {
 
         var optional = oidcTenantConfigRepository.fetchOidcTenantConfigByIssuer(getIssuer());
@@ -50,18 +55,12 @@ public class RequestUserContext {
 
         try {
 
-            var input = tokenIntrospection.getJsonObject().getString(personKey)+ "|" + getIssuer();
-
-            return DigestUtils.sha256Hex(input);
-
+            return tokenIntrospection.getJsonObject().getString(personKey);
         } catch (Exception e) {
 
             try{
 
-                var input = tokenIntrospection.getJsonObject().getString(serviceKey)+ "|" + getIssuer();
-
-                return DigestUtils.sha256Hex(input);
-
+                return tokenIntrospection.getJsonObject().getString(serviceKey);
             } catch (Exception ex){
 
                 throw new BadRequestException(String.format("Unique identifiers [%s, %s] weren't present in the access token.", personKey, serviceKey));
@@ -103,5 +102,44 @@ public class RequestUserContext {
     public Optional<OidcTenantConfig> getOidcTenantConfig(){
 
         return oidcTenantConfigRepository.fetchOidcTenantConfigByIssuer(getIssuer());
+    }
+
+    public Optional<String> getName(){
+
+        try {
+
+            return Optional.of(tokenIntrospection.getJsonObject().getString("name"));
+
+        } catch (Exception e) {
+
+            return Optional.empty();
+        }
+    }
+
+    public Optional<String> getEmail(){
+
+        try {
+
+            return Optional.of(tokenIntrospection.getJsonObject().getString("email"));
+
+        } catch (Exception e) {
+
+            return Optional.empty();
+        }
+    }
+
+    public String entitlementManagement(){
+
+        var optionalTenant = getOidcTenantConfig();
+
+        if(optionalTenant.isEmpty()){
+
+            return settingRepository.findByKey(APISetting.ENTITLEMENTS_MANAGEMENT)
+                    .map(Setting::getValue)
+                    .orElse(APISetting.ENTITLEMENTS_MANAGEMENT.getDefaultValue());
+        } else {
+
+            return optionalTenant.get().getEntitlementManagement();
+        }
     }
 }

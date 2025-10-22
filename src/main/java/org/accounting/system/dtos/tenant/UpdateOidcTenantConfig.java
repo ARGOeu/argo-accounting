@@ -122,4 +122,13 @@ public class UpdateOidcTenantConfig {
     )
     @JsonProperty("group_management_parent")
     public String groupManagementParent;
+
+    @Schema(
+            type = SchemaType.STRING,
+            implementation = String.class,
+            description = "The Entitlements check. Allowed values: oidc, database.",
+            example = "database"
+    )
+    @JsonProperty("entitlement_management")
+    public String entitlementManagement;
 }

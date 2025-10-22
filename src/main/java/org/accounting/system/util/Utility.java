@@ -1,7 +1,6 @@
 package org.accounting.system.util;
 
 
-import io.quarkus.cache.CacheResult;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.ws.rs.BadRequestException;
 import org.apache.commons.validator.GenericValidator;
@@ -96,7 +95,6 @@ public class Utility {
      * @param pageSize The page size.
      * @return A map containing the pages of objects.
      */
-    @CacheResult(cacheName = "partition")
     public <T> Map<Integer, List<T>> partition(List<T> list, int pageSize) {
 
         return IntStream.iterate(0, i -> i + pageSize)

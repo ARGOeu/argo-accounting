@@ -38,4 +38,6 @@ public class OidcTenantConfig extends Entity{
     private String groupManagementNamespace;
 
     private String groupManagementParent;
+
+    private String entitlementManagement;
 }

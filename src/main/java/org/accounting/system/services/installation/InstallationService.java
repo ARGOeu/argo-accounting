@@ -32,7 +32,7 @@ import org.accounting.system.repositories.metric.MetricRepository;
 import org.accounting.system.repositories.provider.ProviderRepository;
 import org.accounting.system.services.HierarchicalRelationService;
 import org.accounting.system.services.ResourceService;
-import org.accounting.system.services.groupmanagement.GroupManagementFactory;
+import org.accounting.system.services.groupmanagement.GroupManagementSelection;
 import org.accounting.system.util.QueryParser;
 import org.accounting.system.validators.AccessInstallationValidator;
 import org.apache.commons.lang3.StringUtils;
@@ -69,7 +69,7 @@ public class InstallationService {
     ResourceService resourceService;
 
     @Inject
-    GroupManagementFactory groupManagementFactory;
+    GroupManagementSelection groupManagementSelection;
 
     @Inject
     MetricRepository metricRepository;
@@ -103,7 +103,7 @@ public class InstallationService {
 
         try{
 
-            groupManagementFactory.choose().createInstallationGroup(request.project, request.organisation, installation.getId());
+            groupManagementSelection.from().choose().createInstallationGroup(request.project, request.organisation, installation.getId());
         } catch (Exception e){
 
             LOG.error("Group creation failed with error : " + e.getMessage());
@@ -135,8 +135,7 @@ public class InstallationService {
 
         hierarchicalRelationRepository.delete("externalId", installationId);
 
-        groupManagementFactory.choose().deleteInstallationGroup(installation.getProject(), installation.getOrganisation(), installation.getId());
-
+        groupManagementSelection.from().choose().deleteInstallationGroup(installation.getProject(), installation.getOrganisation(), installation.getId());
     }
 
     /**

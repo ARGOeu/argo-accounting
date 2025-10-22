@@ -24,4 +24,13 @@ public class CountDocumentResponse {
     )
     @JsonProperty("metric_count")
     public long metricCount;
+
+    @Schema(
+            type = SchemaType.NUMBER,
+            implementation = Long.class,
+            description = "Number of documents in the Actor.",
+            example = "1200"
+    )
+    @JsonProperty("actor_count")
+    public long actorCount;
 }

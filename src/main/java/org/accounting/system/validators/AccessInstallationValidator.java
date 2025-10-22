@@ -10,7 +10,7 @@ import org.accounting.system.constraints.AccessInstallation;
 import org.accounting.system.entities.HierarchicalRelation;
 import org.accounting.system.exceptions.CustomValidationException;
 import org.accounting.system.repositories.HierarchicalRelationRepository;
-import org.accounting.system.services.EntitlementService;
+import org.accounting.system.services.groupmanagement.EntitlementServiceFactory;
 
 import java.util.List;
 import java.util.regex.Pattern;
@@ -42,11 +42,11 @@ public class AccessInstallationValidator implements ConstraintValidator<AccessIn
 
         var ids = hierarchicalRelation.id.split(Pattern.quote(HierarchicalRelation.PATH_SEPARATOR));
 
-        var entitlementService = CDI.current().select(EntitlementService.class).get();
+        var entitlementServiceFactory = CDI.current().select(EntitlementServiceFactory.class).get();
 
         var requestUserContext = CDI.current().select(RequestUserContext.class).get();
 
-        if(requestUserContext.getOidcTenantConfig().isEmpty() && entitlementService.hasAccess(requestUserContext.getParent(), "admin", List.of())){
+        if(requestUserContext.getOidcTenantConfig().isEmpty() && entitlementServiceFactory.from().hasAccess(requestUserContext.getParent(), "admin", List.of())){
 
             return true;
         }
@@ -58,7 +58,7 @@ public class AccessInstallationValidator implements ConstraintValidator<AccessIn
 
                     for(String role:roles) {
 
-                        if (entitlementService.hasAccess(requestUserContext.getParent(), role, List.of(ids[0]))) {
+                        if (entitlementServiceFactory.from().hasAccess(requestUserContext.getParent(), role, List.of(ids[0]))) {
 
                             enter = true;
                         }
@@ -74,7 +74,7 @@ public class AccessInstallationValidator implements ConstraintValidator<AccessIn
 
                         for(String role:roles) {
 
-                            if (entitlementService.hasAccess(requestUserContext.getParent(), role, List.of(ids[0], ids[1])) || entitlementService.hasAccess(requestUserContext.getParent(), role, List.of("roles", "provider", ids[1]))) {
+                            if (entitlementServiceFactory.from().hasAccess(requestUserContext.getParent(), role, List.of(ids[0], ids[1])) || entitlementServiceFactory.from().hasAccess(requestUserContext.getParent(), role, List.of("roles", "provider", ids[1]))) {
 
                                 enter = true;
                             }
@@ -93,7 +93,7 @@ public class AccessInstallationValidator implements ConstraintValidator<AccessIn
 
                         for(String role:roles) {
 
-                            if (entitlementService.hasAccess(requestUserContext.getParent(), role, List.of(ids[0], ids[1], installationId))) {
+                            if (entitlementServiceFactory.from().hasAccess(requestUserContext.getParent(), role, List.of(ids[0], ids[1], installationId))) {
 
                                 enter = true;
                             }

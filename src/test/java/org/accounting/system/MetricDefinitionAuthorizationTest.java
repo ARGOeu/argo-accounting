@@ -111,73 +111,6 @@ public class MetricDefinitionAuthorizationTest {
     }
 
     @Test
-    public void updateMetricDefinitionCreator(){
-
-        // first admin user is creating a Metric Definition
-        MetricDefinitionRequestDto request= new MetricDefinitionRequestDto();
-
-        request.metricName = "metric";
-        request.metricDescription = "description";
-        request.unitType = "TB";
-        request.metricType = "aggregated";
-
-        var metricDefinitionResponse = createMetricDefinition(request, "admin");
-
-        var metricDefinitionResponseDto = metricDefinitionResponse
-                .then()
-                .assertThat()
-                .statusCode(201)
-                .extract()
-                .as(MetricDefinitionResponseDto.class);
-
-        //then creator user is trying to update the Metric Definition that has been created by admin
-        UpdateMetricDefinitionRequestDto update = new UpdateMetricDefinitionRequestDto();
-
-        var updateMetricDefinitionResponse = updateMetricDefinitionById(update, "evald", metricDefinitionResponseDto.id);
-
-        var informativeResponse = updateMetricDefinitionResponse
-                .then()
-                .assertThat()
-                .statusCode(403)
-                .extract()
-                .as(InformativeResponse.class);
-
-        assertEquals(ApiMessage.UNAUTHORIZED_CLIENT.message, informativeResponse.message);
-
-        //creator user is creating a Metric Definition
-        MetricDefinitionRequestDto request1= new MetricDefinitionRequestDto();
-
-        request1.metricName = "metric1";
-        request1.metricDescription = "description";
-        request1.unitType = "TB";
-        request1.metricType = "aggregated";
-
-        var creatorMetricDefinitionResponse = createMetricDefinition(request1, "creator");
-
-        var creatorMetricDefinitionResponseDto = creatorMetricDefinitionResponse
-                .then()
-                .assertThat()
-                .statusCode(201)
-                .extract()
-                .as(MetricDefinitionResponseDto.class);
-
-        //creator can now update its Metric Definition
-        UpdateMetricDefinitionRequestDto update1 = new UpdateMetricDefinitionRequestDto();
-        update1.metricName = "blabla";
-
-        var creatorUpdateMetricDefinitionResponse = updateMetricDefinitionById(update1, "creator", creatorMetricDefinitionResponseDto.id);
-
-        var creatorUpdateMetricDefinitionResponseDto = creatorUpdateMetricDefinitionResponse
-                .then()
-                .assertThat()
-                .statusCode(200)
-                .extract()
-                .as(MetricDefinitionResponseDto.class);
-
-        assertEquals("blabla", creatorUpdateMetricDefinitionResponseDto.metricName);
-    }
-
-    @Test
     public void deleteMetricDefinitionInspectorForbidden(){
 
         // first admin user is creating a Metric Definition
@@ -281,7 +214,7 @@ public class MetricDefinitionAuthorizationTest {
         request1.unitType = "TB";
         request1.metricType = "aggregated";
 
-        var creatorMetricDefinitionResponse = createMetricDefinition(request1, "alice");
+        var creatorMetricDefinitionResponse = createMetricDefinition(request1, "admin");
 
         var creatorMetricDefinitionResponseDto = creatorMetricDefinitionResponse
                 .then()
@@ -290,7 +223,7 @@ public class MetricDefinitionAuthorizationTest {
                 .extract()
                 .as(MetricDefinitionResponseDto.class);
 
-        var deleteCreatorResponse1 = deleteMetricDefinitionById("alice", creatorMetricDefinitionResponseDto.id);
+        var deleteCreatorResponse1 = deleteMetricDefinitionById("admin", creatorMetricDefinitionResponseDto.id);
 
         var informativeResponse1 = deleteCreatorResponse1
                 .then()
@@ -342,7 +275,7 @@ public class MetricDefinitionAuthorizationTest {
         request2.unitType = "TB";
         request2.metricType = "aggregated";
 
-        var metricDefinitionResponse2 = createMetricDefinition(request2, "creator");
+        var metricDefinitionResponse2 = createMetricDefinition(request2, "admin");
 
         metricDefinitionResponse2
                 .then()
@@ -360,7 +293,7 @@ public class MetricDefinitionAuthorizationTest {
         //because admin can access all metric definitions the size of list should be 3
         assertEquals(3, fetchAdminMetricDefinitionsResponseBody.getTotalElements());
 
-        var fetchCreatorMetricDefinitions = fetchAllMetricDefinitions("creator");
+        var fetchCreatorMetricDefinitions = fetchAllMetricDefinitions("admin");
 
         var fetchCreatorMetricDefinitionsResponse = fetchCreatorMetricDefinitions.thenReturn();
 

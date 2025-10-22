@@ -11,7 +11,7 @@ import jakarta.ws.rs.ForbiddenException;
 import org.accounting.system.beans.RequestUserContext;
 import org.accounting.system.enums.ApiMessage;
 import org.accounting.system.interceptors.annotations.AccessResource;
-import org.accounting.system.services.EntitlementService;
+import org.accounting.system.services.groupmanagement.EntitlementServiceFactory;
 
 import java.lang.annotation.Annotation;
 import java.util.List;
@@ -30,7 +30,7 @@ import java.util.stream.Stream;
 public class AccessResourceInterceptor {
 
     @Inject
-    EntitlementService entitlementService;
+    EntitlementServiceFactory entitlementServiceFactory;
 
     @Inject
     RequestUserContext requestUserContext;
@@ -54,14 +54,14 @@ public class AccessResourceInterceptor {
 
         var roles = accessResource.roles();
 
-        if(requestUserContext.getOidcTenantConfig().isEmpty() && entitlementService.hasAccess(requestUserContext.getParent(), "admin", List.of())){
+        if(requestUserContext.getOidcTenantConfig().isEmpty() && entitlementServiceFactory.from().hasAccess(requestUserContext.getParent(), "admin", List.of())){
 
             return context.proceed();
         }
 
         for(String role:roles){
 
-            if(entitlementService.hasAccess(requestUserContext.getParent(), role, List.of("operations", "resources"))){
+            if(entitlementServiceFactory.from().hasAccess(requestUserContext.getParent(), role, List.of("operations", "resources"))){
 
                 return context.proceed();
             }

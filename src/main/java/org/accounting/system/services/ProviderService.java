@@ -29,7 +29,7 @@ import org.accounting.system.mappers.MetricDefinitionMapper;
 import org.accounting.system.mappers.ProviderMapper;
 import org.accounting.system.repositories.metric.MetricRepository;
 import org.accounting.system.repositories.provider.ProviderRepository;
-import org.accounting.system.services.groupmanagement.GroupManagementFactory;
+import org.accounting.system.services.groupmanagement.GroupManagementSelection;
 import org.accounting.system.util.QueryParser;
 import org.accounting.system.validators.AccessProviderValidator;
 import org.apache.commons.lang3.StringUtils;
@@ -59,7 +59,7 @@ public class ProviderService {
     QueryParser queryParser;
 
     @Inject
-    GroupManagementFactory groupManagementFactory;
+    GroupManagementSelection groupManagementSelection;
 
     @Inject
     MetricRepository metricRepository;
@@ -118,7 +118,7 @@ public class ProviderService {
 
         try{
 
-            groupManagementFactory.choose().createProviderGroup(provider.getId());
+            groupManagementSelection.from().choose().createProviderGroup(provider.getId());
 
         } catch (Exception e){
 
@@ -160,7 +160,7 @@ public class ProviderService {
             throw new ForbiddenException("You cannot delete a Provider which belongs to a Project.");
         }
 
-        groupManagementFactory.choose().deleteProviderGroup(provider.getId());
+        groupManagementSelection.from().choose().deleteProviderGroup(provider.getId());
 
         return providerRepository.deleteEntityById(providerId);
     }

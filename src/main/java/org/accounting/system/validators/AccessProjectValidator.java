@@ -9,7 +9,7 @@ import org.accounting.system.beans.RequestUserContext;
 import org.accounting.system.constraints.AccessProject;
 import org.accounting.system.exceptions.CustomValidationException;
 import org.accounting.system.repositories.project.ProjectRepository;
-import org.accounting.system.services.EntitlementService;
+import org.accounting.system.services.groupmanagement.EntitlementServiceFactory;
 
 import java.util.List;
 
@@ -37,7 +37,7 @@ public class AccessProjectValidator implements ConstraintValidator<AccessProject
 
         var projectRepository = CDI.current().select(ProjectRepository.class).get();
 
-        var entitlementService = CDI.current().select(EntitlementService.class).get();
+        var entitlementServiceFactory = CDI.current().select(EntitlementServiceFactory.class).get();
 
         var requestUserContext = CDI.current().select(RequestUserContext.class).get();
 
@@ -47,14 +47,14 @@ public class AccessProjectValidator implements ConstraintValidator<AccessProject
                     .getOrElseThrow(()->new CustomValidationException("There is no Project with the following id: "+project, HttpResponseStatus.NOT_FOUND));
         }
 
-        if(requestUserContext.getOidcTenantConfig().isEmpty() && entitlementService.hasAccess(requestUserContext.getParent(), "admin", List.of())){
+        if(requestUserContext.getOidcTenantConfig().isEmpty() && entitlementServiceFactory.from().hasAccess(requestUserContext.getParent(), "admin", List.of())){
 
             return true;
         }
 
         for(String role:roles){
 
-            if(entitlementService.hasAccess(requestUserContext.getParent(), role, List.of(project))){
+            if(entitlementServiceFactory.from().hasAccess(requestUserContext.getParent(), role, List.of(project))){
 
                 return true;
             }

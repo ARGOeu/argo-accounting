@@ -14,7 +14,7 @@ import org.accounting.system.exceptions.CustomValidationException;
 import org.accounting.system.repositories.metricdefinition.MetricDefinitionRepository;
 import org.accounting.system.repositories.project.ProjectRepository;
 import org.accounting.system.repositories.provider.ProviderRepository;
-import org.accounting.system.services.EntitlementService;
+import org.accounting.system.services.groupmanagement.EntitlementServiceFactory;
 import org.apache.commons.lang3.StringUtils;
 import org.bson.types.ObjectId;
 
@@ -77,11 +77,11 @@ public class AccessProviderValidator implements ConstraintValidator<AccessProvid
         providerRepository.findByIdOptional(provider).orElseThrow(()->new CustomValidationException("There is no Provider with the following id: "+provider, HttpResponseStatus.NOT_FOUND));
 
 
-        var entitlementService = CDI.current().select(EntitlementService.class).get();
+        var entitlementServiceFactory = CDI.current().select(EntitlementServiceFactory.class).get();
 
         var requestUserContext = CDI.current().select(RequestUserContext.class).get();
 
-        if(requestUserContext.getOidcTenantConfig().isEmpty() && entitlementService.hasAccess(requestUserContext.getParent(), "admin", List.of())){
+        if(requestUserContext.getOidcTenantConfig().isEmpty() && entitlementServiceFactory.from().hasAccess(requestUserContext.getParent(), "admin", List.of())){
 
             return true;
         }
@@ -93,7 +93,7 @@ public class AccessProviderValidator implements ConstraintValidator<AccessProvid
 
                     for(String role:roles) {
 
-                        if (entitlementService.hasAccess(requestUserContext.getParent(), role, List.of(project))) {
+                        if (entitlementServiceFactory.from().hasAccess(requestUserContext.getParent(), role, List.of(project))) {
 
                             enter = true;
                         }
@@ -109,7 +109,7 @@ public class AccessProviderValidator implements ConstraintValidator<AccessProvid
 
                         for(String role:roles) {
 
-                            if (entitlementService.hasAccess(requestUserContext.getParent(), role, List.of(project, provider)) || entitlementService.hasAccess(requestUserContext.getParent(), role, List.of("roles", "provider", provider))) {
+                            if (entitlementServiceFactory.from().hasAccess(requestUserContext.getParent(), role, List.of(project, provider)) || entitlementServiceFactory.from().hasAccess(requestUserContext.getParent(), role, List.of("roles", "provider", provider))) {
 
                                 enter = true;
                             }

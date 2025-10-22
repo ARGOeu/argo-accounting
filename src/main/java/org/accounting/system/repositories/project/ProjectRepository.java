@@ -59,7 +59,7 @@ public class ProjectRepository extends ProjectModulator {
                 .aggregate(List.of(Aggregates.skip(size * (page)), Aggregates.limit(size)), ProjectProjection.class)
                 .into(new ArrayList<>());
 
-        Document count = getMongoCollection()
+        var count = getMongoCollection()
                 .aggregate(List.of(Aggregates.count()))
                 .first();
 
@@ -128,13 +128,13 @@ public class ProjectRepository extends ProjectModulator {
         var replaceRootInstallations = Aggregates
                 .replaceRoot("$installations");
 
-        Bson lookup = Aggregates.lookup("MetricDefinition", "unit_of_access", "_id", "unit_of_access");
+        var lookup = Aggregates.lookup("MetricDefinition", "unit_of_access", "_id", "unit_of_access");
 
         var installations = getMongoCollection()
                 .aggregate(List.of(eq, unwindProviders, replaceRootProviders, unwindInstallations, replaceRootInstallations, Aggregates.skip(size * (page)), Aggregates.limit(size), lookup), InstallationProjection.class)
                 .into(new ArrayList<>());
 
-        Document count = getMongoCollection()
+        var count = getMongoCollection()
                 .aggregate(List.of(eq, unwindProviders, replaceRootProviders, unwindInstallations, replaceRootInstallations, Aggregates.count()))
                 .first();
 
