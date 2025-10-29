@@ -14,7 +14,7 @@ via this guide you can see all the options you have.
 
 **1.** [Register](/docs/guides/register.md) to Accounting Service.
 
-**2.** [Contact](/docs/authorization/assigning_roles.md) the system
+**2.** [Contact](/docs/authorization/accounting_system_roles.md) the system
 administrator to assign you one or more roles on the Project.
 
 ### NOTE

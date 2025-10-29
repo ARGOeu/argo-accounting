@@ -17,7 +17,7 @@ You can manage a Provider assigned to a specific Project.
 
 **1.** [Register](/docs/guides/register.md) to Accounting Service.
 
-**2.** [Contact](/docs/authorization/assigning_roles.md) the administrator of
+**2.** [Contact](/docs/authorization/accounting_system_roles.md) the administrator of
 the Project that this Provider is
 associated with to assign you one or more roles on the Provider.
 
