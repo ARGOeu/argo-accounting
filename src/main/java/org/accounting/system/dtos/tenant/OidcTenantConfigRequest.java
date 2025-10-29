@@ -151,4 +151,15 @@ public class OidcTenantConfigRequest {
     @JsonProperty("group_management_parent")
     @NotEmpty(message = "group_management_parent may not be empty.")
     public String groupManagementParent;
+
+    @Schema(
+            type = SchemaType.STRING,
+            implementation = String.class,
+            description = "The Entitlements check. Allowed values: oidc, database.",
+            required = true,
+            example = "database"
+    )
+    @JsonProperty("entitlement_management")
+    @NotEmpty(message = "entitlement_management may not be empty.")
+    public String entitlementManagement;
 }

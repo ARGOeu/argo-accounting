@@ -60,7 +60,6 @@ import static org.eclipse.microprofile.openapi.annotations.enums.ParameterIn.QUE
         scheme = "bearer",
         bearerFormat = "JWT",
         in = SecuritySchemeIn.HEADER)
-
 public class MetricDefinitionEndpoint {
 
     @ConfigProperty(name = "quarkus.rest.path")

@@ -8,7 +8,7 @@ import jakarta.inject.Inject;
 @Alternative
 @IfBuildProfile(anyOf = {"test", "dev"})
 @ApplicationScoped
-public class DevGroupManagementFactory extends GroupManagementFactory {
+public class DevOIDCGroupManagementFactory extends OIDCGroupManagementFactory {
 
     @Inject
     TenantGroupManagement tenantGroupManagement;

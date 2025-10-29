@@ -16,7 +16,7 @@ import org.accounting.system.entities.projections.normal.ProjectProjection;
 import org.accounting.system.mappers.InstallationMapper;
 import org.accounting.system.mappers.MetricDefinitionMapper;
 import org.accounting.system.repositories.project.ProjectRepository;
-import org.accounting.system.services.groupmanagement.GroupManagementFactory;
+import org.accounting.system.services.groupmanagement.GroupManagementSelection;
 import org.accounting.system.util.QueryParser;
 import org.jboss.logging.Logger;
 
@@ -34,7 +34,7 @@ public class ProjectService {
     QueryParser queryParser;
 
     @Inject
-    GroupManagementFactory groupManagementFactory;
+    GroupManagementSelection groupManagementSelection;
 
     /**
      * This method correlates the given Providers with a specific Project and creates a hierarchical structure with root
@@ -50,7 +50,7 @@ public class ProjectService {
 
         try{
 
-            groupManagementFactory.choose().createAssociationGroup(projectId, providerId);
+            groupManagementSelection.from().choose().createAssociationGroup(projectId, providerId);
         } catch (Exception e){
 
             projectRepository.dissociateProviderFromProject(projectId, providerId);
@@ -68,7 +68,7 @@ public class ProjectService {
 
         projectRepository.dissociateProviderFromProject(projectId, providerId);
 
-        groupManagementFactory.choose().deleteAssociationGroup(projectId, providerId);
+        groupManagementSelection.from().choose().deleteAssociationGroup(projectId, providerId);
     }
 
     public ProjectProjection getById(final String id) {

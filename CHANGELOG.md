@@ -59,6 +59,8 @@ According to [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) , the
   Restrict Accounting System Admin Entitlement to Default OIDC.
 - [#257](https://github.com/ARGOeu/argo-accounting/pull/257) - ACC-407
   Upgrade to Quarkus 3.27.0.
+- [#258](https://github.com/ARGOeu/argo-accounting/pull/258) - ACC-408
+  Database-Driven Entitlements in Accounting Interface.
 
 ## 2.0.0 - Fixed
 

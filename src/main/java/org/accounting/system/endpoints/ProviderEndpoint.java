@@ -37,8 +37,8 @@ import org.accounting.system.entities.projections.GenericProviderReport;
 import org.accounting.system.entities.projections.ProviderProjectionWithProjectInfo;
 import org.accounting.system.interceptors.annotations.AccessResource;
 import org.accounting.system.repositories.provider.ProviderRepository;
-import org.accounting.system.services.EntitlementService;
 import org.accounting.system.services.ProviderService;
+import org.accounting.system.services.groupmanagement.EntitlementServiceFactory;
 import org.accounting.system.util.AccountingUriInfo;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.eclipse.microprofile.openapi.annotations.Operation;
@@ -82,7 +82,7 @@ public class ProviderEndpoint {
     ProviderService providerService;
 
     @Inject
-    EntitlementService entitlementService;
+    EntitlementServiceFactory entitlementServiceFactory;
 
     @Inject
     RequestUserContext requestInformation;
@@ -624,7 +624,7 @@ public class ProviderEndpoint {
             throw new BadRequestException("Start date must be before or equal to end date.");
         }
 
-        if(!entitlementService.hasAccess(requestInformation.getParent(),"admin", List.of("roles", "provider", providerId))){
+        if(!entitlementServiceFactory.from().hasAccess(requestInformation.getParent(),"admin", List.of("roles", "provider", providerId))){
 
             throw new ForbiddenException("You have no access to execute this operation.");
         }
@@ -709,7 +709,7 @@ public class ProviderEndpoint {
 
         var provider = optional.get();
 
-        if(!entitlementService.hasAccess(requestInformation.getParent(),"admin", List.of("roles", "provider", provider.getId()))){
+        if(!entitlementServiceFactory.from().hasAccess(requestInformation.getParent(),"admin", List.of("roles", "provider", provider.getId()))){
 
             throw new ForbiddenException("You have no access to execute this operation.");
         }
