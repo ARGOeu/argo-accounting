@@ -953,8 +953,8 @@ public class SystemAdminEndpoint {
 
     @Tag(name = "System Administrator")
     @Operation(
-            summary = "Get all actor's entitlements.",
-            description = "Returns a list of all actor's entitlements. This operation is restricted to system administrators only." )
+            summary = "Get all actors entitlements.",
+            description = "Returns a list of all actors entitlements. This operation is restricted to system administrators only." )
     @APIResponse(
             responseCode = "200",
             description = "Successfully retrieved the list of actor's entitlements.",
@@ -981,7 +981,7 @@ public class SystemAdminEndpoint {
                     implementation = InformativeResponse.class)))
     @SecurityRequirement(name = "Authentication")
     @GET
-    @Path("/actors")
+    @Path("/actors/entitlements")
     @Produces(value = MediaType.APPLICATION_JSON)
     @AccessResource
     public Response getAllActorsEntitlements(
@@ -996,6 +996,60 @@ public class SystemAdminEndpoint {
         var serverInfo = new AccountingUriInfo(serverUrl.concat(basePath).concat(uriInfo.getPath()));
 
         var results= actorEntitlementsService.getAll( page - 1, size, serverInfo);
+
+        return Response.ok().entity(results).build();
+    }
+
+    @Tag(name = "System Administrator")
+    @Operation(
+            summary = "Get all actor's entitlements.",
+            description = "Returns a list of all actor's entitlements. This operation is restricted to system administrators only." )
+    @APIResponse(
+            responseCode = "200",
+            description = "Successfully retrieved the list of actor's entitlements.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = PageableEntitlementResponse.class)))
+    @APIResponse(
+            responseCode = "401",
+            description = "Client has not been authenticated.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "403",
+            description = "The authenticated client is not permitted to perform the requested operation.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "500",
+            description = "Internal Server Errors.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @SecurityRequirement(name = "Authentication")
+    @GET
+    @Path("/actors/{actor_id}/entitlements")
+    @Produces(value = MediaType.APPLICATION_JSON)
+    @AccessResource
+    public Response getAllActorEntitlements(
+            @Parameter(
+                    description = "The actor id.",
+                    required = true,
+                    example = "607f1f77bcf86cd799439011",
+                    schema = @Schema(type = SchemaType.STRING))
+            @PathParam("actor_id") @Valid @NotFoundEntity(repository = ActorRepository.class, id = String.class, message = "There is no actor with the following id:") String actorId,
+            @Parameter(name = "page", in = QUERY,
+                    description = "Indicates the page number. Page number must be >= 1.") @DefaultValue("1") @Min(value = 1, message = "Page number must be >= 1.") @QueryParam("page") int page,
+            @Parameter(name = "size", in = QUERY,
+                    description = "The page size.") @DefaultValue("10") @Min(value = 1, message = "Page size must be between 1 and 100.")
+            @Max(value = 100, message = "Page size must be between 1 and 100.") @QueryParam("size") int size,
+            @Context UriInfo uriInfo) {
+
+        var serverInfo = new AccountingUriInfo(serverUrl.concat(basePath).concat(uriInfo.getPath()));
+
+        var results= actorEntitlementsService.getAllActorEntitlements(actorId,page - 1, size, serverInfo);
 
         return Response.ok().entity(results).build();
     }

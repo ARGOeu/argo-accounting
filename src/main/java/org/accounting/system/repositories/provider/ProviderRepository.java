@@ -151,7 +151,7 @@ public class ProviderRepository extends AccessibleModulator<Provider, String> {
         return projectionQuery;
 
     }
-    public PanacheQuery<Provider> searchProviders(Bson searchDoc,int page, int size) {
+    public PanacheQuery<Provider> searchProviders(Bson searchDoc, int page, int size) {
 
 
         var unwind = Aggregates
@@ -166,7 +166,7 @@ public class ProviderRepository extends AccessibleModulator<Provider, String> {
                 .aggregate(List.of(unwind, replaceRoot,group,Aggregates.match(searchDoc), Aggregates.skip(size * (page)), Aggregates.limit(size)),  Provider.class)
                 .into(new ArrayList<>());
 
-        Document count = getMongoCollection("Project")
+        var count = getMongoCollection("Project")
                 .aggregate(List.of(unwind , replaceRoot,group, Aggregates.match(searchDoc),Aggregates.count()))
                 .first();
 
