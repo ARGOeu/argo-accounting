@@ -61,6 +61,8 @@ According to [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) , the
   Upgrade to Quarkus 3.27.0.
 - [#258](https://github.com/ARGOeu/argo-accounting/pull/258) - ACC-408
   Database-Driven Entitlements in Accounting Interface.
+- [#260](https://github.com/ARGOeu/argo-accounting/pull/260) - ACC-411
+  Implement API endpoint to return all entitlements of a user.
 
 ## 2.0.0 - Fixed
 
