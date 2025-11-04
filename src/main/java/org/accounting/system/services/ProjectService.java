@@ -113,8 +113,17 @@ public class ProjectService {
 
     public ProjectReport projectReport(String projectId, String start, String end){
 
-
         return projectRepository.projectReport(projectId, start, end);
+    }
+
+    public ProjectReport projectReportByGroupId(String projectId, String groupId, String start, String end){
+
+        return projectRepository.projectReportByGroupId(projectId, groupId, start, end);
+    }
+
+    public ProjectReport projectReportByUserId(String projectId, String userId, String start, String end){
+
+        return projectRepository.projectReportByUserId(projectId, userId, start, end);
     }
 
     public Optional<Project> findByIdOptional(String id){

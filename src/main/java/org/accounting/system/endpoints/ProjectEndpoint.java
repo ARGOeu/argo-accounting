@@ -230,6 +230,164 @@ public class ProjectEndpoint {
         return Response.ok().entity(response).build();
     }
 
+    @Tag(name = "Project")
+    @Operation(
+            summary = "Get Project report with metrics by group id.",
+            description = "Returns a report for a specific Project and time period by group id, including aggregated metric values.")
+    @APIResponse(
+            responseCode = "200",
+            description = "Project report retrieved successfully.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = ProviderReport.class)))
+    @APIResponse(
+            responseCode = "401",
+            description = "Client has not been authenticated.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "403",
+            description = "The authenticated client is not permitted to perform the requested operation.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "404",
+            description = "Not found.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "500",
+            description = "Internal Server Errors.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @SecurityRequirement(name = "Authentication")
+    @GET
+    @Path("/projects/{project_id}/groups/{group_id}/report")
+    @Produces(value = MediaType.APPLICATION_JSON)
+    public Response getProjectReportByGroupId(
+            @Parameter(
+                    description = "The ID of the project",
+                    required = true,
+                    example = "704029",
+                    schema = @Schema(type = SchemaType.STRING))
+            @PathParam("project_id")
+            @Valid
+            @AccessProject(roles = {"admin", "viewer"}) String id,
+            @Parameter(
+                    description = "The ID of the group.",
+                    required = true,
+                    example = "group-id",
+                    schema = @Schema(type = SchemaType.STRING))
+            @PathParam("group_id") String groupId,
+            @Parameter(
+                    name = "start",
+                    description = "Start date in yyyy-MM-dd format",
+                    required = true,
+                    example = "2024-01-01"
+            )
+            @QueryParam("start")
+            @Valid
+            @NotEmpty(message = "start may not be empty.")
+            @CheckDateFormat(pattern = "yyyy-MM-dd", message = "Valid date format is yyyy-MM-dd.") String start,
+            @Parameter(
+                    name = "end",
+                    description = "End date in yyyy-MM-dd format",
+                    required = true,
+                    example = "2024-12-31"
+            )
+            @QueryParam("end")
+            @Valid
+            @NotEmpty(message = "end may not be empty.")
+            @CheckDateFormat(pattern = "yyyy-MM-dd", message = "Valid date format is yyyy-MM-dd.") String end) {
+
+        var response = projectService.projectReportByGroupId(id, groupId, start, end);
+
+        return Response.ok().entity(response).build();
+    }
+
+    @Tag(name = "Project")
+    @Operation(
+            summary = "Get Project report with metrics by user id.",
+            description = "Returns a report for a specific Project and time period by user id, including aggregated metric values.")
+    @APIResponse(
+            responseCode = "200",
+            description = "Project report retrieved successfully.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = ProviderReport.class)))
+    @APIResponse(
+            responseCode = "401",
+            description = "Client has not been authenticated.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "403",
+            description = "The authenticated client is not permitted to perform the requested operation.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "404",
+            description = "Not found.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "500",
+            description = "Internal Server Errors.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @SecurityRequirement(name = "Authentication")
+    @GET
+    @Path("/projects/{project_id}/users/{user_id}/report")
+    @Produces(value = MediaType.APPLICATION_JSON)
+    public Response getProjectReportByUserId(
+            @Parameter(
+                    description = "The ID of the project",
+                    required = true,
+                    example = "704029",
+                    schema = @Schema(type = SchemaType.STRING))
+            @PathParam("project_id")
+            @Valid
+            @AccessProject(roles = {"admin", "viewer"}) String id,
+            @Parameter(
+                    description = "The ID of the user id.",
+                    required = true,
+                    example = "user-id",
+                    schema = @Schema(type = SchemaType.STRING))
+            @PathParam("user_id") String userId,
+            @Parameter(
+                    name = "start",
+                    description = "Start date in yyyy-MM-dd format",
+                    required = true,
+                    example = "2024-01-01"
+            )
+            @QueryParam("start")
+            @Valid
+            @NotEmpty(message = "start may not be empty.")
+            @CheckDateFormat(pattern = "yyyy-MM-dd", message = "Valid date format is yyyy-MM-dd.") String start,
+            @Parameter(
+                    name = "end",
+                    description = "End date in yyyy-MM-dd format",
+                    required = true,
+                    example = "2024-12-31"
+            )
+            @QueryParam("end")
+            @Valid
+            @NotEmpty(message = "end may not be empty.")
+            @CheckDateFormat(pattern = "yyyy-MM-dd", message = "Valid date format is yyyy-MM-dd.") String end) {
+
+        var response = projectService.projectReportByUserId(id, userId, start, end);
+
+        return Response.ok().entity(response).build();
+    }
+
     @Tag(name = "Metric")
     @Operation(
             summary = "Get all metrics under a specific project related to a specific user id.",
