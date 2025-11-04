@@ -63,6 +63,9 @@ According to [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) , the
   Database-Driven Entitlements in Accounting Interface.
 - [#260](https://github.com/ARGOeu/argo-accounting/pull/260) - ACC-411
   Implement API endpoint to return all entitlements of a user.
+- [#261](https://github.com/ARGOeu/argo-accounting/pull/261) - ACC-409
+  Add API endpoints for aggregated reporting at group and user level.
+
 
 ## 2.0.0 - Fixed
 
