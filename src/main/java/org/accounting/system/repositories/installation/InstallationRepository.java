@@ -7,6 +7,7 @@ import com.mongodb.client.model.Projections;
 import com.mongodb.client.model.UnwindOptions;
 import com.mongodb.client.model.UpdateOptions;
 import com.mongodb.client.model.Updates;
+import com.mongodb.client.model.Variable;
 import io.quarkus.mongodb.panache.PanacheQuery;
 import io.quarkus.panache.common.Page;
 import io.vavr.collection.Array;
@@ -26,6 +27,7 @@ import org.accounting.system.repositories.metric.MetricRepository;
 import org.accounting.system.repositories.project.ProjectRepository;
 import org.accounting.system.util.Utility;
 import org.apache.commons.lang3.StringUtils;
+import org.bson.BsonNull;
 import org.bson.Document;
 import org.bson.conversions.Bson;
 import org.bson.types.ObjectId;
@@ -108,11 +110,15 @@ public class InstallationRepository {
 
         var replaceRootToInstallation = Aggregates.replaceRoot("$installations");
 
-        Bson lookup = Aggregates.lookup("MetricDefinition", "unit_of_access", "_id", "unit_of_access");
+        var lookup = Aggregates.lookup("MetricDefinition", "unit_of_access", "_id", "unit_of_access");
+
+        var lookupCapacity = Aggregates.lookup("Capacity", "_id", "installation_id", "capacities");
+
+        var lookupCapacitiesMetricDefinitions = Aggregates.lookup("MetricDefinition", "metric_definition_id", "_id", "metric_definition");
 
         return projectRepository
                 .getMongoCollection()
-                .aggregate(List.of(project, unwind, provider, replaceRoot, unwindInstallations, eqInstallation, unwindInstallations, replaceRootToInstallation, lookup), InstallationProjection.class)
+                .aggregate(List.of(project, unwind, provider, replaceRoot, unwindInstallations, eqInstallation, unwindInstallations, replaceRootToInstallation, lookup, lookupCapacity, lookupCapacitiesMetricDefinitions), InstallationProjection.class)
                 .first();
     }
 
@@ -269,15 +275,19 @@ public class InstallationRepository {
         var unwindInstallations = Aggregates.unwind("$providers.installations",unwindOptions.preserveNullAndEmptyArrays(Boolean.FALSE));
 
         var replaceRootToInstallation = Aggregates.replaceRoot("$installations");
-        Bson lookup = Aggregates.lookup("MetricDefinition", "unit_of_access", "_id", "unit_of_access");
+
+        var lookup = Aggregates.lookup("MetricDefinition", "unit_of_access", "_id", "unit_of_access");
+
+        var lookupCapacity = Aggregates.lookup("Capacity", "_id", "installation_id", "capacities");
 
         var installations= projectRepository.getMongoCollection()
-                .aggregate(List.of(unwind,unwindInstallations,replaceRoot,replaceRootToInstallation, Aggregates.skip(size * (page)), Aggregates.limit(size),lookup),  InstallationProjection.class)
+                .aggregate(List.of(unwind,unwindInstallations,replaceRoot,replaceRootToInstallation, Aggregates.skip(size * (page)), Aggregates.limit(size), lookup, lookupCapacity), InstallationProjection.class)
                 .into(new ArrayList<>());
 
-        Document count = projectRepository.getMongoCollection()
+        var count = projectRepository.getMongoCollection()
                 .aggregate(List.of(unwind,unwindInstallations,replaceRoot,replaceRootToInstallation,Aggregates.count()))
                 .first();
+
         var projectionQuery = new MongoQuery<InstallationProjection>();
 
         projectionQuery.list = installations;
@@ -306,16 +316,16 @@ public class InstallationRepository {
 
        var project=Aggregates.project(new Document("path",concat));
        var exclude=Aggregates.project(Projections.exclude("_id"));
-        var group =Aggregates.group( "$_id", Accumulators.push("path", "$path"));
-        var optional = Optional.ofNullable(projectRepository.getMongoCollection()
+       var group =Aggregates.group( "$_id", Accumulators.push("path", "$path"));
+       var optional = Optional.ofNullable(projectRepository.getMongoCollection()
                 .aggregate(List.of(unwind,unwindInstallations,replaceRoot,replaceRootToInstallation,project,exclude, group))
                 .first());
 
-        if(optional.isPresent()){
-            return optional.get().getList("path", String.class);
-        } else {
+       if (optional.isPresent()) {
+           return optional.get().getList("path", String.class);
+       } else {
             return Collections.emptyList();
-        }
+       }
     }
 
     public PanacheQuery<InstallationProjection> searchInstallations(Bson searchDoc, int page, int size) {
@@ -329,15 +339,19 @@ public class InstallationRepository {
         var unwindInstallations = Aggregates.unwind("$providers.installations");
 
         var replaceRootToInstallation = Aggregates.replaceRoot("$installations");
-        Bson lookup = Aggregates.lookup("MetricDefinition", "unit_of_access", "_id", "unit_of_access");
+
+        var lookup = Aggregates.lookup("MetricDefinition", "unit_of_access", "_id", "unit_of_access");
+
+        var lookupCapacity = Aggregates.lookup("Capacity", "_id", "installation_id", "capacities");
 
         var installations= projectRepository.getMongoCollection()
-                .aggregate(List.of(unwind, unwindInstallations, replaceRoot, replaceRootToInstallation, Aggregates.match(searchDoc),Aggregates.skip(size * (page)), Aggregates.limit(size),lookup),  InstallationProjection.class)
+                .aggregate(List.of(unwind, unwindInstallations, replaceRoot, replaceRootToInstallation, Aggregates.match(searchDoc),Aggregates.skip(size * (page)), Aggregates.limit(size), lookup, lookupCapacity), InstallationProjection.class)
                 .into(new ArrayList<>());
 
-        Document count = projectRepository.getMongoCollection()
+        var count = projectRepository.getMongoCollection()
                 .aggregate(List.of(unwind, replaceRoot, unwindInstallations, replaceRootToInstallation,Aggregates.match(searchDoc),Aggregates.count()))
                 .first();
+
         var projectionQuery = new MongoQuery<InstallationProjection>();
 
         projectionQuery.list = installations;
@@ -369,7 +383,7 @@ public class InstallationRepository {
                 .aggregate(List.of(eq, addField, group, Aggregates.skip(size * (page)), Aggregates.limit(size), lookup, unwind, replaceRoot), MetricDefinition.class)
                 .into(new ArrayList<>());
 
-        Document count = metricRepository
+        var count = metricRepository
                 .getMongoCollection()
                 .aggregate(List.of(eq, addField, group, unwind, Aggregates.count()))
                 .first();
@@ -404,21 +418,52 @@ public class InstallationRepository {
 
         var unwind = Aggregates.unwind("$metric_definition");
 
+        var capacityPipeline = List.of(
+                Aggregates.match(Filters.expr(new Document("$and", List.of(
+                        new Document("$eq", List.of("$metric_definition_id", "$$metricDefId")),
+                        new Document("$eq", List.of("$installation_id", "$$installationId"))
+                ))))
+        );
+
+        var lookupCapacity = Aggregates.lookup(
+                "Capacity",
+                List.of(
+                        new Variable<>("metricDefId", new Document("$toString", "$_id")),
+                        new Variable<>("installationId", installation.getId())
+                ),
+                capacityPipeline,
+                "capacity"
+        );
+
+        var unwindCapacity = Aggregates.unwind("$capacity", new UnwindOptions().preserveNullAndEmptyArrays(true));
+
         var projection = Aggregates.project(Projections.fields(
                 Projections.computed("metricDefinitionId", new Document("$toString", "$_id")),
                 Projections.computed("metricName", "$metric_definition.metric_name"),
                 Projections.computed("metricDescription", "$metric_definition.metric_description"),
                 Projections.computed("unitType", "$metric_definition.unit_type"),
                 Projections.computed("metricType", "$metric_definition.metric_type"),
-                Projections.include("totalValue")
-        ));
+                Projections.computed("capacityValue", "$capacity.value"),
+                Projections.include("totalValue"),
+                Projections.computed("usagePercentage",
+                        new Document("$cond", List.of(
+                                new Document("$or", List.of(
+                                        new Document("$eq", List.of("$capacity.value", BsonNull.VALUE)),
+                                        new Document("$eq", List.of("$capacity.value", 0))
+                                )),
+                                BsonNull.VALUE,
+                                new Document("$multiply", List.of(
+                                        new Document("$divide", List.of("$totalValue", "$capacity.value")),
+                                        100
+                                ))
+                )
+        ))));
 
         var regex = Aggregates.match(Filters.and(filters));
 
-
         var data = metricRepository
                 .getMongoCollection()
-                .aggregate(List.of(regex, addField, group, lookup, unwind, projection), MetricReportProjection.class)
+                .aggregate(List.of(regex, addField, group, lookup, unwind, lookupCapacity, unwindCapacity, projection), MetricReportProjection.class)
                 .into(new ArrayList<>());
 
         var report = new InstallationReport();

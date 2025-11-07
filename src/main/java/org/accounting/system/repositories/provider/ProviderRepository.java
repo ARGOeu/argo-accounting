@@ -5,6 +5,8 @@ import com.mongodb.client.model.Aggregates;
 import com.mongodb.client.model.Field;
 import com.mongodb.client.model.Filters;
 import com.mongodb.client.model.Projections;
+import com.mongodb.client.model.UnwindOptions;
+import com.mongodb.client.model.Variable;
 import io.quarkus.mongodb.panache.PanacheQuery;
 import io.quarkus.panache.common.Page;
 import io.vavr.collection.Array;
@@ -26,6 +28,7 @@ import org.accounting.system.repositories.modulators.AccessibleModulator;
 import org.accounting.system.repositories.project.ProjectRepository;
 import org.accounting.system.services.HierarchicalRelationService;
 import org.accounting.system.util.Utility;
+import org.bson.BsonNull;
 import org.bson.Document;
 import org.bson.conversions.Bson;
 
@@ -266,6 +269,26 @@ public class ProviderRepository extends AccessibleModulator<Provider, String> {
 
         var unwind = Aggregates.unwind("$metric_definition");
 
+        var capacityPipeline = List.of(
+                Aggregates.match(Filters.expr(new Document("$and", List.of(
+                        new Document("$eq", List.of("$metric_definition_id", "$$metricDefId")),
+                        new Document("$eq", List.of("$installation_id", "$$installationId"))
+                ))))
+        );
+
+        var lookupCapacity = Aggregates.lookup(
+                "Capacity",
+                List.of(
+                        new Variable<>("metricDefId", new Document("$toString", "$metricDefinitionId")),
+                        new Variable<>("installationId", "$installationId")
+                ),
+                capacityPipeline,
+                "capacity"
+        );
+
+        var unwindCapacity = Aggregates.unwind("$capacity", new UnwindOptions().preserveNullAndEmptyArrays(true));
+
+
         var projection = Aggregates.project(Projections.fields(
                 Projections.include("installationId"),
                 Projections.computed("metricDefinitionId", new Document("$toString", "$metricDefinitionId")),
@@ -273,7 +296,20 @@ public class ProviderRepository extends AccessibleModulator<Provider, String> {
                 Projections.computed("metricDescription", "$metric_definition.metric_description"),
                 Projections.computed("unitType", "$metric_definition.unit_type"),
                 Projections.computed("metricType", "$metric_definition.metric_type"),
-                Projections.include("totalValue")
+                Projections.include("totalValue"),
+                Projections.computed("capacityValue", "$capacity.value"),
+                Projections.computed("usagePercentage",
+                        new Document("$cond", List.of(
+                                new Document("$or", List.of(
+                                        new Document("$eq", List.of("$capacity.value", BsonNull.VALUE)),
+                                        new Document("$eq", List.of("$capacity.value", 0))
+                                )),
+                                BsonNull.VALUE,
+                                new Document("$multiply", List.of(
+                                        new Document("$divide", List.of("$totalValue", "$capacity.value")),
+                                        100
+                                ))
+                        )))
         ));
 
         var regex = Aggregates.match(Filters.and(filters));
@@ -286,8 +322,10 @@ public class ProviderRepository extends AccessibleModulator<Provider, String> {
                         .append("metricName", "$metricName")
                         .append("metricDescription", "$metricDescription")
                         .append("unitType", "$unitType")
-                        .append("metricType", "$metricType"))
-        );
+                        .append("metricType", "$metricType")
+                        .append("capacityValue", "$capacityValue")
+                        .append("usagePercentage", "$usagePercentage")
+        ));
 
         var lookupInstallation = new Document("$lookup",
                 new Document("from", "Project")
@@ -391,7 +429,7 @@ public class ProviderRepository extends AccessibleModulator<Provider, String> {
 
         var report =  metricRepository.getMongoCollection()
                 .aggregate(List.of(regex, addField, group, extractFields,
-                        lookup, unwind, projection, finalGroup,
+                        lookup, unwind, lookupCapacity, unwindCapacity, projection, finalGroup,
                         lookupInstallation, unwindInstallation,
                         finalProjection, groupByProvider, lookupProvider, unwindProvider,
                         finalProviderProjection, agg, gagg, gpafggg, gpagg), ProviderReport.class).first();

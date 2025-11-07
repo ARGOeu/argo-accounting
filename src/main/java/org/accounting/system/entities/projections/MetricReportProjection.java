@@ -1,8 +1,11 @@
 package org.accounting.system.entities.projections;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import org.eclipse.microprofile.openapi.annotations.enums.SchemaType;
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
+
+import java.math.BigDecimal;
 
 public class MetricReportProjection {
 
@@ -59,4 +62,24 @@ public class MetricReportProjection {
     )
     @JsonProperty("total_value")
     public double totalValue;
+
+    @Schema(
+            type = SchemaType.NUMBER,
+            implementation = BigDecimal.class,
+            description = "Capacity value.",
+            example = "1000"
+    )
+    @JsonProperty("capacity_value")
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    public BigDecimal capacityValue;
+
+    @Schema(
+            type = SchemaType.NUMBER,
+            implementation = BigDecimal.class,
+            description = "Usage percentage.",
+            example = "75"
+    )
+    @JsonProperty("usage_percentage")
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    public BigDecimal usagePercentage;
 }
