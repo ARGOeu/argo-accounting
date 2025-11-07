@@ -1,7 +1,9 @@
 package org.accounting.system.services;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.mongodb.client.model.Filters;
 import io.quarkus.mongodb.panache.PanacheQuery;
+import io.vavr.collection.Array;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.NotFoundException;
@@ -18,6 +20,7 @@ import org.accounting.system.mappers.MetricDefinitionMapper;
 import org.accounting.system.repositories.project.ProjectRepository;
 import org.accounting.system.services.groupmanagement.GroupManagementSelection;
 import org.accounting.system.util.QueryParser;
+import org.accounting.system.util.Utility;
 import org.jboss.logging.Logger;
 
 import java.util.Optional;
@@ -113,17 +116,31 @@ public class ProjectService {
 
     public ProjectReport projectReport(String projectId, String start, String end){
 
-        return projectRepository.projectReport(projectId, start, end);
+        var filters = Array.of(Filters.regex("resource_id","^"+projectId+"(?:\\.[^\\r\\n.]+)*$"),
+                Filters.and(Filters.gte("time_period_start", Utility.stringToInstant(start)), Filters.lte("time_period_start", Utility.stringToInstant(end))),
+                Filters.and(Filters.gte("time_period_end", Utility.stringToInstant(start)), Filters.lte("time_period_end", Utility.stringToInstant(end))));
+
+        return projectRepository.projectReport(projectId, filters);
     }
 
     public ProjectReport projectReportByGroupId(String projectId, String groupId, String start, String end){
 
-        return projectRepository.projectReportByGroupId(projectId, groupId, start, end);
+        var filters = Array.of(Filters.regex("resource_id","^"+projectId+"(?:\\.[^\\r\\n.]+)*$"),
+                Filters.eq("group_id", groupId),
+                Filters.and(Filters.gte("time_period_start", Utility.stringToInstant(start)), Filters.lte("time_period_start", Utility.stringToInstant(end))),
+                Filters.and(Filters.gte("time_period_end", Utility.stringToInstant(start)), Filters.lte("time_period_end", Utility.stringToInstant(end))));
+
+        return projectRepository.projectReport(projectId, filters);
     }
 
     public ProjectReport projectReportByUserId(String projectId, String userId, String start, String end){
 
-        return projectRepository.projectReportByUserId(projectId, userId, start, end);
+        var filters = Array.of(Filters.regex("resource_id","^"+projectId+"(?:\\.[^\\r\\n.]+)*$"),
+                Filters.eq("user_id", userId),
+                Filters.and(Filters.gte("time_period_start", Utility.stringToInstant(start)), Filters.lte("time_period_start", Utility.stringToInstant(end))),
+                Filters.and(Filters.gte("time_period_end", Utility.stringToInstant(start)), Filters.lte("time_period_end", Utility.stringToInstant(end))));
+
+        return projectRepository.projectReport(projectId, filters);
     }
 
     public Optional<Project> findByIdOptional(String id){

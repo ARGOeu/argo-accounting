@@ -66,5 +66,6 @@ public class ProjectionInstallation {
             example = "628ddb672f926e16a7a74156")
     @JsonProperty("unit_of_access")
     @BsonProperty("unit_of_access")
+    @JsonInclude(JsonInclude.Include.NON_NULL)
     public ObjectId unitOfAccess;
 }

@@ -65,7 +65,8 @@ According to [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) , the
   Implement API endpoint to return all entitlements of a user.
 - [#261](https://github.com/ARGOeu/argo-accounting/pull/261) - ACC-409
   Add API endpoints for aggregated reporting at group and user level.
-
+- [#262](https://github.com/ARGOeu/argo-accounting/pull/262) - ACC-265
+  Add Support for Capacity management.
 
 ## 2.0.0 - Fixed
 
