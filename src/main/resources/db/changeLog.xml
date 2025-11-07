@@ -890,4 +890,38 @@
             </ext:document>
         </ext:insertOne>
     </changeSet>
+
+    <changeSet id="29" author="accounting-system">
+        <ext:createIndex collectionName="Capacity">
+            <ext:keys>
+                { installation_id: 1, metric_definition_id: 1}
+            </ext:keys>
+            <ext:options>
+                {unique: true, name: "unique_capacity_index", collation: { locale: "en" }}
+            </ext:options>
+        </ext:createIndex>
+    </changeSet>
+
+    <changeSet id="30" author="accounting-system">
+        <ext:runCommand>
+            <ext:command>
+                {
+                dropIndexes: "Capacity",
+                index: "unique_capacity_index"
+                }
+            </ext:command>
+        </ext:runCommand>
+    </changeSet>
+
+    <changeSet id="31" author="accounting-system">
+        <ext:createIndex collectionName="Capacity">
+            <ext:keys>
+                { installation_id: 1, metric_definition_id: 1, registered_on:1}
+            </ext:keys>
+            <ext:options>
+                {unique: true, name: "unique_capacity_index", collation: { locale: "en" }}
+            </ext:options>
+        </ext:createIndex>
+    </changeSet>
+
 </databaseChangeLog>

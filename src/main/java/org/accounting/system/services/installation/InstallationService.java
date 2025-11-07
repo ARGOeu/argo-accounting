@@ -19,13 +19,14 @@ import org.accounting.system.endpoints.InstallationEndpoint;
 import org.accounting.system.entities.HierarchicalRelation;
 import org.accounting.system.entities.installation.Installation;
 import org.accounting.system.entities.projections.InstallationProjection;
-import org.accounting.system.entities.projections.InstallationReport;
+import org.accounting.system.entities.projections.InstallationReportNew;
 import org.accounting.system.entities.projections.MetricProjection;
 import org.accounting.system.enums.RelationType;
 import org.accounting.system.exceptions.ConflictException;
 import org.accounting.system.mappers.InstallationMapper;
 import org.accounting.system.mappers.MetricDefinitionMapper;
 import org.accounting.system.mappers.MetricMapper;
+import org.accounting.system.repositories.CapacityRepository;
 import org.accounting.system.repositories.HierarchicalRelationRepository;
 import org.accounting.system.repositories.installation.InstallationRepository;
 import org.accounting.system.repositories.metric.MetricRepository;
@@ -73,6 +74,9 @@ public class InstallationService {
 
     @Inject
     MetricRepository metricRepository;
+
+    @Inject
+    CapacityRepository capacityRepository;
 
     /**
      * Maps the {@link InstallationRequestDto} to {@link Installation}.
@@ -136,6 +140,8 @@ public class InstallationService {
         hierarchicalRelationRepository.delete("externalId", installationId);
 
         groupManagementSelection.from().choose().deleteInstallationGroup(installation.getProject(), installation.getOrganisation(), installation.getId());
+
+        capacityRepository.deleteByInstallationId(installationId);
     }
 
     /**
@@ -279,7 +285,7 @@ public class InstallationService {
         return InstallationMapper.INSTANCE.installationProjectionToResponse(installationProjection);
     }
 
-    public InstallationReport externalInstallationReport(String externalId, String start, String end){
+    public InstallationReportNew externalInstallationReport(String externalId, String start, String end){
 
         var optional = fetchExternalHierarchicalRelation(externalId);
 
@@ -295,7 +301,7 @@ public class InstallationService {
 
         var installation = fetchInstallation(ids[2]);
 
-        return installationRepository.installationReport(installation, start, end);
+        return installationRepository.aggregateMetricsByDefinition(installation, start, end);
     }
 
     public MetricResponseDto assignMetricToExternalInstallation(String externalId, MetricRequestDto request) {
@@ -481,11 +487,11 @@ public class InstallationService {
         return new PageResource<>(projection, MetricDefinitionMapper.INSTANCE.metricDefinitionsToResponse(projection.list()), uriInfo);
     }
 
-    public InstallationReport installationReport(String installationId, String start, String end){
+    public InstallationReportNew installationReport(String installationId, String start, String end){
 
         var installation = fetchInstallation(installationId);
 
-        return installationRepository.installationReport(installation, start, end);
+        return installationRepository.aggregateMetricsByDefinition(installation, start, end);
     }
 }
 

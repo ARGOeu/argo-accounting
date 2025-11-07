@@ -28,7 +28,7 @@ import org.accounting.system.dtos.installation.InstallationResponseDto;
 import org.accounting.system.dtos.installation.UpdateInstallationRequestDto;
 import org.accounting.system.dtos.metric.MetricRequestDto;
 import org.accounting.system.dtos.metric.MetricResponseDto;
-import org.accounting.system.entities.projections.InstallationReport;
+import org.accounting.system.entities.projections.InstallationReportNew;
 import org.accounting.system.repositories.metricdefinition.MetricDefinitionRepository;
 import org.accounting.system.services.installation.InstallationService;
 import org.accounting.system.util.AccountingUriInfo;
@@ -245,7 +245,7 @@ public class ExternalInstallationEndpoint {
             description = "Installation report retrieved successfully.",
             content = @Content(schema = @Schema(
                     type = SchemaType.OBJECT,
-                    implementation = InstallationReport.class)))
+                    implementation = InstallationReportNew.class)))
     @APIResponse(
             responseCode = "401",
             description = "Client has not been authenticated.",
