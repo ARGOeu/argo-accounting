@@ -1,10 +1,20 @@
 package org.accounting.system.entities.projections;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonPropertyOrder;
+import lombok.Getter;
+import lombok.Setter;
 import org.eclipse.microprofile.openapi.annotations.enums.SchemaType;
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
 
-public class MetricReportProjection {
+import java.util.ArrayList;
+import java.util.List;
+
+@Getter
+@Setter
+@JsonPropertyOrder({ "metric_definition_id", "metric_name", "metric_description", "unit_type", "metric_type", "periods"})
+@Schema(name="MetricGroupResults", description="Metrics per metric definitions.")
+public class MetricGroupResults {
 
     @Schema(
             type = SchemaType.STRING,
@@ -13,7 +23,7 @@ public class MetricReportProjection {
             example = "507f1f77bcf86cd799439011"
     )
     @JsonProperty("metric_definition_id")
-    public String metricDefinitionId;
+    private String metricDefinitionId;
 
     @Schema(
             type = SchemaType.STRING,
@@ -22,7 +32,7 @@ public class MetricReportProjection {
             example = "weight"
     )
     @JsonProperty("metric_name")
-    public String metricName;
+    private String metricName;
 
     @Schema(
             type = SchemaType.STRING,
@@ -31,7 +41,7 @@ public class MetricReportProjection {
             example = "The weight of a person"
     )
     @JsonProperty("metric_description")
-    public String metricDescription;
+    private String metricDescription;
 
     @Schema(
             type = SchemaType.STRING,
@@ -40,7 +50,7 @@ public class MetricReportProjection {
             example = "kg"
     )
     @JsonProperty("unit_type")
-    public String unitType;
+    private String unitType;
 
     @Schema(
             type = SchemaType.STRING,
@@ -49,14 +59,13 @@ public class MetricReportProjection {
             example = "aggregated"
     )
     @JsonProperty("metric_type")
-    public String metricType;
+    private String metricType;
 
     @Schema(
-            type = SchemaType.NUMBER,
-            implementation = Double.class,
-            description = "Sum of metric values for the specified metric definition during the given time period.",
-            example = "1234.56"
+            type = SchemaType.ARRAY,
+            implementation = CapacityPeriod.class,
+            description = "The capacity periods."
     )
-    @JsonProperty("total_value")
-    public double totalValue;
+    @JsonProperty("periods")
+    private List<CapacityPeriod> periods = new ArrayList<>();
 }

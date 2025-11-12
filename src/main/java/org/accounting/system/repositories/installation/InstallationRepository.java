@@ -4,34 +4,39 @@ import com.mongodb.client.model.Accumulators;
 import com.mongodb.client.model.Aggregates;
 import com.mongodb.client.model.Filters;
 import com.mongodb.client.model.Projections;
+import com.mongodb.client.model.Sorts;
 import com.mongodb.client.model.UnwindOptions;
 import com.mongodb.client.model.UpdateOptions;
 import com.mongodb.client.model.Updates;
-import com.mongodb.client.model.Variable;
 import io.quarkus.mongodb.panache.PanacheQuery;
 import io.quarkus.panache.common.Page;
 import io.vavr.collection.Array;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import org.accounting.system.dtos.installation.InstallationRequestDto;
+import org.accounting.system.entities.Capacity;
 import org.accounting.system.entities.HierarchicalRelation;
 import org.accounting.system.entities.MetricDefinition;
 import org.accounting.system.entities.installation.Installation;
+import org.accounting.system.entities.projections.CapacityPeriod;
 import org.accounting.system.entities.projections.InstallationProjection;
 import org.accounting.system.entities.projections.InstallationReport;
-import org.accounting.system.entities.projections.MetricReportProjection;
+import org.accounting.system.entities.projections.MetricGroupResults;
 import org.accounting.system.entities.projections.MongoQuery;
 import org.accounting.system.enums.RelationType;
+import org.accounting.system.repositories.CapacityRepository;
 import org.accounting.system.repositories.HierarchicalRelationRepository;
 import org.accounting.system.repositories.metric.MetricRepository;
+import org.accounting.system.repositories.metricdefinition.MetricDefinitionRepository;
 import org.accounting.system.repositories.project.ProjectRepository;
 import org.accounting.system.util.Utility;
 import org.apache.commons.lang3.StringUtils;
-import org.bson.BsonNull;
 import org.bson.Document;
 import org.bson.conversions.Bson;
 import org.bson.types.ObjectId;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -55,6 +60,12 @@ public class InstallationRepository {
 
     @Inject
     HierarchicalRelationRepository hierarchicalRelationRepository;
+
+    @Inject
+    CapacityRepository capacityRepository;
+
+    @Inject
+    MetricDefinitionRepository metricDefinitionRepository;
 
     public Optional<Installation> exist(String projectID, String providerID, String installationID){
 
@@ -297,7 +308,6 @@ public class InstallationRepository {
         projectionQuery.page = Page.of(page, size);
 
         return projectionQuery;
-
     }
 
     public List<String> fetchAllInstallationIds() {
@@ -404,71 +414,113 @@ public class InstallationRepository {
         return projectRepository.getMongoCollection().countDocuments(Filters.eq("providers.installations.resource", resourceId)) > 0;
     }
 
-    public InstallationReport installationReport(Installation installation, String start, String end){
+    public InstallationReport installationReport(Installation installation, String sstart, String send, Array<Bson> filters) {
 
-        var filters = Array.of(Filters.regex("resource_id","^"+ installation.getProject() + HierarchicalRelation.PATH_SEPARATOR + installation.getOrganisation() + HierarchicalRelation.PATH_SEPARATOR + installation.getId() + "(?:\\.[^\\r\\n.]+)*$"),
-                Filters.and(Filters.gte("time_period_start", Utility.stringToInstant(start)), Filters.lte("time_period_start", Utility.stringToInstant(end))),
-                Filters.and(Filters.gte("time_period_end", Utility.stringToInstant(start)), Filters.lte("time_period_end", Utility.stringToInstant(end))));
-
-        var addField = new Document("$addFields", new Document("metric_definition_id", new Document("$toObjectId", "$metric_definition_id")));
-
-        var lookup = Aggregates.lookup("MetricDefinition", "_id", "_id", "metric_definition");
-
-        var group = Aggregates.group("$metric_definition_id", Accumulators.sum("totalValue", "$value"));
-
-        var unwind = Aggregates.unwind("$metric_definition");
-
-        var capacityPipeline = List.of(
-                Aggregates.match(Filters.expr(new Document("$and", List.of(
-                        new Document("$eq", List.of("$metric_definition_id", "$$metricDefId")),
-                        new Document("$eq", List.of("$installation_id", "$$installationId"))
-                ))))
-        );
-
-        var lookupCapacity = Aggregates.lookup(
-                "Capacity",
-                List.of(
-                        new Variable<>("metricDefId", new Document("$toString", "$_id")),
-                        new Variable<>("installationId", installation.getId())
-                ),
-                capacityPipeline,
-                "capacity"
-        );
-
-        var unwindCapacity = Aggregates.unwind("$capacity", new UnwindOptions().preserveNullAndEmptyArrays(true));
-
-        var projection = Aggregates.project(Projections.fields(
-                Projections.computed("metricDefinitionId", new Document("$toString", "$_id")),
-                Projections.computed("metricName", "$metric_definition.metric_name"),
-                Projections.computed("metricDescription", "$metric_definition.metric_description"),
-                Projections.computed("unitType", "$metric_definition.unit_type"),
-                Projections.computed("metricType", "$metric_definition.metric_type"),
-                Projections.computed("capacityValue", "$capacity.value"),
-                Projections.include("totalValue"),
-                Projections.computed("usagePercentage",
-                        new Document("$cond", List.of(
-                                new Document("$or", List.of(
-                                        new Document("$eq", List.of("$capacity.value", BsonNull.VALUE)),
-                                        new Document("$eq", List.of("$capacity.value", 0))
-                                )),
-                                BsonNull.VALUE,
-                                new Document("$multiply", List.of(
-                                        new Document("$divide", List.of("$totalValue", "$capacity.value")),
-                                        100
-                                ))
-                )
-        ))));
-
-        var regex = Aggregates.match(Filters.and(filters));
-
-        var data = metricRepository
+        var metricDefs = metricRepository
                 .getMongoCollection()
-                .aggregate(List.of(regex, addField, group, lookup, unwind, lookupCapacity, unwindCapacity, projection), MetricReportProjection.class)
+                .distinct("metric_definition_id",
+                        Filters.regex("resource_id","^"+ installation.getProject() + HierarchicalRelation.PATH_SEPARATOR + installation.getOrganisation() + HierarchicalRelation.PATH_SEPARATOR + installation.getId() + "(?:\\.[^\\r\\n.]+)*$")
+                        , String.class)
                 .into(new ArrayList<>());
 
-        var report = new InstallationReport();
+        var results = new ArrayList<MetricGroupResults>();
 
-        report.data = data;
+        for (String defId : metricDefs) {
+
+            var metricDefinition = metricDefinitionRepository.findById(new ObjectId(defId));
+
+            var capacities = capacityRepository
+                    .getMongoCollection()
+                    .find(Filters.and(
+                                    Filters.eq("installation_id", installation.getId()),
+                                    Filters.eq("metric_definition_id", defId)
+                            ), Capacity.class)
+                    .sort(Sorts.ascending("registered_on"))
+                    .into(new ArrayList<>());
+
+            var start = Utility.stringToInstant(sstart);
+            var end = Utility.stringToInstant(send);
+
+            var periods = new ArrayList<CapacityPeriod>();
+            var previous = start;
+
+            if(capacities.isEmpty()){
+
+                var p = new CapacityPeriod();
+                p.setFrom(start);
+                p.setTo(end);
+                p.setCapacityValue(null);
+                periods.add(p);
+            } else {
+
+                if (start.isBefore(capacities.get(0).getRegisteredOn())) {
+
+                    var firstCapDate = capacities.get(0).getRegisteredOn();
+                    var next = firstCapDate.isBefore(end) ? firstCapDate : end;
+                    var p = new CapacityPeriod();
+                    p.setFrom(previous);
+                    p.setTo(next);
+                    p.setCapacityValue(null);
+                    periods.add(p);
+                    previous = next;
+                }
+
+                for (int i = 0; i < capacities.size(); i++) {
+
+                    if((i < capacities.size() - 1) && end.isBefore(capacities.get(i + 1).getRegisteredOn())){
+
+                        var p = new CapacityPeriod();
+                        p.setFrom(previous);
+                        p.setTo(end);
+                        p.setCapacityValue(capacities.get(i).getValue());
+                        periods.add(p);
+                        break;
+                    }
+
+                    var next = (i < capacities.size() - 1)
+                            ? capacities.get(i + 1).getRegisteredOn()
+                            : end;
+
+                    if (!next.isAfter(previous)){
+                        continue;
+                    }
+
+                    var p = new CapacityPeriod();
+                    p.setFrom(previous);
+                    p.setTo(next);
+                    p.setCapacityValue(capacities.get(i).getValue());
+                    periods.add(p);
+                    previous = next;
+                }
+            }
+
+            for (var p : periods) {
+
+                var totalValueObj = metricRepository
+                        .getMongoCollection()
+                        .aggregate(Arrays.asList(Aggregates.match(Filters.and(filters.appendAll(List.of(Filters.eq("metric_definition_id", defId), Filters.and(Filters.gte("time_period_start", p.getFrom()), Filters.lte("time_period_start", p.getTo())), Filters.and(Filters.gte("time_period_end", p.getFrom()), Filters.lte("time_period_end", p.getTo())))))), Aggregates.group(null, Accumulators.sum("total", "$value"))))
+                        .map(doc -> doc.getDouble("total"))
+                        .first();
+
+                double totalValue = totalValueObj != null ? totalValueObj : 0.0;
+
+                p.setTotalValue(totalValue);
+
+                p.setUsagePercentage((p.getCapacityValue() == null || p.getCapacityValue().compareTo(BigDecimal.ZERO) == 0) ? null : BigDecimal.valueOf(p.getTotalValue()).divide(p.getCapacityValue(), 4, RoundingMode.HALF_UP).multiply(new BigDecimal(100)));
+            }
+
+            var group = new MetricGroupResults();
+            group.setMetricDefinitionId(defId);
+            group.setMetricDescription(metricDefinition.getMetricDescription());
+            group.setMetricName(metricDefinition.getMetricName());
+            group.setMetricType(metricDefinition.getMetricType());
+            group.setUnitType(metricDefinition.getUnitType());
+            group.setPeriods(periods);
+            results.add(group);
+        }
+
+        var report = new InstallationReport();
+        report.data = results;
         report.project = installation.getProject();
         report.provider = installation.getOrganisation();
         report.infrastructure = installation.getInfrastructure();

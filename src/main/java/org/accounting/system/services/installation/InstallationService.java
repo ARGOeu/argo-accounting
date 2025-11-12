@@ -1,5 +1,7 @@
 package org.accounting.system.services.installation;
 
+import com.mongodb.client.model.Filters;
+import io.vavr.collection.Array;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.validation.Payload;
@@ -26,6 +28,7 @@ import org.accounting.system.exceptions.ConflictException;
 import org.accounting.system.mappers.InstallationMapper;
 import org.accounting.system.mappers.MetricDefinitionMapper;
 import org.accounting.system.mappers.MetricMapper;
+import org.accounting.system.repositories.CapacityRepository;
 import org.accounting.system.repositories.HierarchicalRelationRepository;
 import org.accounting.system.repositories.installation.InstallationRepository;
 import org.accounting.system.repositories.metric.MetricRepository;
@@ -73,6 +76,9 @@ public class InstallationService {
 
     @Inject
     MetricRepository metricRepository;
+
+    @Inject
+    CapacityRepository capacityRepository;
 
     /**
      * Maps the {@link InstallationRequestDto} to {@link Installation}.
@@ -136,6 +142,8 @@ public class InstallationService {
         hierarchicalRelationRepository.delete("externalId", installationId);
 
         groupManagementSelection.from().choose().deleteInstallationGroup(installation.getProject(), installation.getOrganisation(), installation.getId());
+
+        capacityRepository.deleteByInstallationId(installationId);
     }
 
     /**
@@ -293,9 +301,7 @@ public class InstallationService {
 
         validator.isValid(ids[2], null);
 
-        var installation = fetchInstallation(ids[2]);
-
-        return installationRepository.installationReport(installation, start, end);
+        return installationReport(ids[2], start, end);
     }
 
     public MetricResponseDto assignMetricToExternalInstallation(String externalId, MetricRequestDto request) {
@@ -485,7 +491,9 @@ public class InstallationService {
 
         var installation = fetchInstallation(installationId);
 
-        return installationRepository.installationReport(installation, start, end);
+        var filters = Array.of(Filters.regex("resource_id","^"+ installation.getProject() + HierarchicalRelation.PATH_SEPARATOR + installation.getOrganisation() + HierarchicalRelation.PATH_SEPARATOR + installation.getId() + "(?:\\.[^\\r\\n.]+)*$"));
+
+        return installationRepository.installationReport(installation, start, end, filters);
     }
 }
 

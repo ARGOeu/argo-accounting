@@ -2,33 +2,25 @@ package org.accounting.system.repositories.provider;
 
 import com.mongodb.client.model.Accumulators;
 import com.mongodb.client.model.Aggregates;
-import com.mongodb.client.model.Field;
 import com.mongodb.client.model.Filters;
-import com.mongodb.client.model.Projections;
-import com.mongodb.client.model.UnwindOptions;
-import com.mongodb.client.model.Variable;
 import io.quarkus.mongodb.panache.PanacheQuery;
 import io.quarkus.panache.common.Page;
-import io.vavr.collection.Array;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.ForbiddenException;
 import org.accounting.system.beans.RequestUserContext;
 import org.accounting.system.dtos.provider.UpdateProviderRequestDto;
-import org.accounting.system.entities.HierarchicalRelation;
 import org.accounting.system.entities.MetricDefinition;
+import org.accounting.system.entities.installation.Installation;
 import org.accounting.system.entities.projections.InstallationProjection;
 import org.accounting.system.entities.projections.MongoQuery;
 import org.accounting.system.entities.projections.ProviderProjectionWithProjectInfo;
-import org.accounting.system.entities.projections.ProviderReport;
 import org.accounting.system.entities.provider.Provider;
 import org.accounting.system.mappers.ProviderMapper;
 import org.accounting.system.repositories.metric.MetricRepository;
 import org.accounting.system.repositories.modulators.AccessibleModulator;
 import org.accounting.system.repositories.project.ProjectRepository;
 import org.accounting.system.services.HierarchicalRelationService;
-import org.accounting.system.util.Utility;
-import org.bson.BsonNull;
 import org.bson.Document;
 import org.bson.conversions.Bson;
 
@@ -122,6 +114,31 @@ public class ProviderRepository extends AccessibleModulator<Provider, String> {
         projectionQuery.page = Page.of(page, size);
 
         return projectionQuery;
+    }
+
+    public List<Installation> fetchAllProviderInstallations(String projectID, String providerID){
+
+        var project = Aggregates
+                .match(Filters.eq("_id", projectID));
+
+        var unwind = Aggregates.unwind("$providers");
+
+        var provider = Aggregates
+                .match(Filters.eq("providers._id", providerID));
+
+        var replaceRootProviders = Aggregates
+                .replaceRoot("$providers");
+
+        var unwindInstallations = Aggregates
+                .unwind("$installations");
+
+        var replaceRootInstallations = Aggregates
+                .replaceRoot("$installations");
+
+        return projectRepository
+                .getMongoCollection()
+                .aggregate(List.of(project, unwind, provider, replaceRootProviders, unwindInstallations, replaceRootInstallations), Installation.class)
+                .into(new ArrayList<>());
     }
 
 
@@ -245,196 +262,5 @@ public class ProviderRepository extends AccessibleModulator<Provider, String> {
         ProviderMapper.INSTANCE.updateProviderFromDto(request, entity);
 
         return super.updateEntity(entity, id);
-    }
-
-    public ProviderReport providerReport(String projectId, String providerId, String start, String end){
-
-        var filters = Array.of(Filters.regex("resource_id","^"+ projectId + HierarchicalRelation.PATH_SEPARATOR + providerId + "(?:\\.[^\\r\\n.]+)*$"),
-                Filters.and(Filters.gte("time_period_start", Utility.stringToInstant(start)), Filters.lte("time_period_start", Utility.stringToInstant(end))),
-                Filters.and(Filters.gte("time_period_end", Utility.stringToInstant(start)), Filters.lte("time_period_end", Utility.stringToInstant(end))));
-
-        var addField = new Document("$addFields", new Document("metric_definition_id", new Document("$toObjectId", "$metric_definition_id")));
-
-        var groupId = new Document("installationId", "$installation_id").append("metricDefinitionId", "$metric_definition_id");
-
-        var group = Aggregates.group(groupId, Accumulators.sum("totalValue", "$value"));
-
-
-        var extractFields = Aggregates.addFields(
-                new Field<>("installationId", "$_id.installationId"),
-                new Field<>("metricDefinitionId", "$_id.metricDefinitionId")
-        );
-
-        var lookup = Aggregates.lookup("MetricDefinition", "metricDefinitionId", "_id", "metric_definition");
-
-        var unwind = Aggregates.unwind("$metric_definition");
-
-        var capacityPipeline = List.of(
-                Aggregates.match(Filters.expr(new Document("$and", List.of(
-                        new Document("$eq", List.of("$metric_definition_id", "$$metricDefId")),
-                        new Document("$eq", List.of("$installation_id", "$$installationId"))
-                ))))
-        );
-
-        var lookupCapacity = Aggregates.lookup(
-                "Capacity",
-                List.of(
-                        new Variable<>("metricDefId", new Document("$toString", "$metricDefinitionId")),
-                        new Variable<>("installationId", "$installationId")
-                ),
-                capacityPipeline,
-                "capacity"
-        );
-
-        var unwindCapacity = Aggregates.unwind("$capacity", new UnwindOptions().preserveNullAndEmptyArrays(true));
-
-
-        var projection = Aggregates.project(Projections.fields(
-                Projections.include("installationId"),
-                Projections.computed("metricDefinitionId", new Document("$toString", "$metricDefinitionId")),
-                Projections.computed("metricName", "$metric_definition.metric_name"),
-                Projections.computed("metricDescription", "$metric_definition.metric_description"),
-                Projections.computed("unitType", "$metric_definition.unit_type"),
-                Projections.computed("metricType", "$metric_definition.metric_type"),
-                Projections.include("totalValue"),
-                Projections.computed("capacityValue", "$capacity.value"),
-                Projections.computed("usagePercentage",
-                        new Document("$cond", List.of(
-                                new Document("$or", List.of(
-                                        new Document("$eq", List.of("$capacity.value", BsonNull.VALUE)),
-                                        new Document("$eq", List.of("$capacity.value", 0))
-                                )),
-                                BsonNull.VALUE,
-                                new Document("$multiply", List.of(
-                                        new Document("$divide", List.of("$totalValue", "$capacity.value")),
-                                        100
-                                ))
-                        )))
-        ));
-
-        var regex = Aggregates.match(Filters.and(filters));
-
-        var finalGroup = Aggregates.group(
-                "$installationId",
-                Accumulators.push("data", new Document()
-                        .append("metricDefinitionId", "$metricDefinitionId")
-                        .append("totalValue", "$totalValue")
-                        .append("metricName", "$metricName")
-                        .append("metricDescription", "$metricDescription")
-                        .append("unitType", "$unitType")
-                        .append("metricType", "$metricType")
-                        .append("capacityValue", "$capacityValue")
-                        .append("usagePercentage", "$usagePercentage")
-        ));
-
-        var lookupInstallation = new Document("$lookup",
-                new Document("from", "Project")
-                        .append("let", new Document("installationId", "$_id"))
-                        .append("pipeline", List.of(
-                                new Document("$unwind", "$providers"),
-                                new Document("$unwind", "$providers.installations"),
-                                new Document("$match", new Document("$expr",
-                                        new Document("$eq", List.of("$$installationId", "$providers.installations._id"))
-                                )),
-                                new Document("$replaceRoot", new Document("newRoot", "$providers.installations"))
-                        ))
-                        .append("as", "installation")
-        );
-
-        var unwindInstallation = Aggregates.unwind("$installation");
-
-        var finalProjection = Aggregates.project(Projections.fields(
-                Projections.computed("project", "$installation.project"),
-                Projections.computed("provider", "$installation.organisation"),
-                Projections.computed("infrastructure", "$installation.infrastructure"),
-                Projections.computed("installation", "$installation.installation"),
-                Projections.computed("installationId", "$installation._id"),
-                Projections.computed("externalId", "$installation.external_id"),
-                Projections.computed("resource", new Document("$ifNull", List.of("$installation.resource", ""))),
-                Projections.include("data")
-        ));
-
-
-        var groupByProvider = Aggregates.group("$provider",
-                Accumulators.push("data", new Document()
-                        .append("installationId", "$installationId")
-                        .append("project", "$project")
-                        .append("provider", "$provider")
-                        .append("installation", "$installation")
-                        .append("infrastructure", "$infrastructure")
-                        .append("externalId", "$externalId")
-                        .append("resource", "$resource")
-                        .append("data", "$data")
-                ),
-                Accumulators.push("allMetrics", "$data")
-        );
-
-        var lookupProvider = Aggregates.lookup("Provider", "_id", "_id", "provider");
-
-        var unwindProvider = Aggregates.unwind("$provider");
-
-        var finalProviderProjection = Aggregates.project(Projections.fields(
-                Projections.computed("provider_id", "$provider._id"),
-                Projections.computed("abbreviation", new Document("$ifNull", List.of("$provider.abbreviation", ""))),
-                Projections.computed("logo", new Document("$ifNull", List.of("$provider.logo", ""))),
-                Projections.computed("name", "$provider.name"),
-                Projections.computed("externalId", "$provider.external_id"),
-                Projections.computed("website", new Document("$ifNull", List.of("$provider.website", ""))),
-                Projections.include("data"),
-                Projections.computed("aggregatedMetrics", new Document("$reduce", new Document()
-                        .append("input", "$allMetrics")
-                        .append("initialValue", new ArrayList<>())
-                        .append("in", new Document("$concatArrays", Arrays.asList("$$value", "$$this")))
-                ))));
-
-        var agg = Aggregates.unwind("$aggregatedMetrics");
-
-        var gagg = Aggregates.group(new Document("provider_id", "$provider_id").append("metric_definition_id", "$aggregatedMetrics.metricDefinitionId"), Accumulators.sum("totalValue", "$aggregatedMetrics.totalValue"),
-                Accumulators.first("metricDefinitionId", "$aggregatedMetrics.metricDefinitionId"),
-                Accumulators.first("metricName", "$aggregatedMetrics.metricName"),
-                Accumulators.first("metricDescription", "$aggregatedMetrics.metricDescription"),
-                Accumulators.first("metricType", "$aggregatedMetrics.metricType"),
-                Accumulators.first("unitType", "$aggregatedMetrics.unitType"),
-                Accumulators.first("name", "$name"),
-                Accumulators.first("website", "$website"),
-                Accumulators.first("abbreviation", "$abbreviation"),
-                Accumulators.first("externalId", "$externalId"),
-                Accumulators.first("logo", "$logo"),
-                Accumulators.first("data", "$data")
-        );
-
-        var gpafggg = Aggregates.project(Projections.fields(
-                Projections.computed("provider_id", "$_id.provider_id"),
-                Projections.include("name", "website", "abbreviation", "externalId", "logo", "data", "unitType", "metricType", "metricDescription", "metricName", "metricDefinitionId", "totalValue")
-        ));
-
-        var gpagg = Aggregates.group(
-                "$provider_id",
-                Accumulators.first("name", "$name"),
-                Accumulators.first("website", "$website"),
-                Accumulators.first("abbreviation", "$abbreviation"),
-                Accumulators.first("externalId", "$externalId"),
-                Accumulators.first("logo", "$logo"),
-                Accumulators.first("data", "$data"),
-                Accumulators.first("provider_id", "$provider_id"),
-                Accumulators.push("aggregatedMetrics", new Document()
-                        .append("metricDefinitionId", "$_id.metric_definition_id")
-                        .append("metricName", "$metricName")
-                        .append("metricDescription", "$metricDescription")
-                        .append("unitType", "$unitType")
-                        .append("metricType", "$metricType")
-                        .append("totalValue", "$totalValue")
-                )
-        );
-
-        var report =  metricRepository.getMongoCollection()
-                .aggregate(List.of(regex, addField, group, extractFields,
-                        lookup, unwind, lookupCapacity, unwindCapacity, projection, finalGroup,
-                        lookupInstallation, unwindInstallation,
-                        finalProjection, groupByProvider, lookupProvider, unwindProvider,
-                        finalProviderProjection, agg, gagg, gpafggg, gpagg), ProviderReport.class).first();
-
-        return report;
-
     }
 }
