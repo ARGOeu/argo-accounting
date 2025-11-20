@@ -16,7 +16,7 @@ public class ProviderReport {
             example = "327f1f77dcf86cd799439011"
     )
     @JsonProperty("provider_id")
-    public String provider_id;
+    public String providerId;
 
     @Schema(
             type = SchemaType.STRING,

@@ -13,6 +13,7 @@ import org.accounting.system.dtos.metricdefinition.MetricDefinitionResponseDto;
 import org.accounting.system.dtos.pagination.PageResource;
 import org.accounting.system.entities.Project;
 import org.accounting.system.entities.projections.InstallationProjection;
+import org.accounting.system.entities.projections.MetricReportProjection;
 import org.accounting.system.entities.projections.ProjectReport;
 import org.accounting.system.entities.projections.normal.ProjectProjection;
 import org.accounting.system.mappers.InstallationMapper;
@@ -20,10 +21,12 @@ import org.accounting.system.mappers.MetricDefinitionMapper;
 import org.accounting.system.repositories.project.ProjectRepository;
 import org.accounting.system.services.groupmanagement.GroupManagementSelection;
 import org.accounting.system.util.QueryParser;
-import org.accounting.system.util.Utility;
+import org.bson.conversions.Bson;
 import org.jboss.logging.Logger;
 
+import java.util.ArrayList;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @ApplicationScoped
 public class ProjectService {
@@ -38,6 +41,9 @@ public class ProjectService {
 
     @Inject
     GroupManagementSelection groupManagementSelection;
+
+    @Inject
+    ProviderService providerService;
 
     /**
      * This method correlates the given Providers with a specific Project and creates a hierarchical structure with root
@@ -116,31 +122,59 @@ public class ProjectService {
 
     public ProjectReport projectReport(String projectId, String start, String end){
 
-        var filters = Array.of(Filters.regex("resource_id","^"+projectId+"(?:\\.[^\\r\\n.]+)*$"),
-                Filters.and(Filters.gte("time_period_start", Utility.stringToInstant(start)), Filters.lte("time_period_start", Utility.stringToInstant(end))),
-                Filters.and(Filters.gte("time_period_end", Utility.stringToInstant(start)), Filters.lte("time_period_end", Utility.stringToInstant(end))));
+        return projectReport(projectId, start, end, Array.of());
+    }
 
-        return projectRepository.projectReport(projectId, filters);
+    public ProjectReport projectReport(String projectId, String start, String end, Array<Bson> filters){
+
+        var project = projectRepository.findById(projectId);
+
+        var providers = projectRepository.fetchProjectProviders(projectId);
+
+        var providerReports = providers.stream().map(provider->providerService.providerReport(projectId, provider.getId(), start, end, filters)).toList();
+
+        var report = new ProjectReport();
+        report.id = projectId;
+        report.endDate = project.getEndDate();
+        report.startDate = project.getStartDate();
+        report.title = project.getTitle();
+        report.callIdentifier = project.getCallIdentifier();
+        report.acronym = project.getAcronym();
+        report.data = providerReports;
+
+        var aggregatedMetrics = providerReports
+                .stream()
+                .flatMap(rpt -> rpt.aggregatedMetrics.stream())
+                .collect(Collectors.toMap(k->k.metricDefinitionId,
+                        m -> {
+                            var copy = new MetricReportProjection();
+                            copy.metricDefinitionId = m.metricDefinitionId;
+                            copy.metricName = m.metricName;
+                            copy.metricDescription = m.metricDescription;
+                            copy.unitType = m.unitType;
+                            copy.metricType = m.metricType;
+                            copy.totalValue = m.totalValue;
+                            return copy;
+                        },
+                        (m1, m2) -> {
+                            m1.totalValue = m1.totalValue + m2.totalValue;
+                            return m1;
+                        }
+                ));
+
+        report.aggregatedMetrics = new ArrayList<>(aggregatedMetrics.values());
+
+        return report;
     }
 
     public ProjectReport projectReportByGroupId(String projectId, String groupId, String start, String end){
 
-        var filters = Array.of(Filters.regex("resource_id","^"+projectId+"(?:\\.[^\\r\\n.]+)*$"),
-                Filters.eq("group_id", groupId),
-                Filters.and(Filters.gte("time_period_start", Utility.stringToInstant(start)), Filters.lte("time_period_start", Utility.stringToInstant(end))),
-                Filters.and(Filters.gte("time_period_end", Utility.stringToInstant(start)), Filters.lte("time_period_end", Utility.stringToInstant(end))));
-
-        return projectRepository.projectReport(projectId, filters);
+        return projectReport(projectId, start, end, Array.of(Filters.eq("group_id", groupId)));
     }
 
     public ProjectReport projectReportByUserId(String projectId, String userId, String start, String end){
 
-        var filters = Array.of(Filters.regex("resource_id","^"+projectId+"(?:\\.[^\\r\\n.]+)*$"),
-                Filters.eq("user_id", userId),
-                Filters.and(Filters.gte("time_period_start", Utility.stringToInstant(start)), Filters.lte("time_period_start", Utility.stringToInstant(end))),
-                Filters.and(Filters.gte("time_period_end", Utility.stringToInstant(start)), Filters.lte("time_period_end", Utility.stringToInstant(end))));
-
-        return projectRepository.projectReport(projectId, filters);
+        return projectReport(projectId, start, end, Array.of( Filters.eq("user_id", userId)));
     }
 
     public Optional<Project> findByIdOptional(String id){

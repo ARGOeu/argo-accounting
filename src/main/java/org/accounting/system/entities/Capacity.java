@@ -7,7 +7,7 @@ import org.bson.codecs.pojo.annotations.BsonId;
 import org.bson.codecs.pojo.annotations.BsonProperty;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
+import java.time.Instant;
 
 @Getter
 @Setter
@@ -26,7 +26,8 @@ public class Capacity extends Entity {
     private String metricDefinitionId;
 
     @BsonProperty("registered_on")
-    private LocalDateTime registeredOn;
+    @EqualsAndHashCode.Include
+    private Instant registeredOn;
 
     private BigDecimal value;
 }

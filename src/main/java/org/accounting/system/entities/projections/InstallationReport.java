@@ -74,9 +74,9 @@ public class InstallationReport {
 
     @Schema(
             type = SchemaType.ARRAY,
-            implementation = MetricReportProjection.class,
+            implementation = MetricGroupResults.class,
             description = "List of aggregated metrics by Metric Definition."
     )
     @JsonProperty("data")
-    public List<MetricReportProjection> data;
+    public List<MetricGroupResults> data;
 }

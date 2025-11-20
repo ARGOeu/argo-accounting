@@ -31,6 +31,7 @@ import org.accounting.system.constraints.NotFoundEntity;
 import org.accounting.system.dtos.CapacityDto;
 import org.accounting.system.dtos.CapacityRequest;
 import org.accounting.system.dtos.InformativeResponse;
+import org.accounting.system.dtos.UpdateCapacityDto;
 import org.accounting.system.dtos.installation.InstallationRequestDto;
 import org.accounting.system.dtos.installation.InstallationResponseDto;
 import org.accounting.system.dtos.installation.UpdateInstallationRequestDto;
@@ -42,6 +43,7 @@ import org.accounting.system.entities.HierarchicalRelation;
 import org.accounting.system.entities.projections.InstallationReport;
 import org.accounting.system.entities.projections.MetricProjection;
 import org.accounting.system.interceptors.annotations.AccessResource;
+import org.accounting.system.repositories.CapacityRepository;
 import org.accounting.system.repositories.metric.MetricRepository;
 import org.accounting.system.repositories.metricdefinition.MetricDefinitionRepository;
 import org.accounting.system.services.CapacityService;
@@ -347,7 +349,6 @@ public class InstallationEndpoint {
                     type = SchemaType.OBJECT,
                     implementation = InformativeResponse.class)))
     @SecurityRequirement(name = "Authentication")
-
     @PATCH
     @Path("/{id}")
     @Produces(value = MediaType.APPLICATION_JSON)
@@ -964,7 +965,7 @@ public class InstallationEndpoint {
     @Tag(name = "Installation")
     @Operation(
             summary = "Register a capacity for an installation.",
-            description = "Register a capacity for an installation.")
+            description = "Register a capacity for an installation. If `registered_on` is empty, we get the current timestamp.")
     @APIResponse(
             responseCode = "200",
             description = "Capacity has been successfully registered.",
@@ -1022,7 +1023,6 @@ public class InstallationEndpoint {
             @Valid
             @AccessInstallation(roles = {"admin"}) String installationId,
             @Valid @NotNull(message = "The request body is empty.") CapacityRequest capacityRequest) {
-
 
         capacityService.register(installationId, capacityRequest);
 
@@ -1084,6 +1084,85 @@ public class InstallationEndpoint {
         var serverInfo = new AccountingUriInfo(serverUrl.concat(basePath).concat(uriInfo.getPath()));
 
         var response = capacityService.findAll(installationId, page - 1, size, serverInfo);
+
+        return Response.ok().entity(response).build();
+    }
+
+    @Tag(name = "Installation")
+    @Operation(
+            summary = "Updates an existing installation capacity.",
+            description = "This operation updates an existing installation capacity. Finally, " +
+                    "you can update a part or all attributes of capacity. The empty or null values are ignored.")
+    @APIResponse(
+            responseCode = "200",
+            description = "Capacity was updated successfully.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = CapacityDto.class)))
+    @APIResponse(
+            responseCode = "400",
+            description = "Bad Request.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "401",
+            description = "Client has not been authenticated.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "403",
+            description = "It is not permitted to perform the requested operation.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "404",
+            description = "Capacity has not been found.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "415",
+            description = "Cannot consume content type.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "500",
+            description = "Internal Server Errors.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "501",
+            description = "Not Supported.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @SecurityRequirement(name = "Authentication")
+    @PATCH
+    @Path("/{id}/capacities/{capacity_id}")
+    @Produces(value = MediaType.APPLICATION_JSON)
+    @Consumes(value = MediaType.APPLICATION_JSON)
+    public Response updateCapacity(
+    @Parameter(
+            description = "The Installation id.",
+            required = true,
+            example = "507f1f77bcf86cd799439011",
+            schema = @Schema(type = SchemaType.STRING))
+    @PathParam("id") @Valid
+    @AccessInstallation(roles = {"admin"}) String id,
+    @Parameter(
+            description = "The Capacity to be updated.",
+            required = true,
+            example = "937f1f22bcf86cd799439044",
+            schema = @Schema(type = SchemaType.STRING))
+    @PathParam("capacity_id") @Valid @NotFoundEntity(repository = CapacityRepository.class, id = String.class, message = "There is no Capacity with the following id:") String capacityId,
+    @Valid @NotNull(message = "The request body is empty.") UpdateCapacityDto updateCapacityDto) {
+
+        var response = capacityService.update(capacityId, updateCapacityDto);
 
         return Response.ok().entity(response).build();
     }

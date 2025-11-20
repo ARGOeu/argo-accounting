@@ -44,4 +44,9 @@ public class CapacityRepository extends AccessibleModulator<Capacity, String> {
 
         return projectionQuery;
     }
+
+    public void deleteByInstallationId(String installationId){
+
+        delete("installationId", installationId);
+    }
 }
