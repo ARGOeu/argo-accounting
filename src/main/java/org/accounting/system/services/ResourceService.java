@@ -24,12 +24,6 @@ public class ResourceService{
      */
     public PageResource<ResourceResponse> findAllResources(int page, int size, UriInfo uriInfo){
 
-//        var eoscResources = getAllEoscResources();
-//
-//        var partition = utility.partition(eoscResources, size);
-//
-//        var resources = partition.get(page) == null ? new ArrayList<EOSCResource>() : partition.get(page);
-
         var resources = resourceRepository.findAllPageable(page, size);
 
         return new PageResource<>(resources, ResourceMapper.INSTANCE.resourcesToResponse(resources.list()), uriInfo);

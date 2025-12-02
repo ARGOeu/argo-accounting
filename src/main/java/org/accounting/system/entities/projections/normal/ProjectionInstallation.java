@@ -9,7 +9,7 @@ import org.eclipse.microprofile.openapi.annotations.enums.SchemaType;
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
 
 @Schema(name="InstallationProjectionResponse", description="An object represents the stored Installation.")
-@JsonPropertyOrder({"id", "infrastructure", "installation", "resource", "unit_of_access" })
+@JsonPropertyOrder({"id", "infrastructure", "installation", "external_id", "resource", "unit_of_access" })
 public class ProjectionInstallation {
 
     @Schema(
@@ -52,9 +52,20 @@ public class ProjectionInstallation {
     @Schema(
             type = SchemaType.STRING,
             implementation = String.class,
+            description = "Unique external Installation identifier.",
+            example = "installation-446655440000"
+    )
+    @JsonProperty("external_id")
+    @BsonProperty("external_id")
+    public String externalId;
+
+    @Schema(
+            type = SchemaType.STRING,
+            implementation = String.class,
             description = "The primary Metric Registration.",
             example = "628ddb672f926e16a7a74156")
     @JsonProperty("unit_of_access")
     @BsonProperty("unit_of_access")
+    @JsonInclude(JsonInclude.Include.NON_NULL)
     public ObjectId unitOfAccess;
 }

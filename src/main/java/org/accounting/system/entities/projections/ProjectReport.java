@@ -1,13 +1,12 @@
 package org.accounting.system.entities.projections;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import org.accounting.system.dtos.acl.role.RoleAccessControlResponseDto;
 import org.eclipse.microprofile.openapi.annotations.enums.SchemaType;
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
 
 import java.util.List;
 
-@Schema(name="ProjectReport", description="A report for a specific Project that includes aggregated metric values over a time period and associated role-based access control settings.")
+@Schema(name="ProjectReport", description="A report for a specific Project that includes aggregated metric values over a time period.")
 public class ProjectReport {
 
     @Schema(
@@ -66,18 +65,17 @@ public class ProjectReport {
 
     @Schema(
             type = SchemaType.ARRAY,
+            implementation = MetricReportProjection.class,
+            description = "List of aggregated metrics at Project level."
+    )
+    @JsonProperty("aggregated_metrics")
+    public List<MetricReportProjection> aggregatedMetrics;
+
+    @Schema(
+            type = SchemaType.ARRAY,
             implementation = ProviderReport.class,
             description = "List of aggregated metrics by Provider."
     )
     @JsonProperty("data")
     public List<ProviderReport> data;
-
-    @Schema(
-            type = SchemaType.ARRAY,
-            implementation = RoleAccessControlResponseDto.class,
-            description = "Role-based access control configuration for the project."
-    )
-    @JsonProperty("permissions")
-    public List<RoleAccessControlResponseDto> permissions;
-
 }

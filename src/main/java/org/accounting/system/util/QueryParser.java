@@ -1,11 +1,9 @@
 package org.accounting.system.util;
 
-import com.mongodb.client.model.Filters;
 import jakarta.enterprise.context.ApplicationScoped;
 import org.accounting.system.enums.Operand;
 import org.accounting.system.enums.Operator;
 import org.bson.conversions.Bson;
-import org.bson.types.ObjectId;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
@@ -17,37 +15,13 @@ import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.Iterator;
-import java.util.List;
-import java.util.stream.Collectors;
 
 @ApplicationScoped
 public class QueryParser {
 
-    public Bson parseFile(String json, boolean isAlwaysPermission, List<String> objectIds, Class entity) throws ParseException, NoSuchFieldException {
-        if (json != null) {
-            JSONParser parser = new JSONParser();
-            JSONObject jsonObject = (JSONObject) parser.parse(json);
 
-            String type = (String) jsonObject.get("type");
-            Bson filter = null;
-            if (type.equals("filter")) {
-                filter = parseFilter(jsonObject);
+    public Bson parseFile(String json) throws ParseException {
 
-            } else if (type.equals("query")) {
-                filter = parseQuery(jsonObject);
-
-            }
-            if (!isAlwaysPermission) {
-                Bson accessFilter = accessFilter(filter, objectIds, entity);
-                return accessFilter;
-            } else {
-                return filter;
-            }
-        }
-        return null;
-    }
-
-    public Bson parseFile(String json) throws ParseException, NoSuchFieldException {
         if (json != null) {
             JSONParser parser = new JSONParser();
             JSONObject jsonObject = (JSONObject) parser.parse(json);
@@ -62,12 +36,12 @@ public class QueryParser {
 
             }
             return filter;
-
         }
         return null;
     }
 
-    private Bson parseFilter(JSONObject filter) throws NoSuchFieldException {
+    private Bson parseFilter(JSONObject filter) {
+
         String operator = (String) filter.get("operator");
         JSONArray criteria = (JSONArray) filter.get("criteria");
         Iterator criteriaIter = criteria.iterator();
@@ -166,21 +140,6 @@ public class QueryParser {
         }
         return true;
 
-    }
-
-    public Bson accessFilter(Bson filter, List<String> ids, Class entity) throws NoSuchFieldException {
-
-        if(entity.getDeclaredField("id").getType().getName().equals(ObjectId.class.getName())){
-          var oids=  ids.stream().map(id-> new ObjectId(id)).collect(Collectors.toList());
-            Bson accessFilter = Filters.in("_id", oids);
-
-           return Filters.and(accessFilter, filter);
-        }else{
-            Bson accessFilter = Filters.in("_id", ids);
-
-            return Filters.and(accessFilter, filter);
-
-        }
     }
 }
 

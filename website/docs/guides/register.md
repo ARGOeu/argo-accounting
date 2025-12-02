@@ -1,35 +1,37 @@
 ---
 id: registration
-title: Register Accounting Service
+title: Register Accounting Service (legacy)
 sidebar_position: 1
 ---
 
 # Register Accounting Service
 
-## Steps to Register into Accounting Service
+## Access through OIDC Entitlements
+
+See [Mapping of Roles to Entitlements](../authorization/accounting_system_roles#mapping-of-roles-to-entitlements) for new role assignment mechanism.
+
+
+## Register Accounting Service (legacy)
+
+### Steps to Register into Accounting Service
 
 There are two ways to register yourself into Accounting Service:
 
-### The first way
-
----
+#### The first way
 
 - **Authenticate yourself**
 
   First, you need to authenticate yourself to EOSC Core Infrastructure Proxy.
-  Instructions are provided [here](https://argoeu.github.io/argo-accounting/docs/authentication/authenticating_clients)
-. Once you gain an access token, copy it.
+  Instructions are provided [here](../authentication/authenticating_clients). Once you gain an access token, copy it.
 
 - **Register yourself**
 
   Then, you need to apply a request to the Accounting Service API in order to
-  register yourself. For more details on how to syntax the request, see [here](https://argoeu.github.io/argo-accounting/docs/api/client#post---client-registration)
-  .
+  register yourself. For more details on how to syntax the request, see [here](../api/client#post---client-registration).
 
-### The second way
+#### The second way
 
----
-Just log in to [Accounting User Interface](https://accounting.eosc-portal.eu/).
+Just log in to [Accounting User Interface](https://ui.acc.argo.grnet.gr).
 
 ## Upon successful Registration
 

@@ -1,9 +1,13 @@
 package org.accounting.system.entities;
 
 import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.Setter;
 import org.bson.types.ObjectId;
 
 @EqualsAndHashCode(onlyExplicitlyIncluded = true, callSuper = false)
+@Getter
+@Setter
 public class OidcTenantConfig extends Entity{
 
     private ObjectId id;
@@ -31,99 +35,9 @@ public class OidcTenantConfig extends Entity{
 
     private String serviceIdTokenClaim;
 
-    public ObjectId getId() {
-        return id;
-    }
+    private String groupManagementNamespace;
 
-    public void setId(ObjectId id) {
-        this.id = id;
-    }
+    private String groupManagementParent;
 
-    public String getIssuer() {
-        return issuer;
-    }
-
-    public void setIssuer(String issuer) {
-        this.issuer = issuer;
-    }
-
-    public String getTenantId() {
-        return tenantId;
-    }
-
-    public void setTenantId(String tenantId) {
-        this.tenantId = tenantId;
-    }
-
-    public String getClientId() {
-        return clientId;
-    }
-
-    public void setClientId(String clientId) {
-        this.clientId = clientId;
-    }
-
-    public String getSecret() {
-        return secret;
-    }
-
-    public void setSecret(String secret) {
-        this.secret = secret;
-    }
-
-    public String getAuthorizationPath() {
-        return authorizationPath;
-    }
-
-    public void setAuthorizationPath(String authorizationPath) {
-        this.authorizationPath = authorizationPath;
-    }
-
-    public String getIntrospectionPath() {
-        return introspectionPath;
-    }
-
-    public void setIntrospectionPath(String introspectionPath) {
-        this.introspectionPath = introspectionPath;
-    }
-
-    public String getUserInfoPath() {
-        return userInfoPath;
-    }
-
-    public void setUserInfoPath(String userInfoPath) {
-        this.userInfoPath = userInfoPath;
-    }
-
-    public String getTokenPath() {
-        return tokenPath;
-    }
-
-    public void setTokenPath(String tokenPath) {
-        this.tokenPath = tokenPath;
-    }
-
-    public String getAuthServerUrl() {
-        return authServerUrl;
-    }
-
-    public void setAuthServerUrl(String authServerUrl) {
-        this.authServerUrl = authServerUrl;
-    }
-
-    public String getUserIdTokenClaim() {
-        return userIdTokenClaim;
-    }
-
-    public void setUserIdTokenClaim(String userIdTokenClaim) {
-        this.userIdTokenClaim = userIdTokenClaim;
-    }
-
-    public String getServiceIdTokenClaim() {
-        return serviceIdTokenClaim;
-    }
-
-    public void setServiceIdTokenClaim(String serviceIdTokenClaim) {
-        this.serviceIdTokenClaim = serviceIdTokenClaim;
-    }
+    private String entitlementManagement;
 }

@@ -5,7 +5,6 @@ import com.mongodb.client.model.Filters;
 import io.quarkus.mongodb.panache.PanacheMongoRepository;
 import io.quarkus.mongodb.panache.PanacheQuery;
 import io.quarkus.panache.common.Page;
-import io.quarkus.panache.common.Sort;
 import io.vavr.collection.Array;
 import jakarta.enterprise.context.ApplicationScoped;
 import org.accounting.system.dtos.metric.UpdateMetricRequestDto;
@@ -24,7 +23,6 @@ import org.bson.types.ObjectId;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 /**
  * {@link MetricRepository This repository} encapsulates the logic required to access
@@ -40,11 +38,6 @@ import java.util.stream.Collectors;
  */
 @ApplicationScoped
 public class MetricRepository extends AccessibleModulator<Metric, ObjectId> {
-
-    public List<Metric> findMetricsByMetricDefinitionId(String metricDefinitionId) {
-
-        return find("metricDefinitionId = ?1", metricDefinitionId).stream().collect(Collectors.toList());
-    }
 
     /**
      * Executes a query to count the Metrics assigned to a Metric Definition.
@@ -66,20 +59,6 @@ public class MetricRepository extends AccessibleModulator<Metric, ObjectId> {
     public Optional<Metric> findMetricById(String id) {
 
         return findByIdOptional(new ObjectId(id));
-    }
-
-    /**
-     * Executes a query in mongo database and returns the paginated results ordered by metricDefinitionId.
-     * The page parameter indicates the requested page number, and the size parameter the number of entities by page.
-     *
-     * @param metricDefinitionId The Metric Definition id
-     * @param page               The page to be retrieved
-     * @param size               The requested size of page
-     * @return An object represents the paginated results
-     */
-    public PanacheQuery<Metric> findMetricsByMetricDefinitionIdPageable(String metricDefinitionId, int page, int size) {
-
-        return find("metricDefinitionId", Sort.by("metricDefinitionId"), metricDefinitionId).page(Page.of(page, size));
     }
 
     public MongoQuery<MetricProjection> searchMetrics(Bson searchDoc,List<String> installationsIds,int page, int size) {
@@ -106,32 +85,9 @@ public class MetricRepository extends AccessibleModulator<Metric, ObjectId> {
         return projectionQuery;
     }
 
-    public PanacheQuery<MetricProjection> findByExternalId(final String externalId, int page, int size) {
-        //Bson regex = Aggregates.match(Filters.regex("resource_id", externalId + "[.\\s]"));
-        Bson regex = Aggregates.match(Filters.regex("resource_id", "\\b" + externalId + "\\b"+"(?![-])"));
-
-        List<MetricProjection> projections = getMongoCollection()
-                .aggregate(List
-                        .of(regex,  Aggregates.skip(size * (page)),Aggregates.limit(size)), MetricProjection.class).into(new ArrayList<>());
-
-        Document count = getMongoCollection()
-                .aggregate(List
-                        .of(regex, Aggregates.count())).first();
-
-        var projectionQuery = new MongoQuery<MetricProjection>();
-
-        projectionQuery.list = projections;
-        projectionQuery.index = page;
-        projectionQuery.size = size;
-        projectionQuery.count = count == null ? 0L : Long.parseLong(count.get("count").toString());
-        projectionQuery.page = Page.of(page, size);
-
-        return projectionQuery;
-    }
-
     public PanacheQuery<MetricProjection> findByExternalId(final String externalId, int page, int size, String start, String end, String metricDefinitionId) {
 
-        var filters = Array.of(Filters.regex("resource_id", "\\b" + externalId + "\\b"+"(?![-])"));
+        var filters = Array.of(Filters.regex("resource_id","^"+externalId+"(?:\\.[^\\r\\n.]+)*$"));
 
         var addField = new Document("$addFields", new Document("metric_definition_id", new Document("$toObjectId", "$metric_definition_id")));
 
@@ -186,7 +142,7 @@ public class MetricRepository extends AccessibleModulator<Metric, ObjectId> {
 
     public PanacheQuery<MetricProjection> findByProjectIdAndGroupId(final String externalId, final String groupId, int page, int size, String start, String end) {
 
-        var filters = Array.of(Filters.regex("resource_id", "\\b" + externalId + "\\b"+"(?![-])"));
+        var filters = Array.of(Filters.regex("resource_id", "^"+externalId+"(?:\\.[^\\r\\n.]+)*$"));
 
         var addField = new Document("$addFields", new Document("metric_definition_id", new Document("$toObjectId", "$metric_definition_id")));
 
@@ -238,7 +194,7 @@ public class MetricRepository extends AccessibleModulator<Metric, ObjectId> {
 
     public PanacheQuery<MetricProjection> findByProjectIdAndUserId(final String externalId, final String userId, int page, int size, String start, String end) {
 
-        var filters = Array.of(Filters.regex("resource_id", "\\b" + externalId + "\\b"+"(?![-])"));
+        var filters = Array.of(Filters.regex("resource_id", "^"+externalId+"(?:\\.[^\\r\\n.]+)*$"));
 
         var addField = new Document("$addFields", new Document("metric_definition_id", new Document("$toObjectId", "$metric_definition_id")));
 

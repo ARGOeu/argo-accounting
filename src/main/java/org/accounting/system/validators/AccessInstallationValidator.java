@@ -8,15 +8,11 @@ import jakarta.validation.ConstraintValidatorContext;
 import org.accounting.system.beans.RequestUserContext;
 import org.accounting.system.constraints.AccessInstallation;
 import org.accounting.system.entities.HierarchicalRelation;
-import org.accounting.system.enums.Collection;
-import org.accounting.system.enums.Operation;
 import org.accounting.system.exceptions.CustomValidationException;
 import org.accounting.system.repositories.HierarchicalRelationRepository;
-import org.accounting.system.repositories.client.ClientRepository;
-import org.accounting.system.repositories.installation.InstallationRepository;
-import org.accounting.system.repositories.project.ProjectRepository;
-import org.accounting.system.repositories.provider.ProviderRepository;
+import org.accounting.system.services.groupmanagement.EntitlementServiceFactory;
 
+import java.util.List;
 import java.util.regex.Pattern;
 
 /**
@@ -28,21 +24,15 @@ public class AccessInstallationValidator implements ConstraintValidator<AccessIn
 
     private String message;
 
-    private Collection collection;
-
-    private Operation operation;
-
+    private String[] roles;
     @Override
     public void initialize(AccessInstallation constraintAnnotation) {
         this.message = constraintAnnotation.message();
-        this.collection = constraintAnnotation.collection();
-        this.operation = constraintAnnotation.operation();
+        this.roles = constraintAnnotation.roles();
     }
 
     @Override
     public boolean isValid(String installationId, ConstraintValidatorContext constraintValidatorContext) {
-
-        var installationRepository = CDI.current().select(InstallationRepository.class).get();
 
         var hierarchicalRelationRepository = CDI.current().select(HierarchicalRelationRepository.class).get();
 
@@ -52,25 +42,45 @@ public class AccessInstallationValidator implements ConstraintValidator<AccessIn
 
         var ids = hierarchicalRelation.id.split(Pattern.quote(HierarchicalRelation.PATH_SEPARATOR));
 
-        var projectRepository = CDI.current().select(ProjectRepository.class).get();
-
-        var providerRepository = CDI.current().select(ProviderRepository.class).get();
-
-        var clientRepository = CDI.current().select(ClientRepository.class).get();
+        var entitlementServiceFactory = CDI.current().select(EntitlementServiceFactory.class).get();
 
         var requestUserContext = CDI.current().select(RequestUserContext.class).get();
 
-        if(clientRepository.isSystemAdmin(requestUserContext.getId())){
+        if(requestUserContext.getOidcTenantConfig().isEmpty() && entitlementServiceFactory.from().hasAccess(requestUserContext.getParent(), "admin", List.of())){
 
             return true;
         }
 
         Boolean access = Try
-                .of(()->projectRepository.accessibility(ids[0], collection, operation))
+                .of(()->{
+
+                    var enter = false;
+
+                    for(String role:roles) {
+
+                        if (entitlementServiceFactory.from().hasAccess(requestUserContext.getParent(), role, List.of(ids[0]))) {
+
+                            enter = true;
+                        }
+                    }
+
+                    return enter;
+                })
                 .mapTry(projectAccess-> {
 
                     if(!projectAccess){
-                        return providerRepository.accessibility(ids[0], ids[1], collection, operation);
+
+                        var enter = false;
+
+                        for(String role:roles) {
+
+                            if (entitlementServiceFactory.from().hasAccess(requestUserContext.getParent(), role, List.of(ids[0], ids[1])) || entitlementServiceFactory.from().hasAccess(requestUserContext.getParent(), role, List.of("roles", "provider", ids[1]))) {
+
+                                enter = true;
+                            }
+                        }
+
+                        return enter;
                     }
 
                     return projectAccess;
@@ -78,7 +88,18 @@ public class AccessInstallationValidator implements ConstraintValidator<AccessIn
                 .mapTry(providerAccess->{
 
                     if(!providerAccess){
-                        return installationRepository.accessibility(ids[0], ids[1], installationId, collection, operation);
+
+                        var enter = false;
+
+                        for(String role:roles) {
+
+                            if (entitlementServiceFactory.from().hasAccess(requestUserContext.getParent(), role, List.of(ids[0], ids[1], installationId))) {
+
+                                enter = true;
+                            }
+                        }
+
+                        return enter;
                     }
 
                     return providerAccess;

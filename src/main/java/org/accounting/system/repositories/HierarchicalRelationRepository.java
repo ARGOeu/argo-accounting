@@ -6,6 +6,7 @@ import com.mongodb.client.model.Updates;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import org.accounting.system.entities.HierarchicalRelation;
+import org.accounting.system.enums.RelationType;
 import org.accounting.system.repositories.metric.MetricRepository;
 import org.accounting.system.repositories.modulators.AbstractAccessModulator;
 import org.bson.Document;
@@ -19,6 +20,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 import java.util.regex.Pattern;
 
@@ -72,7 +74,7 @@ public class HierarchicalRelationRepository extends AbstractAccessModulator<Hier
      */
     public boolean exist(String path){
 
-        Bson regex = Aggregates.match(Filters.regex("_id","\\b" + path + "\\b"+"(?![-])"));
+        Bson regex = Aggregates.match(Filters.regex("_id","^"+path+"(?:\\.[^\\r\\n.]+)*$"));
 
         Document count = getMongoCollection()
                 .aggregate(List
@@ -147,5 +149,15 @@ public class HierarchicalRelationRepository extends AbstractAccessModulator<Hier
         }
 
         return projectIds;
+    }
+
+    public Optional<HierarchicalRelation> fetchExternalHierarchicalRelation(String externalId, RelationType relationType){
+
+        return find("externalUniqueIdentifier = ?1 and relationType = ?2", externalId, relationType).firstResultOptional();
+    }
+
+    public Optional<HierarchicalRelation> fetchHierarchicalRelation(String externalId, RelationType relationType){
+
+        return find("externalId = ?1 and relationType = ?2", externalId, relationType).firstResultOptional();
     }
 }

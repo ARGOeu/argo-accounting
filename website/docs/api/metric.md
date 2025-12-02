@@ -27,6 +27,10 @@ The Metric consists of the following attributes:
 | time_period_start | Timestamp of the starting date time (Zulu timestamp). |
 | time_period_end       |Timestamp of the end date time (Zulu timestamp).|
 | value       | Value of the metric for the given period (decimal value). |
+| user_id       | Association of the metric to a specific user_id. _(O)_|
+| group_id       | Association of the metric to a specific group_id. _(O)_|
+
+_O_: Optional
 
 ## [POST] - Create a new Metric
 
@@ -277,3 +281,7 @@ If the operation is successful, you get a list of metrics, for example:
 ## Errors
 
 Please refer to section [Errors](./api_errors) to see all possible Errors.
+
+## Note
+
+Instead of the internal ID, you can use the external ID in the corresponding API calls.

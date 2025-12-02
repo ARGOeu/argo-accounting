@@ -26,6 +26,55 @@ According to [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) , the
 
 ---
 
+## 1.8.0 - 2025-12-02
+
+---
+
+## 1.8.0 - Removed
+
+- [#233](https://github.com/ARGOeu/argo-accounting/pull/233) - ACC-370 Remove
+  data concerning permissions in reports.
+
+## 1.8.0 - Added
+
+- [#234](https://github.com/ARGOeu/argo-accounting/pull/234) - ACC-373 Add
+  "group by" feature in reports.
+- [#235](https://github.com/ARGOeu/argo-accounting/pull/235) - ACC-375 When
+  creating an installation, id should be overwritten.
+- [#240](https://github.com/ARGOeu/argo-accounting/pull/240) - ACC-365
+  Implement Code (ACC Agent) to Process Events and Translate to ACC Calls.
+- [#242](https://github.com/ARGOeu/argo-accounting/pull/242) - ACC-227
+  Implement the changes mentioned in the previous task.
+- [#243](https://github.com/ARGOeu/argo-accounting/pull/243) - ACC-386
+  Auto-CUD keycloak groups based on ACC actions.
+- [#245](https://github.com/ARGOeu/argo-accounting/pull/245) - ACC-389
+  Add a total aggregation to the provider representative report.
+- [#248](https://github.com/ARGOeu/argo-accounting/pull/248) - ACC-397
+  Add external id to the provider entity.
+- [#250](https://github.com/ARGOeu/argo-accounting/pull/250) - ACC-402
+  Add Namespace and Parent Group Attributes to Default OIDC and newcomers OIDCs.
+- [#251](https://github.com/ARGOeu/argo-accounting/pull/251) - ACC-405
+  Limit Auto-CUD groups to default OIDC.
+- [#253](https://github.com/ARGOeu/argo-accounting/pull/253) - ACC-406
+  Restrict Accounting System Admin Entitlement to Default OIDC.
+- [#257](https://github.com/ARGOeu/argo-accounting/pull/257) - ACC-407
+  Upgrade to Quarkus 3.27.0.
+- [#258](https://github.com/ARGOeu/argo-accounting/pull/258) - ACC-408
+  Database-Driven Entitlements in Accounting Interface.
+- [#260](https://github.com/ARGOeu/argo-accounting/pull/260) - ACC-411
+  Implement API endpoint to return all entitlements of a user.
+- [#261](https://github.com/ARGOeu/argo-accounting/pull/261) - ACC-409
+  Add API endpoints for aggregated reporting at group and user level.
+- [#262](https://github.com/ARGOeu/argo-accounting/pull/262) - ACC-265
+  Add Support for Capacity management.
+
+## 1.8.0 - Fixed
+
+- [#244](https://github.com/ARGOeu/argo-accounting/pull/244) - ACC-396
+  External_id attribute is null.
+- [#249](https://github.com/ARGOeu/argo-accounting/pull/249) - ACC-404
+  Include the Provider's external_id in the hierarchical structure.
+
 ## 1.7.0 - 2025-07-25
 
 ---

@@ -1,7 +1,6 @@
 package org.accounting.system.dtos.tenant;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import jakarta.validation.constraints.NotEmpty;
 import org.eclipse.microprofile.openapi.annotations.enums.SchemaType;
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
 
@@ -104,6 +103,32 @@ public class UpdateOidcTenantConfig {
             example = "client_id"
     )
     @JsonProperty("service_id_token_claim")
-    @NotEmpty(message = "service_id_token_claim may not be empty.")
     public String serviceIdTokenClaim;
+
+    @Schema(
+            type = SchemaType.STRING,
+            implementation = String.class,
+            description = "The group management entitlement namespace.",
+            example = "urn:geant:sandbox.eosc-beyond.eu:core"
+    )
+    @JsonProperty("group_management_namespace")
+    public String groupManagementNamespace;
+
+    @Schema(
+            type = SchemaType.STRING,
+            implementation = String.class,
+            description = "The name of the parent group management.",
+            example = "accounting"
+    )
+    @JsonProperty("group_management_parent")
+    public String groupManagementParent;
+
+    @Schema(
+            type = SchemaType.STRING,
+            implementation = String.class,
+            description = "The Entitlements check. Allowed values: oidc, database.",
+            example = "database"
+    )
+    @JsonProperty("entitlement_management")
+    public String entitlementManagement;
 }

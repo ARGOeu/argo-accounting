@@ -1,13 +1,15 @@
 package org.accounting.system.services.installation;
 
+import com.mongodb.client.model.Filters;
+import io.vavr.collection.Array;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
+import jakarta.validation.Payload;
 import jakarta.ws.rs.ForbiddenException;
 import jakarta.ws.rs.NotFoundException;
+import jakarta.ws.rs.ServerErrorException;
 import jakarta.ws.rs.core.UriInfo;
-import org.accounting.system.dtos.acl.role.RoleAccessControlRequestDto;
-import org.accounting.system.dtos.acl.role.RoleAccessControlResponseDto;
-import org.accounting.system.dtos.acl.role.RoleAccessControlUpdateDto;
+import org.accounting.system.constraints.AccessInstallation;
 import org.accounting.system.dtos.installation.InstallationRequestDto;
 import org.accounting.system.dtos.installation.InstallationResponseDto;
 import org.accounting.system.dtos.installation.UpdateInstallationRequestDto;
@@ -20,25 +22,29 @@ import org.accounting.system.entities.HierarchicalRelation;
 import org.accounting.system.entities.installation.Installation;
 import org.accounting.system.entities.projections.InstallationProjection;
 import org.accounting.system.entities.projections.InstallationReport;
+import org.accounting.system.entities.projections.MetricProjection;
+import org.accounting.system.enums.RelationType;
 import org.accounting.system.exceptions.ConflictException;
-import org.accounting.system.mappers.AccessControlMapper;
 import org.accounting.system.mappers.InstallationMapper;
 import org.accounting.system.mappers.MetricDefinitionMapper;
 import org.accounting.system.mappers.MetricMapper;
+import org.accounting.system.repositories.CapacityRepository;
 import org.accounting.system.repositories.HierarchicalRelationRepository;
-import org.accounting.system.repositories.authorization.RoleRepository;
 import org.accounting.system.repositories.installation.InstallationRepository;
+import org.accounting.system.repositories.metric.MetricRepository;
 import org.accounting.system.repositories.provider.ProviderRepository;
 import org.accounting.system.services.HierarchicalRelationService;
 import org.accounting.system.services.ResourceService;
-import org.accounting.system.services.acl.RoleAccessControlService;
+import org.accounting.system.services.groupmanagement.GroupManagementSelection;
 import org.accounting.system.util.QueryParser;
+import org.accounting.system.validators.AccessInstallationValidator;
 import org.apache.commons.lang3.StringUtils;
-import org.bson.conversions.Bson;
+import org.jboss.logging.Logger;
 
-import java.util.ArrayList;
+import java.lang.annotation.Annotation;
+import java.util.Optional;
+import java.util.UUID;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 
 /**
  * This service exposes business logic, which uses the {@link InstallationRepository}.
@@ -46,7 +52,10 @@ import java.util.stream.Collectors;
  * {@link InstallationRepository}
  */
 @ApplicationScoped
-public class InstallationService implements RoleAccessControlService {
+public class InstallationService {
+
+    private static final Logger LOG = Logger.getLogger(InstallationService.class);
+
 
     @Inject
     InstallationRepository installationRepository;
@@ -55,14 +64,21 @@ public class InstallationService implements RoleAccessControlService {
     HierarchicalRelationService hierarchicalRelationService;
 
     @Inject
-    RoleRepository roleRepository;
-    @Inject
     HierarchicalRelationRepository hierarchicalRelationRepository;
     @Inject
     QueryParser queryParser;
 
     @Inject
     ResourceService resourceService;
+
+    @Inject
+    GroupManagementSelection groupManagementSelection;
+
+    @Inject
+    MetricRepository metricRepository;
+
+    @Inject
+    CapacityRepository capacityRepository;
 
     /**
      * Maps the {@link InstallationRequestDto} to {@link Installation}.
@@ -71,15 +87,35 @@ public class InstallationService implements RoleAccessControlService {
      * @param request The POST request body.
      * @return The stored Installation has been turned into a response body.
      */
-    public InstallationResponseDto save(InstallationRequestDto request) {
+    public InstallationResponseDto save(InstallationRequestDto request, String creatorId) {
 
-        installationRepository.exist(request.project, request.organisation, request.installation);
+        var optional = installationRepository.exist(request.project, request.organisation, request.installation);
+
+        optional.ifPresent(storedInstallation -> {throw new ConflictException("There is an Installation with the following combination : {"+request.project+", "+request.organisation+", "+request.installation+"}. Its id is "+storedInstallation.getId().toString());});
 
         if(StringUtils.isNotEmpty(request.resource) && ! resourceService.exist(request.resource)){
             throw new NotFoundException("There is no Resource with the following id: "+request.resource);
         }
 
-        var installation = installationRepository.save(request);
+        if (StringUtils.isEmpty(request.externalId)) {
+            request.externalId = UUID.randomUUID().toString();
+        }
+
+        if (installationRepository.fetchInstallationByExternalId(request.project, request.organisation, request.externalId).isPresent()) {
+            throw new ConflictException("external_id already exists");
+        }
+
+        var installation = installationRepository.save(request, creatorId);
+
+        try{
+
+            groupManagementSelection.from().choose().createInstallationGroup(request.project, request.organisation, installation.getId());
+        } catch (Exception e){
+
+            LOG.error("Group creation failed with error : " + e.getMessage());
+            delete(installation.getId());
+            throw new ServerErrorException("Group creation failed with error : " + e.getMessage(), 500);
+        }
 
         var installationProjection = fetchInstallationProjection(installation.getProject(), installation.getOrganisation(), installation.getId());
 
@@ -104,6 +140,10 @@ public class InstallationService implements RoleAccessControlService {
         installationRepository.deleteInstallation(installation.getProject(), installation.getOrganisation(), installation.getId());
 
         hierarchicalRelationRepository.delete("externalId", installationId);
+
+        groupManagementSelection.from().choose().deleteInstallationGroup(installation.getProject(), installation.getOrganisation(), installation.getId());
+
+        capacityRepository.deleteByInstallationId(installationId);
     }
 
     /**
@@ -118,7 +158,6 @@ public class InstallationService implements RoleAccessControlService {
 
         return InstallationMapper.INSTANCE.installationProjectionToResponse(installation);
     }
-
 
     /**
      * Fetches an InstallationProjection belonging to specific Project-Provider from Project Collection.
@@ -150,6 +189,191 @@ public class InstallationService implements RoleAccessControlService {
         var ids = hierarchicalRelation.id.split(Pattern.quote(HierarchicalRelation.PATH_SEPARATOR));
 
         return installationRepository.fetchInstallation(ids[0], ids[1], ids[2]);
+    }
+
+    public Optional<HierarchicalRelation> fetchExternalHierarchicalRelation(String externalId){
+
+        return hierarchicalRelationRepository.find("externalUniqueIdentifier = ?1 and relationType = ?2", externalId, RelationType.INSTALLATION).firstResultOptional();
+
+    }
+
+    public InstallationResponseDto fetchExternalInstallation(String externalId) {
+
+        var optional = fetchExternalHierarchicalRelation(externalId);
+
+        if(optional.isEmpty()){
+            throw new NotFoundException("There is no Installation with external id: " +externalId);
+        }
+
+        var ids = optional.get().id.split(Pattern.quote(HierarchicalRelation.PATH_SEPARATOR));
+
+        var validator = getAccessInstallationValidator(new String[] {"admin", "viewer"});
+
+        validator.isValid(ids[2], null);
+
+        var installation = fetchInstallationProjection(ids[0], ids[1], ids[2]);
+
+        return InstallationMapper.INSTANCE.installationProjectionToResponse(installation);
+    }
+
+    public void deleteExternalInstallation(String externalId) {
+
+        var optional = fetchExternalHierarchicalRelation(externalId);
+
+        if(optional.isEmpty()){
+            throw new NotFoundException("There is no Installation with external id: " +externalId);
+        }
+
+        var ids = optional.get().id.split(Pattern.quote(HierarchicalRelation.PATH_SEPARATOR));
+
+        if(hierarchicalRelationRepository.hasRelationMetrics(ids[2])){
+
+            throw new ForbiddenException("Deleting an Installation is not allowed if there are Metrics assigned to it.");
+        }
+
+        var validator = getAccessInstallationValidator(new String[] {"admin"});
+
+        validator.isValid(ids[2], null);
+
+
+        var installation = fetchInstallationProjection(ids[0], ids[1], ids[2]);
+
+        installationRepository.deleteInstallation(installation.getProject(), installation.getOrganisation(), installation.getId());
+
+        hierarchicalRelationRepository.delete("externalId", ids[2]);
+    }
+
+    public InstallationResponseDto updateExternalInstallation(String externalId, UpdateInstallationRequestDto request) {
+
+        var optional = fetchExternalHierarchicalRelation(externalId);
+
+        if(optional.isEmpty()){
+            throw new NotFoundException("There is no Installation with external id: " +externalId);
+        }
+
+        var ids = optional.get().id.split(Pattern.quote(HierarchicalRelation.PATH_SEPARATOR));
+
+        var validator = getAccessInstallationValidator(new String[] {"admin"});
+
+        validator.isValid(ids[2], null);
+
+        if(hierarchicalRelationRepository.hasRelationMetrics(ids[2])){
+
+            throw new ForbiddenException("Updating an Installation is not allowed if there are Metrics assigned to it.");
+        }
+
+        if(StringUtils.isNotEmpty(request.resource) && ! resourceService.exist(request.resource)){
+
+            throw new NotFoundException("There is no Resource with the following id: "+request.resource);
+        }
+
+        Installation installation = fetchInstallation(ids[0], ids[1], ids[2]);
+
+        InstallationMapper.INSTANCE.updateInstallationFromDto(request, installation);
+
+        if (StringUtils.isNoneEmpty( request.installation)) {
+
+            var temp = installationRepository.exist(installation.getProject(), installation.getOrganisation(), request.installation);
+
+            if(temp.isPresent() && !temp.get().getId().equals(ids[2])){
+
+                throw new ConflictException("There is an Installation with the following combination : {"+installation.getProject()+", "+installation.getOrganisation()+", "+request.installation+"}. Its id is "+ temp.get().getId());}
+        }
+
+        installationRepository.updateInstallation(ids[0], ids[1], ids[2], installation);
+
+        var installationProjection = fetchInstallationProjection(ids[2]);
+
+        return InstallationMapper.INSTANCE.installationProjectionToResponse(installationProjection);
+    }
+
+    public InstallationReport externalInstallationReport(String externalId, String start, String end){
+
+        var optional = fetchExternalHierarchicalRelation(externalId);
+
+        if(optional.isEmpty()){
+            throw new NotFoundException("There is no Installation with external id: " +externalId);
+        }
+
+        var ids = optional.get().id.split(Pattern.quote(HierarchicalRelation.PATH_SEPARATOR));
+
+        var validator = getAccessInstallationValidator(new String[] {"admin", "viewer"});
+
+        validator.isValid(ids[2], null);
+
+        return installationReport(ids[2], start, end);
+    }
+
+    public MetricResponseDto assignMetricToExternalInstallation(String externalId, MetricRequestDto request) {
+
+        var optional = fetchExternalHierarchicalRelation(externalId);
+
+        if(optional.isEmpty()){
+            throw new NotFoundException("There is no Installation with external id: " +externalId);
+        }
+
+        var ids = optional.get().id.split(Pattern.quote(HierarchicalRelation.PATH_SEPARATOR));
+
+        var validator = getAccessInstallationValidator(new String[] {"admin"});
+
+        validator.isValid(ids[2], null);
+
+        var metric = hierarchicalRelationService.assignMetric(ids[2], request);
+
+        return MetricMapper.INSTANCE.metricToResponse(metric);
+    }
+
+    public PageResource<MetricProjection> fetchAllMetricsByExternalId(String externalId, int page, int size, UriInfo uriInfo, String start, String end, String metricDefinitionId){
+
+        var optional = fetchExternalHierarchicalRelation(externalId);
+
+        if(optional.isEmpty()){
+            throw new NotFoundException("There is no Installation with external id: " +externalId);
+        }
+
+        var ids = optional.get().id.split(Pattern.quote(HierarchicalRelation.PATH_SEPARATOR));
+
+        var validator = getAccessInstallationValidator(new String[] {"admin", "viewer"});
+
+        validator.isValid(ids[2], null);
+
+        var projection = metricRepository.findByExternalId(ids[0] + HierarchicalRelation.PATH_SEPARATOR + ids[1] + HierarchicalRelation.PATH_SEPARATOR + ids[2], page, size, start, end, metricDefinitionId);
+
+        return new PageResource<>(projection, projection.list(), uriInfo);
+    }
+
+    private static AccessInstallationValidator getAccessInstallationValidator(String[] roles) {
+        var accessInstallation = new AccessInstallation(){
+
+            @Override
+            public Class<? extends Annotation> annotationType() {
+                return AccessInstallation.class;
+            }
+
+            @Override
+            public String message() {
+                return "The authenticated client is not permitted to perform the requested operation.";
+            }
+
+            @Override
+            public Class<?>[] groups() {
+                return new Class[0];
+            }
+
+            @Override
+            public Class<? extends Payload>[] payload() {
+                return new Class[0];
+            }
+
+            @Override
+            public String[] roles() {
+                return roles;
+            }
+        };
+
+        var validator = new AccessInstallationValidator();
+        validator.initialize(accessInstallation);
+        return validator;
     }
 
     /**
@@ -207,8 +431,13 @@ public class InstallationService implements RoleAccessControlService {
 
         InstallationMapper.INSTANCE.updateInstallationFromDto(request, installation);
 
-        if (StringUtils.isNoneEmpty( request.installation)) {
-            installationRepository.exist(installation.getProject(), installation.getOrganisation(), request.installation);
+        if (StringUtils.isNoneEmpty(request.installation)) {
+
+            var temp = installationRepository.exist(installation.getProject(), installation.getOrganisation(), request.installation);
+
+            if(temp.isPresent() && !temp.get().getId().equals(ids[2])){
+
+                throw new ConflictException("There is an Installation with the following combination : {"+installation.getProject()+", "+installation.getOrganisation()+", "+request.installation+"}. Its id is "+ temp.get().getId());}
         }
 
         installationRepository.updateInstallation(ids[0], ids[1], ids[2], installation);
@@ -236,102 +465,6 @@ public class InstallationService implements RoleAccessControlService {
         return MetricMapper.INSTANCE.metricToResponse(metric);
     }
 
-    @Override
-    public void grantPermission(String who, RoleAccessControlRequestDto request, String... id) {
-
-        var installationID = id[0];
-
-        var hierarchicalRelation = hierarchicalRelationRepository.find("externalId", installationID).firstResult();
-
-        var ids = hierarchicalRelation.id.split(Pattern.quote(HierarchicalRelation.PATH_SEPARATOR));
-
-        var optional = installationRepository.fetchRoleAccessControl(ids[0], ids[1], ids[2], who);
-
-        if(optional.isPresent()){
-
-            throw new ConflictException("There is an Installation Access Control for the client : "+who);
-        }
-
-        var accessControl = AccessControlMapper.INSTANCE.requestToRoleAccessControl(request);
-
-        accessControl.setWho(who);
-
-        accessControl.setRoles(roleRepository.getRolesByName(request.roles));
-
-        installationRepository.insertNewRoleAccessControl(ids[0], ids[1], ids[2], accessControl);
-    }
-
-    @Override
-    public RoleAccessControlResponseDto modifyPermission(String who, RoleAccessControlUpdateDto updateDto, String... id) {
-
-        var installationID = id[0];
-
-        var hierarchicalRelation = hierarchicalRelationRepository.find("externalId", installationID).firstResult();
-
-        var ids = hierarchicalRelation.id.split(Pattern.quote(HierarchicalRelation.PATH_SEPARATOR));
-
-        var optional = installationRepository.fetchRoleAccessControl(ids[0], ids[1], ids[2], who);
-
-        optional.orElseThrow(() -> new NotFoundException("There is no Access Control."));
-
-        installationRepository.updateRoleAccessControl(ids[0], ids[1], ids[2], who, roleRepository.getRolesByName(updateDto.roles));
-
-        var updated = installationRepository.fetchRoleAccessControl(ids[0], ids[1], ids[2], who);
-
-        return AccessControlMapper.INSTANCE.roleAccessControlToResponse(updated.get());
-    }
-
-    @Override
-    public void deletePermission(String who, String... id) {
-
-        var installationID = id[0];
-
-        var hierarchicalRelation = hierarchicalRelationRepository.find("externalId", installationID).firstResult();
-
-        var ids = hierarchicalRelation.id.split(Pattern.quote(HierarchicalRelation.PATH_SEPARATOR));
-
-        var optional = installationRepository.fetchRoleAccessControl(ids[0], ids[1], ids[2], who);
-
-        optional.orElseThrow(() -> new NotFoundException("There is no Access Control."));
-
-        installationRepository.deleteRoleAccessControl(ids[0], ids[1], ids[2], who);
-    }
-
-    @Override
-    public RoleAccessControlResponseDto fetchPermission(String who, String... id) {
-
-        var installationID = id[0];
-
-        var hierarchicalRelation = hierarchicalRelationRepository.find("externalId", installationID).firstResult();
-
-        var ids = hierarchicalRelation.id.split(Pattern.quote(HierarchicalRelation.PATH_SEPARATOR));
-
-        var optional = installationRepository.fetchRoleAccessControl(ids[0], ids[1], ids[2], who);
-
-        optional.orElseThrow(() -> new NotFoundException("There is no Access Control."));
-
-        return AccessControlMapper.INSTANCE.roleAccessControlToResponse(optional.get());
-    }
-
-    @Override
-    public PageResource<RoleAccessControlResponseDto> fetchAllPermissions(int page, int size, UriInfo uriInfo, String... id) {
-
-        var installationID = id[0];
-
-        var hierarchicalRelation = hierarchicalRelationRepository.find("externalId", installationID).firstResult();
-
-        var ids = hierarchicalRelation.id.split(Pattern.quote(HierarchicalRelation.PATH_SEPARATOR));
-
-        var panacheQuery = installationRepository.fetchAllRoleAccessControls(ids[0], ids[1], ids[2], page, size);
-
-        var responses = panacheQuery
-                .list()
-                .stream()
-                .map(AccessControlMapper.INSTANCE::roleAccessControlToResponse)
-                .collect(Collectors.toList());
-
-        return new PageResource<>(panacheQuery, responses, uriInfo);
-    }
     public PageResource<InstallationResponseDto> getAllInstallations(int page, int size, UriInfo uriInfo){
 
         var projection = installationRepository.fetchAllInstallations( page, size);
@@ -340,12 +473,11 @@ public class InstallationService implements RoleAccessControlService {
 
     }
 
-    public PageResource<InstallationResponseDto>  searchInstallation(String json, int page, int size, UriInfo uriInfo) throws NoSuchFieldException, org.json.simple.parser.ParseException {
-        Bson query = queryParser.parseFile(json, true, new ArrayList<>(), Installation.class);
+    public PageResource<InstallationResponseDto>  searchInstallation(String json, int page, int size, UriInfo uriInfo) throws org.json.simple.parser.ParseException {
+
+        var query = queryParser.parseFile(json);
         var projection = installationRepository.searchInstallations( query,page, size);
-
         return new PageResource<>(projection, InstallationMapper.INSTANCE.installationProjectionsToResponse(projection.list()), uriInfo);
-
     }
 
     public PageResource<MetricDefinitionResponseDto> fetchAllMetricDefinitions(String id, int page, int size, UriInfo uriInfo){
@@ -359,7 +491,9 @@ public class InstallationService implements RoleAccessControlService {
 
         var installation = fetchInstallation(installationId);
 
-        return installationRepository.installationReport(installation, start, end);
+        var filters = Array.of(Filters.regex("resource_id","^"+ installation.getProject() + HierarchicalRelation.PATH_SEPARATOR + installation.getOrganisation() + HierarchicalRelation.PATH_SEPARATOR + installation.getId() + "(?:\\.[^\\r\\n.]+)*$"));
+
+        return installationRepository.installationReport(installation, start, end, filters);
     }
 }
 

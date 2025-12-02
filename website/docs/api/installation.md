@@ -304,7 +304,7 @@ Success Response 200 OK
 }
 ```
 
-## [POST] - Access Control Entry for a particular Installation
+## [POST] - Access Control Entry for a particular Installation (legacy)
 
 The same goes for the Installations. Any client can have different
 responsibilities at different Installations. The actions the client can
@@ -342,6 +342,11 @@ Success Response `200 OK`
 
 **Keep in mind that** to execute the above operation, you must have been
 assigned a role containing the Installation Acl permission.
+
+### Note
+
+See [Mapping of Roles to Entitlements](../authorization/accounting_system_roles#mapping-of-roles-to-entitlements) for new role assignment mechanism.
+
 
 ## [POST] - Search for Installations
 
@@ -436,7 +441,65 @@ If the operation is successful, you get a list of installations.
    "links": []
 }
 ```
+## [GET] - Get Installation Report
+
+The report includes aggregated metric values grouped by metric definitions.
+
+You can retrieve a report for a specific **installation** within a defined time period:
+
+
+```
+GET /accounting-system/installations/external/report
+
+Authorization: Bearer {token}
+```
+
+or by using the `externalId` instead.
+
+```
+GET /accounting-system/installations/{installation_id}/report
+
+Authorization: Bearer {token}
+```
+
+
+**Parameters**
+
+- *`externalId` *(required, query)* – The external installation ID.  
+  Example: `installation-446655440000`*
+- `start` *(required, query)* – Start date in `yyyy-MM-dd` format.  
+  Example: `2024-01-01`  
+- `end` *(required, query)* – End date in `yyyy-MM-dd` format.  
+  Example: `2024-12-31`  
+
+**Success Response `200 OK`**
+
+```json
+{
+  "installation_id": "507f1f77bcf86cd799439011",
+  "project": "447535",
+  "provider": "grnet",
+  "installation": "GRNET-KNS",
+  "infrastructure": "okeanos-knossos",
+  "resource": "unitartu.ut.rocket",
+  "external_id": "installation-45583",
+  "data": [
+    {
+      "metric_definition_id": "507f1f77bcf86cd799439011",
+      "metric_name": "weight",
+      "metric_description": "The weight of a person",
+      "unit_type": "kg",
+      "metric_type": "aggregated",
+      "total_value": 1234.56
+    }
+  ]
+}
+```
 
 ## Errors
 
 Please refer to section [Errors](./api_errors) to see all possible Errors.
+
+## Note
+
+Instead of the internal ID, you can use the external ID in the corresponding API calls.

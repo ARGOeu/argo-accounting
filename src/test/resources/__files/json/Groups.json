@@ -1,0 +1,267 @@
+{
+  "results": [
+    {
+      "id": "1a28e1a5-c84c-46e6-8e08-306f5ad322ec",
+      "name": "accounting",
+      "path": "/accounting",
+      "attributes": {
+        "description": [
+          "EOSC Acccounting for Services"
+        ],
+        "defaultConfiguration": [
+          "d0dc7744-375e-4725-9e59-1d5bd496b72c"
+        ]
+      },
+      "extraSubGroups": [
+        {
+          "id": "58049aaf-15db-48f9-87fc-e605a24587e7",
+          "name": "adapter",
+          "path": "/accounting/adapter",
+          "attributes": {
+            "description": [
+              "Adapter Project"
+            ],
+            "defaultConfiguration": [
+              "1e05bb31-c487-4507-b5ee-d10e993500e7"
+            ]
+          },
+          "extraSubGroups": [
+            {
+              "id": "1bc9d40f-65a9-475c-b622-97c3642145cb",
+              "name": "grnet",
+              "path": "/accounting/adapter/grnet",
+              "attributes": {
+                "description": [
+                  "GRNET"
+                ],
+                "defaultConfiguration": [
+                  "b6aa2624-b01a-4a33-8a9f-277a17777a6e"
+                ]
+              },
+              "extraSubGroups": [
+                {
+                  "id": "e67a1544-8d32-471f-bbe1-2bfeb66ccf03",
+                  "name": "openstack_1",
+                  "path": "/accounting/adapter/grnet/openstack_1",
+                  "attributes": {
+                    "description": [
+                      "Installation of openstack resource"
+                    ],
+                    "defaultConfiguration": [
+                      "b1a9228b-c769-468f-9ca1-06da9b45eb2d"
+                    ]
+                  },
+                  "extraSubGroups": []
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "1885829b-f2c5-4133-a48a-4ecc3be8dab8",
+          "name": "operations",
+          "path": "/accounting/operations",
+          "attributes": {
+            "description": [
+              "ops"
+            ],
+            "defaultConfiguration": [
+              "e8a396e7-a40d-4dbb-84c3-d5b0ec21181e"
+            ]
+          },
+          "extraSubGroups": [
+            {
+              "id": "82233803-9bd2-4429-86a1-e1df496f9c85",
+              "name": "resources",
+              "path": "/accounting/operations/resources",
+              "attributes": {
+                "description": [
+                  "Resources"
+                ],
+                "defaultConfiguration": [
+                  "7aff76ca-415e-4c0f-a8db-23ff450d46e2"
+                ]
+              },
+              "extraSubGroups": []
+            }
+          ]
+        },
+        {
+          "id": "118c12b2-13e1-4861-85a8-658df8e0e651",
+          "name": "roles",
+          "path": "/accounting/roles",
+          "attributes": {
+            "description": [
+              "Roles"
+            ],
+            "defaultConfiguration": [
+              "3aa1262f-7444-475a-af21-57b02857da6b"
+            ]
+          },
+          "extraSubGroups": [
+            {
+              "id": "4b54d61c-ca2b-4b3a-afb2-e78f903888f5",
+              "name": "provider",
+              "path": "/accounting/roles/provider",
+              "attributes": {
+                "description": [
+                  "Provider role"
+                ],
+                "defaultConfiguration": [
+                  "daf72d70-aeee-40d4-a594-8715c025bea3"
+                ]
+              },
+              "extraSubGroups": [
+                {
+                  "id": "b8881914-28ac-4679-a25b-5a6065d48fd8",
+                  "name": "grnet",
+                  "path": "/accounting/roles/provider/grnet",
+                  "attributes": {
+                    "description": [
+                      "grnet"
+                    ],
+                    "defaultConfiguration": [
+                      "d44712b8-9b09-47bb-ad80-03c0ca26e10e"
+                    ]
+                  },
+                  "extraSubGroups": []
+                },
+                {
+                  "id": "bb8de542-dc67-4aaa-87d0-b2da0f09af99",
+                  "name": "test",
+                  "path": "/accounting/roles/provider/test",
+                  "attributes": {
+                    "description": [
+                      "test"
+                    ],
+                    "defaultConfiguration": [
+                      "9565cad9-1aa5-41af-894d-4a3450cfa0cc"
+                    ]
+                  },
+                  "extraSubGroups": []
+                },
+                {
+                  "id": "b276e487-4d14-4dc0-bc0e-98debb907991",
+                  "name": "test-provider",
+                  "path": "/accounting/roles/provider/test-provider",
+                  "attributes": {
+                    "description": [
+                      "test-provider"
+                    ],
+                    "defaultConfiguration": [
+                      "ab4cb0ff-7592-4c94-9e3c-01ff4f3bbe1f"
+                    ]
+                  },
+                  "extraSubGroups": []
+                }
+              ]
+            },
+            {
+              "id": "328ef74a-8f65-4ef9-a5ef-cfc33fac7f62",
+              "name": "resource",
+              "path": "/accounting/roles/resource",
+              "attributes": {
+                "description": [
+                  "Resource role"
+                ],
+                "defaultConfiguration": [
+                  "d5fff446-3d38-438f-8270-171329bf086e"
+                ]
+              },
+              "extraSubGroups": [
+                {
+                  "id": "5cdafa7c-565d-4b89-a743-e0c21aa3b96a",
+                  "name": "openstack",
+                  "path": "/accounting/roles/resource/openstack",
+                  "attributes": {
+                    "description": [
+                      "openstack"
+                    ],
+                    "defaultConfiguration": [
+                      "5edb53fe-6c90-440e-a8ca-230aa40c15ba"
+                    ]
+                  },
+                  "extraSubGroups": []
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "05402b11-4854-4a6c-9599-d55f9236e7be",
+          "name": "test1",
+          "path": "/accounting/test1",
+          "attributes": {
+            "description": [
+              " test1"
+            ],
+            "defaultConfiguration": [
+              "d6407cef-ec7b-470f-b69a-0a560d7886ae"
+            ]
+          },
+          "extraSubGroups": [
+            {
+              "id": "d24c0b2b-96a2-4904-b2e2-9081723dadde",
+              "name": "test1",
+              "path": "/accounting/test1/test1",
+              "attributes": {
+                "description": [
+                  " test1"
+                ],
+                "defaultConfiguration": [
+                  "fa2307d3-2e14-4062-8d38-eb5334c43dbc"
+                ]
+              },
+              "extraSubGroups": []
+            }
+          ]
+        },
+        {
+          "id": "e2a56ce9-3223-4896-9dae-c5ecdb4f2c48",
+          "name": "test2",
+          "path": "/accounting/test2",
+          "attributes": {
+            "description": [
+              "test2"
+            ],
+            "defaultConfiguration": [
+              "fffcbdc5-d1e4-4f2b-92b0-fc38a22b4c82"
+            ]
+          },
+          "extraSubGroups": [
+            {
+              "id": "bde83f70-ad63-47e6-9a50-a2c5dded63cd",
+              "name": "test-provider",
+              "path": "/accounting/test2/test-provider",
+              "attributes": {
+                "description": [
+                  "Provider test-provider associated with Project test2"
+                ],
+                "defaultConfiguration": [
+                  "f143bc92-0562-410c-891e-f9af4360f2ec"
+                ]
+              },
+              "extraSubGroups": [
+                {
+                  "id": "8fc6f1a5-6ff4-4aa1-8494-c15fa3e214e4",
+                  "name": "68ca6c3ba0cf925c2f347c0d",
+                  "path": "/accounting/test2/test-provider/68ca6c3ba0cf925c2f347c0d",
+                  "attributes": {
+                    "description": [
+                      "Installation GRNET-KNS created in Project - test2 and Provider - test-provider"
+                    ],
+                    "defaultConfiguration": [
+                      "dcf2b554-8ee9-4dd4-907a-7c8b3e325adc"
+                    ]
+                  },
+                  "extraSubGroups": []
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "count": 1
+}

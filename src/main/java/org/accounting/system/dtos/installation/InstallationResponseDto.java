@@ -2,9 +2,12 @@ package org.accounting.system.dtos.installation;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import org.accounting.system.dtos.CapacityDto;
 import org.accounting.system.dtos.metricdefinition.MetricDefinitionResponseDto;
 import org.eclipse.microprofile.openapi.annotations.enums.SchemaType;
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
+
+import java.util.List;
 
 @Schema(name="InstallationResponse", description="An object represents the stored Installation.")
 public class InstallationResponseDto {
@@ -66,9 +69,27 @@ public class InstallationResponseDto {
     public String resource;
 
     @Schema(
+            type = SchemaType.STRING,
+            implementation = String.class,
+            description = "Unique external Installation identifier.",
+            example = "installation-446655440000"
+    )
+    @JsonProperty("external_id")
+    public String externalId;
+
+    @Schema(
             type = SchemaType.OBJECT,
             implementation = MetricDefinitionResponseDto.class,
             description = "The primary Metric Registration.")
     @JsonProperty("unit_of_access")
+    @JsonInclude(JsonInclude.Include.NON_NULL)
     public MetricDefinitionResponseDto metricDefinition;
+
+    @Schema(
+            type = SchemaType.OBJECT,
+            implementation = CapacityDto.class,
+            description = "The installation capacities.")
+    @JsonProperty("capacities")
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    public List<CapacityDto> capacities;
 }

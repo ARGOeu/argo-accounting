@@ -1,6 +1,9 @@
 package org.accounting.system.entities.projections;
 
 import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.Setter;
+import org.accounting.system.entities.Capacity;
 import org.accounting.system.entities.MetricDefinition;
 import org.bson.codecs.pojo.annotations.BsonProperty;
 
@@ -27,6 +30,15 @@ public class InstallationProjection {
     private List<MetricDefinition> metricDefinitions;
 
     private String resource;
+
+    @BsonProperty("external_id")
+    private String externalId;
+
+    @Getter
+    @Setter
+    @BsonProperty("capacities")
+    private List<Capacity> capacities;
+
 
     public String getId() {
         return id;
@@ -97,5 +109,13 @@ public class InstallationProjection {
 
     public void setResource(String resource) {
         this.resource = resource;
+    }
+
+    public String getExternalId() {
+        return externalId;
+    }
+
+    public void setExternalId(String externalId) {
+        this.externalId = externalId;
     }
 }

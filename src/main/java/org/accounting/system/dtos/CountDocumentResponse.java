@@ -28,9 +28,9 @@ public class CountDocumentResponse {
     @Schema(
             type = SchemaType.NUMBER,
             implementation = Long.class,
-            description = "Number of documents in the User collection.",
-            example = "30"
+            description = "Number of documents in the Actor.",
+            example = "1200"
     )
-    @JsonProperty("user_count")
-    public long userCount;
+    @JsonProperty("actor_count")
+    public long actorCount;
 }

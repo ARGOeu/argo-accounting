@@ -25,13 +25,12 @@ import org.accounting.system.dtos.InformativeResponse;
 import org.accounting.system.dtos.pagination.PageResource;
 import org.accounting.system.dtos.unittype.UnitTypeDto;
 import org.accounting.system.dtos.unittype.UpdateUnitTypeRequestDto;
-import org.accounting.system.enums.Collection;
-import org.accounting.system.enums.Operation;
-import org.accounting.system.interceptors.annotations.AccessPermission;
+import org.accounting.system.interceptors.annotations.AccessResource;
 import org.accounting.system.repositories.unittype.UnitTypeRepository;
 import org.accounting.system.services.UnitTypeService;
 import org.accounting.system.util.AccountingUriInfo;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
+import org.eclipse.microprofile.openapi.annotations.Operation;
 import org.eclipse.microprofile.openapi.annotations.enums.SchemaType;
 import org.eclipse.microprofile.openapi.annotations.enums.SecuritySchemeIn;
 import org.eclipse.microprofile.openapi.annotations.enums.SecuritySchemeType;
@@ -60,7 +59,7 @@ public class UnitTypeEndpoint {
     @Inject
     UnitTypeService unitTypeService;
 
-    @ConfigProperty(name = "quarkus.resteasy-reactive.path")
+    @ConfigProperty(name = "quarkus.rest.path")
     String basePath;
 
     @ConfigProperty(name = "api.server.url")
@@ -68,7 +67,7 @@ public class UnitTypeEndpoint {
 
 
     @Tag(name = "Unit Type")
-    @org.eclipse.microprofile.openapi.annotations.Operation(
+    @Operation(
             operationId = "submit-unit-type",
             summary = "Generates a new Unit Type.",
             description = "A Unit Type expresses and measures physical quantities used in various infrastructures, service providers, and projects. " +
@@ -116,11 +115,10 @@ public class UnitTypeEndpoint {
                     type = SchemaType.OBJECT,
                     implementation = InformativeResponse.class)))
     @SecurityRequirement(name = "Authentication")
-
     @POST
     @Produces(value = MediaType.APPLICATION_JSON)
     @Consumes(value = MediaType.APPLICATION_JSON)
-    @AccessPermission(collection = Collection.UnitType, operation = Operation.CREATE)
+    @AccessResource(roles = {"admin"})
     public Response save(@Valid @NotNull(message = "The request body is empty.") UnitTypeDto unitTypeDto, @Context UriInfo uriInfo) {
 
         var serverInfo = new AccountingUriInfo(serverUrl.concat(basePath).concat(uriInfo.getPath()));
@@ -131,7 +129,7 @@ public class UnitTypeEndpoint {
     }
 
     @Tag(name = "Unit Type")
-    @org.eclipse.microprofile.openapi.annotations.Operation(
+    @Operation(
             summary = "Deletes an existing Unit Type.",
             description = "This operation removes from the database a Unit Type. " +
                     "You cannot delete a Unit Type registered by Accounting Service or a Unit Type used in an existing Metric Definition.")
@@ -172,11 +170,10 @@ public class UnitTypeEndpoint {
                     type = SchemaType.OBJECT,
                     implementation = InformativeResponse.class)))
     @SecurityRequirement(name = "Authentication")
-
     @DELETE
     @Path("/{id}")
     @Produces(value = MediaType.APPLICATION_JSON)
-    @AccessPermission(collection = Collection.UnitType, operation = Operation.DELETE)
+    @AccessResource(roles = {"admin"})
     public Response delete(@Parameter(
             description = "The Unit Type to be deleted.",
             required = true,
@@ -200,7 +197,7 @@ public class UnitTypeEndpoint {
     }
 
     @Tag(name = "Unit Type")
-    @org.eclipse.microprofile.openapi.annotations.Operation(
+    @Operation(
             summary = "Returns the registered Unit Types.",
             description = "This operation fetches all the Unit Types stored in the database. By default, the first page of 10 Unit Types will be returned. You can tune the default values by using the query parameters page and size.")
     @APIResponse(
@@ -228,10 +225,9 @@ public class UnitTypeEndpoint {
                     type = SchemaType.OBJECT,
                     implementation = InformativeResponse.class)))
     @SecurityRequirement(name = "Authentication")
-
     @GET
     @Produces(value = MediaType.APPLICATION_JSON)
-    @AccessPermission(collection = Collection.UnitType, operation = Operation.READ)
+    @AccessResource(roles = {"admin", "viewer"})
     public Response getAll(@Parameter(name = "page", in = QUERY,
             description = "Indicates the page number. Page number must be >= 1.") @DefaultValue("1") @Min(value = 1, message = "Page number must be >= 1.") @QueryParam("page") int page,
                            @Parameter(name = "size", in = QUERY,
@@ -245,7 +241,7 @@ public class UnitTypeEndpoint {
     }
 
     @Tag(name = "Unit Type")
-    @org.eclipse.microprofile.openapi.annotations.Operation(
+    @Operation(
             summary = "Returns an existing Unit Type.",
             description = "By passing the Unit Type ID, you can fetch the corresponding database record.")
     @APIResponse(
@@ -279,11 +275,10 @@ public class UnitTypeEndpoint {
                     type = SchemaType.OBJECT,
                     implementation = InformativeResponse.class)))
     @SecurityRequirement(name = "Authentication")
-
     @GET
     @Path("/{id}")
     @Produces(value = MediaType.APPLICATION_JSON)
-    @AccessPermission(collection = Collection.UnitType, operation = Operation.READ)
+    @AccessResource(roles = {"admin", "viewer"})
     public Response get(
             @Parameter(
                     description = "The Unit Type to be retrieved.",
@@ -298,7 +293,7 @@ public class UnitTypeEndpoint {
     }
 
     @Tag(name = "Unit Type")
-    @org.eclipse.microprofile.openapi.annotations.Operation(
+    @Operation(
             summary = "Updates an existing Unit Type.",
             description = "To update the properties of an actual Unit Type, the body of the request must contain an updated representation of it. " +
                     "You can update a part or all attributes of an existing Unit Type. The empty or null values are ignored. " +
@@ -352,12 +347,11 @@ public class UnitTypeEndpoint {
                     type = SchemaType.OBJECT,
                     implementation = InformativeResponse.class)))
     @SecurityRequirement(name = "Authentication")
-
     @PATCH
     @Path("/{id}")
     @Produces(value = MediaType.APPLICATION_JSON)
     @Consumes(value = MediaType.APPLICATION_JSON)
-    @AccessPermission(collection = Collection.UnitType, operation = Operation.UPDATE)
+    @AccessResource(roles = {"admin"})
     public Response update(
             @Parameter(
                     description = "The Unit Type to be updated.",

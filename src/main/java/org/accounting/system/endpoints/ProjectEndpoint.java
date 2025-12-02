@@ -7,13 +7,10 @@ import jakarta.validation.Valid;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotEmpty;
-import jakarta.validation.constraints.NotNull;
 import jakarta.ws.rs.BadRequestException;
 import jakarta.ws.rs.Consumes;
-import jakarta.ws.rs.DELETE;
 import jakarta.ws.rs.DefaultValue;
 import jakarta.ws.rs.GET;
-import jakarta.ws.rs.PATCH;
 import jakarta.ws.rs.POST;
 import jakarta.ws.rs.Path;
 import jakarta.ws.rs.PathParam;
@@ -28,26 +25,19 @@ import org.accounting.system.constraints.AccessProvider;
 import org.accounting.system.constraints.CheckDateFormat;
 import org.accounting.system.constraints.NotFoundEntity;
 import org.accounting.system.dtos.InformativeResponse;
-import org.accounting.system.dtos.acl.role.RoleAccessControlRequestDto;
-import org.accounting.system.dtos.acl.role.RoleAccessControlResponseDto;
-import org.accounting.system.dtos.acl.role.RoleAccessControlUpdateDto;
 import org.accounting.system.dtos.installation.InstallationResponseDto;
 import org.accounting.system.dtos.pagination.PageResource;
-import org.accounting.system.dtos.project.AssociateProjectProviderRequestDto;
-import org.accounting.system.dtos.project.DissociateProjectProviderRequestDto;
 import org.accounting.system.entities.HierarchicalRelation;
 import org.accounting.system.entities.projections.MetricProjection;
 import org.accounting.system.entities.projections.ProjectReport;
 import org.accounting.system.entities.projections.ProviderReport;
 import org.accounting.system.entities.projections.normal.ProjectProjection;
-import org.accounting.system.enums.Collection;
-import org.accounting.system.repositories.client.ClientRepository;
+import org.accounting.system.interceptors.annotations.AccessResource;
 import org.accounting.system.repositories.metricdefinition.MetricDefinitionRepository;
-import org.accounting.system.services.HierarchicalRelationService;
+import org.accounting.system.repositories.provider.ProviderRepository;
 import org.accounting.system.services.MetricService;
 import org.accounting.system.services.ProjectService;
 import org.accounting.system.services.ProviderService;
-import org.accounting.system.services.authorization.RoleService;
 import org.accounting.system.util.AccountingUriInfo;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.eclipse.microprofile.metrics.MetricUnits;
@@ -70,10 +60,6 @@ import java.text.ParseException;
 import java.time.LocalDate;
 import java.util.List;
 
-import static org.accounting.system.enums.Operation.ACL;
-import static org.accounting.system.enums.Operation.ASSOCIATE;
-import static org.accounting.system.enums.Operation.DISSOCIATE;
-import static org.accounting.system.enums.Operation.READ;
 import static org.eclipse.microprofile.openapi.annotations.enums.ParameterIn.QUERY;
 
 @Path("/projects")
@@ -91,18 +77,12 @@ public class ProjectEndpoint {
     ProjectService projectService;
 
     @Inject
-    HierarchicalRelationService hierarchicalRelationService;
-
-    @Inject
     ProviderService providerService;
-
-    @Inject
-    RoleService roleService;
 
     @Inject
     MetricService metricService;
 
-    @ConfigProperty(name = "quarkus.resteasy-reactive.path")
+    @ConfigProperty(name = "quarkus.rest.path")
     String basePath;
 
     @ConfigProperty(name = "api.server.url")
@@ -145,7 +125,6 @@ public class ProjectEndpoint {
                     type = SchemaType.OBJECT,
                     implementation = InformativeResponse.class)))
     @SecurityRequirement(name = "Authentication")
-
     @GET
     @Path("/{project_id}/metrics")
     @Timed(name = "checksMetricRetrievalOfProject", description = "A measure of how long it takes to retrieve Metrics under a Project.", unit = MetricUnits.MILLISECONDS)
@@ -158,7 +137,7 @@ public class ProjectEndpoint {
                     schema = @Schema(type = SchemaType.STRING))
             @PathParam("project_id")
             @Valid
-            @AccessProject(collection = Collection.Metric, operation = READ) String id,
+            @AccessProject(roles = {"admin", "viewer"}) String id,
             @Parameter(name = "page", in = QUERY,
                     description = "Indicates the page number. Page number must be >= 1.") @DefaultValue("1") @Min(value = 1, message = "Page number must be >= 1.") @QueryParam("page") int page,
             @Parameter(name = "size", in = QUERY,
@@ -226,7 +205,7 @@ public class ProjectEndpoint {
                     schema = @Schema(type = SchemaType.STRING))
             @PathParam("project_id")
             @Valid
-            @AccessProject(collection = Collection.Metric, operation = READ) String id,
+            @AccessProject(roles = {"admin", "viewer"}) String id,
             @Parameter(
                     description = "The ID of the group.",
                     required = true,
@@ -247,6 +226,164 @@ public class ProjectEndpoint {
         var serverInfo = new AccountingUriInfo(serverUrl.concat(basePath).concat(uriInfo.getPath()));
 
         var response = metricService.getMetricsByProjectAndGroup(id, groupId,page - 1, size, start, end, serverInfo);
+
+        return Response.ok().entity(response).build();
+    }
+
+    @Tag(name = "Project")
+    @Operation(
+            summary = "Get Project report with metrics by group id.",
+            description = "Returns a report for a specific Project and time period by group id, including aggregated metric values.")
+    @APIResponse(
+            responseCode = "200",
+            description = "Project report retrieved successfully.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = ProviderReport.class)))
+    @APIResponse(
+            responseCode = "401",
+            description = "Client has not been authenticated.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "403",
+            description = "The authenticated client is not permitted to perform the requested operation.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "404",
+            description = "Not found.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "500",
+            description = "Internal Server Errors.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @SecurityRequirement(name = "Authentication")
+    @GET
+    @Path("/projects/{project_id}/groups/{group_id}/report")
+    @Produces(value = MediaType.APPLICATION_JSON)
+    public Response getProjectReportByGroupId(
+            @Parameter(
+                    description = "The ID of the project",
+                    required = true,
+                    example = "704029",
+                    schema = @Schema(type = SchemaType.STRING))
+            @PathParam("project_id")
+            @Valid
+            @AccessProject(roles = {"admin", "viewer"}) String id,
+            @Parameter(
+                    description = "The ID of the group.",
+                    required = true,
+                    example = "group-id",
+                    schema = @Schema(type = SchemaType.STRING))
+            @PathParam("group_id") String groupId,
+            @Parameter(
+                    name = "start",
+                    description = "Start date in yyyy-MM-dd format",
+                    required = true,
+                    example = "2024-01-01"
+            )
+            @QueryParam("start")
+            @Valid
+            @NotEmpty(message = "start may not be empty.")
+            @CheckDateFormat(pattern = "yyyy-MM-dd", message = "Valid date format is yyyy-MM-dd.") String start,
+            @Parameter(
+                    name = "end",
+                    description = "End date in yyyy-MM-dd format",
+                    required = true,
+                    example = "2024-12-31"
+            )
+            @QueryParam("end")
+            @Valid
+            @NotEmpty(message = "end may not be empty.")
+            @CheckDateFormat(pattern = "yyyy-MM-dd", message = "Valid date format is yyyy-MM-dd.") String end) {
+
+        var response = projectService.projectReportByGroupId(id, groupId, start, end);
+
+        return Response.ok().entity(response).build();
+    }
+
+    @Tag(name = "Project")
+    @Operation(
+            summary = "Get Project report with metrics by user id.",
+            description = "Returns a report for a specific Project and time period by user id, including aggregated metric values.")
+    @APIResponse(
+            responseCode = "200",
+            description = "Project report retrieved successfully.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = ProviderReport.class)))
+    @APIResponse(
+            responseCode = "401",
+            description = "Client has not been authenticated.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "403",
+            description = "The authenticated client is not permitted to perform the requested operation.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "404",
+            description = "Not found.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "500",
+            description = "Internal Server Errors.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @SecurityRequirement(name = "Authentication")
+    @GET
+    @Path("/projects/{project_id}/users/{user_id}/report")
+    @Produces(value = MediaType.APPLICATION_JSON)
+    public Response getProjectReportByUserId(
+            @Parameter(
+                    description = "The ID of the project",
+                    required = true,
+                    example = "704029",
+                    schema = @Schema(type = SchemaType.STRING))
+            @PathParam("project_id")
+            @Valid
+            @AccessProject(roles = {"admin", "viewer"}) String id,
+            @Parameter(
+                    description = "The ID of the user id.",
+                    required = true,
+                    example = "user-id",
+                    schema = @Schema(type = SchemaType.STRING))
+            @PathParam("user_id") String userId,
+            @Parameter(
+                    name = "start",
+                    description = "Start date in yyyy-MM-dd format",
+                    required = true,
+                    example = "2024-01-01"
+            )
+            @QueryParam("start")
+            @Valid
+            @NotEmpty(message = "start may not be empty.")
+            @CheckDateFormat(pattern = "yyyy-MM-dd", message = "Valid date format is yyyy-MM-dd.") String start,
+            @Parameter(
+                    name = "end",
+                    description = "End date in yyyy-MM-dd format",
+                    required = true,
+                    example = "2024-12-31"
+            )
+            @QueryParam("end")
+            @Valid
+            @NotEmpty(message = "end may not be empty.")
+            @CheckDateFormat(pattern = "yyyy-MM-dd", message = "Valid date format is yyyy-MM-dd.") String end) {
+
+        var response = projectService.projectReportByUserId(id, userId, start, end);
 
         return Response.ok().entity(response).build();
     }
@@ -298,7 +435,7 @@ public class ProjectEndpoint {
                     schema = @Schema(type = SchemaType.STRING))
             @PathParam("project_id")
             @Valid
-            @AccessProject(collection = Collection.Metric, operation = READ) String id,
+            @AccessProject(roles = {"admin", "viewer"}) String id,
             @Parameter(
                     description = "The ID of the user.",
                     required = true,
@@ -360,7 +497,7 @@ public class ProjectEndpoint {
                     schema = @Schema(type = SchemaType.STRING))
             @PathParam("project_id")
             @Valid
-            @AccessProject(collection = Collection.Metric, operation = READ) String id,
+            @AccessProject(roles = {"admin", "viewer"}) String id,
             @Parameter(name = "page", in = QUERY,
                     description = "Indicates the page number. Page number must be >= 1.") @DefaultValue("1") @Min(value = 1, message = "Page number must be >= 1.") @QueryParam("page") int page,
             @Parameter(name = "size", in = QUERY,
@@ -411,12 +548,11 @@ public class ProjectEndpoint {
                     type = SchemaType.OBJECT,
                     implementation = InformativeResponse.class)))
     @SecurityRequirement(name = "Authentication")
-
     @GET
     @Path("/{project_id}/providers/{provider_id}/metrics")
     @Timed(name = "checksMetricRetrievalOfProvider", description = "A measure of how long it takes to retrieve Metrics under a Provider.", unit = MetricUnits.MILLISECONDS)
     @Produces(value = MediaType.APPLICATION_JSON)
-    @AccessProvider(collection = Collection.Metric, operation = READ)
+    @AccessProvider(roles = {"admin", "viewer"})
     public Response getAllMetricsUnderAProvider(
             @Parameter(
                     description = "Τhe Project id to which the Provider belongs.",
@@ -452,8 +588,8 @@ public class ProjectEndpoint {
 
     @Tag(name = "Provider")
     @Operation(
-            summary = "Get Provider report with metrics and access controls.",
-            description = "Returns a report for a specific Provider and time period, including aggregated metric values and role-based access control information.")
+            summary = "Get Provider report with metrics.",
+            description = "Returns a report for a specific Provider and time period, including aggregated metric values.")
     @APIResponse(
             responseCode = "200",
             description = "Provider report retrieved successfully.",
@@ -488,7 +624,7 @@ public class ProjectEndpoint {
     @GET
     @Path("/{project_id}/providers/{provider_id}/report")
     @Produces(value = MediaType.APPLICATION_JSON)
-    @AccessProvider(collection = Collection.Metric, operation = READ)
+    @AccessProvider(roles = {"admin", "viewer"})
     public Response providerReport(
             @Parameter(
                     description = "Τhe Project id.",
@@ -535,6 +671,152 @@ public class ProjectEndpoint {
 
     @Tag(name = "Provider")
     @Operation(
+            summary = "Get Provider report with metrics.",
+            description = "Returns a report for a specific Provider and time period, including aggregated metric values.")
+    @APIResponse(
+            responseCode = "200",
+            description = "Provider report retrieved successfully.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = ProviderReport.class)))
+    @APIResponse(
+            responseCode = "401",
+            description = "Client has not been authenticated.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "403",
+            description = "The authenticated client is not permitted to perform the requested operation.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "404",
+            description = "Not found.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "500",
+            description = "Internal Server Errors.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @SecurityRequirement(name = "Authentication")
+    @GET
+    @Path("/{project_id}/providers/external/report")
+    @Produces(value = MediaType.APPLICATION_JSON)
+    public Response providerReportByExternalId(
+            @Parameter(
+                    description = "Τhe Project id.",
+                    required = true,
+                    example = "704029",
+                    schema = @Schema(type = SchemaType.STRING))
+            @PathParam("project_id") String projectId,
+            @Parameter(name = "externalProviderId", in = QUERY, required = true, example = "sites", allowReserved = true,
+                    description = "The external provider id.", schema = @Schema(type = SchemaType.STRING)) @QueryParam("externalProviderId") @NotEmpty(message = "externalProviderId may not be empty.") String externalProviderId,
+            @Parameter(
+                    name = "start",
+                    description = "Start date in yyyy-MM-dd format",
+                    required = true,
+                    example = "2024-01-01"
+            )
+            @QueryParam("start")
+            @Valid
+            @NotEmpty(message = "start may not be empty.")
+            @CheckDateFormat(pattern = "yyyy-MM-dd", message = "Valid date format is yyyy-MM-dd.") String start,
+            @Parameter(
+                    name = "end",
+                    description = "End date in yyyy-MM-dd format",
+                    required = true,
+                    example = "2024-12-31"
+            )
+            @QueryParam("end")
+            @Valid
+            @NotEmpty(message = "end may not be empty.")
+            @CheckDateFormat(pattern = "yyyy-MM-dd", message = "Valid date format is yyyy-MM-dd.") String end) {
+
+        if (LocalDate.parse(start).isAfter(LocalDate.parse(end))) {
+            throw new BadRequestException("Start date must be before or equal to end date.");
+        }
+
+        var response = providerService.providerReportByExternalId(projectId, externalProviderId, start, end);
+
+        return Response.ok().entity(response).build();
+    }
+
+    @Tag(name = "Metric")
+    @Operation(
+            summary = "Returns all Metrics under a specific Provider by external Provider ID.",
+            description = "This operation is responsible for fetching all Metrics under a specific Provider. " +
+                    "By passing the Project ID to which the Provider belongs as well as the Provider external ID, you can retrieve all Metrics that have been assigned to this specific Provider. By default, the first page of 10 Metrics will be returned. " +
+                    "You can tune the default values by using the query parameters page and size.")
+    @APIResponse(
+            responseCode = "200",
+            description = "All Metrics.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = PageableMetricProjection.class)))
+    @APIResponse(
+            responseCode = "401",
+            description = "Client has not been authenticated.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "403",
+            description = "The authenticated client is not permitted to perform the requested operation.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "404",
+            description = "Not found.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "500",
+            description = "Internal Server Errors.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @SecurityRequirement(name = "Authentication")
+    @GET
+    @Path("/{project_id}/providers/external/metrics")
+    @Produces(value = MediaType.APPLICATION_JSON)
+    public Response getAllMetricsUnderAProviderByExternalId(
+            @Parameter(
+                    description = "Τhe Project id to which the Provider belongs.",
+                    required = true,
+                    example = "704029",
+                    schema = @Schema(type = SchemaType.STRING))
+            @PathParam("project_id") String projectId,
+            @Parameter(name = "externalProviderId", in = QUERY, required = true, example = "sites", allowReserved = true,
+                    description = "The external provider id.", schema = @Schema(type = SchemaType.STRING)) @QueryParam("externalProviderId") @NotEmpty(message = "externalProviderId may not be empty.") String externalProviderId,
+            @Parameter(name = "page", in = QUERY,
+                    description = "Indicates the page number. Page number must be >= 1.") @DefaultValue("1") @Min(value = 1, message = "Page number must be >= 1.") @QueryParam("page") int page,
+            @Parameter(name = "size", in = QUERY,
+                    description = "The page size.") @DefaultValue("10") @Min(value = 1, message = "Page size must be between 1 and 100.")
+            @Max(value = 100, message = "Page size must be between 1 and 100.") @QueryParam("size") int size,
+            @Parameter(name = "metric-definition-id", in = QUERY, schema = @Schema(type = SchemaType.STRING, defaultValue = ""),
+                    description = "The Metric Definition that the Metrics are related to.")  @QueryParam("metric-definition-id") @NotFoundEntity(repository = MetricDefinitionRepository.class, message = "There is no Metric Definition with the following id:") String metricDefinitionId,
+            @Parameter(name = "start", in = QUERY, schema = @Schema(type = SchemaType.STRING, defaultValue = ""),
+                    description = "The inclusive start date for the query in the format YYYY-MM-DD. Cannot be after end.")  @QueryParam("start") String start,
+            @Parameter(name = "end", in = QUERY, schema = @Schema(type = SchemaType.STRING, defaultValue = ""),
+                    description = "The inclusive end date for the query in the format YYYY-MM-DD. Cannot be before start.") @QueryParam("end") String end,
+            @Context UriInfo uriInfo) {
+
+        var serverInfo = new AccountingUriInfo(serverUrl.concat(basePath).concat(uriInfo.getPath()));
+
+        var response = providerService.fetchAllMetricsByExternalProviderId(projectId, externalProviderId, page - 1, size, serverInfo, start, end, metricDefinitionId);
+
+        return Response.ok().entity(response).build();
+    }
+
+    @Tag(name = "Provider")
+    @Operation(
             summary = "Returns Provider's Metric Definitions.",
             description = "This operation is responsible for returning Provider's Metric Definitions. " +
                     "By default, the first page of 10 Metric Definitions will be returned. " +
@@ -558,11 +840,10 @@ public class ProjectEndpoint {
                     type = SchemaType.OBJECT,
                     implementation = InformativeResponse.class)))
     @SecurityRequirement(name = "Authentication")
-
     @GET
     @Path("/{project_id}/providers/{provider_id}/metric-definitions")
     @Produces(value = MediaType.APPLICATION_JSON)
-    @AccessProvider(collection = Collection.Metric, operation = READ)
+    @AccessProvider(roles = {"admin", "viewer"})
     public Response getAllProviderMetricDefinitions(
             @Parameter(
                     description = "Τhe Project id to which the Provider belongs.",
@@ -591,12 +872,12 @@ public class ProjectEndpoint {
 
     @Tag(name = "Project")
     @Operation(
-            summary = "Associate a Project with different Providers.",
+            summary = "Associate a Project with a Provider.",
             description = "There is a hierarchical relation between Project and Providers which can be expressed as follows: a Project can have a number of different Providers. " +
-                    "By passing a list of Provider ids to this operation, you can associate those Providers with a specific Project. Finally, it should be noted that any Provider can belong to more than one Project.")
+                    "You can associate a Provider with a specific Project. Finally, it should be noted that any Provider can belong to more than one Project.")
     @APIResponse(
             responseCode = "200",
-            description = "Providers have been successfully associated with the Project.",
+            description = "Provider has been successfully associated with the Project.",
             content = @Content(schema = @Schema(
                     type = SchemaType.OBJECT,
                     implementation = InformativeResponse.class)))
@@ -637,38 +918,42 @@ public class ProjectEndpoint {
                     type = SchemaType.OBJECT,
                     implementation = InformativeResponse.class)))
     @SecurityRequirement(name = "Authentication")
-
     @POST
-    @Path("/{id}/associate")
+    @Path("/{id}/associate/provider/{provider_id}")
     @Produces(value = MediaType.APPLICATION_JSON)
     @Consumes(value = MediaType.APPLICATION_JSON)
     public Response associateProjectWithProviders(
             @Parameter(
-                    description = "The Project in which the Providers will be associated with.",
+                    description = "The Project in which the Provider will be associated with.",
                     required = true,
                     example = "888743",
                     schema = @Schema(type = SchemaType.STRING))
             @PathParam("id")
             @Valid
-            @AccessProject(collection = Collection.Project, operation = ASSOCIATE) String id, @Valid @NotNull(message = "The request body is empty.") AssociateProjectProviderRequestDto request) {
+            @AccessProject(roles = {"admin"}) String id,
+            @Parameter(
+            description = "The Provider to be associated.",
+            required = true,
+            example = "sites",
+            schema = @Schema(type = SchemaType.STRING)) @PathParam("provider_id") @Valid @NotFoundEntity(repository = ProviderRepository.class, id = String.class, message = "There is no Provider with the following id:") String providerId) {
 
-        projectService.associateProjectWithProviders(id, request.providers);
+        projectService.associateProjectWithProvider(id, providerId);
 
         InformativeResponse response = new InformativeResponse();
         response.code = 200;
-        response.message = "The following providers " + request.providers.toString() + " have been associated with Project " + id;
+        response.message = "The following provider " + providerId + " has been associated with Project " + id;
 
         return Response.ok().entity(response).build();
     }
 
     @Tag(name = "Project")
     @Operation(
-            summary = "Dissociate Providers from a Project.",
+            summary = "Dissociate a Provider from a Project.",
             description = "There is a hierarchical relation between Project and Providers which can be expressed as follows: a Project can have a number of different Providers. " +
-                    "By passing a list of Provider ids to this operation, you can correlate those Providers with a specific Project. Finally, it should be noted that any Provider can belong to more than one Project.")
+                    "You can dissociate a Provider from a specific Project.")
     @APIResponse(
             responseCode = "200",
-            description = "Providers have been successfully dissociated from the Project.",
+            description = "Provider has been successfully dissociated from the Project.",
             content = @Content(schema = @Schema(
                     type = SchemaType.OBJECT,
                     implementation = InformativeResponse.class)))
@@ -709,10 +994,9 @@ public class ProjectEndpoint {
                     type = SchemaType.OBJECT,
                     implementation = InformativeResponse.class)))
     @SecurityRequirement(name = "Authentication")
-
     //TODO We have to generate a PATCH method as well
     @POST
-    @Path("/{id}/dissociate")
+    @Path("/{id}/dissociate/provider/{provider_id}")
     @Produces(value = MediaType.APPLICATION_JSON)
     @Consumes(value = MediaType.APPLICATION_JSON)
     public Response dissociateProvidersFromProject(
@@ -722,13 +1006,18 @@ public class ProjectEndpoint {
                     example = "447535",
                     schema = @Schema(type = SchemaType.STRING))
             @PathParam("id") @Valid
-            @AccessProject(collection = Collection.Project, operation = DISSOCIATE) String id, @Valid @NotNull(message = "The request body is empty.") DissociateProjectProviderRequestDto request) {
+            @AccessProject(roles= {"admin"}) String id,
+            @Parameter(
+                    description = "The Provider to be associated.",
+                    required = true,
+                    example = "sites",
+                    schema = @Schema(type = SchemaType.STRING)) @PathParam("provider_id") @Valid @NotFoundEntity(repository = ProviderRepository.class, id = String.class, message = "There is no Provider with the following id:") String providerId) {
 
-        projectService.dissociateProviderFromProject(id, request.providers);
+        projectService.dissociateProviderFromProject(id, providerId);
 
         InformativeResponse response = new InformativeResponse();
         response.code = 200;
-        response.message = "The following providers " + request.providers.toString() + " have been dissociated from Project " + id;
+        response.message = "The following provider " + providerId + " has been dissociated from Project " + id;
 
         return Response.ok().entity(response).build();
     }
@@ -767,7 +1056,6 @@ public class ProjectEndpoint {
             content = @Content(schema = @Schema(
                     type = SchemaType.OBJECT,
                     implementation = InformativeResponse.class)))
-
     @GET
     @Path("/{id}")
     @Produces(value = MediaType.APPLICATION_JSON)
@@ -779,102 +1067,12 @@ public class ProjectEndpoint {
                     example = "447535",
                     schema = @Schema(type = SchemaType.STRING))
             @Valid
-            @AccessProject(collection = Collection.Project, operation = READ)
+            @AccessProject(roles = {"admin", "viewer"})
             @PathParam("id") String id) {
 
         var response = projectService.getById(id);
 
         return Response.ok().entity(response).build();
-    }
-
-    @Tag(name = "Project")
-    @Operation(
-            summary = "Generates a new Access Control Entry.",
-            description = "This endpoint is responsible for generating a new Access Control Entry. " +
-                    "Access Control Entry rules specify which clients are granted or denied access to particular Project entities. " +
-                    "It should be noted that the combination {who, collection, entity} is unique. Therefore, only one Access Control entry can be created for each client and each entity.")
-    @APIResponse(
-            responseCode = "200",
-            description = "Access Control entry has been created successfully.",
-            content = @Content(schema = @Schema(
-                    type = SchemaType.OBJECT,
-                    implementation = InformativeResponse.class)))
-    @APIResponse(
-            responseCode = "400",
-            description = "Bad Request.",
-            content = @Content(schema = @Schema(
-                    type = SchemaType.OBJECT,
-                    implementation = InformativeResponse.class)))
-    @APIResponse(
-            responseCode = "401",
-            description = "Client has not been authenticated.",
-            content = @Content(schema = @Schema(
-                    type = SchemaType.OBJECT,
-                    implementation = InformativeResponse.class)))
-    @APIResponse(
-            responseCode = "403",
-            description = "The authenticated client is not permitted to perform the requested operation.",
-            content = @Content(schema = @Schema(
-                    type = SchemaType.OBJECT,
-                    implementation = InformativeResponse.class)))
-    @APIResponse(
-            responseCode = "404",
-            description = "Project has not been found.",
-            content = @Content(schema = @Schema(
-                    type = SchemaType.OBJECT,
-                    implementation = InformativeResponse.class)))
-    @APIResponse(
-            responseCode = "409",
-            description = "There is an Access Control Entry with this {who, collection, entity}.",
-            content = @Content(schema = @Schema(
-                    type = SchemaType.OBJECT,
-                    implementation = InformativeResponse.class)))
-    @APIResponse(
-            responseCode = "415",
-            description = "Cannot consume content type.",
-            content = @Content(schema = @Schema(
-                    type = SchemaType.OBJECT,
-                    implementation = InformativeResponse.class)))
-    @APIResponse(
-            responseCode = "500",
-            description = "Internal Server Errors.",
-            content = @Content(schema = @Schema(
-                    type = SchemaType.OBJECT,
-                    implementation = InformativeResponse.class)))
-    @SecurityRequirement(name = "Authentication")
-
-    @POST
-    @Path("/{project_id}/acl/{who}")
-    @Produces(value = MediaType.APPLICATION_JSON)
-    @Consumes(value = MediaType.APPLICATION_JSON)
-    public Response createAccessControl(@Valid @NotNull(message = "The request body is empty.") RoleAccessControlRequestDto roleAccessControlRequestDto,
-                                        @Parameter(
-                                                description = "project_id is the id of the entity to which the permissions apply.",
-                                                required = true,
-                                                example = "704567",
-                                                schema = @Schema(type = SchemaType.STRING))
-                                        @Valid
-                                        @AccessProject(collection = Collection.Project, operation = ACL, checkIfExists = false)
-                                        @PathParam("project_id") String projectId,
-                                        @Parameter(
-                                                description = "who is the id of a Client that the Access Control grants access.",
-                                                required = true,
-                                                example = "fbdb4e4a-6e93-4b08-a1e7-0b7bd08520a6",
-                                                schema = @Schema(type = SchemaType.STRING))
-                                        @PathParam("who") @Valid @NotFoundEntity(repository = ClientRepository.class, id = String.class, message = "There is no registered Client with the following id:") String who) {
-
-
-        for (String name : roleAccessControlRequestDto.roles) {
-            roleService.checkIfRoleExists(name);
-        }
-
-        projectService.grantPermission(who, roleAccessControlRequestDto, projectId);
-
-        var informativeResponse = new InformativeResponse();
-        informativeResponse.message = "Project Access Control was successfully created.";
-        informativeResponse.code = 200;
-
-        return Response.ok().entity(informativeResponse).build();
     }
 
     @Tag(name = "Project")
@@ -917,7 +1115,7 @@ public class ProjectEndpoint {
                     example = "704567",
                     schema = @Schema(type = SchemaType.STRING))
             @Valid
-            @AccessProject(collection = Collection.Installation, operation = READ)
+            @AccessProject(roles = {"admin", "viewer"})
             @PathParam("project_id") String projectId,
             @Parameter(name = "page", in = QUERY,
                     description = "Indicates the page number. Page number must be >= 1.") @DefaultValue("1") @Min(value = 1, message = "Page number must be >= 1.") @QueryParam("page") int page,
@@ -929,372 +1127,6 @@ public class ProjectEndpoint {
         var serverInfo = new AccountingUriInfo(serverUrl.concat(basePath).concat(uriInfo.getPath()));
 
         return Response.ok().entity(projectService.getInstallationsByProject(projectId, page - 1, size, serverInfo)).build();
-    }
-
-    @Tag(name = "Project")
-    @Operation(
-            summary = "Modify an existing Access Control Entry.",
-            description = "This endpoint is responsible for updating an existing Access Control Entry. It will modify a specific Access Control Entry " +
-                    "which has granted permissions on a Project to a specific client." +
-                    "You can update a part or all attributes of the Access Control entity.")
-    @APIResponse(
-            responseCode = "200",
-            description = "Access Control entry has been updated successfully.",
-            content = @Content(schema = @Schema(
-                    type = SchemaType.OBJECT,
-                    implementation = InformativeResponse.class)))
-    @APIResponse(
-            responseCode = "400",
-            description = "Bad Request.",
-            content = @Content(schema = @Schema(
-                    type = SchemaType.OBJECT,
-                    implementation = InformativeResponse.class)))
-    @APIResponse(
-            responseCode = "401",
-            description = "Client has not been authenticated.",
-            content = @Content(schema = @Schema(
-                    type = SchemaType.OBJECT,
-                    implementation = InformativeResponse.class)))
-    @APIResponse(
-            responseCode = "403",
-            description = "The authenticated client is not permitted to perform the requested operation.",
-            content = @Content(schema = @Schema(
-                    type = SchemaType.OBJECT,
-                    implementation = InformativeResponse.class)))
-    @APIResponse(
-            responseCode = "404",
-            description = "Project has not been found.",
-            content = @Content(schema = @Schema(
-                    type = SchemaType.OBJECT,
-                    implementation = InformativeResponse.class)))
-    @APIResponse(
-            responseCode = "409",
-            description = "There is an Access Control Entry with this {who, collection, entity}.",
-            content = @Content(schema = @Schema(
-                    type = SchemaType.OBJECT,
-                    implementation = InformativeResponse.class)))
-    @APIResponse(
-            responseCode = "415",
-            description = "Cannot consume content type.",
-            content = @Content(schema = @Schema(
-                    type = SchemaType.OBJECT,
-                    implementation = InformativeResponse.class)))
-    @APIResponse(
-            responseCode = "500",
-            description = "Internal Server Errors.",
-            content = @Content(schema = @Schema(
-                    type = SchemaType.OBJECT,
-                    implementation = InformativeResponse.class)))
-    @SecurityRequirement(name = "Authentication")
-
-    @PATCH
-    @Path("/{project_id}/acl/{who}")
-    @Produces(value = MediaType.APPLICATION_JSON)
-    @Consumes(value = MediaType.APPLICATION_JSON)
-    public Response modifyAccessControl(@Valid @NotNull(message = "The request body is empty.") RoleAccessControlUpdateDto roleAccessControlUpdateDto,
-                                        @Parameter(
-                                                description = "project_id in which permissions have been granted.",
-                                                required = true,
-                                                example = "704567",
-                                                schema = @Schema(type = SchemaType.STRING))
-                                        @Valid
-                                        @AccessProject(collection = Collection.Project, operation = ACL)
-                                        @PathParam("project_id") String projectId,
-                                        @Parameter(
-                                                description = "who is the client to whom the permissions have been granted.",
-                                                required = true,
-                                                example = "fbdb4e4a-6e93-4b08-a1e7-0b7bd08520a6",
-                                                schema = @Schema(type = SchemaType.STRING))
-                                        @PathParam("who") @Valid @NotFoundEntity(repository = ClientRepository.class, id = String.class, message = "There is no registered Client with the following id:") String who) {
-
-
-        for (String name : roleAccessControlUpdateDto.roles) {
-            roleService.checkIfRoleExists(name);
-        }
-
-        var response = projectService.modifyPermission(who, roleAccessControlUpdateDto, projectId);
-
-        return Response.ok().entity(response).build();
-    }
-
-    @Tag(name = "Project")
-    @Operation(
-            summary = "Deletes an existing Access Control entry.",
-            description = "You can delete the permissions that a client can access to manage a specific Project.")
-    @APIResponse(
-            responseCode = "200",
-            description = "Access Control entry has been deleted successfully.",
-            content = @Content(schema = @Schema(
-                    type = SchemaType.OBJECT,
-                    implementation = InformativeResponse.class)))
-    @APIResponse(
-            responseCode = "401",
-            description = "Client has not been authenticated.",
-            content = @Content(schema = @Schema(
-                    type = SchemaType.OBJECT,
-                    implementation = InformativeResponse.class)))
-    @APIResponse(
-            responseCode = "403",
-            description = "The authenticated client is not permitted to perform the requested operation.",
-            content = @Content(schema = @Schema(
-                    type = SchemaType.OBJECT,
-                    implementation = InformativeResponse.class)))
-    @APIResponse(
-            responseCode = "404",
-            description = "Project has not been found.",
-            content = @Content(schema = @Schema(
-                    type = SchemaType.OBJECT,
-                    implementation = InformativeResponse.class)))
-    @APIResponse(
-            responseCode = "500",
-            description = "Internal Server Errors.",
-            content = @Content(schema = @Schema(
-                    type = SchemaType.OBJECT,
-                    implementation = InformativeResponse.class)))
-    @SecurityRequirement(name = "Authentication")
-
-    @DELETE
-    @Path("/{project_id}/acl/{who}")
-    @Produces(value = MediaType.APPLICATION_JSON)
-    public Response deleteAccessControl(@Parameter(
-            description = "project_id in which permissions have been granted.",
-            required = true,
-            example = "704567",
-            schema = @Schema(type = SchemaType.STRING))
-                                        @Valid
-                                        @AccessProject(collection = Collection.Project, operation = ACL)
-                                        @PathParam("project_id") String projectId,
-                                        @Parameter(
-                                                description = "who is the client to whom the permissions have been granted.",
-                                                required = true,
-                                                example = "fbdb4e4a-6e93-4b08-a1e7-0b7bd08520a6",
-                                                schema = @Schema(type = SchemaType.STRING))
-                                        @PathParam("who") @Valid @NotFoundEntity(repository = ClientRepository.class, id = String.class, message = "There is no registered Client with the following id:") String who) {
-
-
-        projectService.deletePermission(who, projectId);
-
-        var successResponse = new InformativeResponse();
-        successResponse.code = 200;
-        successResponse.message = "Project Access Control entry has been deleted successfully.";
-
-        return Response.ok().entity(successResponse).build();
-    }
-
-    @Tag(name = "Project")
-    @Operation(
-            summary = "Returns an existing Access Control entry.",
-            description = "This operation returns the Access Control entry created for a client upon an Project entity.")
-    @APIResponse(
-            responseCode = "200",
-            description = "The corresponding Access Control entry.",
-            content = @Content(schema = @Schema(
-                    type = SchemaType.OBJECT,
-                    implementation = RoleAccessControlResponseDto.class)))
-    @APIResponse(
-            responseCode = "401",
-            description = "Client has not been authenticated.",
-            content = @Content(schema = @Schema(
-                    type = SchemaType.OBJECT,
-                    implementation = InformativeResponse.class)))
-    @APIResponse(
-            responseCode = "403",
-            description = "The authenticated client is not permitted to perform the requested operation.",
-            content = @Content(schema = @Schema(
-                    type = SchemaType.OBJECT,
-                    implementation = InformativeResponse.class)))
-    @APIResponse(
-            responseCode = "404",
-            description = "Access Control entry has not been found.",
-            content = @Content(schema = @Schema(
-                    type = SchemaType.OBJECT,
-                    implementation = InformativeResponse.class)))
-    @APIResponse(
-            responseCode = "500",
-            description = "Internal Server Errors.",
-            content = @Content(schema = @Schema(
-                    type = SchemaType.OBJECT,
-                    implementation = InformativeResponse.class)))
-    @SecurityRequirement(name = "Authentication")
-
-    @GET
-    @Path("/{project_id}/acl/{who}")
-    @Produces(value = MediaType.APPLICATION_JSON)
-    public Response getAccessControl(
-            @Parameter(
-                    description = "project_id in which permissions have been granted.",
-                    required = true,
-                    example = "704567",
-                    schema = @Schema(type = SchemaType.STRING))
-            @AccessProject(collection = Collection.Project, operation = ACL)
-            @PathParam("project_id") String projectId,
-            @Parameter(
-                    description = "who is the client to whom the permissions have been granted.",
-                    required = true,
-                    example = "fbdb4e4a-6e93-4b08-a1e7-0b7bd08520a6",
-                    schema = @Schema(type = SchemaType.STRING))
-            @PathParam("who") @Valid @NotFoundEntity(repository = ClientRepository.class, id = String.class, message = "There is no registered Client with the following id:") String who) {
-
-        var response = projectService.fetchPermission(who, projectId);
-
-        return Response.ok().entity(response).build();
-    }
-
-    @Tag(name = "Project")
-    @Operation(
-            summary = "Returns all Access Control entries that have been created for a particular Project.",
-            description = "Returns all Access Control entries that have been created for a particular Project. " +
-                    "By default, the first page of 10 Metrics will be returned. You can tune the default values by using the query parameters page and size.")
-    @APIResponse(
-            responseCode = "200",
-            description = "The corresponding Access Control entries.",
-            content = @Content(schema = @Schema(
-                    type = SchemaType.OBJECT,
-                    implementation = PageableRoleAccessControlResponseDto.class)))
-    @APIResponse(
-            responseCode = "401",
-            description = "Client has not been authenticated.",
-            content = @Content(schema = @Schema(
-                    type = SchemaType.OBJECT,
-                    implementation = InformativeResponse.class)))
-    @APIResponse(
-            responseCode = "403",
-            description = "The authenticated client is not permitted to perform the requested operation.",
-            content = @Content(schema = @Schema(
-                    type = SchemaType.OBJECT,
-                    implementation = InformativeResponse.class)))
-    @APIResponse(
-            responseCode = "500",
-            description = "Internal Server Errors.",
-            content = @Content(schema = @Schema(
-                    type = SchemaType.OBJECT,
-                    implementation = InformativeResponse.class)))
-    @SecurityRequirement(name = "Authentication")
-
-    @GET
-    @Path("/{project_id}/acl")
-    @Produces(value = MediaType.APPLICATION_JSON)
-    public Response getAllProjectAccessControl(
-            @Parameter(
-                    description = "project_id in which permissions have been granted.",
-                    required = true,
-                    example = "704567",
-                    schema = @Schema(type = SchemaType.STRING))
-            @AccessProject(collection = Collection.Project, operation = ACL)
-            @PathParam("project_id") String projectId,
-            @Parameter(name = "page", in = QUERY,
-            description = "Indicates the page number. Page number must be >= 1.") @DefaultValue("1") @Min(value = 1, message = "Page number must be >= 1.") @QueryParam("page") int page,
-                                        @Parameter(name = "size", in = QUERY,
-                                                description = "The page size.") @DefaultValue("10") @Min(value = 1, message = "Page size must be between 1 and 100.")
-            @Max(value = 100, message = "Page size must be between 1 and 100.") @QueryParam("size") int size,
-                                        @Context UriInfo uriInfo){
-
-        var serverInfo = new AccountingUriInfo(serverUrl.concat(basePath).concat(uriInfo.getPath()));
-
-        var response = projectService.fetchAllPermissions( page - 1, size, serverInfo, projectId);
-
-        return Response.ok().entity(response).build();
-    }
-
-    @Tag(name = "Provider")
-    @Operation(
-            summary = "Generates a new Access Control Entry.",
-            description = "This endpoint is responsible for generating a new Access Control Entry. " +
-                    "Access Control Entry rules specify which clients are granted access to particular Provider of a specific Project. " +
-                    "It should be noted that the combination {who, collection, entity} is unique. Therefore, only one Access Control entry can be created for each client and each entity.")
-    @APIResponse(
-            responseCode = "200",
-            description = "Access Control entry has been created successfully.",
-            content = @Content(schema = @Schema(
-                    type = SchemaType.OBJECT,
-                    implementation = InformativeResponse.class)))
-    @APIResponse(
-            responseCode = "400",
-            description = "Bad Request.",
-            content = @Content(schema = @Schema(
-                    type = SchemaType.OBJECT,
-                    implementation = InformativeResponse.class)))
-    @APIResponse(
-            responseCode = "401",
-            description = "Client has not been authenticated.",
-            content = @Content(schema = @Schema(
-                    type = SchemaType.OBJECT,
-                    implementation = InformativeResponse.class)))
-    @APIResponse(
-            responseCode = "403",
-            description = "The authenticated client is not permitted to perform the requested operation.",
-            content = @Content(schema = @Schema(
-                    type = SchemaType.OBJECT,
-                    implementation = InformativeResponse.class)))
-    @APIResponse(
-            responseCode = "404",
-            description = "Not Found.",
-            content = @Content(schema = @Schema(
-                    type = SchemaType.OBJECT,
-                    implementation = InformativeResponse.class)))
-    @APIResponse(
-            responseCode = "409",
-            description = "There is an Access Control Entry with this {who, collection, entity}.",
-            content = @Content(schema = @Schema(
-                    type = SchemaType.OBJECT,
-                    implementation = InformativeResponse.class)))
-    @APIResponse(
-            responseCode = "415",
-            description = "Cannot consume content type.",
-            content = @Content(schema = @Schema(
-                    type = SchemaType.OBJECT,
-                    implementation = InformativeResponse.class)))
-    @APIResponse(
-            responseCode = "500",
-            description = "Internal Server Errors.",
-            content = @Content(schema = @Schema(
-                    type = SchemaType.OBJECT,
-                    implementation = InformativeResponse.class)))
-    @SecurityRequirement(name = "Authentication")
-
-    @POST
-    @Path("/{project_id}/providers/{provider_id}/acl/{who}")
-    @Produces(value = MediaType.APPLICATION_JSON)
-    @Consumes(value = MediaType.APPLICATION_JSON)
-    @AccessProvider(collection = Collection.Provider, operation = ACL)
-    public Response createProviderAccessControl(@Parameter(
-            description = "The Project ID that the Provider belongs to.",
-            required = true,
-            example = "704567",
-            schema = @Schema(type = SchemaType.STRING))
-                                                @PathParam("project_id") String projectId,
-                                                @Parameter(
-                                                        description = "provider_id is the id of the entity to which the permissions apply.",
-                                                        required = true,
-                                                        example = "sites",
-                                                        schema = @Schema(type = SchemaType.STRING))
-                                                @PathParam("provider_id") String providerId,
-                                                @Parameter(
-                                                        description = "who is the id of a Client that the Access Control grants access.",
-                                                        required = true,
-                                                        example = "fbdb4e4a-6e93-4b08-a1e7-0b7bd08520a6",
-                                                        schema = @Schema(type = SchemaType.STRING))
-                                                @PathParam("who") @Valid @NotFoundEntity(repository = ClientRepository.class, id = String.class, message = "There is no registered Client with the following id:") String who,
-                                                @Valid @NotNull(message = "The request body is empty.") RoleAccessControlRequestDto roleAccessControlRequestDto) {
-
-        var belongs = hierarchicalRelationService.providerBelongsToProject(projectId, providerId);
-
-        if (!belongs) {
-            String message = String.format("There is no relationship between Project {%s} and Provider {%s}", projectId, providerId);
-            throw new BadRequestException(message);
-        }
-
-        for (String name : roleAccessControlRequestDto.roles) {
-            roleService.checkIfRoleExists(name);
-        }
-
-        providerService.grantPermission(who, roleAccessControlRequestDto, projectId, providerId);
-
-        var informativeResponse = new InformativeResponse();
-        informativeResponse.message = "Provider Access Control was successfully created.";
-        informativeResponse.code = 200;
-
-        return Response.ok().entity(informativeResponse).build();
     }
 
     @Tag(name = "Provider")
@@ -1330,7 +1162,7 @@ public class ProjectEndpoint {
     @GET
     @Path("/{project_id}/providers/{provider_id}/installations")
     @Produces(value = MediaType.APPLICATION_JSON)
-    @AccessProvider(collection = Collection.Installation, operation = READ)
+    @AccessProvider(roles = {"admin", "viewer"})
     public Response getAllProviderInstallations(
             @Parameter(
                     description = "The Project ID that the Provider belongs to.",
@@ -1354,311 +1186,6 @@ public class ProjectEndpoint {
         var serverInfo = new AccountingUriInfo(serverUrl.concat(basePath).concat(uriInfo.getPath()));
 
         return Response.ok().entity(providerService.findInstallationsByProvider(projectId, providerId, page - 1, size, serverInfo)).build();
-    }
-
-    @Tag(name = "Provider")
-    @Operation(
-            summary = "Modify an existing Access Control Entry.",
-            description = "This endpoint is responsible for updating an existing Access Control Entry. " +
-                    "You can update a part or all attributes of the Access Control entity.")
-    @APIResponse(
-            responseCode = "200",
-            description = "Access Control entry has been updated successfully.",
-            content = @Content(schema = @Schema(
-                    type = SchemaType.OBJECT,
-                    implementation = InformativeResponse.class)))
-    @APIResponse(
-            responseCode = "400",
-            description = "Bad Request.",
-            content = @Content(schema = @Schema(
-                    type = SchemaType.OBJECT,
-                    implementation = InformativeResponse.class)))
-    @APIResponse(
-            responseCode = "401",
-            description = "Client has not been authenticated.",
-            content = @Content(schema = @Schema(
-                    type = SchemaType.OBJECT,
-                    implementation = InformativeResponse.class)))
-    @APIResponse(
-            responseCode = "403",
-            description = "The authenticated client is not permitted to perform the requested operation.",
-            content = @Content(schema = @Schema(
-                    type = SchemaType.OBJECT,
-                    implementation = InformativeResponse.class)))
-    @APIResponse(
-            responseCode = "404",
-            description = "Not Found.",
-            content = @Content(schema = @Schema(
-                    type = SchemaType.OBJECT,
-                    implementation = InformativeResponse.class)))
-    @APIResponse(
-            responseCode = "409",
-            description = "There is an Access Control Entry with this {who, collection, entity}.",
-            content = @Content(schema = @Schema(
-                    type = SchemaType.OBJECT,
-                    implementation = InformativeResponse.class)))
-    @APIResponse(
-            responseCode = "415",
-            description = "Cannot consume content type.",
-            content = @Content(schema = @Schema(
-                    type = SchemaType.OBJECT,
-                    implementation = InformativeResponse.class)))
-    @APIResponse(
-            responseCode = "500",
-            description = "Internal Server Errors.",
-            content = @Content(schema = @Schema(
-                    type = SchemaType.OBJECT,
-                    implementation = InformativeResponse.class)))
-    @SecurityRequirement(name = "Authentication")
-
-    @PATCH
-    @Path("/{project_id}/providers/{provider_id}/acl/{who}")
-    @Produces(value = MediaType.APPLICATION_JSON)
-    @Consumes(value = MediaType.APPLICATION_JSON)
-    @AccessProvider(collection = Collection.Provider, operation = ACL)
-    public Response modifyProviderAccessControl(@Parameter(
-            description = "The Project ID that the Provider belongs to.",
-            required = true,
-            example = "704567",
-            schema = @Schema(type = SchemaType.STRING))
-                                                @PathParam("project_id") String projectId,
-                                                @Parameter(
-                                                        description = "provider_id in which permissions have been granted.",
-                                                        required = true,
-                                                        example = "sites",
-                                                        schema = @Schema(type = SchemaType.STRING))
-                                                @PathParam("provider_id") String providerId,
-                                                @Parameter(
-                                                        description = "who is the client to whom the permissions have been granted.",
-                                                        required = true,
-                                                        example = "fbdb4e4a-6e93-4b08-a1e7-0b7bd08520a6",
-                                                        schema = @Schema(type = SchemaType.STRING))
-                                                @PathParam("who") @Valid @NotFoundEntity(repository = ClientRepository.class, id = String.class, message = "There is no registered Client with the following id:") String who,
-                                                @Valid @NotNull(message = "The request body is empty.") RoleAccessControlUpdateDto roleAccessControlUpdateDto) {
-
-        var belongs = hierarchicalRelationService.providerBelongsToProject(projectId, providerId);
-
-        if (!belongs) {
-            String message = String.format("There is no relationship between Project {%s} and Provider {%s}", projectId, providerId);
-            throw new BadRequestException(message);
-        }
-
-        for (String name : roleAccessControlUpdateDto.roles) {
-            roleService.checkIfRoleExists(name);
-        }
-
-        var response = providerService.modifyPermission(who, roleAccessControlUpdateDto, projectId, providerId);
-
-        return Response.ok().entity(response).build();
-    }
-
-    @Tag(name = "Provider")
-    @Operation(
-            summary = "Deletes an existing Access Control entry.",
-            description = "You can delete the permissions that a client can access to manage a specific Provider.")
-    @APIResponse(
-            responseCode = "200",
-            description = "Access Control entry has been deleted successfully.",
-            content = @Content(schema = @Schema(
-                    type = SchemaType.OBJECT,
-                    implementation = InformativeResponse.class)))
-    @APIResponse(
-            responseCode = "401",
-            description = "Client has not been authenticated.",
-            content = @Content(schema = @Schema(
-                    type = SchemaType.OBJECT,
-                    implementation = InformativeResponse.class)))
-    @APIResponse(
-            responseCode = "403",
-            description = "The authenticated client is not permitted to perform the requested operation.",
-            content = @Content(schema = @Schema(
-                    type = SchemaType.OBJECT,
-                    implementation = InformativeResponse.class)))
-    @APIResponse(
-            responseCode = "404",
-            description = "Provider has not been found.",
-            content = @Content(schema = @Schema(
-                    type = SchemaType.OBJECT,
-                    implementation = InformativeResponse.class)))
-    @APIResponse(
-            responseCode = "500",
-            description = "Internal Server Errors.",
-            content = @Content(schema = @Schema(
-                    type = SchemaType.OBJECT,
-                    implementation = InformativeResponse.class)))
-    @SecurityRequirement(name = "Authentication")
-
-    @DELETE()
-    @Path("/{project_id}/providers/{provider_id}/acl/{who}")
-    @Produces(value = MediaType.APPLICATION_JSON)
-    @AccessProvider(collection = Collection.Provider, operation = ACL)
-    public Response deleteProviderAccessControl(
-            @Parameter(
-                    description = "The Project ID that the Provider belongs to.",
-                    required = true,
-                    example = "704567",
-                    schema = @Schema(type = SchemaType.STRING))
-            @PathParam("project_id") String projectId,
-            @Parameter(
-                    description = "provider_id in which permissions have been granted.",
-                    required = true,
-                    example = "sites",
-                    schema = @Schema(type = SchemaType.STRING))
-            @PathParam("provider_id") String providerId,
-            @Parameter(
-                    description = "who is the client to whom the permissions have been granted.",
-                    required = true,
-                    example = "fbdb4e4a-6e93-4b08-a1e7-0b7bd08520a6",
-                    schema = @Schema(type = SchemaType.STRING))
-            @PathParam("who") @Valid @NotFoundEntity(repository = ClientRepository.class, id = String.class, message = "There is no registered Client with the following id:") String who) {
-
-        var belongs = hierarchicalRelationService.providerBelongsToProject(projectId, providerId);
-
-        if (!belongs) {
-            String message = String.format("There is no relationship between Project {%s} and Provider {%s}", projectId, providerId);
-            throw new BadRequestException(message);
-        }
-
-        providerService.deletePermission(who, projectId, providerId);
-
-        var successResponse = new InformativeResponse();
-        successResponse.code = 200;
-        successResponse.message = "Provider Access Control entry has been deleted successfully.";
-
-        return Response.ok().entity(successResponse).build();
-    }
-
-    @Tag(name = "Provider")
-    @Operation(
-            summary = "Returns an existing Access Control entry.",
-            description = "This operation returns the Access Control entry created for a client upon a Provider entity.")
-    @APIResponse(
-            responseCode = "200",
-            description = "The corresponding Access Control entry.",
-            content = @Content(schema = @Schema(
-                    type = SchemaType.OBJECT,
-                    implementation = RoleAccessControlResponseDto.class)))
-    @APIResponse(
-            responseCode = "401",
-            description = "Client has not been authenticated.",
-            content = @Content(schema = @Schema(
-                    type = SchemaType.OBJECT,
-                    implementation = InformativeResponse.class)))
-    @APIResponse(
-            responseCode = "403",
-            description = "The authenticated client is not permitted to perform the requested operation.",
-            content = @Content(schema = @Schema(
-                    type = SchemaType.OBJECT,
-                    implementation = InformativeResponse.class)))
-    @APIResponse(
-            responseCode = "404",
-            description = "Access Control entry has not been found.",
-            content = @Content(schema = @Schema(
-                    type = SchemaType.OBJECT,
-                    implementation = InformativeResponse.class)))
-    @APIResponse(
-            responseCode = "500",
-            description = "Internal Server Errors.",
-            content = @Content(schema = @Schema(
-                    type = SchemaType.OBJECT,
-                    implementation = InformativeResponse.class)))
-    @SecurityRequirement(name = "Authentication")
-
-    @GET
-    @Path("/{project_id}/providers/{provider_id}/acl/{who}")
-    @Produces(value = MediaType.APPLICATION_JSON)
-    @AccessProvider(collection = Collection.Provider, operation = ACL)
-    public Response getProviderAccessControl(
-            @Parameter(
-                    description = "The Project ID that the Provider belongs to.",
-                    required = true,
-                    example = "704567",
-                    schema = @Schema(type = SchemaType.STRING))
-            @PathParam("project_id") String projectId,
-            @Parameter(
-                    description = "provider_id in which permissions have been granted.",
-                    required = true,
-                    example = "sites",
-                    schema = @Schema(type = SchemaType.STRING))
-            @PathParam("provider_id") String providerId,
-            @Parameter(
-                    description = "who is the client to whom the permissions have been granted.",
-                    required = true,
-                    example = "fbdb4e4a-6e93-4b08-a1e7-0b7bd08520a6",
-                    schema = @Schema(type = SchemaType.STRING))
-            @PathParam("who") @Valid @NotFoundEntity(repository = ClientRepository.class, id = String.class, message = "There is no registered Client with the following id:") String who) {
-
-        var belongs = hierarchicalRelationService.providerBelongsToProject(projectId, providerId);
-
-        if (!belongs) {
-            String message = String.format("There is no relationship between Project {%s} and Provider {%s}", projectId, providerId);
-            throw new BadRequestException(message);
-        }
-
-        var response = providerService.fetchPermission(who, projectId, providerId);
-
-        return Response.ok().entity(response).build();
-    }
-
-    @Tag(name = "Provider")
-    @Operation(
-            summary = "Returns all Access Control entries that have been created for a particular Provider.",
-            description = "Returns all Access Control entries that have been created for a particular Provider. " +
-                    "By default, the first page of 10 Metrics will be returned. You can tune the default values by using the query parameters page and size.")
-    @APIResponse(
-            responseCode = "200",
-            description = "The corresponding Access Control entries.",
-            content = @Content(schema = @Schema(
-                    type = SchemaType.OBJECT,
-                    implementation = PageableRoleAccessControlResponseDto.class)))
-    @APIResponse(
-            responseCode = "401",
-            description = "Client has not been authenticated.",
-            content = @Content(schema = @Schema(
-                    type = SchemaType.OBJECT,
-                    implementation = InformativeResponse.class)))
-    @APIResponse(
-            responseCode = "403",
-            description = "The authenticated client is not permitted to perform the requested operation.",
-            content = @Content(schema = @Schema(
-                    type = SchemaType.OBJECT,
-                    implementation = InformativeResponse.class)))
-    @APIResponse(
-            responseCode = "500",
-            description = "Internal Server Errors.",
-            content = @Content(schema = @Schema(
-                    type = SchemaType.OBJECT,
-                    implementation = InformativeResponse.class)))
-    @SecurityRequirement(name = "Authentication")
-    @GET
-    @Path("/{project_id}/providers/{provider_id}/acl")
-    @Produces(value = MediaType.APPLICATION_JSON)
-    @AccessProvider(collection = Collection.Provider, operation = ACL)
-    public Response getAllProviderAccessControl(
-            @Parameter(
-                    description = "The Project ID that the Provider belongs to.",
-                    required = true,
-                    example = "704567",
-                    schema = @Schema(type = SchemaType.STRING))
-            @PathParam("project_id") String projectId,
-            @Parameter(
-                    description = "provider_id in which permissions have been granted.",
-                    required = true,
-                    example = "sites",
-                    schema = @Schema(type = SchemaType.STRING))
-            @PathParam("provider_id") String providerId,
-            @Parameter(name = "page", in = QUERY,
-                    description = "Indicates the page number. Page number must be >= 1.") @DefaultValue("1") @Min(value = 1, message = "Page number must be >= 1.") @QueryParam("page") int page,
-            @Parameter(name = "size", in = QUERY,
-                    description = "The page size.") @DefaultValue("10") @Min(value = 1, message = "Page size must be between 1 and 100.")
-            @Max(value = 100, message = "Page size must be between 1 and 100.") @QueryParam("size") int size,
-            @Context UriInfo uriInfo){
-
-        var serverInfo = new AccountingUriInfo(serverUrl.concat(basePath).concat(uriInfo.getPath()));
-
-        var response = providerService.fetchAllPermissions(page - 1, size, serverInfo, projectId, providerId);
-
-        return Response.ok().entity(response).build();
     }
 
     @Tag(name = "Project")
@@ -1704,42 +1231,42 @@ public class ProjectEndpoint {
                     type = SchemaType.OBJECT,
                     implementation = InformativeResponse.class)))
     @SecurityRequirement(name = "Authentication")
-
     @POST
     @Path("/search")
     @Produces(value = MediaType.APPLICATION_JSON)
     @Consumes(value = MediaType.APPLICATION_JSON)
+    @AccessResource
     public Response search(
             @NotEmpty(message = "The request body is empty.") @RequestBody(content = @Content(
                     schema = @Schema(implementation = String.class),
                     mediaType = MediaType.APPLICATION_JSON,
                     examples = {
                             @ExampleObject(
-                                    name = "An example request of a search on projects",
+                                    name = "A simple example search request on projects",
                                     value = "{\n" +
                                             "            \"type\":\"query\",\n" +
                                             "            \"field\": \"acronym\",\n" +
-                                            "            \"values\": \"El_CapiTun\",\n" +
-                                            "            \"operand\": \"eq\"          \n" +
+                                            "            \"values\": \"Test1\",\n" +
+                                            "            \"operand\": \"eq\"\n" +
                                             "\n" +
                                             "}",
-                                    summary = "A complex search on Projects "),
+                                    summary = "A simple search on Projects "),
                             @ExampleObject(
-                                    name = "An example request of a search on projects",
+                                    name = "A complex example search request on projects",
                                     value = "{\n" +
                                             "  \"type\": \"filter\",\n" +
                                             "  \"operator\": \"OR\",\n" +
                                             "  \"criteria\": [{\n" +
                                             "            \"type\":\"query\",\n" +
                                             "            \"field\": \"title\",\n" +
-                                            "            \"values\": \"Functional and Molecular Characterisation of Breast Cancer Stem Cells\",\n" +
-                                            "            \"operand\": \"eq\"          \n" +
+                                            "            \"values\": \"Test2\",\n" +
+                                            "            \"operand\": \"eq\"\n" +
                                             "\n" +
                                             "},{\n" +
                                             "            \"type\":\"query\",\n" +
                                             "            \"field\": \"acronym\",\n" +
-                                            "            \"values\": \"El_CapiTun\",\n" +
-                                            "            \"operand\": \"eq\"          \n" +
+                                            "            \"values\": \"Test Project\",\n" +
+                                            "            \"operand\": \"eq\"\n" +
                                             "\n" +
                                             "}]}",
                                     summary = "A complex search on Projects ")})
@@ -1762,67 +1289,67 @@ public class ProjectEndpoint {
         return Response.ok().entity(results).build();
     }
 
+//    @Tag(name = "Project")
+//    @Operation(
+//            operationId = "get-all-projects",
+//            summary = "Returns all Projects to which a client has access.",
+//            description = "Returns all Projects to which a client has access." )
+//
+//    @APIResponse(
+//            responseCode = "200",
+//            description = "The corresponding Projects.",
+//            content = @Content(schema = @Schema(
+//                    type = SchemaType.OBJECT,
+//                    implementation = PageableProjectProjection.class)))
+//    @APIResponse(
+//            responseCode = "401",
+//            description = "Client has not been authenticated.",
+//            content = @Content(schema = @Schema(
+//                    type = SchemaType.OBJECT,
+//                    implementation = InformativeResponse.class)))
+//    @APIResponse(
+//            responseCode = "403",
+//            description = "The authenticated client is not permitted to perform the requested operation.",
+//            content = @Content(schema = @Schema(
+//                    type = SchemaType.OBJECT,
+//                    implementation = InformativeResponse.class)))
+//    @APIResponse(
+//            responseCode = "415",
+//            description = "Cannot consume content type.",
+//            content = @Content(schema = @Schema(
+//                    type = SchemaType.OBJECT,
+//                    implementation = InformativeResponse.class)))
+//    @APIResponse(
+//            responseCode = "500",
+//            description = "Internal Server Errors.",
+//            content = @Content(schema = @Schema(
+//                    type = SchemaType.OBJECT,
+//                    implementation = InformativeResponse.class)))
+//    @SecurityRequirement(name = "Authentication")
+//    @GET
+//    @Produces(value = MediaType.APPLICATION_JSON)
+//    @Consumes(value = MediaType.APPLICATION_JSON)
+//    public Response getAll(
+//
+//            @Parameter(name = "page", in = QUERY,
+//                    description = "Indicates the page number. Page number must be >= 1.") @DefaultValue("1") @Min(value = 1, message = "Page number must be >= 1.") @QueryParam("page") int page,
+//            @Parameter(name = "size", in = QUERY,
+//                    description = "The page size.") @DefaultValue("10") @Min(value = 1, message = "Page size must be between 1 and 100.")
+//            @Max(value = 100, message = "Page size must be between 1 and 100.") @QueryParam("size") int size,
+//            @Context UriInfo uriInfo
+//    ) throws ParseException, NoSuchFieldException, org.json.simple.parser.ParseException, JsonProcessingException {
+//
+//        var serverInfo = new AccountingUriInfo(serverUrl.concat(basePath).concat(uriInfo.getPath()));
+//
+//        var results= projectService.getAll( page - 1, size, serverInfo);
+//
+//        return Response.ok().entity(results).build();
+//    }
+
     @Tag(name = "Project")
     @Operation(
-            operationId = "get-all-projects",
-            summary = "Returns all Projects to which a client has access.",
-            description = "Returns all Projects to which a client has access." )
-
-    @APIResponse(
-            responseCode = "200",
-            description = "The corresponding Projects.",
-            content = @Content(schema = @Schema(
-                    type = SchemaType.OBJECT,
-                    implementation = PageableProjectProjection.class)))
-    @APIResponse(
-            responseCode = "401",
-            description = "Client has not been authenticated.",
-            content = @Content(schema = @Schema(
-                    type = SchemaType.OBJECT,
-                    implementation = InformativeResponse.class)))
-    @APIResponse(
-            responseCode = "403",
-            description = "The authenticated client is not permitted to perform the requested operation.",
-            content = @Content(schema = @Schema(
-                    type = SchemaType.OBJECT,
-                    implementation = InformativeResponse.class)))
-    @APIResponse(
-            responseCode = "415",
-            description = "Cannot consume content type.",
-            content = @Content(schema = @Schema(
-                    type = SchemaType.OBJECT,
-                    implementation = InformativeResponse.class)))
-    @APIResponse(
-            responseCode = "500",
-            description = "Internal Server Errors.",
-            content = @Content(schema = @Schema(
-                    type = SchemaType.OBJECT,
-                    implementation = InformativeResponse.class)))
-    @SecurityRequirement(name = "Authentication")
-    @GET
-    @Produces(value = MediaType.APPLICATION_JSON)
-    @Consumes(value = MediaType.APPLICATION_JSON)
-    public Response getAll(
-
-            @Parameter(name = "page", in = QUERY,
-                    description = "Indicates the page number. Page number must be >= 1.") @DefaultValue("1") @Min(value = 1, message = "Page number must be >= 1.") @QueryParam("page") int page,
-            @Parameter(name = "size", in = QUERY,
-                    description = "The page size.") @DefaultValue("10") @Min(value = 1, message = "Page size must be between 1 and 100.")
-            @Max(value = 100, message = "Page size must be between 1 and 100.") @QueryParam("size") int size,
-            @Context UriInfo uriInfo
-    ) throws ParseException, NoSuchFieldException, org.json.simple.parser.ParseException, JsonProcessingException {
-
-        var serverInfo = new AccountingUriInfo(serverUrl.concat(basePath).concat(uriInfo.getPath()));
-
-        var results= projectService.getAll( page - 1, size, serverInfo);
-
-        return Response.ok().entity(results).build();
-    }
-
-    @Tag(name = "Project")
-    @Operation(
-            summary = "Get Project report with metrics and access controls.",
-            description = "Returns a report for a specific Project and time period, including aggregated metric values and role-based access control information.")
+            summary = "Get Project report with metrics.",
+            description = "Returns a report for a specific Project and time period, including aggregated metric values.")
     @APIResponse(
             responseCode = "200",
             description = "Project report retrieved successfully.",
@@ -1865,7 +1392,7 @@ public class ProjectEndpoint {
                     schema = @Schema(type = SchemaType.STRING))
             @PathParam("project_id")
             @Valid
-            @AccessProject(collection = Collection.Metric, operation = READ) String projectId,
+            @AccessProject(roles = {"admin", "viewer"}) String projectId,
             @Parameter(
                     name = "start",
                     description = "Start date in yyyy-MM-dd format",
@@ -1938,36 +1465,6 @@ public class ProjectEndpoint {
 
         @Override
         public void setContent(List<InstallationResponseDto> content) {
-            this.content = content;
-        }
-    }
-
-    public static class PageableHierarchicalProject extends PageResource<String> {
-
-        private List<String> content;
-
-        @Override
-        public List<String> getContent() {
-            return content;
-        }
-
-        @Override
-        public void setContent(List<String> content) {
-            this.content = content;
-        }
-    }
-
-    public static class PageableRoleAccessControlResponseDto extends PageResource<RoleAccessControlResponseDto> {
-
-        private List<RoleAccessControlResponseDto> content;
-
-        @Override
-        public List<RoleAccessControlResponseDto> getContent() {
-            return content;
-        }
-
-        @Override
-        public void setContent(List<RoleAccessControlResponseDto> content) {
             this.content = content;
         }
     }

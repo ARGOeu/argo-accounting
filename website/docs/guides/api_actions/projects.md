@@ -14,7 +14,7 @@ via this guide you can see all the options you have.
 
 **1.** [Register](/docs/guides/register.md) to Accounting Service.
 
-**2.** [Contact](/docs/authorization/assigning_roles.md) the system
+**2.** [Contact](/docs/authorization/accounting_system_roles.md) the system
 administrator to assign you one or more roles on the Project.
 
 ### NOTE
@@ -103,5 +103,14 @@ you can perform all the actions on the Providers described at this
 **[section](https://argoeu.github.io/argo-accounting/docs/guides/api_actions/provider)**
 , as well as all the actions on Installations, described at this
 **[section](https://argoeu.github.io/argo-accounting/docs/guides/api_actions/installation)**.
+
+### GET Project Report
+
+You can get a report for a specific Project in a defined time period.  
+The report contains aggregated metric values grouped by metric definitions for all Providers and Installations that belong to the Project.
+
+Apply a request to the Accounting Service API by providing the Project ID and the desired time range (`start`, `end`).
+
+> 📝 **For more details on how to structure the request, see** [here](https://argoeu.github.io/argo-accounting/docs/api/project#get---get-project-report).
 
 ---

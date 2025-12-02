@@ -129,4 +129,37 @@ public class OidcTenantConfigRequest {
     @JsonProperty("service_id_token_claim")
     @NotEmpty(message = "service_id_token_claim may not be empty.")
     public String serviceIdTokenClaim;
+
+    @Schema(
+            type = SchemaType.STRING,
+            implementation = String.class,
+            description = "The group management entitlement namespace.",
+            required = true,
+            example = "urn:geant:sandbox.eosc-beyond.eu:core:integration:group"
+    )
+    @JsonProperty("group_management_namespace")
+    @NotEmpty(message = "group_management_namespace may not be empty.")
+    public String groupManagementNamespace;
+
+    @Schema(
+            type = SchemaType.STRING,
+            implementation = String.class,
+            description = "The name of the parent group management.",
+            required = true,
+            example = "accounting"
+    )
+    @JsonProperty("group_management_parent")
+    @NotEmpty(message = "group_management_parent may not be empty.")
+    public String groupManagementParent;
+
+    @Schema(
+            type = SchemaType.STRING,
+            implementation = String.class,
+            description = "The Entitlements check. Allowed values: oidc, database.",
+            required = true,
+            example = "database"
+    )
+    @JsonProperty("entitlement_management")
+    @NotEmpty(message = "entitlement_management may not be empty.")
+    public String entitlementManagement;
 }

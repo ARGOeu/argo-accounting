@@ -11,10 +11,11 @@ public class ProviderResponseDto {
             type = SchemaType.STRING,
             implementation = String.class,
             description = "The Provider ID.",
-            example = "sites"
+            example = "607f1f77bcf86cd799439011"
     )
     @JsonProperty("id")
     public String id;
+
     @Schema(
             type = SchemaType.STRING,
             implementation = String.class,
@@ -23,6 +24,7 @@ public class ProviderResponseDto {
     )
     @JsonProperty("name")
     public String name;
+
     @Schema(
             type = SchemaType.STRING,
             implementation = String.class,
@@ -31,6 +33,7 @@ public class ProviderResponseDto {
     )
     @JsonProperty("website")
     public String website;
+
     @Schema(
             type = SchemaType.STRING,
             implementation = String.class,
@@ -39,6 +42,7 @@ public class ProviderResponseDto {
     )
     @JsonProperty("abbreviation")
     public String abbreviation;
+
     @Schema(
             type = SchemaType.STRING,
             implementation = String.class,
@@ -47,6 +51,15 @@ public class ProviderResponseDto {
     )
     @JsonProperty("logo")
     public String logo;
+
+    @Schema(
+            type = SchemaType.STRING,
+            implementation = String.class,
+            description = "The Provider external ID.",
+            example = "sites"
+    )
+    @JsonProperty("external_id")
+    public String externalId;
 
     @Schema(
             type = SchemaType.STRING,

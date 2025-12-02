@@ -17,7 +17,6 @@ import org.accounting.system.beans.RequestUserContext;
 import org.accounting.system.dtos.InformativeResponse;
 import org.accounting.system.dtos.pagination.PageResource;
 import org.accounting.system.dtos.resource.ResourceResponse;
-import org.accounting.system.enums.AccessType;
 import org.accounting.system.services.ResourceService;
 import org.accounting.system.util.AccountingUriInfo;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
@@ -52,7 +51,7 @@ public class ResourceEndpoint {
     @Inject
     RequestUserContext requestInformation;
 
-    @ConfigProperty(name = "quarkus.resteasy-reactive.path")
+    @ConfigProperty(name = "quarkus.rest.path")
     String basePath;
 
     @ConfigProperty(name = "api.server.url")
@@ -90,7 +89,6 @@ public class ResourceEndpoint {
                     type = SchemaType.OBJECT,
                     implementation = InformativeResponse.class)))
     @SecurityRequirement(name = "Authentication")
-
     @GET
     @Produces(value = MediaType.APPLICATION_JSON)
     public Response getAllEoscResources(@Parameter(name = "page", in = QUERY,
@@ -102,7 +100,6 @@ public class ResourceEndpoint {
 
         var serverInfo = new AccountingUriInfo(serverUrl.concat(basePath).concat(uriInfo.getPath()));
 
-        requestInformation.setAccessType(AccessType.ALWAYS);
         return Response.ok().entity(resourceService.findAllResources(page - 1, size, serverInfo)).build();
     }
 

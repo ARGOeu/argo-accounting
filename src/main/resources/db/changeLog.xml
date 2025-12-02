@@ -838,4 +838,90 @@
         </ext:createIndex>
     </changeSet>
 
+    <changeSet id="24" author="accounting-system">
+        <ext:dropCollection collectionName="Role"/>
+        <rollback/>
+    </changeSet>
+
+    <changeSet id="25" author="accounting-system">
+        <ext:createIndex collectionName="ActorEntitlements">
+            <ext:keys>
+                { actor_id: 1, entitlement_id: 1}
+            </ext:keys>
+            <ext:options>
+                {unique: true, name: "unique_actor_entitlements", collation: { locale: "en" }}
+            </ext:options>
+        </ext:createIndex>
+    </changeSet>
+
+    <changeSet id="26" author="accounting-system" context="devel">
+        <ext:insertOne collectionName="Actor">
+            <ext:document>
+                {
+                 _id: "507f1f77bcf86cd799439011",
+                 name: "Test Client",
+                 email: "test.clent@example.org",
+                 issuer: "http://localhost:58080/realms/quarkus",
+                 oidc_id: "admin_voperson_id"
+                }
+            </ext:document>
+        </ext:insertOne>
+    </changeSet>
+
+    <changeSet id="27" author="accounting-system" context="devel">
+        <ext:insertOne collectionName="Entitlement">
+            <ext:document>
+                {
+                _id: "607f1f77bcf86cd799439011",
+                name: "urn:geant:sandbox.eosc-beyond.eu:core:integration:group:accounting:role=admin"
+                }
+            </ext:document>
+        </ext:insertOne>
+    </changeSet>
+
+    <changeSet id="28" author="accounting-system" context="devel">
+        <ext:insertOne collectionName="ActorEntitlements">
+            <ext:document>
+                {
+                _id: "707f1f77bcf86cd799439011",
+                actor_id: "507f1f77bcf86cd799439011",
+                entitlement_id: "607f1f77bcf86cd799439011"
+                }
+            </ext:document>
+        </ext:insertOne>
+    </changeSet>
+
+    <changeSet id="29" author="accounting-system">
+        <ext:createIndex collectionName="Capacity">
+            <ext:keys>
+                { installation_id: 1, metric_definition_id: 1}
+            </ext:keys>
+            <ext:options>
+                {unique: true, name: "unique_capacity_index", collation: { locale: "en" }}
+            </ext:options>
+        </ext:createIndex>
+    </changeSet>
+
+    <changeSet id="30" author="accounting-system">
+        <ext:runCommand>
+            <ext:command>
+                {
+                dropIndexes: "Capacity",
+                index: "unique_capacity_index"
+                }
+            </ext:command>
+        </ext:runCommand>
+    </changeSet>
+
+    <changeSet id="31" author="accounting-system">
+        <ext:createIndex collectionName="Capacity">
+            <ext:keys>
+                { installation_id: 1, metric_definition_id: 1, registered_on:1}
+            </ext:keys>
+            <ext:options>
+                {unique: true, name: "unique_capacity_index", collation: { locale: "en" }}
+            </ext:options>
+        </ext:createIndex>
+    </changeSet>
+
 </databaseChangeLog>

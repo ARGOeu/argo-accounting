@@ -12,7 +12,9 @@ import jakarta.ws.rs.BadRequestException;
 import jakarta.ws.rs.Consumes;
 import jakarta.ws.rs.DELETE;
 import jakarta.ws.rs.DefaultValue;
+import jakarta.ws.rs.ForbiddenException;
 import jakarta.ws.rs.GET;
+import jakarta.ws.rs.NotFoundException;
 import jakarta.ws.rs.PATCH;
 import jakarta.ws.rs.POST;
 import jakarta.ws.rs.Path;
@@ -23,6 +25,7 @@ import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.UriInfo;
+import org.accounting.system.beans.RequestUserContext;
 import org.accounting.system.constraints.CheckDateFormat;
 import org.accounting.system.constraints.NotFoundEntity;
 import org.accounting.system.dtos.InformativeResponse;
@@ -30,16 +33,15 @@ import org.accounting.system.dtos.pagination.PageResource;
 import org.accounting.system.dtos.provider.ProviderRequestDto;
 import org.accounting.system.dtos.provider.ProviderResponseDto;
 import org.accounting.system.dtos.provider.UpdateProviderRequestDto;
-import org.accounting.system.entities.HierarchicalRelation;
+import org.accounting.system.entities.projections.GenericProviderReport;
 import org.accounting.system.entities.projections.ProviderProjectionWithProjectInfo;
-import org.accounting.system.entities.projections.ProviderReport;
-import org.accounting.system.enums.Collection;
-import org.accounting.system.enums.Operation;
-import org.accounting.system.interceptors.annotations.AccessPermission;
+import org.accounting.system.interceptors.annotations.AccessResource;
 import org.accounting.system.repositories.provider.ProviderRepository;
 import org.accounting.system.services.ProviderService;
+import org.accounting.system.services.groupmanagement.EntitlementServiceFactory;
 import org.accounting.system.util.AccountingUriInfo;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
+import org.eclipse.microprofile.openapi.annotations.Operation;
 import org.eclipse.microprofile.openapi.annotations.enums.SchemaType;
 import org.eclipse.microprofile.openapi.annotations.enums.SecuritySchemeIn;
 import org.eclipse.microprofile.openapi.annotations.enums.SecuritySchemeType;
@@ -70,7 +72,7 @@ import static org.eclipse.microprofile.openapi.annotations.enums.ParameterIn.QUE
 
 public class ProviderEndpoint {
 
-    @ConfigProperty(name = "quarkus.resteasy-reactive.path")
+    @ConfigProperty(name = "quarkus.rest.path")
     String basePath;
 
     @ConfigProperty(name = "api.server.url")
@@ -79,9 +81,14 @@ public class ProviderEndpoint {
     @Inject
     ProviderService providerService;
 
+    @Inject
+    EntitlementServiceFactory entitlementServiceFactory;
+
+    @Inject
+    RequestUserContext requestInformation;
 
     @Tag(name = "Provider")
-    @org.eclipse.microprofile.openapi.annotations.Operation(
+    @Operation(
             operationId = "providers-from-eosc-portal",
             summary = "Get a list of all Providers in the Accounting System.",
             description = "This operation returns all Providers available on Accounting System API. " +
@@ -124,10 +131,9 @@ public class ProviderEndpoint {
                     type = SchemaType.OBJECT,
                     implementation = InformativeResponse.class)))
     @SecurityRequirement(name = "Authentication")
-
     @GET
     @Produces(value = MediaType.APPLICATION_JSON)
-    @AccessPermission(collection = Collection.Provider, operation = Operation.READ)
+    @AccessResource(roles = {"admin", "viewer"})
     public Response get(@Parameter(name = "page", in = QUERY,
             description = "Indicates the page number. Page number must be >= 1.") @DefaultValue("1") @Min(value = 1, message = "Page number must be >= 1.") @QueryParam("page") int page,
                         @Parameter(name = "size", in = QUERY,
@@ -143,7 +149,7 @@ public class ProviderEndpoint {
     }
 
     @Tag(name = "Provider")
-    @org.eclipse.microprofile.openapi.annotations.Operation(
+    @Operation(
             operationId = "register-a-new-provider",
             summary = "Registers a new Provider.",
             description = "A Client can use this functionality to create a new Provider.")
@@ -184,30 +190,23 @@ public class ProviderEndpoint {
                     type = SchemaType.OBJECT,
                     implementation = InformativeResponse.class)))
     @SecurityRequirement(name = "Authentication")
-
     @POST
     @Produces(value = MediaType.APPLICATION_JSON)
     @Consumes(value = MediaType.APPLICATION_JSON)
-    @AccessPermission(collection = Collection.Provider, operation = Operation.CREATE)
+    @AccessResource(roles = {"admin"})
     public Response save(@Valid @NotNull(message = "The request body is empty.") ProviderRequestDto providerRequestDto, @Context UriInfo uriInfo) {
 
         var serverInfo = new AccountingUriInfo(serverUrl.concat(basePath).concat(uriInfo.getPath()));
 
-        if(providerRequestDto.id.contains(HierarchicalRelation.PATH_SEPARATOR)){
-
-            throw new BadRequestException("Provider ID should not contain a dot character.");
-        }
-
-        providerService.existById(providerRequestDto.id);
         providerService.existByName(providerRequestDto.name);
 
-        var response = providerService.save(providerRequestDto);
+        var response = providerService.save(providerRequestDto, requestInformation.getId());
 
         return Response.created(serverInfo.getAbsolutePathBuilder().path(response.id).build()).entity(response).build();
     }
 
     @Tag(name = "Provider")
-    @org.eclipse.microprofile.openapi.annotations.Operation(
+    @Operation(
             summary = "Deletes an existing Provider.",
             description = "This operation deletes an existing Provider registered through the [Accounting System API](#/Provider/register-a-new-provider). " +
                     "Deleting Providers which derive from the [EOSC-Portal](#/Provider/providers-from-eosc-portal) is not allowed. " +
@@ -249,11 +248,10 @@ public class ProviderEndpoint {
                     type = SchemaType.OBJECT,
                     implementation = InformativeResponse.class)))
     @SecurityRequirement(name = "Authentication")
-
     @DELETE()
     @Path("/{id}")
     @Produces(value = MediaType.APPLICATION_JSON)
-    @AccessPermission(collection = Collection.Provider, operation = Operation.DELETE)
+    @AccessResource(roles = {"admin"})
     public Response delete(@Parameter(
             description = "The Provider to be deleted.",
             required = true,
@@ -276,7 +274,7 @@ public class ProviderEndpoint {
     }
 
     @Tag(name = "Provider")
-    @org.eclipse.microprofile.openapi.annotations.Operation(
+    @Operation(
             summary = "Updates an existing Provider.",
             description = "This operation updates an existing Provider registered through the [Accounting System API](#/Provider/register-a-new-provider). " +
                     "Updating Providers which derive from the [EOSC-Portal](#/Provider/providers-from-eosc-portal) is not allowed. Finally, " +
@@ -331,12 +329,11 @@ public class ProviderEndpoint {
                     type = SchemaType.OBJECT,
                     implementation = InformativeResponse.class)))
     @SecurityRequirement(name = "Authentication")
-
     @PATCH
     @Path("/{id}")
     @Produces(value = MediaType.APPLICATION_JSON)
     @Consumes(value = MediaType.APPLICATION_JSON)
-    @AccessPermission(collection = Collection.Provider, operation = Operation.UPDATE)
+    @AccessResource(roles = {"admin"})
     public Response update(
             @Parameter(
                     description = "The Provider to be updated.",
@@ -351,7 +348,7 @@ public class ProviderEndpoint {
     }
 
     @Tag(name = "Provider")
-    @org.eclipse.microprofile.openapi.annotations.Operation(
+    @Operation(
             summary = "Returns an existing Provider.",
             description = "This operation accepts the id of a Provider and fetches from the database the corresponding record.")
     @APIResponse(
@@ -385,11 +382,10 @@ public class ProviderEndpoint {
                     type = SchemaType.OBJECT,
                     implementation = InformativeResponse.class)))
     @SecurityRequirement(name = "Authentication")
-
     @GET
     @Path("/{id}")
     @Produces(value = MediaType.APPLICATION_JSON)
-    @AccessPermission(collection = Collection.Provider, operation = Operation.READ)
+    @AccessResource(roles = {"admin", "viewer"})
     public Response get(
             @Parameter(
                     description = "The Provider to be retrieved.",
@@ -404,7 +400,55 @@ public class ProviderEndpoint {
     }
 
     @Tag(name = "Provider")
-    @org.eclipse.microprofile.openapi.annotations.Operation(
+    @Operation(
+            summary = "Returns an existing Provider by external id.",
+            description = "This operation accepts the external id of a Provider and fetches from the database the corresponding record.")
+    @APIResponse(
+            responseCode = "200",
+            description = "The corresponding Provider.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = ProviderResponseDto.class)))
+    @APIResponse(
+            responseCode = "401",
+            description = "Client has not been authenticated.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "403",
+            description = "The authenticated client is not permitted to perform the requested operation.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "404",
+            description = "Provider has not been found.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "500",
+            description = "Internal Server Errors.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @SecurityRequirement(name = "Authentication")
+    @GET
+    @Path("/external")
+    @Produces(value = MediaType.APPLICATION_JSON)
+    @AccessResource(roles = {"admin", "viewer"})
+    public Response getByExternalId(
+            @Parameter(name = "externalId", in = QUERY, required = true, example = "sites", allowReserved = true,
+                    description = "The external provider id.", schema = @Schema(type = SchemaType.STRING)) @QueryParam("externalId") @NotEmpty(message = "externalId may not be empty.") String externalId) {
+
+        var response = providerService.fetchProviderByExternal(externalId);
+
+        return Response.ok().entity(response).build();
+    }
+
+    @Tag(name = "Provider")
+    @Operation(
             summary = "Search",
             description = "Search")
     @APIResponse(
@@ -432,11 +476,11 @@ public class ProviderEndpoint {
                     type = SchemaType.OBJECT,
                     implementation = InformativeResponse.class)))
     @SecurityRequirement(name = "Authentication")
-
     @POST
     @Path("/search")
     @Produces(value = MediaType.APPLICATION_JSON)
     @Consumes(value = MediaType.APPLICATION_JSON)
+    @AccessResource(roles = {"admin", "viewer"})
     public Response search(
             @Valid @NotNull(message = "The request body is empty.") @RequestBody(content = @Content(
                     schema = @Schema(implementation = String.class),
@@ -460,7 +504,7 @@ public class ProviderEndpoint {
     }
 
     @Tag(name = "Provider")
-    @org.eclipse.microprofile.openapi.annotations.Operation(
+    @Operation(
             summary = "Get all the assigned providers",
             description = "Get All assigned Providers")
     @APIResponse(
@@ -492,6 +536,7 @@ public class ProviderEndpoint {
     @Path("/all")
     @Produces(value = MediaType.APPLICATION_JSON)
     @Consumes(value = MediaType.APPLICATION_JSON)
+    @AccessResource(roles = {"admin", "viewer"})
     public Response getProvidersAssigned(
 
             @Parameter(name = "page", in = QUERY,
@@ -508,15 +553,15 @@ public class ProviderEndpoint {
     }
 
     @Tag(name = "Provider")
-    @org.eclipse.microprofile.openapi.annotations.Operation(
-            summary = "Get Provider report with metrics and access controls.",
-            description = "Returns a report for a specific Provider and time period, including aggregated metric values and role-based access control information.")
+    @Operation(
+            summary = "Get Provider report with metrics.",
+            description = "Returns a report for a specific Provider and time period, including aggregated metric values.")
     @APIResponse(
             responseCode = "200",
             description = "Provider report retrieved successfully.",
             content = @Content(schema = @Schema(
-                    type = SchemaType.ARRAY,
-                    implementation = ProviderReport.class)))
+                    type = SchemaType.OBJECT,
+                    implementation = GenericProviderReport.class)))
     @APIResponse(
             responseCode = "401",
             description = "Client has not been authenticated.",
@@ -545,7 +590,6 @@ public class ProviderEndpoint {
     @GET
     @Path("/{provider_id}/report")
     @Produces(value = MediaType.APPLICATION_JSON)
-    @AccessPermission(collection = Collection.Provider, operation = Operation.READ)
     public Response providerReport(
             @Parameter(
                     description = "Τhe Provider id.",
@@ -576,10 +620,101 @@ public class ProviderEndpoint {
             @CheckDateFormat(pattern = "yyyy-MM-dd", message = "Valid date format is yyyy-MM-dd.") String end) {
 
         if (LocalDate.parse(start).isAfter(LocalDate.parse(end))) {
+
             throw new BadRequestException("Start date must be before or equal to end date.");
         }
 
+        if(!entitlementServiceFactory.from().hasAccess(requestInformation.getParent(),"admin", List.of("roles", "provider", providerId))){
+
+            throw new ForbiddenException("You have no access to execute this operation.");
+        }
+
         var response = providerService.providerReport(providerId, start, end);
+
+        return Response.ok().entity(response).build();
+    }
+
+    @Tag(name = "Provider")
+    @Operation(
+            summary = "Get Provider report with metrics by external id.",
+            description = "Returns a report for a specific Provider and time period, including aggregated metric values by external id.")
+    @APIResponse(
+            responseCode = "200",
+            description = "Provider report retrieved successfully.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = GenericProviderReport.class)))
+    @APIResponse(
+            responseCode = "401",
+            description = "Client has not been authenticated.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "403",
+            description = "The authenticated client is not permitted to perform the requested operation.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "404",
+            description = "Not found.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "500",
+            description = "Internal Server Errors.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @SecurityRequirement(name = "Authentication")
+    @GET
+    @Path("/report/external")
+    @Produces(value = MediaType.APPLICATION_JSON)
+    public Response providerReportByExternalId(
+            @Parameter(name = "externalId", in = QUERY, required = true, example = "sites", allowReserved = true,
+                    description = "The external provider id.", schema = @Schema(type = SchemaType.STRING)) @QueryParam("externalId") @NotEmpty(message = "externalId may not be empty.") String externalId,
+            @Parameter(
+                    name = "start",
+                    description = "Start date in yyyy-MM-dd format",
+                    required = true,
+                    example = "2024-01-01"
+            )
+            @QueryParam("start")
+            @Valid
+            @NotEmpty(message = "start may not be empty.")
+            @CheckDateFormat(pattern = "yyyy-MM-dd", message = "Valid date format is yyyy-MM-dd.") String start,
+            @Parameter(
+                    name = "end",
+                    description = "End date in yyyy-MM-dd format",
+                    required = true,
+                    example = "2024-12-31"
+            )
+            @QueryParam("end")
+            @Valid
+            @NotEmpty(message = "end may not be empty.")
+            @CheckDateFormat(pattern = "yyyy-MM-dd", message = "Valid date format is yyyy-MM-dd.") String end) {
+
+        if (LocalDate.parse(start).isAfter(LocalDate.parse(end))) {
+            throw new BadRequestException("Start date must be before or equal to end date.");
+        }
+
+        var optional = providerService.fetchByExternalId(externalId);
+
+        if(optional.isEmpty()){
+
+            throw new NotFoundException("There is no Provider with external id : "+externalId);
+        }
+
+        var provider = optional.get();
+
+        if(!entitlementServiceFactory.from().hasAccess(requestInformation.getParent(),"admin", List.of("roles", "provider", provider.getId()))){
+
+            throw new ForbiddenException("You have no access to execute this operation.");
+        }
+
+        var response = providerService.providerReport(provider.getId(), start, end);
 
         return Response.ok().entity(response).build();
     }
@@ -597,6 +732,5 @@ public class ProviderEndpoint {
         public void setContent(List<ProviderResponseDto> content) {
             this.content = content;
         }
-
     }
 }

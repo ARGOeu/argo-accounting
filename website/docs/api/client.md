@@ -1,10 +1,10 @@
 ---
 id: client
-title: Client
+title: Client (legacy)
 sidebar_position: 1
 ---
 
-# Client
+# Client (legacy)
 
 As a client we define either a user or a service that communicates and
 interacts with the Accounting System API.
@@ -55,3 +55,7 @@ Authorization: Bearer {token}
 ## Errors
 
 Please refer to section [Errors](./api_errors) to see all possible Errors.
+
+## Note
+
+See [Mapping of Roles to Entitlements](../authorization/accounting_system_roles#mapping-of-roles-to-entitlements) for new role assignment mechanism.

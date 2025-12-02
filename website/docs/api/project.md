@@ -20,19 +20,10 @@ oject with one or more  Providers. The following action is responsible for gener
 ating a hierarchical relationship between a Project and one or more Providers:
 
 ```
-POST /accounting-system/projects/{project_id}/associate
+POST /accounting-system/projects/{project_id}/dissociate/provider/{provider_id}
 
-Content-Type: application-json
+Content-Type: application/json
 Authorization: Bearer {token}
-
-{
-   "providers":[
-      "bioexcel",
-      "osmooc",
-      "grnet",
-      "sites"
-   ]
-}
 ```
 
 The response is:
@@ -40,11 +31,7 @@ The response is:
 Success Response `200 OK`
 
 ```
-{
-   "code": 200,
-   "message": "The following providers [bioexcel, osmooc, grnet, sites] have bee
-n associated with Project {project_id}"
-}
+Provider has been successfully associated with the Project.
 ```
 
 ## [POST] - Dissociate Providers from a Project
@@ -52,16 +39,10 @@ n associated with Project {project_id}"
 You can also dissociate one or more Providers from a Project:
 
 ```
-POST /accounting-system/projects/{project_id}/dissociate
+POST /accounting-system/projects/{project_id}/dissociate/provider/{provider_id}
 
-Content-Type: application-json
+Content-Type: application/json
 Authorization: Bearer {token}
-
-{
-   "providers":[
-      "grnet"
-   ]
-}
 ```
 
 The response is :
@@ -69,11 +50,7 @@ The response is :
 Success Response `200 OK`
 
 ```
-{
-   "code": 200,
-   "message": "The following providers [grnet] have been dissociated from Projec
-t {project_id}"
-}
+Provider has been successfully dissociated from the Project.
 ```
 
 If there are Installations registered to Provider, the dissociation is not allow
@@ -329,7 +306,7 @@ Success Response `200 OK`
 }
 ```
 
-## [POST] - Access Control Entry for a specific Project {#post-access-control}
+## [POST] - Access Control Entry for a specific Project {#post-access-control} (legacy)
 
 The general endpoint that is responsible for creating an Access Control entry fo
 r a Project is as follows:
@@ -369,6 +346,10 @@ e, and the permissions it has.
 
 **Keep in mind that** to execute the above operation, you must have been assigne
 d a role containing the Project Acl permission.
+
+### Note
+
+See [Mapping of Roles to Entitlements](../authorization/accounting_system_roles#mapping-of-roles-to-entitlements) for new role assignment mechanism.
 
 ## [POST] - Search for Projects
 
@@ -471,6 +452,91 @@ If the operation is successful, you get a list of projects
 ```
 
 Otherwise, an empty response will be returned.
+
+## [GET] - Get Project Report
+
+The report includes aggregated metric values grouped by metric definitions for all Providers and Installations belonging to a specific Project.
+
+You can retrieve a report for a specific **Project** within a defined time period:
+
+```
+GET /accounting-system/projects/{project_id}/report
+
+Authorization: Bearer {token}
+```
+
+
+**Parameters**
+
+- `project_id` *(required, path)* – The Project ID.  
+  Example: `704029`  
+- `start` *(required, query)* – Start date in `yyyy-MM-dd` format.  
+  Example: `2024-01-01`  
+- `end` *(required, query)* – End date in `yyyy-MM-dd` format.  
+  Example: `2024-12-31`  
+
+**Success Response `200 OK`**
+
+```json
+{
+  "id": "447535",
+  "acronym": "EGI-ACE",
+  "title": "EGI Advanced Computing for EOSC.",
+  "start_date": "2018-12-31",
+  "end_date": "2023-06-30",
+  "call_identifier": "H2020-EINFRA-2017.",
+  "aggregated_metrics": [
+    {
+      "metric_definition_id": "507f1f77bcf86cd799439011",
+      "metric_name": "weight",
+      "metric_description": "The weight of a person",
+      "unit_type": "kg",
+      "metric_type": "aggregated",
+      "total_value": 1234.56
+    }
+  ],
+  "data": [
+    {
+      "provider_id": "grnet",
+      "name": "Swedish Infrastructure for Ecosystem Science",
+      "website": "https://www.fieldsites.se/en-GB",
+      "abbreviation": "SITES",
+      "logo": "https://dst15js82dk7j.cloudfront.net/231546/95187636-P5q11.png",
+      "aggregated_metrics": [
+        {
+          "metric_definition_id": "507f1f77bcf86cd799439011",
+          "metric_name": "weight",
+          "metric_description": "The weight of a person",
+          "unit_type": "kg",
+          "metric_type": "aggregated",
+          "total_value": 1234.56
+        }
+      ],
+      "data": [
+        {
+          "installation_id": "507f1f77bcf86cd799439011",
+          "project": "447535",
+          "provider": "grnet",
+          "installation": "GRNET-KNS",
+          "infrastructure": "okeanos-knossos",
+          "resource": "unitartu.ut.rocket",
+          "external_id": "installation-45583",
+          "data": [
+            {
+              "metric_definition_id": "507f1f77bcf86cd799439011",
+              "metric_name": "weight",
+              "metric_description": "The weight of a person",
+              "unit_type": "kg",
+              "metric_type": "aggregated",
+              "total_value": 1234.56
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
+```
 
 ## Errors
 

@@ -1,23 +1,22 @@
 package org.accounting.system.entities.projections;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import org.accounting.system.dtos.acl.role.RoleAccessControlResponseDto;
 import org.eclipse.microprofile.openapi.annotations.enums.SchemaType;
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
 
 import java.util.List;
 
-@Schema(name="ProviderReport", description="A report for a specific provider that includes aggregated metric values over a time period and associated role-based access control settings.")
+@Schema(name="ProviderReport", description="A report for a specific provider that includes aggregated metric values over a time period.")
 public class ProviderReport {
 
     @Schema(
             type = SchemaType.STRING,
             implementation = String.class,
             description = "The provider ID.",
-            example = "grnet"
+            example = "327f1f77dcf86cd799439011"
     )
     @JsonProperty("provider_id")
-    public String provider_id;
+    public String providerId;
 
     @Schema(
             type = SchemaType.STRING,
@@ -56,18 +55,27 @@ public class ProviderReport {
     public String logo;
 
     @Schema(
+            type = SchemaType.STRING,
+            implementation = String.class,
+            description = "The provider external ID.",
+            example = "grnet"
+    )
+    @JsonProperty("external_id")
+    public String externalId;
+
+    @Schema(
+            type = SchemaType.ARRAY,
+            implementation = MetricReportProjection.class,
+            description = "List of aggregated metrics at Provider level."
+    )
+    @JsonProperty("aggregated_metrics")
+    public List<MetricReportProjection> aggregatedMetrics;
+
+    @Schema(
             type = SchemaType.ARRAY,
             implementation = InstallationReport.class,
             description = "List of aggregated metrics by Installation."
     )
     @JsonProperty("data")
     public List<InstallationReport> data;
-
-    @Schema(
-            type = SchemaType.ARRAY,
-            implementation = RoleAccessControlResponseDto.class,
-            description = "Role-based access control configuration for the provider."
-    )
-    @JsonProperty("permissions")
-    public List<RoleAccessControlResponseDto> permissions;
 }

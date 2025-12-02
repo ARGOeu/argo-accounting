@@ -1,6 +1,5 @@
 package org.accounting.system.endpoints;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import io.quarkus.security.Authenticated;
 import jakarta.inject.Inject;
 import jakarta.validation.Valid;
@@ -24,14 +23,14 @@ import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.UriInfo;
 import org.accounting.system.beans.RequestUserContext;
 import org.accounting.system.constraints.NotFoundEntity;
+import org.accounting.system.dtos.ActorDto;
+import org.accounting.system.dtos.ActorEntitlementsDto;
 import org.accounting.system.dtos.CountDocumentResponse;
 import org.accounting.system.dtos.InformativeResponse;
 import org.accounting.system.dtos.VersionDto;
 import org.accounting.system.dtos.admin.ProjectRegistrationRequest;
-import org.accounting.system.dtos.authorization.request.AssignRoleRequestDto;
-import org.accounting.system.dtos.authorization.request.DetachRoleRequestDto;
-import org.accounting.system.dtos.client.ClientResponseDto;
-import org.accounting.system.dtos.client.ClientUpdateRequest;
+import org.accounting.system.dtos.entitlement.EntitlementDto;
+import org.accounting.system.dtos.entitlement.EntitlementRequest;
 import org.accounting.system.dtos.pagination.PageResource;
 import org.accounting.system.dtos.project.ProjectRequest;
 import org.accounting.system.dtos.project.UpdateProjectRequest;
@@ -42,14 +41,17 @@ import org.accounting.system.dtos.tenant.OidcTenantConfigResponse;
 import org.accounting.system.dtos.tenant.UpdateOidcTenantConfig;
 import org.accounting.system.entities.HierarchicalRelation;
 import org.accounting.system.entities.projections.normal.ProjectProjection;
-import org.accounting.system.interceptors.annotations.SystemAdmin;
+import org.accounting.system.interceptors.annotations.AccessResource;
 import org.accounting.system.repositories.OidcTenantConfigRepository;
 import org.accounting.system.repositories.ResourceRepository;
-import org.accounting.system.repositories.client.ClientRepository;
+import org.accounting.system.repositories.groupmanagement.ActorRepository;
+import org.accounting.system.repositories.groupmanagement.EntitlementRepository;
 import org.accounting.system.repositories.project.ProjectRepository;
+import org.accounting.system.services.ActorService;
+import org.accounting.system.services.EntitlementService;
 import org.accounting.system.services.ProjectService;
 import org.accounting.system.services.SystemAdminService;
-import org.accounting.system.services.client.ClientService;
+import org.accounting.system.services.groupmanagement.ActorEntitlementsService;
 import org.accounting.system.util.AccountingUriInfo;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.eclipse.microprofile.openapi.annotations.Operation;
@@ -64,7 +66,6 @@ import org.eclipse.microprofile.openapi.annotations.security.SecurityRequirement
 import org.eclipse.microprofile.openapi.annotations.security.SecurityScheme;
 import org.eclipse.microprofile.openapi.annotations.tags.Tag;
 
-import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.List;
 
@@ -78,19 +79,15 @@ import static org.eclipse.microprofile.openapi.annotations.enums.ParameterIn.QUE
         scheme = "bearer",
         bearerFormat = "JWT",
         in = SecuritySchemeIn.HEADER)
-
 public class SystemAdminEndpoint {
 
     @ConfigProperty(name = "quarkus.application.version")
     String version;
 
     @Inject
-    ClientService clientService;
-
-    @Inject
     SystemAdminService systemAdminService;
 
-    @ConfigProperty(name = "quarkus.resteasy-reactive.path")
+    @ConfigProperty(name = "quarkus.rest.path")
     String basePath;
 
     @ConfigProperty(name = "api.server.url")
@@ -101,6 +98,15 @@ public class SystemAdminEndpoint {
 
     @Inject
     RequestUserContext requestUserContext;
+
+    @Inject
+    ActorService actorService;
+
+    @Inject
+    EntitlementService entitlementService;
+
+    @Inject
+    ActorEntitlementsService actorEntitlementsService;
 
     @Tag(name = "System Administrator")
     @Operation(
@@ -137,12 +143,11 @@ public class SystemAdminEndpoint {
                     type = SchemaType.OBJECT,
                     implementation = InformativeResponse.class)))
     @SecurityRequirement(name = "Authentication")
-
     @POST
     @Path("/register-projects")
     @Produces(value = MediaType.APPLICATION_JSON)
     @Consumes(value = MediaType.APPLICATION_JSON)
-    @SystemAdmin
+    @AccessResource
     public Response assignProjects(@Valid @NotNull(message = "The request body is empty." ) ProjectRegistrationRequest request) {
 
         var response = systemAdminService.registerProjectsToAccountingService(request.projects, requestUserContext.getId());
@@ -191,12 +196,11 @@ public class SystemAdminEndpoint {
                     type = SchemaType.OBJECT,
                     implementation = InformativeResponse.class)))
     @SecurityRequirement(name = "Authentication")
-
     @POST
     @Path("/projects")
     @Produces(value = MediaType.APPLICATION_JSON)
     @Consumes(value = MediaType.APPLICATION_JSON)
-    @SystemAdmin
+    @AccessResource
     public Response createProject(@Valid @NotNull(message = "The request body is empty." ) ProjectRequest request, @Context UriInfo uriInfo) {
 
         if(request.id.contains(HierarchicalRelation.PATH_SEPARATOR)){
@@ -249,7 +253,7 @@ public class SystemAdminEndpoint {
     @DELETE
     @Path("/projects/{id}")
     @Produces(value = MediaType.APPLICATION_JSON)
-    @SystemAdmin
+    @AccessResource
     public Response deleteProject(@Parameter(
             description = "The Project to be deleted.",
             required = true,
@@ -308,12 +312,11 @@ public class SystemAdminEndpoint {
                     type = SchemaType.OBJECT,
                     implementation = InformativeResponse.class)))
     @SecurityRequirement(name = "Authentication")
-
     @POST
     @Path("/resources")
     @Produces(value = MediaType.APPLICATION_JSON)
     @Consumes(value = MediaType.APPLICATION_JSON)
-    @SystemAdmin
+    @AccessResource
     public Response createResource(@Valid @NotNull(message = "The request body is empty." ) ResourceRequest request, @Context UriInfo uriInfo) {
 
         var serverInfo = new AccountingUriInfo(serverUrl.concat(basePath).concat(uriInfo.getPath()));
@@ -361,7 +364,7 @@ public class SystemAdminEndpoint {
     @DELETE
     @Path("/resources/{id}")
     @Produces(value = MediaType.APPLICATION_JSON)
-    @SystemAdmin
+    @AccessResource
     public Response deleteResource(@Parameter(
             description = "The Resource to be deleted.",
             required = true,
@@ -427,12 +430,11 @@ public class SystemAdminEndpoint {
                     type = SchemaType.OBJECT,
                     implementation = InformativeResponse.class)))
     @SecurityRequirement(name = "Authentication")
-
     @PATCH
     @Path("/projects/{id}")
     @Produces(value = MediaType.APPLICATION_JSON)
     @Consumes(value = MediaType.APPLICATION_JSON)
-    @SystemAdmin
+    @AccessResource
     public Response update(
             @Parameter(
                     description = "The Project to be updated.",
@@ -442,190 +444,6 @@ public class SystemAdminEndpoint {
             @PathParam("id") @Valid @NotFoundEntity(repository = ProjectRepository.class, id = String.class, message = "There is no Project with the following id:") String id, @Valid @NotNull(message = "The request body is empty.") UpdateProjectRequest updateProjectRequest) {
 
         var response = systemAdminService.updateProject(updateProjectRequest, id);
-
-        return Response.ok().entity(response).build();
-    }
-
-    @Tag(name = "System Administrator")
-    @Operation(
-            summary = "Returns the available clients.",
-            description = "This operation fetches the registered Accounting System clients. By default, the first page of 10 Clients will be returned. " +
-                    "You can tune the default values by using the query parameters page and size.")
-    @APIResponse(
-            responseCode = "200",
-            description = "Array of available clients.",
-            content = @Content(schema = @Schema(
-                    type = SchemaType.OBJECT,
-                    implementation = ClientEndpoint.PageableClientResponseDto.class)))
-    @APIResponse(
-            responseCode = "401",
-            description = "Client has not been authenticated.",
-            content = @Content(schema = @Schema(
-                    type = SchemaType.OBJECT,
-                    implementation = InformativeResponse.class)))
-    @APIResponse(
-            responseCode = "403",
-            description = "The authenticated client is not permitted to perform the requested operation.",
-            content = @Content(schema = @Schema(
-                    type = SchemaType.OBJECT,
-                    implementation = InformativeResponse.class)))
-    @APIResponse(
-            responseCode = "500",
-            description = "Internal Server Errors.",
-            content = @Content(schema = @Schema(
-                    type = SchemaType.OBJECT,
-                    implementation = InformativeResponse.class)))
-    @SecurityRequirement(name = "Authentication")
-
-    @GET
-    @Path("/clients")
-    @Produces(value = MediaType.APPLICATION_JSON)
-    @SystemAdmin
-    public Response getClients(@Parameter(name = "page", in = QUERY,
-            description = "Indicates the page number. Page number must be >= 1.") @DefaultValue("1") @Min(value = 1, message = "Page number must be >= 1.") @QueryParam("page") int page,
-                               @Parameter(name = "size", in = QUERY,
-                                       description = "The page size.") @DefaultValue("10") @Min(value = 1, message = "Page size must be between 1 and 100.")
-                               @Max(value = 100, message = "Page size must be between 1 and 100.") @QueryParam("size") int size,
-                               @Context UriInfo uriInfo){
-
-        var serverInfo = new AccountingUriInfo(serverUrl.concat(basePath).concat(uriInfo.getPath()));
-
-        return Response.ok().entity(clientService.findAllClientsPageable(page-1, size, serverInfo)).build();
-    }
-
-    @Tag(name = "System Administrator")
-    @Operation(
-            hidden = true,
-            summary = "Assign one or more roles to a registered client.",
-            description = "Using the unique identifier of a registered client, you can assign roles to it.")
-    @APIResponse(
-            responseCode = "200",
-            description = "The Roles have been successfully assigned to a registered client.",
-            content = @Content(schema = @Schema(
-                    type = SchemaType.OBJECT,
-                    implementation = ClientResponseDto.class)))
-    @APIResponse(
-            responseCode = "400",
-            description = "Bad Request.",
-            content = @Content(schema = @Schema(
-                    type = SchemaType.OBJECT,
-                    implementation = InformativeResponse.class)))
-    @APIResponse(
-            responseCode = "401",
-            description = "Client has not been authenticated.",
-            content = @Content(schema = @Schema(
-                    type = SchemaType.OBJECT,
-                    implementation = InformativeResponse.class)))
-    @APIResponse(
-            responseCode = "403",
-            description = "The authenticated client is not permitted to perform the requested operation.",
-            content = @Content(schema = @Schema(
-                    type = SchemaType.OBJECT,
-                    implementation = InformativeResponse.class)))
-    @APIResponse(
-            responseCode = "404",
-            description = "Role not found.",
-            content = @Content(schema = @Schema(
-                    type = SchemaType.OBJECT,
-                    implementation = InformativeResponse.class)))
-    @APIResponse(
-            responseCode = "415",
-            description = "Cannot consume content type.",
-            content = @Content(schema = @Schema(
-                    type = SchemaType.OBJECT,
-                    implementation = InformativeResponse.class)))
-    @APIResponse(
-            responseCode = "500",
-            description = "Internal Server Errors.",
-            content = @Content(schema = @Schema(
-                    type = SchemaType.OBJECT,
-                    implementation = InformativeResponse.class)))
-    @SecurityRequirement(name = "Authentication")
-
-    @POST
-    @Path("clients/{client_id}/assign-roles")
-    @Produces(value = MediaType.APPLICATION_JSON)
-    @Consumes(value = MediaType.APPLICATION_JSON)
-    @SystemAdmin
-    public Response assignRole(@Valid @NotNull(message = "The request body is empty.") AssignRoleRequestDto assignRoleRequestDto,
-                               @Parameter(
-                                       description = "client_id is the unique identifier of a client.",
-                                       required = true,
-                                       example = "xyz@example.org",
-                                       schema = @Schema(type = SchemaType.STRING))
-                               @PathParam("client_id")
-                               @Valid
-                               @NotFoundEntity(repository = ClientRepository.class, id = String.class, message = "There is no registered Client with the following id:") String clientId){
-
-        var response = clientService.assignRolesToRegisteredClient(clientId, assignRoleRequestDto.roles);
-
-        return Response.ok().entity(response).build();
-    }
-
-    @Tag(name = "System Administrator")
-    @Operation(
-            hidden = true,
-            summary = "Detach one or more roles from a registered client.",
-            description = "Using the unique identifier of a registered client, you can detach roles from it.")
-    @APIResponse(
-            responseCode = "200",
-            description = "The Roles have been successfully detached from a registered client.",
-            content = @Content(schema = @Schema(
-                    type = SchemaType.OBJECT,
-                    implementation = ClientResponseDto.class)))
-    @APIResponse(
-            responseCode = "400",
-            description = "Bad Request.",
-            content = @Content(schema = @Schema(
-                    type = SchemaType.OBJECT,
-                    implementation = InformativeResponse.class)))
-    @APIResponse(
-            responseCode = "401",
-            description = "Client has not been authenticated.",
-            content = @Content(schema = @Schema(
-                    type = SchemaType.OBJECT,
-                    implementation = InformativeResponse.class)))
-    @APIResponse(
-            responseCode = "403",
-            description = "The authenticated client is not permitted to perform the requested operation.",
-            content = @Content(schema = @Schema(
-                    type = SchemaType.OBJECT,
-                    implementation = InformativeResponse.class)))
-    @APIResponse(
-            responseCode = "404",
-            description = "Role not found.",
-            content = @Content(schema = @Schema(
-                    type = SchemaType.OBJECT,
-                    implementation = InformativeResponse.class)))
-    @APIResponse(
-            responseCode = "415",
-            description = "Cannot consume content type.",
-            content = @Content(schema = @Schema(
-                    type = SchemaType.OBJECT,
-                    implementation = InformativeResponse.class)))
-    @APIResponse(
-            responseCode = "500",
-            description = "Internal Server Errors.",
-            content = @Content(schema = @Schema(
-                    type = SchemaType.OBJECT,
-                    implementation = InformativeResponse.class)))
-    @SecurityRequirement(name = "Authentication")
-    @POST
-    @Path("clients/{client_id}/detach-roles")
-    @Produces(value = MediaType.APPLICATION_JSON)
-    @Consumes(value = MediaType.APPLICATION_JSON)
-    @SystemAdmin
-    public Response detachRole(@Valid @NotNull(message = "The request body is empty.") DetachRoleRequestDto detachRoleRequestDto,
-                               @Parameter(
-                                       description = "client_id is the unique identifier of a client.",
-                                       required = true,
-                                       example = "xyz@example.org",
-                                       schema = @Schema(type = SchemaType.STRING))
-                               @PathParam("client_id")
-                               @Valid
-                               @NotFoundEntity(repository = ClientRepository.class, id = String.class, message = "There is no registered Client with the following id:") String clientId){
-
-        var response = clientService.detachRolesFromRegisteredClient(clientId, detachRoleRequestDto.roles);
 
         return Response.ok().entity(response).build();
     }
@@ -662,7 +480,7 @@ public class SystemAdminEndpoint {
     @GET
     @Path("/version")
     @Produces(value = MediaType.APPLICATION_JSON)
-    @SystemAdmin
+    @AccessResource
     public Response version() {
 
         var versionDto = new VersionDto();
@@ -674,7 +492,7 @@ public class SystemAdminEndpoint {
     @Tag(name = "System Administrator")
     @Operation(
             summary = "Get document count for a specific time period.",
-            description = "Returns the number of documents inserted in Metric Definition, Metric, and User collections within the given start and end dates.")
+            description = "Returns the number of documents inserted in Metric Definition, Metric, and Actor collections within the given start and end dates.")
     @APIResponse(
             responseCode = "200",
             description = "Document count retrieved successfully.",
@@ -709,7 +527,7 @@ public class SystemAdminEndpoint {
     @GET
     @Path("/metrics")
     @Produces(value = MediaType.APPLICATION_JSON)
-    @SystemAdmin
+    @AccessResource
     public Response getDocuments(@Parameter(description = "Start date in YYYY-MM-DD format.", required = true, example = "2024-03-01") @QueryParam("startDate") String start,
                                  @Parameter(description = "End date in YYYY-MM-DD format.", required = true, example = "2024-03-10") @QueryParam("endDate") String end){
 
@@ -735,7 +553,7 @@ public class SystemAdminEndpoint {
 
             response.metricDefinitionCount = systemAdminService.countDocuments("MetricDefinition", startDate, endDate);
             response.metricCount = systemAdminService.countDocuments("Metric", startDate, endDate);
-            response.userCount = clientService.countDocuments(startDate, endDate);
+            response.actorCount = actorService.countDocuments(startDate, endDate);
 
             return Response.ok(response).build();
 
@@ -749,62 +567,6 @@ public class SystemAdminEndpoint {
                     .entity(error)
                     .build();
         }
-    }
-
-    @Tag(name = "System Administrator")
-    @Operation(
-            summary = "Update user information.",
-            description = "Allows administrators to update user details.")
-    @APIResponse(
-            responseCode = "200",
-            description = "User updated successfully.",
-            content = @Content(schema = @Schema(
-                    type = SchemaType.OBJECT,
-                    implementation = InformativeResponse.class)))
-    @APIResponse(
-            responseCode = "400",
-            description = "Invalid input data.",
-            content = @Content(schema = @Schema(
-                    type = SchemaType.OBJECT,
-                    implementation = InformativeResponse.class)))
-    @APIResponse(
-            responseCode = "401",
-            description = "Client has not been authenticated.",
-            content = @Content(schema = @Schema(
-                    type = SchemaType.OBJECT,
-                    implementation = InformativeResponse.class)))
-    @APIResponse(
-            responseCode = "403",
-            description = "The authenticated client is not permitted to perform the requested operation.",
-            content = @Content(schema = @Schema(
-                    type = SchemaType.OBJECT,
-                    implementation = InformativeResponse.class)))
-    @APIResponse(
-            responseCode = "404",
-            description = "User not found.",
-            content = @Content(schema = @Schema(
-                    type = SchemaType.OBJECT,
-                    implementation = InformativeResponse.class)))
-    @APIResponse(
-            responseCode = "500",
-            description = "Internal Server Errors.",
-            content = @Content(schema = @Schema(
-                    type = SchemaType.OBJECT,
-                    implementation = InformativeResponse.class)))
-    @SecurityRequirement(name = "Authentication")
-    @PATCH
-    @Path("/clients/{client_id}")
-    @Produces(value = MediaType.APPLICATION_JSON)
-    @SystemAdmin
-    public Response updateClient( @Parameter(
-            description = "Unique identifier of the user to be updated.",
-            required = true,
-            example = "xyz@example.org",
-            schema = @Schema(type = SchemaType.STRING))
-                                    @PathParam("client_id") @Valid @NotFoundEntity(repository = ClientRepository.class, id = String.class, message = "There is no User with the following id:") String id,
-                                  @Valid @NotNull(message = "The request body is empty.") ClientUpdateRequest request){
-
-        return Response.ok().entity(clientService.updateClient(id, request)).build();
     }
 
     @Tag(name = "System Administrator")
@@ -831,12 +593,6 @@ public class SystemAdminEndpoint {
                     type = SchemaType.OBJECT,
                     implementation = InformativeResponse.class)))
     @APIResponse(
-            responseCode = "415",
-            description = "Cannot consume content type.",
-            content = @Content(schema = @Schema(
-                    type = SchemaType.OBJECT,
-                    implementation = InformativeResponse.class)))
-    @APIResponse(
             responseCode = "500",
             description = "Internal Server Errors.",
             content = @Content(schema = @Schema(
@@ -847,16 +603,14 @@ public class SystemAdminEndpoint {
     @Path("/projects")
     @Produces(value = MediaType.APPLICATION_JSON)
     @Consumes(value = MediaType.APPLICATION_JSON)
-    @SystemAdmin
+    @AccessResource
     public Response getAll(
-
             @Parameter(name = "page", in = QUERY,
                     description = "Indicates the page number. Page number must be >= 1.") @DefaultValue("1") @Min(value = 1, message = "Page number must be >= 1.") @QueryParam("page") int page,
             @Parameter(name = "size", in = QUERY,
                     description = "The page size.") @DefaultValue("10") @Min(value = 1, message = "Page size must be between 1 and 100.")
             @Max(value = 100, message = "Page size must be between 1 and 100.") @QueryParam("size") int size,
-            @Context UriInfo uriInfo
-    ) throws ParseException, NoSuchFieldException, org.json.simple.parser.ParseException, JsonProcessingException {
+            @Context UriInfo uriInfo) {
 
         var serverInfo = new AccountingUriInfo(serverUrl.concat(basePath).concat(uriInfo.getPath()));
 
@@ -910,7 +664,7 @@ public class SystemAdminEndpoint {
     @Path("/oidc-tenants")
     @Produces(value = MediaType.APPLICATION_JSON)
     @Consumes(value = MediaType.APPLICATION_JSON)
-    @SystemAdmin
+    @AccessResource
     public Response createOidcTenantConfig(@Valid @NotNull(message = "The request body is empty." ) OidcTenantConfigRequest request, @Context UriInfo uriInfo) {
 
         var serverInfo = new AccountingUriInfo(serverUrl.concat(basePath).concat(uriInfo.getPath()));
@@ -953,7 +707,7 @@ public class SystemAdminEndpoint {
     @GET
     @Path("/oidc-tenants")
     @Produces(value = MediaType.APPLICATION_JSON)
-    @SystemAdmin
+    @AccessResource
     public Response getOidcTenantConfig(@Parameter(name = "page", in = QUERY,
             description = "Indicates the page number. Page number must be >= 1.") @DefaultValue("1") @Min(value = 1, message = "Page number must be >= 1.") @QueryParam("page") int page,
                                @Parameter(name = "size", in = QUERY,
@@ -1004,7 +758,7 @@ public class SystemAdminEndpoint {
     @GET
     @Path("/oidc-tenants/{id}")
     @Produces(value = MediaType.APPLICATION_JSON)
-    @SystemAdmin
+    @AccessResource
     public Response get(
             @Parameter(
                     description = "The OIDC tenant configuration to be retrieved.",
@@ -1056,7 +810,7 @@ public class SystemAdminEndpoint {
     @DELETE
     @Path("/oidc-tenants/{id}")
     @Produces(value = MediaType.APPLICATION_JSON)
-    @SystemAdmin
+    @AccessResource
     public Response deleteOidcTenantConfig(@Parameter(
             description = "The OIDC tenant configuration to be deleted.",
             required = true,
@@ -1132,7 +886,7 @@ public class SystemAdminEndpoint {
     @Path("/oidc-tenants/{id}")
     @Produces(value = MediaType.APPLICATION_JSON)
     @Consumes(value = MediaType.APPLICATION_JSON)
-    @SystemAdmin
+    @AccessResource
     public Response updateOidcTenantConfig(
             @Parameter(
                     description = "The OIDC tenant configuration to be updated.",
@@ -1143,6 +897,593 @@ public class SystemAdminEndpoint {
             @Valid @NotNull(message = "The request body is empty.") UpdateOidcTenantConfig request) {
 
         var response = systemAdminService.updateOidcTenantConfig(request, id);
+
+        return Response.ok().entity(response).build();
+    }
+
+    @Tag(name = "System Administrator")
+    @Operation(
+            summary = "Get all registered actors.",
+            description = "Returns a list of all registered actors. This operation is restricted to system administrators only." )
+    @APIResponse(
+            responseCode = "200",
+            description = "Successfully retrieved the list of registered actors.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = PageableActorResponse.class)))
+    @APIResponse(
+            responseCode = "401",
+            description = "Client has not been authenticated.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "403",
+            description = "The authenticated client is not permitted to perform the requested operation.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "500",
+            description = "Internal Server Errors.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @SecurityRequirement(name = "Authentication")
+    @GET
+    @Path("/actors")
+    @Produces(value = MediaType.APPLICATION_JSON)
+    @Consumes(value = MediaType.APPLICATION_JSON)
+    @AccessResource
+    public Response getAllActors(
+
+            @Parameter(name = "page", in = QUERY,
+                    description = "Indicates the page number. Page number must be >= 1.") @DefaultValue("1") @Min(value = 1, message = "Page number must be >= 1.") @QueryParam("page") int page,
+            @Parameter(name = "size", in = QUERY,
+                    description = "The page size.") @DefaultValue("10") @Min(value = 1, message = "Page size must be between 1 and 100.")
+            @Max(value = 100, message = "Page size must be between 1 and 100.") @QueryParam("size") int size,
+            @Context UriInfo uriInfo) {
+
+        var serverInfo = new AccountingUriInfo(serverUrl.concat(basePath).concat(uriInfo.getPath()));
+
+        var results= actorService.getAll( page - 1, size, serverInfo);
+
+        return Response.ok().entity(results).build();
+    }
+
+    @Tag(name = "System Administrator")
+    @Operation(
+            summary = "Get all actors entitlements.",
+            description = "Returns a list of all actors entitlements. This operation is restricted to system administrators only." )
+    @APIResponse(
+            responseCode = "200",
+            description = "Successfully retrieved the list of actor's entitlements.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = PageableActorEntitlementResponse.class)))
+    @APIResponse(
+            responseCode = "401",
+            description = "Client has not been authenticated.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "403",
+            description = "The authenticated client is not permitted to perform the requested operation.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "500",
+            description = "Internal Server Errors.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @SecurityRequirement(name = "Authentication")
+    @GET
+    @Path("/actors/entitlements")
+    @Produces(value = MediaType.APPLICATION_JSON)
+    @AccessResource
+    public Response getAllActorsEntitlements(
+
+            @Parameter(name = "page", in = QUERY,
+                    description = "Indicates the page number. Page number must be >= 1.") @DefaultValue("1") @Min(value = 1, message = "Page number must be >= 1.") @QueryParam("page") int page,
+            @Parameter(name = "size", in = QUERY,
+                    description = "The page size.") @DefaultValue("10") @Min(value = 1, message = "Page size must be between 1 and 100.")
+            @Max(value = 100, message = "Page size must be between 1 and 100.") @QueryParam("size") int size,
+            @Context UriInfo uriInfo) {
+
+        var serverInfo = new AccountingUriInfo(serverUrl.concat(basePath).concat(uriInfo.getPath()));
+
+        var results= actorEntitlementsService.getAll( page - 1, size, serverInfo);
+
+        return Response.ok().entity(results).build();
+    }
+
+    @Tag(name = "System Administrator")
+    @Operation(
+            summary = "Get all actor's entitlements.",
+            description = "Returns a list of all actor's entitlements. This operation is restricted to system administrators only." )
+    @APIResponse(
+            responseCode = "200",
+            description = "Successfully retrieved the list of actor's entitlements.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = PageableEntitlementResponse.class)))
+    @APIResponse(
+            responseCode = "401",
+            description = "Client has not been authenticated.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "403",
+            description = "The authenticated client is not permitted to perform the requested operation.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "500",
+            description = "Internal Server Errors.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @SecurityRequirement(name = "Authentication")
+    @GET
+    @Path("/actors/{actor_id}/entitlements")
+    @Produces(value = MediaType.APPLICATION_JSON)
+    @AccessResource
+    public Response getAllActorEntitlements(
+            @Parameter(
+                    description = "The actor id.",
+                    required = true,
+                    example = "607f1f77bcf86cd799439011",
+                    schema = @Schema(type = SchemaType.STRING))
+            @PathParam("actor_id") @Valid @NotFoundEntity(repository = ActorRepository.class, id = String.class, message = "There is no actor with the following id:") String actorId,
+            @Parameter(name = "page", in = QUERY,
+                    description = "Indicates the page number. Page number must be >= 1.") @DefaultValue("1") @Min(value = 1, message = "Page number must be >= 1.") @QueryParam("page") int page,
+            @Parameter(name = "size", in = QUERY,
+                    description = "The page size.") @DefaultValue("10") @Min(value = 1, message = "Page size must be between 1 and 100.")
+            @Max(value = 100, message = "Page size must be between 1 and 100.") @QueryParam("size") int size,
+            @Context UriInfo uriInfo) {
+
+        var serverInfo = new AccountingUriInfo(serverUrl.concat(basePath).concat(uriInfo.getPath()));
+
+        var results= actorEntitlementsService.getAllActorEntitlements(actorId,page - 1, size, serverInfo);
+
+        return Response.ok().entity(results).build();
+    }
+
+    @Tag(name = "System Administrator")
+    @Operation(
+            summary = "Get all entitlements.",
+            description = "Returns a list of all entitlements. This operation is restricted to system administrators only." )
+    @APIResponse(
+            responseCode = "200",
+            description = "Successfully retrieved the list of entitlements.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = PageableEntitlementResponse.class)))
+    @APIResponse(
+            responseCode = "401",
+            description = "Client has not been authenticated.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "403",
+            description = "The authenticated client is not permitted to perform the requested operation.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "500",
+            description = "Internal Server Errors.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @SecurityRequirement(name = "Authentication")
+    @GET
+    @Path("/entitlements")
+    @Produces(value = MediaType.APPLICATION_JSON)
+    @AccessResource
+    public Response getAllEntitlements(
+
+            @Parameter(name = "page", in = QUERY,
+                    description = "Indicates the page number. Page number must be >= 1.") @DefaultValue("1") @Min(value = 1, message = "Page number must be >= 1.") @QueryParam("page") int page,
+            @Parameter(name = "size", in = QUERY,
+                    description = "The page size.") @DefaultValue("10") @Min(value = 1, message = "Page size must be between 1 and 100.")
+            @Max(value = 100, message = "Page size must be between 1 and 100.") @QueryParam("size") int size,
+            @Context UriInfo uriInfo) {
+
+        var serverInfo = new AccountingUriInfo(serverUrl.concat(basePath).concat(uriInfo.getPath()));
+
+        var results= entitlementService.getAll( page - 1, size, serverInfo);
+
+        return Response.ok().entity(results).build();
+    }
+
+    @Tag(name = "System Administrator")
+    @Operation(
+            summary = "Create a new entitlement.",
+            description = "Creates a new entitlement in the Accounting Service. Accessible only by system administrators.")
+    @APIResponse(
+            responseCode = "201",
+            description = "Entitlement created successfully.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = ResourceResponse.class)))
+    @APIResponse(
+            responseCode = "400",
+            description = "Bad Request.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "401",
+            description = "Client has not been authenticated.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "403",
+            description = "The authenticated client is not permitted to perform the requested operation.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "409",
+            description = "Entitlement already exists.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "415",
+            description = "Cannot consume content type.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "500",
+            description = "Internal Server Errors.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @SecurityRequirement(name = "Authentication")
+    @POST
+    @Path("/entitlements")
+    @Produces(value = MediaType.APPLICATION_JSON)
+    @Consumes(value = MediaType.APPLICATION_JSON)
+    @AccessResource
+    public Response createEntitlement(@Valid @NotNull(message = "The request body is empty." ) EntitlementRequest request, @Context UriInfo uriInfo) {
+
+        var serverInfo = new AccountingUriInfo(serverUrl.concat(basePath).concat(uriInfo.getPath()));
+
+        var response = entitlementService.save(request);
+
+        return Response.created(serverInfo.getAbsolutePathBuilder().path(response.id).build()).entity(response).build();
+    }
+
+    @Tag(name = "System Administrator")
+    @Operation(
+            summary = "Returns an existing entitlement.",
+            description = "This operation accepts the id of an entitlement and fetches from the database the corresponding record.")
+    @APIResponse(
+            responseCode = "200",
+            description = "The corresponding entitlement.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = EntitlementDto.class)))
+    @APIResponse(
+            responseCode = "401",
+            description = "Client has not been authenticated.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "403",
+            description = "The authenticated client is not permitted to perform the requested operation.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "404",
+            description = "Entitlement has not been found.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "500",
+            description = "Internal Server Errors.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @SecurityRequirement(name = "Authentication")
+    @GET
+    @Path("/entitlements/{id}")
+    @Produces(value = MediaType.APPLICATION_JSON)
+    @AccessResource
+    public Response getEntitlement(
+            @Parameter(
+                    description = "The entitlement to be retrieved.",
+                    required = true,
+                    example = "507f1f77bcf86cd799439011",
+                    schema = @Schema(type = SchemaType.STRING))
+            @PathParam("id") @Valid @NotFoundEntity(repository = EntitlementRepository.class, id = String.class, message = "There is no entitlement with the following id:") String id) {
+
+        var response = entitlementService.get(id);
+
+        return Response.ok().entity(response).build();
+    }
+
+    @Tag(name = "System Administrator")
+    @Operation(
+            summary = "Update an existing entitlement.",
+            description = "Update an existing entitlement. " +
+                    "You can update a part or all attributes of entitlement. The empty or null values are ignored. ")
+    @APIResponse(
+            responseCode = "200",
+            description = "Entitlement was updated successfully.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = EntitlementDto.class)))
+    @APIResponse(
+            responseCode = "400",
+            description = "Bad Request.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "401",
+            description = "Client has not been authenticated.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "403",
+            description = "The authenticated client is not permitted to perform the requested operation.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "404",
+            description = "Entitlement has not been found.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "409",
+            description = "Entitlement not allowed to be updated.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "415",
+            description = "Cannot consume content type.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "500",
+            description = "Internal Server Errors.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @SecurityRequirement(name = "Authentication")
+    @PATCH
+    @Path("/entitlements/{id}")
+    @Produces(value = MediaType.APPLICATION_JSON)
+    @Consumes(value = MediaType.APPLICATION_JSON)
+    @AccessResource
+    public Response updateEntitlement(
+            @Parameter(
+                    description = "The entitlement to be updated.",
+                    required = true,
+                    example = "507f1f77bcf86cd799439011",
+                    schema = @Schema(type = SchemaType.STRING))
+            @PathParam("id") @Valid @NotFoundEntity(repository = EntitlementRepository.class, id = String.class, message = "There is no entitlement with the following id:") String id,
+            @Valid @NotNull(message = "The request body is empty.") EntitlementRequest request) {
+
+        var response = entitlementService.update(request, id);
+
+        return Response.ok().entity(response).build();
+    }
+
+    @Tag(name = "System Administrator")
+    @Operation(
+            summary = "Delete an existing entitlement.",
+            description = "Delete an existing entitlement.")
+    @APIResponse(
+            responseCode = "200",
+            description = "Entitlement was deleted successfully.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "400",
+            description = "Bad Request.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "401",
+            description = "Client has not been authenticated.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "403",
+            description = "The authenticated client is not permitted to perform the requested operation.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "404",
+            description = "Entitlement has not been found.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "500",
+            description = "Internal Server Errors.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @SecurityRequirement(name = "Authentication")
+    @DELETE
+    @Path("/entitlements/{id}")
+    @Produces(value = MediaType.APPLICATION_JSON)
+    @AccessResource
+    public Response deleteEntitlement(
+            @Parameter(
+                    description = "The entitlement to be deleted.",
+                    required = true,
+                    example = "507f1f77bcf86cd799439011",
+                    schema = @Schema(type = SchemaType.STRING))
+            @PathParam("id") @Valid @NotFoundEntity(repository = EntitlementRepository.class, id = String.class, message = "There is no entitlement with the following id:") String id) {
+
+        entitlementService.delete(id);
+
+        var response = new InformativeResponse();
+        response.code = 200;
+        response.message = "Entitlement was deleted successfully.";
+
+        return Response.ok().entity(response).build();
+    }
+
+    @Tag(name = "System Administrator")
+    @Operation(
+            summary = "Assign an existing entitlement to an actor.",
+            description = "Assign an existing entitlement to an actor.")
+    @APIResponse(
+            responseCode = "200",
+            description = "Entitlement was assigned successfully.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = EntitlementDto.class)))
+    @APIResponse(
+            responseCode = "400",
+            description = "Bad Request.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "401",
+            description = "Client has not been authenticated.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "403",
+            description = "The authenticated client is not permitted to perform the requested operation.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "404",
+            description = "Entity has not been found.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "500",
+            description = "Internal Server Errors.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @SecurityRequirement(name = "Authentication")
+    @POST
+    @Path("/entitlements/{id}/assign/{actor_id}")
+    @Produces(value = MediaType.APPLICATION_JSON)
+    @AccessResource
+    public Response assignEntitlement(
+            @Parameter(
+                    description = "The entitlement to be assigned.",
+                    required = true,
+                    example = "507f1f77bcf86cd799439011",
+                    schema = @Schema(type = SchemaType.STRING))
+            @PathParam("id") @Valid @NotFoundEntity(repository = EntitlementRepository.class, id = String.class, message = "There is no entitlement with the following id:") String id,
+            @Parameter(
+                    description = "The actor to whom the entitlement will be assigned.",
+                    required = true,
+                    example = "607f1f77bcf86cd799439011",
+                    schema = @Schema(type = SchemaType.STRING))
+            @PathParam("actor_id") @Valid @NotFoundEntity(repository = ActorRepository.class, id = String.class, message = "There is no actor with the following id:") String actorId) {
+
+
+        entitlementService.assignEntitlementToActor(id, actorId);
+
+        var response = new InformativeResponse();
+        response.code = 200;
+        response.message = "Entitlement was assigned successfully.";
+
+        return Response.ok().entity(response).build();
+    }
+
+    @Tag(name = "System Administrator")
+    @Operation(
+            summary = "Dissociate an entitlement from an actor.",
+            description = "Dissociate an entitlement to an actor.")
+    @APIResponse(
+            responseCode = "200",
+            description = "Entitlement was dissociated successfully.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = EntitlementDto.class)))
+    @APIResponse(
+            responseCode = "400",
+            description = "Bad Request.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "401",
+            description = "Client has not been authenticated.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "403",
+            description = "The authenticated client is not permitted to perform the requested operation.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "404",
+            description = "Entity has not been found.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "500",
+            description = "Internal Server Errors.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @SecurityRequirement(name = "Authentication")
+    @POST
+    @Path("/entitlements/{id}/dissociate/{actor_id}")
+    @Produces(value = MediaType.APPLICATION_JSON)
+    @AccessResource
+    public Response dissociateEntitlement(
+            @Parameter(
+                    description = "The entitlement to be dissociated.",
+                    required = true,
+                    example = "897f1f77bcf86cd799439011",
+                    schema = @Schema(type = SchemaType.STRING))
+            @PathParam("id") @Valid @NotFoundEntity(repository = EntitlementRepository.class, id = String.class, message = "There is no entitlement with the following id:") String id,
+            @Parameter(
+                    description = "The actor id.",
+                    required = true,
+                    example = "607f1f77bcf86cd799439011",
+                    schema = @Schema(type = SchemaType.STRING))
+            @PathParam("actor_id") @Valid @NotFoundEntity(repository = ActorRepository.class, id = String.class, message = "There is no actor with the following id:") String actorId) {
+
+        entitlementService.dissociateEntitlementFromActor(id, actorId);
+
+        var response = new InformativeResponse();
+        response.code = 200;
+        response.message = "Entitlement was dissociated successfully.";
 
         return Response.ok().entity(response).build();
     }
@@ -1158,6 +1499,51 @@ public class SystemAdminEndpoint {
 
         @Override
         public void setContent(List<OidcTenantConfigResponse> content) {
+            this.content = content;
+        }
+    }
+
+    public static class PageableActorResponse extends PageResource<ActorDto> {
+
+        private List<ActorDto> content;
+
+        @Override
+        public List<ActorDto> getContent() {
+            return content;
+        }
+
+        @Override
+        public void setContent(List<ActorDto> content) {
+            this.content = content;
+        }
+    }
+
+    public static class PageableEntitlementResponse extends PageResource<EntitlementDto> {
+
+        private List<EntitlementDto> content;
+
+        @Override
+        public List<EntitlementDto> getContent() {
+            return content;
+        }
+
+        @Override
+        public void setContent(List<EntitlementDto> content) {
+            this.content = content;
+        }
+    }
+
+    public static class PageableActorEntitlementResponse extends PageResource<ActorEntitlementsDto> {
+
+        private List<ActorEntitlementsDto> content;
+
+        @Override
+        public List<ActorEntitlementsDto> getContent() {
+            return content;
+        }
+
+        @Override
+        public void setContent(List<ActorEntitlementsDto> content) {
             this.content = content;
         }
     }

@@ -28,11 +28,6 @@ public class ProjectModulator extends AccessibleModulator<Project, String> {
 
     }
 
-    public void associateProjectWithProviders(String projectId, Set<String> providerIds){
-
-        projectRepository.associateProjectWithProviders(projectId, providerIds);
-
-    }
 
     public void dissociateProviderFromProject(String projectId, Set<String> providerIds){
 

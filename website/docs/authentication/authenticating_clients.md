@@ -1,8 +1,10 @@
 ---
 id: authenticating_clients
-title: Authenticating Clients
+title: Authentication through default OIDC Provider
 sidebar_position: 1
 ---
+
+# Authentication using the default OIDC Provider
 
 To access Accounting System API resources, you have to be authenticated by EOSC
 Core Infrastructure proxy.

@@ -45,13 +45,12 @@ import static org.eclipse.microprofile.openapi.annotations.enums.ParameterIn.QUE
         scheme = "bearer",
         bearerFormat = "JWT",
         in = SecuritySchemeIn.HEADER)
-
 public class MetricEndpoint {
 
     @Inject
     MetricService metricService;
 
-    @ConfigProperty(name = "quarkus.resteasy-reactive.path")
+    @ConfigProperty(name = "quarkus.rest.path")
     String basePath;
 
     @ConfigProperty(name = "api.server.url")
@@ -91,7 +90,6 @@ public class MetricEndpoint {
                     type = SchemaType.OBJECT,
                     implementation = InformativeResponse.class)))
     @APIResponse(
-
             responseCode = "415",
             description = "Cannot consume content type.",
             content = @Content(schema = @Schema(
@@ -104,19 +102,17 @@ public class MetricEndpoint {
                     type = SchemaType.OBJECT,
                     implementation = InformativeResponse.class)))
     @SecurityRequirement(name = "Authentication")
-
     @POST
     @Path("/search")
     @Produces(value = MediaType.APPLICATION_JSON)
     @Consumes(value = MediaType.APPLICATION_JSON)
-
-    public Response search(@Valid @NotNull(message = "The request body is empty.") @RequestBody( content = @Content(
+    public Response search(@Valid @NotNull(message = "The request body is empty.") @RequestBody(content = @Content(
             schema = @Schema(implementation = String.class),
             mediaType = MediaType.APPLICATION_JSON,
             examples = {
                     @ExampleObject(
                             name = "An example request of a search on metrics",
-                            value ="{\n" +
+                            value = "{\n" +
                                     "           \"type\":\"query\",\n" +
                                     "           \"field\": \"time_period_start\",\n" +
                                     "           \"values\": \"2022-01-05T09:13:07Z\",\n" +
@@ -133,7 +129,7 @@ public class MetricEndpoint {
                                     "      \"type\": \"query\",\n" +
                                     "      \"field\": \"value\",\n" +
                                     "      \"values\": 60,\n" +
-                                    "      \"operand\": lt\n" +
+                                    "      \"operand\": \"lt\"\n" +
                                     "    },\n" +
                                     "    {\n" +
                                     "      \"type\": \"filter\",\n" +
@@ -154,17 +150,17 @@ public class MetricEndpoint {
                                     "      ]\n" +
                                     "    }\n" +
                                     "  ]\n" +
-                                    "}\n",
-                            summary = "A complex search on Metrics ") })
+                                    "}",
+                            summary = "A complex search on Metrics ")})
     ) String json, @Parameter(name = "page", in = QUERY,
             description = "Indicates the page number. Page number must be >= 1.") @DefaultValue("1") @Min(value = 1, message = "Page number must be >= 1.") @QueryParam("page") int page,
                            @Parameter(name = "size", in = QUERY,
                                    description = "The page size.") @DefaultValue("10") @Min(value = 1, message = "Page size must be between 1 and 1000.")
-                           @Max(value = 1000, message = "Page size must be between 1 and 1000.")  @QueryParam("size") int size, @Context UriInfo uriInfo) throws NoSuchFieldException, ParseException, org.json.simple.parser.ParseException {
+                           @Max(value = 1000, message = "Page size must be between 1 and 1000.") @QueryParam("size") int size, @Context UriInfo uriInfo) throws NoSuchFieldException, ParseException, org.json.simple.parser.ParseException {
 
         var serverInfo = new AccountingUriInfo(serverUrl.concat(basePath).concat(uriInfo.getPath()));
 
-        var list=metricService.searchMetrics(json, page - 1, size, serverInfo);
+        var list = metricService.searchMetrics(json, page - 1, size, serverInfo);
         return Response.ok().entity(list).build();
     }
 }

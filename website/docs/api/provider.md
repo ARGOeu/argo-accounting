@@ -13,33 +13,12 @@ The Provider can either be registered by communicating with EOSC Resource
 Catalogue, or you can create a new Provider by using the endpoints the
 Accounting Service provides.
 
-## Registering Provider by following the EOSC Onboarding Process at [becomeAProvider](https://providers.eosc-portal.eu/becomeAProvider)
-
-The Accounting System communicates with EOSC Providers to retrieve the available
-Providers.
-A cron job, which runs every day at 12 am, collects the Providers and stores them
-in the database. From the response we receive we keep specific information
-which is stored in the collection named Provider. The collection has the
-following structure:
-
-| Field           | Description                |
-|-----------------|----------------------------|
-| id              | Provider ID.               |
-| name            | Provider name.             |
-| website         | Url of Provider website.   |
-| abbreviation    | Provider abbreviation.     |
-| logo            | Url of Provider logo.      |
-
 ## Registering Provider through Accounting System API
 
 If the Provider is not registered in the EOSC Resource Catalogue, the API
 offers
 the functionality to create a new one. Below, we will describe the available
 operations regarding the Provider that you can interact with.
-
-**Bear in mind that** the Provider response contains the property `creator_id`.
-If the `creator_id` is empty, the Provider comes from the EOSC Resource
-Catalogue. Otherwise, it was generated through the Accounting Service.
 
 ## [POST] - Create a new Provider
 
@@ -343,7 +322,7 @@ Success Response `200 OK`
 }
 ```
 
-## [POST] - Access Control Entry for a particular Provider of a specific Project
+## [POST] - Access Control Entry for a particular Provider of a specific Project (legacy)
 
 Any client can have different responsibilities at different Providers. The
 actions the client can perform at each Provider are determined by the role
@@ -377,6 +356,11 @@ Success Response `200 OK`
    "message": "Provider Access Control was successfully created."
 }
 ```
+
+### Note
+
+See [Mapping of Roles to Entitlements](../authorization/accounting_system_roles#mapping-of-roles-to-entitlements) for new role assignment mechanism.
+
 
 ## [POST] - Search for Providers
 
@@ -459,6 +443,145 @@ Otherwise, an empty response will be returned.
 **Keep in mind that** to execute the above operation, you must have been
 assigned a role containing the Provider Acl permission.
 
+## [GET] - Get Provider Report
+
+The report includes aggregated metric values grouped by metric definitions for all Installations belonging
+to a specific Provider.
+
+You can retrieve a report for a specific **Provider** within a defined time period:
+
+```
+GET /accounting-system/projects/{project_id}/providers/{provider_id}/report
+
+Authorization: Bearer {token}
+```
+
+
+**Parameters**
+
+- `project_id` *(required, path)* – The Project ID.  
+  Example: `704029`  
+- `provider_id` *(required, path)* – The Provider ID.  
+  Example: `grnet`  
+- `start` *(required, query)* – Start date in `yyyy-MM-dd` format.  
+  Example: `2024-01-01`  
+- `end` *(required, query)* – End date in `yyyy-MM-dd` format.  
+  Example: `2024-12-31`  
+
+**Success Response `200 OK`**
+
+```json
+{
+  "provider_id": "grnet",
+  "name": "Swedish Infrastructure for Ecosystem Science",
+  "website": "https://www.fieldsites.se/en-GB",
+  "abbreviation": "SITES",
+  "logo": "https://dst15js82dk7j.cloudfront.net/231546/95187636-P5q11.png",
+  "aggregated_metrics": [
+    {
+      "metric_definition_id": "507f1f77bcf86cd799439011",
+      "metric_name": "weight",
+      "metric_description": "The weight of a person",
+      "unit_type": "kg",
+      "metric_type": "aggregated",
+      "total_value": 1234.56
+    }
+  ],
+  "data": [
+    {
+      "installation_id": "507f1f77bcf86cd799439011",
+      "project": "447535",
+      "provider": "grnet",
+      "installation": "GRNET-KNS",
+      "infrastructure": "okeanos-knossos",
+      "resource": "unitartu.ut.rocket",
+      "external_id": "installation-45583",
+      "data": [
+        {
+          "metric_definition_id": "507f1f77bcf86cd799439011",
+          "metric_name": "weight",
+          "metric_description": "The weight of a person",
+          "unit_type": "kg",
+          "metric_type": "aggregated",
+          "total_value": 1234.56
+        }
+      ]
+    }
+  ]
+}
+```
+
+## [GET] - Get Global Provider Report
+
+The report includes aggregated metric values grouped by metric definitions for all Installations belonging
+to a specific Provider, independently of a Project.
+
+You can retrieve a report for a specific **Provider** within a defined time period:
+
+```
+GET /accounting-system/providers/{provider_id}/report
+
+Authorization: Bearer {token}
+```
+
+**Parameters**
+
+- `provider_id` *(required, path)* – The Provider ID.  
+  Example: `grnet`  
+- `start` *(required, query)* – Start date in `yyyy-MM-dd` format.  
+  Example: `2024-01-01`  
+- `end` *(required, query)* – End date in `yyyy-MM-dd` format.  
+  Example: `2024-12-31`  
+
+**Success Response `200 OK`**
+
+```json
+[
+  {
+    "provider_id": "grnet",
+    "name": "Swedish Infrastructure for Ecosystem Science",
+    "website": "https://www.fieldsites.se/en-GB",
+    "abbreviation": "SITES",
+    "logo": "https://dst15js82dk7j.cloudfront.net/231546/95187636-P5q11.png",
+    "aggregated_metrics": [
+      {
+        "metric_definition_id": "507f1f77bcf86cd799439011",
+        "metric_name": "weight",
+        "metric_description": "The weight of a person",
+        "unit_type": "kg",
+        "metric_type": "aggregated",
+        "total_value": 1234.56
+      }
+    ],
+    "data": [
+      {
+        "installation_id": "507f1f77bcf86cd799439011",
+        "project": "447535",
+        "provider": "grnet",
+        "installation": "GRNET-KNS",
+        "infrastructure": "okeanos-knossos",
+        "resource": "unitartu.ut.rocket",
+        "external_id": "installation-45583",
+        "data": [
+          {
+            "metric_definition_id": "507f1f77bcf86cd799439011",
+            "metric_name": "weight",
+            "metric_description": "The weight of a person",
+            "unit_type": "kg",
+            "metric_type": "aggregated",
+            "total_value": 1234.56
+          }
+        ]
+      }
+    ]
+  }
+]
+```
+
 ## Errors
 
 Please refer to section [Errors](./api_errors) to see all possible Errors.
+
+## Note
+
+Instead of the internal ID, you can use the external ID in the corresponding API calls.

@@ -13,7 +13,7 @@ pipeline {
         stage('Accounting System API Packaging & Testing') {
             agent {
                 docker {
-                    image 'argo.registry:5000/epel-7-java11-mvn384'
+                    image 'argo.registry:5000/rocky9-java17-mvn3.9.9:latest'
                     args '-v $HOME/.m2:/root/.m2 -v /var/run/docker.sock:/var/run/docker.sock -u root:root'
                 }
             }
@@ -33,35 +33,6 @@ pipeline {
                 }
             }
         }
-        stage ('Deploy Docs') {
-            // run deployment of docs only when merging to devel
-            // when {
-            //     branch 'devel'
-            // }
-            agent {
-                docker {
-                    image 'node:18-buster'
-                }
-            }
-            steps {
-                echo 'Publish argo-accounting docs...'
-                sh '''
-                    cd $WORKSPACE/$PROJECT_DIR
-                    cd website
-                    npm install
-                '''
-                sshagent (credentials: ['jenkins-master']) {
-                    sh '''
-                        cd $WORKSPACE/$PROJECT_DIR/website
-                        mkdir ~/.ssh && ssh-keyscan -H github.com > ~/.ssh/known_hosts
-                        git config --global user.email ${GH_EMAIL}
-                        git config --global user.name ${GH_USER}
-                        echo ${GH_USER}
-                        GIT_USER=${GH_USER} USE_SSH=true npm run deploy
-                    '''
-                }
-            }
-        } 
     }
     post {
         success {

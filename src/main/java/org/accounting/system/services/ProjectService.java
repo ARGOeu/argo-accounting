@@ -1,72 +1,85 @@
 package org.accounting.system.services;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.mongodb.client.model.Filters;
 import io.quarkus.mongodb.panache.PanacheQuery;
+import io.vavr.collection.Array;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.NotFoundException;
 import jakarta.ws.rs.core.UriInfo;
-import org.accounting.system.dtos.acl.role.RoleAccessControlRequestDto;
-import org.accounting.system.dtos.acl.role.RoleAccessControlResponseDto;
-import org.accounting.system.dtos.acl.role.RoleAccessControlUpdateDto;
 import org.accounting.system.dtos.installation.InstallationResponseDto;
 import org.accounting.system.dtos.metricdefinition.MetricDefinitionResponseDto;
 import org.accounting.system.dtos.pagination.PageResource;
 import org.accounting.system.entities.Project;
 import org.accounting.system.entities.projections.InstallationProjection;
+import org.accounting.system.entities.projections.MetricReportProjection;
 import org.accounting.system.entities.projections.ProjectReport;
 import org.accounting.system.entities.projections.normal.ProjectProjection;
-import org.accounting.system.entities.projections.permissions.ProjectProjectionWithPermissions;
-import org.accounting.system.exceptions.ConflictException;
-import org.accounting.system.interceptors.annotations.AdditionalPermissions;
-import org.accounting.system.mappers.AccessControlMapper;
 import org.accounting.system.mappers.InstallationMapper;
 import org.accounting.system.mappers.MetricDefinitionMapper;
-import org.accounting.system.repositories.authorization.RoleRepository;
 import org.accounting.system.repositories.project.ProjectRepository;
-import org.accounting.system.services.acl.RoleAccessControlService;
+import org.accounting.system.services.groupmanagement.GroupManagementSelection;
 import org.accounting.system.util.QueryParser;
 import org.bson.conversions.Bson;
+import org.jboss.logging.Logger;
 
 import java.util.ArrayList;
-import java.util.Set;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @ApplicationScoped
-public class ProjectService implements RoleAccessControlService {
+public class ProjectService {
+
+    private static final Logger LOG = Logger.getLogger(ProjectService.class);
 
     @Inject
     ProjectRepository projectRepository;
 
     @Inject
-    RoleRepository roleRepository;
-
-    @Inject
     QueryParser queryParser;
 
+    @Inject
+    GroupManagementSelection groupManagementSelection;
+
+    @Inject
+    ProviderService providerService;
+
     /**
-     * This method correlates the given Providers with a specific Project and creates an hierarchical structure with root
+     * This method correlates the given Providers with a specific Project and creates a hierarchical structure with root
      * the given Project and children the given Providers.
      *
      * @param projectId The Project id with which the Providers are going to be correlated.
-     * @param providerIds List of Providers which will be correlated with a specific Provider
+     * @param providerId Provider which will be correlated with a specific Project
      * @throws NotFoundException If a Provider doesn't exist
      */
-    public void associateProjectWithProviders(String projectId, Set<String> providerIds){
+    public void associateProjectWithProvider(String projectId, String providerId){
 
-        projectRepository.associateProjectWithProviders(projectId, providerIds);
+        projectRepository.associateProjectWithProvider(projectId, providerId);
+
+        try{
+
+            groupManagementSelection.from().choose().createAssociationGroup(projectId, providerId);
+        } catch (Exception e){
+
+            projectRepository.dissociateProviderFromProject(projectId, providerId);
+            LOG.error("Group creation failed with error : " + e.getMessage());
+        }
     }
 
     /**
      * This method dissociated Providers from a specific Project.
      *
      * @param projectId The Project id from which the Providers are going to be dissociated
-     * @param providerIds List of Providers which will be dissociated from a specific Provider
+     * @param providerId Provider which will be dissociated from a specific Provider
      */
-    public void dissociateProviderFromProject(String projectId, Set<String> providerIds){
+    public void dissociateProviderFromProject(String projectId, String providerId){
 
-        projectRepository.dissociateProviderFromProject(projectId, providerIds);
+        projectRepository.dissociateProviderFromProject(projectId, providerId);
+
+        groupManagementSelection.from().choose().deleteAssociationGroup(projectId, providerId);
     }
+
     public ProjectProjection getById(final String id) {
 
          return projectRepository.fetchById(id);
@@ -79,10 +92,10 @@ public class ProjectService implements RoleAccessControlService {
         return new PageResource<>(projectionQuery, InstallationMapper.INSTANCE.installationProjectionsToResponse(projectionQuery.list()), uriInfo);
     }
 
-    public  PageResource<ProjectProjection> searchProject(String json, int page, int size, UriInfo uriInfo) throws  NoSuchFieldException, org.json.simple.parser.ParseException {
-        Bson query=queryParser.parseFile(json, true, new ArrayList<>(), Project.class);
+    public  PageResource<ProjectProjection> searchProject(String json, int page, int size, UriInfo uriInfo) throws org.json.simple.parser.ParseException {
 
-        PanacheQuery<ProjectProjection> projectionQuery = projectRepository.searchProjects(query,page,size);
+        var query = queryParser.parseFile(json);
+        var projectionQuery = projectRepository.searchProjects(query,page,size);
         return new PageResource<>(projectionQuery, projectionQuery.list(), uriInfo);
     }
 
@@ -93,96 +106,11 @@ public class ProjectService implements RoleAccessControlService {
        return new PageResource<>(projectionQuery, projectionQuery.list(), uriInfo);
     }
 
-    public PageResource<ProjectProjectionWithPermissions> getClientPermissions(int page, int size, UriInfo uriInfo){
-
-        var projectionQuery = projectRepository.fetchClientPermissions(page, size);
-
-        return new PageResource<>(projectionQuery, projectionQuery.list(), uriInfo);
-    }
-
     public PageResource<MetricDefinitionResponseDto> fetchAllMetricDefinitions(String id, int page, int size, UriInfo uriInfo){
 
         var projection = projectRepository.fetchAllMetricDefinitions(id, page, size);
 
         return new PageResource<>(projection, MetricDefinitionMapper.INSTANCE.metricDefinitionsToResponse(projection.list()), uriInfo);
-    }
-
-    @Override
-    @AdditionalPermissions(role = "project_admin", additionalRoles = {"provider_creator", "metric_definition_creator", "unit_type_creator", "metric_type_creator"})
-    public void grantPermission(String who, RoleAccessControlRequestDto request, String... id) {
-
-        var projectID = id[0];
-
-        var optional = projectRepository.fetchRoleAccessControl(projectID, who);
-
-        if(optional.isPresent()){
-
-            throw new ConflictException("There is a Project Access Control for the client : "+who);
-        }
-
-        var accessControl = AccessControlMapper.INSTANCE.requestToRoleAccessControl(request);
-
-        accessControl.setWho(who);
-
-        accessControl.setRoles(roleRepository.getRolesByName(request.roles));
-
-        projectRepository.insertNewRoleAccessControl(projectID, accessControl);
-    }
-
-    @Override
-    public RoleAccessControlResponseDto modifyPermission(String who, RoleAccessControlUpdateDto updateDto, String... id) {
-
-        var projectID = id[0];
-
-        var optional = projectRepository.fetchRoleAccessControl(projectID, who);
-
-        optional.orElseThrow(() -> new NotFoundException("There is no Access Control."));
-
-        projectRepository.updateRoleAccessControl(projectID, who, roleRepository.getRolesByName(updateDto.roles));
-
-        var updated = projectRepository.fetchRoleAccessControl(projectID, who);
-
-        return AccessControlMapper.INSTANCE.roleAccessControlToResponse(updated.get());
-    }
-
-    @Override
-    public void deletePermission(String who, String... id) {
-
-        var projectID = id[0];
-
-        var optional = projectRepository.fetchRoleAccessControl(projectID, who);
-
-        optional.orElseThrow(() -> new NotFoundException("There is no Access Control."));
-
-        projectRepository.deleteRoleAccessControl(projectID, who);
-    }
-
-    @Override
-    public RoleAccessControlResponseDto fetchPermission(String who, String... id) {
-
-        var projectID = id[0];
-
-        var optional = projectRepository.fetchRoleAccessControl(projectID, who);
-
-        optional.orElseThrow(() -> new NotFoundException("There is no Access Control."));
-
-        return AccessControlMapper.INSTANCE.roleAccessControlToResponse(optional.get());
-    }
-
-    @Override
-    public PageResource<RoleAccessControlResponseDto> fetchAllPermissions(int page, int size, UriInfo uriInfo, String... id) {
-
-        var projectID = id[0];
-
-        var panacheQuery = projectRepository.fetchAllRoleAccessControls(projectID, page, size);
-
-        var responses = panacheQuery
-                .list()
-                .stream()
-                .map(AccessControlMapper.INSTANCE::roleAccessControlToResponse)
-                .collect(Collectors.toList());
-
-        return new PageResource<>(panacheQuery, responses, uriInfo);
     }
 
     public PageResource<ProjectProjection> getAllForSystemAdmin(int page, int size, UriInfo uriInfo) {
@@ -194,7 +122,63 @@ public class ProjectService implements RoleAccessControlService {
 
     public ProjectReport projectReport(String projectId, String start, String end){
 
+        return projectReport(projectId, start, end, Array.of());
+    }
 
-        return projectRepository.projectReport(projectId, start, end);
+    public ProjectReport projectReport(String projectId, String start, String end, Array<Bson> filters){
+
+        var project = projectRepository.findById(projectId);
+
+        var providers = projectRepository.fetchProjectProviders(projectId);
+
+        var providerReports = providers.stream().map(provider->providerService.providerReport(projectId, provider.getId(), start, end, filters)).toList();
+
+        var report = new ProjectReport();
+        report.id = projectId;
+        report.endDate = project.getEndDate();
+        report.startDate = project.getStartDate();
+        report.title = project.getTitle();
+        report.callIdentifier = project.getCallIdentifier();
+        report.acronym = project.getAcronym();
+        report.data = providerReports;
+
+        var aggregatedMetrics = providerReports
+                .stream()
+                .flatMap(rpt -> rpt.aggregatedMetrics.stream())
+                .collect(Collectors.toMap(k->k.metricDefinitionId,
+                        m -> {
+                            var copy = new MetricReportProjection();
+                            copy.metricDefinitionId = m.metricDefinitionId;
+                            copy.metricName = m.metricName;
+                            copy.metricDescription = m.metricDescription;
+                            copy.unitType = m.unitType;
+                            copy.metricType = m.metricType;
+                            copy.totalValue = m.totalValue;
+                            return copy;
+                        },
+                        (m1, m2) -> {
+                            m1.totalValue = m1.totalValue + m2.totalValue;
+                            return m1;
+                        }
+                ));
+
+        report.aggregatedMetrics = new ArrayList<>(aggregatedMetrics.values());
+
+        return report;
+    }
+
+    public ProjectReport projectReportByGroupId(String projectId, String groupId, String start, String end){
+
+        return projectReport(projectId, start, end, Array.of(Filters.eq("group_id", groupId)));
+    }
+
+    public ProjectReport projectReportByUserId(String projectId, String userId, String start, String end){
+
+        return projectReport(projectId, start, end, Array.of( Filters.eq("user_id", userId)));
+    }
+
+    public Optional<Project> findByIdOptional(String id){
+
+        return  projectRepository.findByIdOptional(id);
     }
 }

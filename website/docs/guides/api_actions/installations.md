@@ -17,7 +17,7 @@ You can manage an Installation assigned to a specific Project and Provider.
 
 **1.** [Register](/docs/guides/register.md) to Accounting Service.
 
-**2.** [Contact](/docs/authorization/assigning_roles.md) the administrator of
+**2.** [Contact](/docs/authorization/accounting_system_roles.md) the administrator of
    the Project or the administrator of the
    Project's Provider that this Installation is associated with to assign you
    one or more roles on the Installation.
@@ -54,5 +54,13 @@ API. If Metrics are assigned to the Installation, no DELETE action can take
 place. In this case, you need to delete all the assigned Metrics first.
 
 > 📝 For more details on how to structure the request, see [here](https://argoeu.github.io/argo-accounting/docs/api/installation#delete---delete-an-existing-installation).
+
+### GET Installation Report
+
+You can get a report of an Installation by applying a request to the Accounting
+Service API. The report contains aggregated metric values grouped by metric definition for a specific time period.
+The report can be obtained using the external installation id as a query parameter.
+
+> 📝 For more details on how to structure the request, see [here](https://argoeu.github.io/argo-accounting/docs/api/installation#get---get-installation-report).
 
 ---

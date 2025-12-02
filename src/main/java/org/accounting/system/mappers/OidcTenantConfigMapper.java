@@ -42,6 +42,8 @@ public interface OidcTenantConfigMapper {
     @Mapping(target = "issuer", expression = "java(StringUtils.isNotEmpty(request.issuer) ? request.issuer : oidcTenantConfig.getIssuer())")
     @Mapping(target = "userIdTokenClaim", expression = "java(StringUtils.isNotEmpty(request.userIdTokenClaim) ? request.userIdTokenClaim : oidcTenantConfig.getUserIdTokenClaim())")
     @Mapping(target = "serviceIdTokenClaim", expression = "java(StringUtils.isNotEmpty(request.serviceIdTokenClaim) ? request.serviceIdTokenClaim : oidcTenantConfig.getServiceIdTokenClaim())")
+    @Mapping(target = "groupManagementParent", expression = "java(StringUtils.isNotEmpty(request.groupManagementParent) ? request.groupManagementParent : oidcTenantConfig.getGroupManagementParent())")
+    @Mapping(target = "groupManagementNamespace", expression = "java(StringUtils.isNotEmpty(request.groupManagementNamespace) ? request.groupManagementNamespace : oidcTenantConfig.getGroupManagementNamespace())")
     void updateConfigFromDto(UpdateOidcTenantConfig request, @MappingTarget OidcTenantConfig oidcTenantConfig);
 
     @AfterMapping

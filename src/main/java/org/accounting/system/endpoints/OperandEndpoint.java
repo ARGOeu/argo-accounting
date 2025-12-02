@@ -9,6 +9,7 @@ import org.accounting.system.dtos.InformativeResponse;
 import org.accounting.system.dtos.enums.EnumResponseDto;
 import org.accounting.system.enums.Operand;
 import org.accounting.system.mappers.EnumMapper;
+import org.eclipse.microprofile.openapi.annotations.Operation;
 import org.eclipse.microprofile.openapi.annotations.enums.SchemaType;
 import org.eclipse.microprofile.openapi.annotations.enums.SecuritySchemeIn;
 import org.eclipse.microprofile.openapi.annotations.enums.SecuritySchemeType;
@@ -34,7 +35,7 @@ public class OperandEndpoint {
 
 
     @Tag(name = "Operand")
-    @org.eclipse.microprofile.openapi.annotations.Operation(
+    @Operation(
             summary = "Retrieve the operands that will be used to syntax an equation",
             description = "Retrieve the operands that will be used to syntax an equation")
     @APIResponse(
@@ -62,8 +63,6 @@ public class OperandEndpoint {
                     type = SchemaType.OBJECT,
                     implementation = InformativeResponse.class)))
     @SecurityRequirement(name = "Authentication")
-
-
     @GET
     @Produces(value = MediaType.APPLICATION_JSON)
     public List<EnumResponseDto> getOperands() {

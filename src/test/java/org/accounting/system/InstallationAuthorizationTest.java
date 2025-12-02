@@ -4,26 +4,38 @@ import io.quarkus.test.common.QuarkusTestResource;
 import io.quarkus.test.common.http.TestHTTPEndpoint;
 import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.test.junit.TestProfile;
-import io.quarkus.test.security.TestSecurity;
-import io.quarkus.test.security.oidc.OidcSecurity;
-import io.quarkus.test.security.oidc.TokenIntrospection;
-import io.quarkus.test.security.oidc.UserInfo;
+import io.quarkus.test.keycloak.client.KeycloakTestClient;
 import io.restassured.http.ContentType;
+import jakarta.inject.Inject;
+import org.accounting.system.clients.ProviderClient;
+import org.accounting.system.clients.responses.eoscportal.Response;
+import org.accounting.system.clients.responses.eoscportal.Total;
 import org.accounting.system.dtos.InformativeResponse;
-import org.accounting.system.dtos.acl.role.RoleAccessControlRequestDto;
+import org.accounting.system.dtos.admin.ProjectRegistrationRequest;
 import org.accounting.system.dtos.installation.InstallationRequestDto;
 import org.accounting.system.dtos.installation.InstallationResponseDto;
 import org.accounting.system.dtos.metricdefinition.MetricDefinitionRequestDto;
 import org.accounting.system.dtos.metricdefinition.MetricDefinitionResponseDto;
-import org.accounting.system.dtos.pagination.PageResource;
 import org.accounting.system.endpoints.InstallationEndpoint;
 import org.accounting.system.enums.ApiMessage;
+import org.accounting.system.mappers.ProviderMapper;
+import org.accounting.system.repositories.metric.MetricRepository;
+import org.accounting.system.repositories.metricdefinition.MetricDefinitionRepository;
+import org.accounting.system.repositories.project.ProjectRepository;
+import org.accounting.system.repositories.provider.ProviderRepository;
+import org.accounting.system.wiremock.KeycloakWireMockServer;
 import org.accounting.system.wiremock.ProjectWireMockServer;
 import org.accounting.system.wiremock.ProviderWireMockServer;
+import org.accounting.system.wiremock.TokenWireMockServer;
+import org.eclipse.microprofile.rest.client.inject.RestClient;
+import org.json.simple.parser.ParseException;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 
 import java.util.Set;
+import java.util.concurrent.ExecutionException;
 
 import static io.restassured.RestAssured.given;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -34,108 +46,69 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 @QuarkusTestResource(ProjectWireMockServer.class)
 @QuarkusTestResource(ProviderWireMockServer.class)
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
-public class InstallationAuthorizationTest extends PrepareTest {
+@QuarkusTestResource(KeycloakWireMockServer.class)
+@QuarkusTestResource(TokenWireMockServer.class)
+public class InstallationAuthorizationTest {
 
-    @Test
-    @TestSecurity(user = "provider_admin")
-    @OidcSecurity(introspectionRequired = true,
-            introspection = {
-                    @TokenIntrospection(key = "voperson_id", value = "provider_admin@example.org"),
-                    @TokenIntrospection(key = "sub", value = "provider_admin@example.org"),
-                    @TokenIntrospection(key = "iss", value = "http://localhost:58080/realms/quarkus")
-            },
-            userinfo = {
-                    @UserInfo(key = "name", value = "provider_admin"),
-                    @UserInfo(key = "email", value = "provider_admin@example.org")
-            }
-    )
-    public void clientGrantAccessToOtherClientToManageAProvider(){
+    @Inject
+    @RestClient
+    ProviderClient providerClient;
 
-        projectRepository.associateProjectWithProviders("777536", Set.of("grnet", "sites"));
+    @Inject
+    ProviderRepository providerRepository;
 
-        // admin user will submit two installations
+    @Inject
+    ProjectRepository projectRepository;
 
-        //the first installation has been created by admin
+    @Inject
+    MetricDefinitionRepository metricDefinitionRepository;
 
-        var metricDefinitionResponse = createMetricDefinition("admin");
+    @Inject
+    MetricRepository metricRepository;
 
-        var request = createInstallationRequest("777536", "grnet", "okeanos-knossos", "SECOND", metricDefinitionResponse.id);
+    KeycloakTestClient keycloakClient = new KeycloakTestClient();
 
-        createInstallation(request, "admin");
+    protected String getAccessToken(String userName) {
+        return keycloakClient.getAccessToken(userName);
+    }
 
-        //the second installation has been created by admin
+    @BeforeAll
+    public void setup() throws ExecutionException, InterruptedException, ParseException {
 
-        var request1 = createInstallationRequest("777536", "grnet", "okeanos-knossos", "GRNET-KNS", metricDefinitionResponse.id);
+        Total total = providerClient.getTotalNumberOfProviders("all").toCompletableFuture().get();
 
-        createInstallation(request1, "admin");
+        Response response = providerClient.getAll("all", total.total).toCompletableFuture().get();
 
-        //the third installation has been created by provider_admin
+        providerRepository.persistOrUpdate(ProviderMapper.INSTANCE.eoscProvidersToProviders(response.results));
+    }
 
-        var acl = new RoleAccessControlRequestDto();
+    @BeforeEach
+    public void before() throws ParseException {
 
-        acl.roles = Set.of("provider_admin");
+        metricDefinitionRepository.deleteAll();
+        projectRepository.deleteAll();
+        metricRepository.deleteAll();
+
+        var request = new ProjectRegistrationRequest();
+        request.projects = Set.of("777536", "101017567");
 
         given()
                 .auth()
                 .oauth2(getAccessToken("admin"))
-                .basePath("accounting-system/projects")
+                .basePath("accounting-system/admin")
+                .body(request)
                 .contentType(ContentType.JSON)
-                .body(acl)
-                .post("/{project_id}/providers/{provider_id}/acl/{who}", "777536", "sites", "2ba5ad4cc037343cfa53ba6633becd68ea4c5d7805f3f1bf172d66c1d9440768")
+                .post("/register-projects")
                 .then()
                 .assertThat()
-                .statusCode(200)
-                .extract()
-                .as(InformativeResponse.class);
-
-        var request2 = createInstallationRequest("777536", "sites", "okeanos-knossos", "okeanos", metricDefinitionResponse.id);
-
-        given()
-                .body(request2)
-                .contentType(ContentType.JSON)
-                .post()
-                .then()
-                .assertThat()
-                .statusCode(201)
-                .extract()
-                .as(InstallationResponseDto.class);
-
-        //because admin can access all installations the size of list should be 3
-
-        PageResource pageResourceAdmin = given()
-                .basePath("accounting-system/projects")
-                .auth()
-                .oauth2(getAccessToken("admin"))
-                .get("/{project_id}/installations", "777536")
-                .body()
-                .as(PageResource.class);
-
-        assertEquals(3, pageResourceAdmin.getTotalElements());
-
-        given()
-                .basePath("accounting-system/projects")
-                .get("/{project_id}/installations", "777536")
-                .then()
-                .assertThat()
-                .statusCode(403);
-
-
-        PageResource pageResourceProviderAdmin = given()
-                .basePath("accounting-system/projects")
-                .auth()
-                .oauth2(getAccessToken("admin"))
-                .get("/{project_id}/providers/{provider_id}/installations", "777536", "sites")
-                .body()
-                .as(PageResource.class);
-
-
-        assertEquals(1, pageResourceProviderAdmin.getTotalElements());
+                .statusCode(200);
     }
 
     @Test
     public void getInstallation(){
 
-        projectRepository.associateProjectWithProviders("777536", Set.of("grnet", "sites"));
+        projectRepository.associateProjectWithProvider("777536","grnet");
+        projectRepository.associateProjectWithProvider("777536", "sites");
 
         // admin user will submit one installation
 
@@ -251,9 +224,4 @@ public class InstallationAuthorizationTest extends PrepareTest {
                 .oauth2(getAccessToken(user))
                 .get("/{id}", id);
     }
-
-    protected String getAccessToken(String userName) {
-        return keycloakClient.getAccessToken(userName);
-    }
-
 }
