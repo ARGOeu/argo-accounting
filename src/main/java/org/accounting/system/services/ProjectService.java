@@ -8,17 +8,20 @@ import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.NotFoundException;
 import jakarta.ws.rs.core.UriInfo;
+import org.accounting.system.beans.RequestUserContext;
 import org.accounting.system.dtos.installation.InstallationResponseDto;
 import org.accounting.system.dtos.metricdefinition.MetricDefinitionResponseDto;
 import org.accounting.system.dtos.pagination.PageResource;
 import org.accounting.system.entities.Project;
 import org.accounting.system.entities.projections.InstallationProjection;
 import org.accounting.system.entities.projections.MetricReportProjection;
+import org.accounting.system.entities.projections.ProjectProjectionWithPermissions;
 import org.accounting.system.entities.projections.ProjectReport;
 import org.accounting.system.entities.projections.normal.ProjectProjection;
 import org.accounting.system.mappers.InstallationMapper;
 import org.accounting.system.mappers.MetricDefinitionMapper;
 import org.accounting.system.repositories.project.ProjectRepository;
+import org.accounting.system.services.groupmanagement.EntitlementServiceFactory;
 import org.accounting.system.services.groupmanagement.GroupManagementSelection;
 import org.accounting.system.util.QueryParser;
 import org.bson.conversions.Bson;
@@ -44,6 +47,15 @@ public class ProjectService {
 
     @Inject
     ProviderService providerService;
+
+    @Inject
+    EntitlementServiceFactory entitlementServiceFactory;
+
+    @Inject
+    ClientService clientService;
+
+    @Inject
+    RequestUserContext requestUserContext;
 
     /**
      * This method correlates the given Providers with a specific Project and creates a hierarchical structure with root
@@ -180,5 +192,31 @@ public class ProjectService {
     public Optional<Project> findByIdOptional(String id){
 
         return  projectRepository.findByIdOptional(id);
+    }
+
+    public PageResource<ProjectProjectionWithPermissions> getClientPermissions(int page, int size, UriInfo uriInfo){
+
+        var entitlements = entitlementServiceFactory.from().fetchEntitlements();
+
+        var ids = entitlements.stream().map(ent->extractProjectId(ent.getRaw())).collect(Collectors.toList());
+
+        var projectionQuery = projectRepository.fetchClientPermissions(page, size, ids);
+
+        var list = projectionQuery.list();
+
+        list.forEach(pr->pr.permissions = clientService.projectAdmin());
+
+        return new PageResource<>(projectionQuery, list, uriInfo);
+    }
+
+    private String extractProjectId(String entitlement) {
+        String[] parts = entitlement.split(":");
+
+        for (int i = 0; i < parts.length; i++) {
+            if (parts[i].equals(requestUserContext.getParent()) && i + 1 < parts.length) {
+                return parts[i + 1];
+            }
+        }
+        return "";
     }
 }

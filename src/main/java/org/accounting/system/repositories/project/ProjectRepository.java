@@ -13,6 +13,7 @@ import org.accounting.system.entities.HierarchicalRelation;
 import org.accounting.system.entities.MetricDefinition;
 import org.accounting.system.entities.projections.InstallationProjection;
 import org.accounting.system.entities.projections.MongoQuery;
+import org.accounting.system.entities.projections.ProjectProjectionWithPermissions;
 import org.accounting.system.entities.projections.normal.ProjectProjection;
 import org.accounting.system.entities.provider.Provider;
 import org.accounting.system.enums.RelationType;
@@ -299,6 +300,30 @@ public class ProjectRepository extends ProjectModulator {
         var projectionQuery = new MongoQuery<MetricDefinition>();
 
         projectionQuery.list = metricDefinitions;
+        projectionQuery.index = page;
+        projectionQuery.size = size;
+        projectionQuery.count = count == null ? 0L : Long.parseLong(count.get("count").toString());
+        projectionQuery.page = Page.of(page, size);
+
+        return projectionQuery;
+    }
+
+    public PanacheQuery<ProjectProjectionWithPermissions> fetchClientPermissions(int page, int size, List<String> ids){
+
+        var eq = Aggregates
+                .match(Filters.in("_id", ids));
+
+        var projects= projectRepository.getMongoCollection()
+                .aggregate(List.of(eq, Aggregates.skip(size * (page)), Aggregates.limit(size)),  ProjectProjectionWithPermissions.class)
+                .into(new ArrayList<>());
+
+        Document count = projectRepository.getMongoCollection()
+                .aggregate(List.of(eq, Aggregates.count()))
+                .first();
+
+        var projectionQuery = new MongoQuery<ProjectProjectionWithPermissions>();
+
+        projectionQuery.list = projects;
         projectionQuery.index = page;
         projectionQuery.size = size;
         projectionQuery.count = count == null ? 0L : Long.parseLong(count.get("count").toString());
