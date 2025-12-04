@@ -2567,7 +2567,11 @@
       "emailVerified": false,
       "attributes": {
         "voperson_id": ["alice_voperson_id"],
-        "entitlements": ["urn:geant:sandbox.eosc-beyond.eu:core:integration:group:accounting:operations:resources:role=admin"]
+        "entitlements": ["urn:geant:sandbox.eosc-beyond.eu:core:integration:group:accounting:operations:resources:role=admin",
+          "urn:geant:sandbox.eosc-beyond.eu:core:integration:group:accounting:eu_node:psnc:installation_1:role=admin",
+          "urn:geant:sandbox.eosc-beyond.eu:core:integration:group:accounting:eosc_service_catalogue:role=admin"
+
+        ]
       },
       "credentials": [
         {
