@@ -10,6 +10,7 @@ import org.accounting.system.entities.Setting;
 import org.accounting.system.enums.APISetting;
 import org.accounting.system.repositories.OidcTenantConfigRepository;
 import org.accounting.system.repositories.SettingRepository;
+import org.apache.commons.lang3.StringUtils;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 
 import java.util.Optional;
@@ -70,7 +71,11 @@ public class RequestUserContext {
 
     public String getIssuer(){
 
-        return tokenIntrospection.getJsonObject().getString("iss");
+        try{
+            return tokenIntrospection.getJsonObject().getString("iss");
+        } catch (Exception e){
+            return StringUtils.EMPTY;
+        }
     }
 
     public String getNamespace(){
