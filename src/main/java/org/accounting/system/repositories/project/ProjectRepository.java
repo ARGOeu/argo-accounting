@@ -3,6 +3,7 @@ package org.accounting.system.repositories.project;
 import com.mongodb.client.model.Accumulators;
 import com.mongodb.client.model.Aggregates;
 import com.mongodb.client.model.Filters;
+import com.mongodb.client.model.Projections;
 import com.mongodb.client.model.Updates;
 import io.quarkus.mongodb.panache.PanacheQuery;
 import io.quarkus.panache.common.Page;
@@ -27,6 +28,7 @@ import org.bson.Document;
 import org.bson.conversions.Bson;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -308,17 +310,97 @@ public class ProjectRepository extends ProjectModulator {
         return projectionQuery;
     }
 
-    public PanacheQuery<ProjectProjectionWithPermissions> fetchClientPermissions(int page, int size, List<String> ids){
+    public ProjectProjectionWithPermissions fetchClientPermissions(String id){
 
         var eq = Aggregates
-                .match(Filters.in("_id", ids));
+                .match(Filters.eq("_id", id));
+
+        return projectRepository
+                .getMongoCollection()
+                .aggregate(List.of(eq),  ProjectProjectionWithPermissions.class)
+                .first();
+
+    }
+
+    public ProjectProjectionWithPermissions fetchClientPermissions(String projectId, String providerId){
+
+        var match = Aggregates
+                .match(Filters.eq("_id", projectId));
+
+        var projection = Aggregates.project(
+                Projections.fields(
+                        Projections.include("_id", "acronym", "title", "start_date", "end_date", "call_identifier"),
+                        Projections.fields(
+                Projections.computed("providers",
+                        new Document("$filter", new Document()
+                                .append("input", "$providers")
+                                .append("as", "p")
+                                .append("cond", new Document("$eq", Arrays.asList("$$p._id", providerId)))
+                        )
+                )
+        )));
+
+
+        return projectRepository
+                .getMongoCollection()
+                .aggregate(List.of(match, projection),  ProjectProjectionWithPermissions.class)
+                .first();
+    }
+
+    public ProjectProjectionWithPermissions fetchClientPermissions(String projectId, String providerId, String installationId){
+
+        var pipeline = Arrays.asList(
+                Aggregates.match(Filters.eq("_id", projectId)),
+
+                Aggregates.project(
+                        Projections.fields(
+                                Projections.include("_id", "acronym", "title", "start_date", "end_date", "call_identifier"),
+                                Projections.computed("providers",
+                                        new Document("$map", new Document()
+                                                .append("input",
+                                                        new Document("$filter", new Document()
+                                                                .append("input", "$providers")
+                                                                .append("as", "p")
+                                                                .append("cond", new Document("$eq", Arrays.asList("$$p._id", providerId)))
+                                                        )
+                                                )
+                                                .append("as", "p")
+                                                .append("in",
+                                                        new Document("_id", "$$p._id")
+                                                                .append("name", "$$p.name")
+                                                                .append("website", "$$p.website")
+                                                                .append("abbreviation", "$$p.abbreviation")
+                                                                .append("logo", "$$p.logo")
+                                                                .append("external_id", "$$p.external_id")
+                                                                .append("installations",
+                                                                        new Document("$filter", new Document()
+                                                                                .append("input", "$$p.installations")
+                                                                                .append("as", "i")
+                                                                                .append("cond", new Document("$eq", Arrays.asList("$$i._id", installationId)))
+                                                                        )
+                                                                )
+                                                )
+                                        )
+                                )
+                        )
+                )
+        );
+
+        return projectRepository
+                .getMongoCollection()
+                .aggregate(pipeline,  ProjectProjectionWithPermissions.class)
+                .first();
+    }
+
+    public PanacheQuery<ProjectProjectionWithPermissions> fetchClientPermissions(int page, int size){
+
 
         var projects= projectRepository.getMongoCollection()
-                .aggregate(List.of(eq, Aggregates.skip(size * (page)), Aggregates.limit(size)),  ProjectProjectionWithPermissions.class)
+                .aggregate(List.of(Aggregates.skip(size * (page)), Aggregates.limit(size)),  ProjectProjectionWithPermissions.class)
                 .into(new ArrayList<>());
 
         Document count = projectRepository.getMongoCollection()
-                .aggregate(List.of(eq, Aggregates.count()))
+                .aggregate(List.of(Aggregates.count()))
                 .first();
 
         var projectionQuery = new MongoQuery<ProjectProjectionWithPermissions>();
@@ -331,4 +413,5 @@ public class ProjectRepository extends ProjectModulator {
 
         return projectionQuery;
     }
+
 }
