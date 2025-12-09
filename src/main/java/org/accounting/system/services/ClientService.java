@@ -70,7 +70,6 @@ public class ClientService {
         return Set.of(read, create, update, delete);
     }
 
-
     public Set<CollectionAccessPermissionDto> projectAdmin(){
 
         var  list = new HashSet<CollectionAccessPermissionDto>();
@@ -80,6 +79,44 @@ public class ClientService {
         project.accessPermissions = project();
         project.collection = "Project";
         list.add(project);
+
+        var metric = new CollectionAccessPermissionDto();
+
+        metric.accessPermissions = access();
+        metric.collection = "Metric";
+        list.add(metric);
+
+        var installation = new CollectionAccessPermissionDto();
+
+        installation.accessPermissions = access();
+        installation.collection = "Installation";
+        list.add(installation);
+
+        return list;
+    }
+
+    public Set<CollectionAccessPermissionDto> providerAdmin(){
+
+        var  list = new HashSet<CollectionAccessPermissionDto>();
+
+        var metric = new CollectionAccessPermissionDto();
+
+        metric.accessPermissions = access();
+        metric.collection = "Metric";
+        list.add(metric);
+
+        var installation = new CollectionAccessPermissionDto();
+
+        installation.accessPermissions = access();
+        installation.collection = "Installation";
+        list.add(installation);
+
+        return list;
+    }
+
+    public Set<CollectionAccessPermissionDto> installationAdmin(){
+
+        var  list = new HashSet<CollectionAccessPermissionDto>();
 
         var metric = new CollectionAccessPermissionDto();
 
@@ -112,5 +149,4 @@ public class ClientService {
 
         return Set.of(associate, dissociate, read);
     }
-
 }

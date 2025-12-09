@@ -3,6 +3,7 @@ package org.accounting.system.services;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.mongodb.client.model.Filters;
 import io.quarkus.mongodb.panache.PanacheQuery;
+import io.quarkus.panache.common.Page;
 import io.vavr.collection.Array;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
@@ -15,6 +16,7 @@ import org.accounting.system.dtos.pagination.PageResource;
 import org.accounting.system.entities.Project;
 import org.accounting.system.entities.projections.InstallationProjection;
 import org.accounting.system.entities.projections.MetricReportProjection;
+import org.accounting.system.entities.projections.MongoQuery;
 import org.accounting.system.entities.projections.ProjectProjectionWithPermissions;
 import org.accounting.system.entities.projections.ProjectReport;
 import org.accounting.system.entities.projections.normal.ProjectProjection;
@@ -24,10 +26,13 @@ import org.accounting.system.repositories.project.ProjectRepository;
 import org.accounting.system.services.groupmanagement.EntitlementServiceFactory;
 import org.accounting.system.services.groupmanagement.GroupManagementSelection;
 import org.accounting.system.util.QueryParser;
+import org.accounting.system.util.Utility;
 import org.bson.conversions.Bson;
 import org.jboss.logging.Logger;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -56,6 +61,9 @@ public class ProjectService {
 
     @Inject
     RequestUserContext requestUserContext;
+
+    @Inject
+    Utility utility;
 
     /**
      * This method correlates the given Providers with a specific Project and creates a hierarchical structure with root
@@ -198,15 +206,75 @@ public class ProjectService {
 
         var entitlements = entitlementServiceFactory.from().fetchEntitlements();
 
-        var ids = entitlements.stream().map(ent->extractProjectId(ent.getRaw())).collect(Collectors.toList());
+        var list = new ArrayList<ProjectProjectionWithPermissions>();
 
-        var projectionQuery = projectRepository.fetchClientPermissions(page, size, ids);
+        if(requestUserContext.getOidcTenantConfig().isEmpty() && entitlementServiceFactory.from().hasAccess(requestUserContext.getParent(), "admin", List.of())){
 
-        var list = projectionQuery.list();
+            var db = projectRepository.fetchClientPermissions(page, size);
 
-        list.forEach(pr->pr.permissions = clientService.projectAdmin());
+            var projects = db.list();
 
-        return new PageResource<>(projectionQuery, list, uriInfo);
+            projects.forEach(pr->pr.permissions = clientService.projectAdmin());
+
+            return new PageResource<>(db, projects, uriInfo);
+        }
+
+        entitlements.forEach(en->{
+
+            var raw = parseEntitlementLevels(en.getRaw());
+
+            if(raw.size() == 1){
+
+                var projectionQuery = projectRepository.fetchClientPermissions(raw.get(0));
+
+                if(projectionQuery != null){
+
+                    projectionQuery.permissions = clientService.projectAdmin();
+                    list.add(projectionQuery);
+                }
+            } else if (raw.size() == 2){
+
+                var projectionQuery = projectRepository.fetchClientPermissions(raw.get(0), raw.get(1));
+
+                if(projectionQuery != null && projectionQuery.providers!=null){
+
+                    projectionQuery.providers.forEach(provider->provider.permissions = clientService.providerAdmin());
+                    list.add(projectionQuery);
+                }
+
+            } else if (raw.size() == 3){
+
+                var projectionQuery = projectRepository.fetchClientPermissions(raw.get(0), raw.get(1), raw.get(2));
+
+                if(projectionQuery != null && projectionQuery.providers != null){
+
+                    var installations = projectionQuery
+                            .providers
+                            .stream()
+                            .flatMap(pr -> pr.installations.stream())
+                            .toList();
+
+                    installations.forEach(installation -> installation.permissions = clientService.installationAdmin());
+
+                    list.add(projectionQuery);
+                }
+
+            }
+        });
+
+        var partition = utility.partition(list, size);
+
+        var permissions = partition.get(page) == null ? Collections.EMPTY_LIST : partition.get(page);
+
+        var pageable = new MongoQuery<ProjectProjectionWithPermissions>();
+
+        pageable.list = permissions;
+        pageable.index = page;
+        pageable.size = size;
+        pageable.count = list.size();
+        pageable.page = Page.of(page, size);
+
+        return new PageResource<>(pageable, pageable.list, uriInfo);
     }
 
     private String extractProjectId(String entitlement) {
@@ -218,5 +286,29 @@ public class ProjectService {
             }
         }
         return "";
+    }
+
+    public List<String> parseEntitlementLevels(String urn) {
+
+        String[] parts = urn.split(":");
+
+        int startIndex = -1;
+        for (int i = 0; i < parts.length; i++) {
+            if (parts[i].equals(requestUserContext.getParent())) {
+                startIndex = i + 1;
+                break;
+            }
+        }
+        if (startIndex == -1) {
+            return List.of();
+        }
+
+        List<String> levels = new ArrayList<>();
+        for (int i = startIndex; i < parts.length; i++) {
+            if (parts[i].startsWith("role=")) break;
+            levels.add(parts[i]);
+        }
+
+        return levels;
     }
 }
