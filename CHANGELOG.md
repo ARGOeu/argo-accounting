@@ -26,6 +26,14 @@ According to [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) , the
 
 ---
 
+## 1.8.1 - 2025-12-09
+
+---
+
+## 1.8.1 - Fixed
+
+- Fix UI issues.
+
 ## 1.8.0 - 2025-12-02
 
 ---
