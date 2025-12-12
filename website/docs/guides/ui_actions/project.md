@@ -6,15 +6,15 @@ sidebar_position: 1
 
 # Projects
 
-In the [Project](https://accounting.eosc-portal.eu/projects) tab, you can find
+In the [Project](https://ui.acc.argo.grnet.gr/projects) tab, you can find
 all the Projects in which you have been granted rights to them as a
-**Project Admin**.
+`Project Admin`.
 
 Please refer to Project [collection](docs/api/project.md) for more details.
 
 ## View all the Projects that have been assigned to you
 
-To view all the Projects that have been assigned to you, you should visit the [Project](https://accounting.eosc-portal.eu/projects)
+To view all the Projects that have been assigned to you, you should visit the [Project](https://ui.acc.argo.grnet.gr/projects)
 tab on the Accounting User Interface.
 Then, all the aforementioned Projects are displayed.
 

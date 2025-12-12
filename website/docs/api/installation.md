@@ -17,21 +17,14 @@ The Installation collection has the following structure:
 
 | Field                | Description         |
 |----------------------|---------------------------------|
-| [project](./project.md) | Points to an already registered Project ID. |
+| [project](./project.md) | Points to an already registered Project* ID. |
 | [organisation](./provider.md) |Points to an already registered Provider* ID.|
-|[resource](./resource.md)|Points to a Resource**. _(O)_|
+|[resource](./resource.md)|Points to a Resource*. _(O)_|
 | infrastructure       | Short name of infrastructure. |
 | installation         | Short name of installation.   |
-|[unit_of_access](./metric_definition.md)| Points to Metric Definition***. _(O)_|
+|[unit_of_access](./metric_definition.md)| Points to Metric Definition*. _(O)_|
 
-\* _Provider has been either registered through the EOSC Resource Catalogue
-or Accounting System API._
-
-\** _Resource has been either registered through the EOSC Resource Catalogue
-or Accounting System API._
-
-\*** _Different Metrics can be added to an Installation, but this attribute
-expresses the primary Unit of Access._
+\* _The entity must be previously registered through the Accounting System API._
 
 _O_: Optional
 
@@ -184,7 +177,7 @@ Authorization: Bearer {token}
 
 The above request returns the second page which contains 15 Installations:
 
-Success Response 200 OK
+Success Response `200 OK`
 
 ```
 {
@@ -255,7 +248,7 @@ Authorization: Bearer {token}
 
 The above request returns the second page which contains 15 Installations:
 
-Success Response 200 OK
+Success Response `200 OK`
 
 ```
 {
@@ -304,49 +297,138 @@ Success Response 200 OK
 }
 ```
 
-## [POST] - Access Control Entry for a particular Installation (legacy)
+## Capacities
 
-The same goes for the Installations. Any client can have different
-responsibilities at different Installations. The actions the client can
-perform at each Installation are determined by the role, and the permissions
-it has.
+Capacities represent the allocated quantities for an Installation (e.g., number of VMs, storage volume, etc.). They are linked to specific Metric Definitions and allow tracking of resource allocations.
 
-To grant a role to a client on a specific Installation, you have to execute
-the following request:
+### [POST] - Register a new Capacity for an Installation
 
+You can register a new capacity for a specific Installation by executing the following POST request:
 ```
-POST /accounting-system/installations/{installation_id}/acl/{who}
+POST /accounting-system/installations/{installation_id}/capacities
 
 Content-Type: application/json
 Authorization: Bearer {token}
 
 {
-  "roles":[
-     {role_name}
-  ]
+"metric_definition_id": "62973fea0f41a20c683e9014",
+"value": 100.0,
+"registered_on": "2025-12-15T10:00:00Z"
 }
 ```
 
-where `{who}` is the client ID in which the roles will be assigned.
+where `{installation_id}` denotes the registered Installation, `{metric_definition_id}` denotes the registered Metric Definition, and `{registered_on}` specifies the start of the period to which the corresponding `{value}` applies. If `registered_on` is empty, the current time is assigned.
 
-The response is :
+Success Response `200 OK`
+```json
+{
+  "code": 200,
+  "message": "Capacity has been successfully registered."
+}
+```
+
+### [PATCH] - Update an existing Capacity of an Installation
+You can update an existing capacity by executing the following request:
+```
+PATCH /accounting-system/installations/{installation_id}/capacities/{capacity_id}
+Content-Type: application/json
+Authorization: Bearer {token}
+{
+  "value": 150.0,
+  "registered_on": "2026-12-15T10:00:00Z"
+}
+```
+
+Only the provided fields will be updated. Empty or null values are ignored.
+
+Success Response `200 OK`
+```json
+{
+  "code": 200,
+  "message": "Capacity was updated successfully."
+}
+```
+
+### [GET] - Fetch all the Capacities of an Installation
+You can retrieve all capacities associated with a specific Installation.  By default, the first page of 10
+Installations will be returned.
+```
+GET /accounting-system/installations/{installation_id}/capacities
+Authorization: Bearer {token}
+```
 
 Success Response `200 OK`
 
+```json
+[
+  {
+    "id": "5f2a9c1e8b4d6a7c903a1123",
+    "installation_id": "6a3b8d2f9c4e7b1a552c3344",
+    "metric_definition_id": "7c9e1a4b6d8f2a3e99887766",
+    "value": 742,
+    "registered_on": "2024-10-02T14:21:09.482"
+  },
+  {
+    "id": "5e8d3a9f2c4b7a1d66554433",
+    "installation_id": "6f1c9b8a3d2e4a7c11223344",
+    "metric_definition_id": "7a6d4c9e2b1f8d3a44556677",
+    "value": 1589,
+    "registered_on": "2024-11-18T07:55:31.907"
+  }
+]
+```
+
+## Access Control Entry for a specific Installation
+
+### [POST] – Creation of a new entitlement
+
+The general endpoint responsible for creating an Access Control entry for a specific Installation, via the “Create a new entitlement” operation, is as follows:
+```
+POST /accounting-system/admin/entitlements
+
+Content-Type: application/json  
+Authorization: Bearer {token}
+
+{
+  "name": "{namespace}:group:accounting:{project_id}:{provider_id}:{installation_id}:role=admin"
+}
+```
+where `{project_id}`, `{provider_id}`, and `{installation_id}` refer to the previously registered Project, Provider, and Installation respectively, along with the provided `{namespace}`, e.g. `urn:geant:sandbox.eosc-beyond.eu:core:integration`.
+
+The response is:
+
+Success Response `201 OK`
+```
+{
+   "code": 201,
+   "message": "Entitlement created successfully."
+}
+```
+### [POST] – Association of an entitlement with a client/actor
+
+The general endpoint responsible for the association of an entitlement with a client/actor is as follows:
+```
+POST /accounting-system/admin/entitlements/{id}/assign/{actor_id}
+
+Content-Type: application/json
+Authorization: Bearer {token}
+```
+where `{id}` refers to the previously registered entitlement, and `{actor_id}` refers to the previously registered client/actor.
+
+The response is:
+
+Success Response `200 OK`
 ```
 {
    "code": 200,
-   "message": "Installation Access Control was successfully created."
+   "message": "Entitlement was assigned successfully."
 }
 ```
-
-**Keep in mind that** to execute the above operation, you must have been
-assigned a role containing the Installation Acl permission.
+A client can have different roles across different Projects, Providers, and Installations. The actions a client can perform for each Installation are determined by the assigned role and its associated permissions.
 
 ### Note
 
-See [Mapping of Roles to Entitlements](../authorization/accounting_system_roles#mapping-of-roles-to-entitlements) for new role assignment mechanism.
-
+See [Mapping of Roles to Entitlements](../authorization/accounting_system_roles#mapping-of-roles-to-entitlements) for assigning a role to a client/actor.
 
 ## [POST] - Search for Installations
 
@@ -356,7 +438,9 @@ request:
 
 ```
 POST accounting-system/installations/search
+
 Content-Type: application/json
+Authorization: Bearer {token}
 ```
 
 ### Example 1
@@ -399,7 +483,7 @@ Content-Type: application/json
 ```
 
 The context of the request should be a JSON object. The syntax of the JSON
-object is described [**here**](https://argoeu.github.io/argo-accounting/docs/guides/search-filter).
+object is described [**here**](../guides/api_actions/search-filter).
 If the operation is successful, you get a list of installations.
 
 ```
@@ -445,20 +529,23 @@ If the operation is successful, you get a list of installations.
 
 The report includes aggregated metric values grouped by metric definitions.
 
-You can retrieve a report for a specific **installation** within a defined time period:
+You can retrieve a report for a specific **installation** within a defined time period. When capacities are defined for the selected time period, the report also includes usage percentages broken down by the capacity-defined time periods.
+
 
 
 ```
-GET /accounting-system/installations/external/report
+GET /accounting-system/installations/{installation_id}/report
 
+Content-Type: application/json
 Authorization: Bearer {token}
 ```
 
 or by using the `externalId` instead.
 
 ```
-GET /accounting-system/installations/{installation_id}/report
+GET /accounting-system/installations/external/report
 
+Content-Type: application/json
 Authorization: Bearer {token}
 ```
 
@@ -481,16 +568,24 @@ Authorization: Bearer {token}
   "provider": "grnet",
   "installation": "GRNET-KNS",
   "infrastructure": "okeanos-knossos",
-  "resource": "unitartu.ut.rocket",
+  "resource": "cloud",
   "external_id": "installation-45583",
   "data": [
     {
       "metric_definition_id": "507f1f77bcf86cd799439011",
-      "metric_name": "weight",
-      "metric_description": "The weight of a person",
-      "unit_type": "kg",
+      "metric_name": "storage",
+      "metric_description": "The storage of the facility",
+      "unit_type": "TB hours",
       "metric_type": "aggregated",
-      "total_value": 1234.56
+      "periods": [
+        {
+          "from": "2022-01-05T09:13:07Z",
+          "to": "2022-01-05T09:13:07Z",
+          "total_value": 1234.56,
+          "capacity_value": 1000,
+          "usage_percentage": 75
+        }
+      ]
     }
   ]
 }

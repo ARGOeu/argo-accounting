@@ -7,7 +7,7 @@ sidebar_position: 6
 # Unit Types
 
 To manage the Unit Types via a website, please visit the
-[Unit Types](https://accounting.eosc-portal.eu/unit-types) tab.
+[Unit Types](https://ui.acc.argo.grnet.gr/unit-types) tab.
 
 Please note that all available actions are described in this section. The role
 that the client has obtained may not grant them access to some or all actions.
@@ -17,7 +17,7 @@ details.
 
 ## View all the Unit Types
 
-To view all the Unit Types, you should visit the [Unit Types](https://accounting.eosc-portal.eu/unit-types)
+To view all the Unit Types, you should visit the [Unit Types](https://ui.acc.argo.grnet.gr/unit-types)
 tab on the Accounting User Interface.
 Then, all the created Unit Types by any client are displayed.
 

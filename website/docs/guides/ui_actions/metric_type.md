@@ -7,7 +7,7 @@ sidebar_position: 7
 # Metric Types
 
 To manage the Metric Types via a website, please visit the
-[Metric Types tab](https://accounting.eosc-portal.eu/metric-types).
+[Metric Types](https://ui.acc.argo.grnet.gr/metric-types) tab.
 
 Please note that all available actions are described in this section. The
 role that the client has obtained may not grant them access to some or all
@@ -18,7 +18,7 @@ more details.
 
 ## View all the Metric Types
 
-To view all the Metric Types, visit the [Metric Types tab](https://accounting.eosc-portal.eu/metric-types)
+To view all the Metric Types, visit the [Metric Types](https://ui.acc.argo.grnet.gr/metric-types) tab
 on the Accounting User Interface.
 Then, all the created Metric Types by any client are displayed.
 

@@ -6,7 +6,7 @@ sidebar_position: 5
 
 # Providers
 
-In the [Provider](https://accounting.eosc-portal.eu/providers) tab, you can
+In the [Provider](https://ui.acc.argo.grnet.gr/providers) tab, you can
 find all the Providers registered from the EOSC Resource Catalogue and the
 Accounting Service.
 
@@ -17,7 +17,7 @@ Please refer to Provider [collection](/docs/api/provider.md) for more details.
 
 ## View all the registered Providers
 
-To view all the registered Providers, you should visit the [Providers](https://accounting.eosc-portal.eu/providers)
+To view all the registered Providers, you should visit the [Providers](https://ui.acc.argo.grnet.gr/providers)
 tab on the Accounting User Interface.
 Then, all the registered Providers by any client are displayed.
 

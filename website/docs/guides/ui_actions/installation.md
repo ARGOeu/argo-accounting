@@ -6,10 +6,10 @@ sidebar_position: 3
 
 # Installations
 
-In the [Installations](https://accounting.eosc-portal.eu/installations) tab,
+In the [Installations](https://ui.acc.argo.grnet.gr/installations) tab,
 you can find all the Installations associated with a Project, and you have
-been granted rights to them either as **Project Admin**, **Provider Admin**,
-or **Installation Admin**.
+been granted rights to them either as `Project Admin`, `Provider Admin`,
+or `Installation Admin`.
 
 Please refer to the [Installation collection](docs/api/installation.md) for
 more details.
@@ -17,7 +17,7 @@ more details.
 ## View all the Installations you have access to
 
 To view all the Installations you have access to, visit the
-[Installation](https://accounting.eosc-portal.eu/installations) tab on the
+[Installation](https://ui.acc.argo.grnet.gr/installations) tab on the
 Accounting User Interface.
 Then, all the aforementioned Installation are displayed.
 
