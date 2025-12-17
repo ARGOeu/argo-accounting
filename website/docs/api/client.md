@@ -1,16 +1,16 @@
 ---
 id: client
-title: Client (legacy)
+title: Client
 sidebar_position: 1
 ---
 
-# Client (legacy)
+# Client
 
-As a client we define either a user or a service that communicates and
+As a client/actor we define either a user or a service that communicates and
 interacts with the Accounting System API.
 In order for a client to be able to interact with the API, first it has to
 register itself into the Accounting System. Based on the
-Client **_voperson_id_** the Accounting System API assigns
+Client's OIDC ID and issuer the Accounting System API assigns
 different Roles to different Clients.
 Consequently, a client cannot get a Role unless registration has been
 completed
@@ -18,7 +18,7 @@ first.
 
 ## [POST] - Client Registration
 
-One client can register itself into the Accounting System by
+One client/actor can register itself into the Accounting System by
 executing the following request:
 
 ```
@@ -30,24 +30,28 @@ Authorization: Bearer {token}
 Once the above request is executed, we extract the following
 information from the token:
 
-- sub
 - name
 - email
+- OIDC ID
+- AAI issuer
 
-Then we store it into the database collection Client:
+Then we store it into the database collection Client/Actor:
 
 | Field            | Description                          |
 |------------------|---------------------------------------- |
 |id|An identifier for the client that is globally unique and not reassignable.|
+|oidc_id |The OIDC subject identifier associated with the client.|
 | name             | The client's full name. |
 | email            | The client’s email. |
+|registered_on | The timestamp when the client registered.|
+|issuer | The issuer of the authentication token.|
 
 ## [GET] - Read the registered Clients
 
-You can read the registered clients by executing the following request:
+A system Admin can read the registered clients/actors by executing the following request:
 
 ```
-GET /accounting-system/clients
+GET /accounting-system/admin/actors
 
 Authorization: Bearer {token}
 ```
@@ -58,4 +62,4 @@ Please refer to section [Errors](./api_errors) to see all possible Errors.
 
 ## Note
 
-See [Mapping of Roles to Entitlements](../authorization/accounting_system_roles#mapping-of-roles-to-entitlements) for new role assignment mechanism.
+See [Mapping of Roles to Entitlements](../authorization/accounting_system_roles#mapping-of-roles-to-entitlements) for assigning a role to a client/actor.

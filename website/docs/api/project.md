@@ -6,21 +6,19 @@ sidebar_position: 3
 
 # Project
 
-A Project is the main resource of the Accounting System. The first step a user m
-ust follow is to create a project under which the metric data will belong.
+A Project is the main resource of the Accounting System. The first step a user
+must follow is to create a project under which the metric data will belong.
 
-Currently, we support only projects that are available in the EU database.  Basi
-cally, we register information about a particular Project in our system using th
-e unique ID that every European Project has for its identification.
+In the context of the Accounting System, creating a Node requires the use of the Project entity as well.
 
 ## [POST] - Associate Providers with a specific Project
 
-To be able to register Metrics in an installation, first you must associate a Pr
-oject with one or more  Providers. The following action is responsible for gener
+To be able to register Metrics in an installation, first you must associate a Project
+with one or more  Providers. The following action is responsible for gener
 ating a hierarchical relationship between a Project and one or more Providers:
 
 ```
-POST /accounting-system/projects/{project_id}/dissociate/provider/{provider_id}
+POST /accounting-system/projects/{project_id}/associate/provider/{provider_id}
 
 Content-Type: application/json
 Authorization: Bearer {token}
@@ -53,23 +51,21 @@ Success Response `200 OK`
 Provider has been successfully dissociated from the Project.
 ```
 
-If there are Installations registered to Provider, the dissociation is not allow
-ed:
+If there are Installations registered to Provider, the dissociation is not allowed:
 
 Error Response `409 CONFLICT`
 
 ```
 {
    "code": 409,
-   "message": "Dissociation is not allowed. There are registered Installations t
-o {project_id, provider_id}"
+   "message": "Dissociation is not allowed. There are registered Installations to
+{project_id, provider_id}"
 }
 ```
 
 ## [GET] - Project Hierarchical Structure
 
-You can retrieve the Providers and Installations associated with a specific proj
-ect:
+You can retrieve the Providers and Installations associated with a specific project:
 
 ```
 GET /accounting-system/projects/{project_id}
@@ -120,8 +116,7 @@ Success Response `200 OK`
 
 ## [GET] - Fetch all Projects
 
-You can retrieve all Projects assigned to you by executing the following GET req
-uest:
+You can retrieve all Projects assigned to you by executing the following GET request:
 
 ```
 GET /accounting-system/projects
@@ -129,8 +124,8 @@ GET /accounting-system/projects
 Authorization: Bearer {token}
 ```
 
-By default, the first page of 10 Projects will be returned. You can tune the def
-ault values by using the query parameters page and size as shown in the example
+By default, the first page of 10 Projects will be returned. You can tune the default 
+values by using the query parameters page and size as shown in the example
 below.
 
 ```
@@ -306,25 +301,46 @@ Success Response `200 OK`
 }
 ```
 
-## [POST] - Access Control Entry for a specific Project {#post-access-control} (legacy)
+## Access Control Entry for a specific Project
 
-The general endpoint that is responsible for creating an Access Control entry fo
-r a Project is as follows:
+### [POST] - Creation of a new entitlement
+
+The general endpoint responsible for creating an Access Control entry for a Project, via the “Create a new entitlement” operation, is as follows:
 
 ```
-POST /accounting-system/projects/{project_id}/acl/{who}
+POST /accounting-system/admin/entitlements
 
-Content-Type: application/json
 Authorization: Bearer {token}
 
 {
-  "roles":[
-     {role_name}
-  ]
+  "name": "{namespace}:group:accounting:{project_id}:role=admin"
+}
+```
+where `{project_id}` refers to the previously registered project and the provided `{namespace}` e.g. urn:geant:sandbox.eosc-beyond.eu:core:integration.
+
+The response is :
+
+Success Response `201 OK`
+
+```
+{
+   "code": 201,
+   "message": "Entitlement created successfully."
 }
 ```
 
-where `{who}` is the client ID in which the roles will be assigned.
+### [POST] - Association of an entitlement with a client/actor
+
+The general endpoint responsible for the association of an entitlement with a client/actor.
+
+```
+POST /accounting-system/admin/entitlements/{id}/assign/{actor_id}
+
+Authorization: Bearer {token}
+
+```
+
+where `{id}` refers to the previously registered entitlement, and `{actor_id}` refers to the previously registered client/actor.
 
 The response is :
 
@@ -333,33 +349,30 @@ Success Response `200 OK`
 ```
 {
    "code": 200,
-   "message": "Project Access Control was successfully created."
+   "message": "Entitlement was assigned successfully."
 }
 ```
 
 One client can have different roles at different Projects. For instance, in one
 Project can be an admin executing all the Project operations while in another it
  can only read the Project Metrics.
-Consequently, any client can have different responsibilities at different Projec
-ts. The actions the client can perform at each Project are determined by the rol
+Consequently, any client can have different responsibilities at different Projects. 
+The actions the client can perform at each Project are determined by the rol
 e, and the permissions it has.
-
-**Keep in mind that** to execute the above operation, you must have been assigne
-d a role containing the Project Acl permission.
 
 ### Note
 
-See [Mapping of Roles to Entitlements](../authorization/accounting_system_roles#mapping-of-roles-to-entitlements) for new role assignment mechanism.
+See [Mapping of Roles to Entitlements](../authorization/accounting_system_roles#mapping-of-roles-to-entitlements) for assigning a role to a client/actor.
 
 ## [POST] - Search for Projects
 
-You can search on Projects, to find the ones corresponding to the given search c
-riteria. Projects  can be searched by executing the following request:
+You can search on Projects, to find the ones corresponding to the given search 
+criteria. Projects  can be searched by executing the following request:
 
 ```
 POST accounting-system/projects/search
 Content-Type: application/json
-
+Authorization: Bearer {token}
 
 ```
 
@@ -400,7 +413,7 @@ Content-Type: application/json
 ```
 
 The context of the request should be a JSON object. The syntax of the JSON
-object is described [**here**](https://argoeu.github.io/argo-accounting/docs/guides/search-filter).
+object is described [**here**](../guides/api_actions/search-filter).
 If the operation is successful, you get a list of projects
 
 ```
@@ -457,7 +470,7 @@ Otherwise, an empty response will be returned.
 
 The report includes aggregated metric values grouped by metric definitions for all Providers and Installations belonging to a specific Project.
 
-You can retrieve a report for a specific **Project** within a defined time period:
+You can retrieve a report for a specific **Project** within a defined time period. When capacities are defined for the selected time period, the report also includes usage percentages broken down by the capacity-defined time periods.
 
 ```
 GET /accounting-system/projects/{project_id}/report
@@ -480,34 +493,35 @@ Authorization: Bearer {token}
 ```json
 {
   "id": "447535",
-  "acronym": "EGI-ACE",
-  "title": "EGI Advanced Computing for EOSC.",
-  "start_date": "2018-12-31",
-  "end_date": "2023-06-30",
-  "call_identifier": "H2020-EINFRA-2017.",
+  "acronym": "GRNET-447535",
+  "title": "Project 447535",
+  "start_date": "2022-01-01",
+  "end_date": "2022-12-31",
+  "call_identifier": null,
   "aggregated_metrics": [
     {
       "metric_definition_id": "507f1f77bcf86cd799439011",
-      "metric_name": "weight",
-      "metric_description": "The weight of a person",
-      "unit_type": "kg",
+      "metric_name": "storage",
+      "metric_description": "The storage of the facility",
+      "unit_type": "TB hours",
       "metric_type": "aggregated",
-      "total_value": 1234.56
+      "total_value": 2234.56
     }
   ],
   "data": [
     {
       "provider_id": "grnet",
-      "name": "Swedish Infrastructure for Ecosystem Science",
-      "website": "https://www.fieldsites.se/en-GB",
-      "abbreviation": "SITES",
-      "logo": "https://dst15js82dk7j.cloudfront.net/231546/95187636-P5q11.png",
+      "name": "National Infrastructures for Research and Technology",
+      "website": "https://www.grnet.gr",
+      "abbreviation": "GRNET",
+      "logo": "https://grnet.gr/wp-content/uploads/2023/01/01_EDYTE_LOGO_COLOR-1.png",
+      "external_id": null,
       "aggregated_metrics": [
         {
           "metric_definition_id": "507f1f77bcf86cd799439011",
-          "metric_name": "weight",
-          "metric_description": "The weight of a person",
-          "unit_type": "kg",
+          "metric_name": "storage",
+          "metric_description": "The storage of the facility",
+          "unit_type": "TB hours",
           "metric_type": "aggregated",
           "total_value": 1234.56
         }
@@ -519,16 +533,71 @@ Authorization: Bearer {token}
           "provider": "grnet",
           "installation": "GRNET-KNS",
           "infrastructure": "okeanos-knossos",
-          "resource": "unitartu.ut.rocket",
+          "resource": "cloud",
           "external_id": "installation-45583",
           "data": [
             {
               "metric_definition_id": "507f1f77bcf86cd799439011",
-              "metric_name": "weight",
-              "metric_description": "The weight of a person",
-              "unit_type": "kg",
+              "metric_name": "storage",
+              "metric_description": "The storage of the facility",
+              "unit_type": "TB hours",
               "metric_type": "aggregated",
-              "total_value": 1234.56
+              "periods": [
+                {
+                  "from": "2022-01-05T09:13:07Z",
+                  "to": "2022-01-05T09:13:07Z",
+                  "total_value": 1234.56,
+                  "capacity_value": 1000,
+                  "usage_percentage": 75
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "provider_id": "egi",
+      "name": "European Grid Infrastructure",
+      "website": "https://www.egi.eu",
+      "abbreviation": "EGI",
+      "logo": "https://cdn.egi.eu/app/uploads/2021/11/egi-logo.svg",
+      "external_id": null,
+      "aggregated_metrics": [
+        {
+          "metric_definition_id": "68c9199ec0b09a61b2778a5b",
+          "metric_name": "storage",
+          "metric_description": "Storage provided by EGI",
+          "unit_type": "TB hours",
+          "metric_type": "aggregated",
+          "total_value": 1000
+        }
+      ],
+      "data": [
+        {
+          "installation_id": "68c9199ec0b09a61b2778a60",
+          "project": "447535",
+          "provider": "egi",
+          "installation": "EGI-Cloud1",
+          "infrastructure": "egi-infra",
+          "resource": "cloud",
+          "external_id": "installation-55555",
+          "data": [
+            {
+              "metric_definition_id": "68c9199ec0b09a61b2778a5b",
+              "metric_name": "storage",
+              "metric_description": "Storage provided by EGI",
+              "unit_type": "TB hours",
+              "metric_type": "aggregated",
+              "periods": [
+                {
+                  "from": "2022-01-01T00:00:00Z",
+                  "to": "2022-12-31T23:59:59Z",
+                  "total_value": 1000,
+                  "capacity_value": 1200,
+                  "usage_percentage": 83
+                }
+              ]
             }
           ]
         }

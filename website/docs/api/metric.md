@@ -9,11 +9,12 @@ sidebar_position: 6
 In order to register a new Metric in the Accounting System, first you have to
 complete the following steps:
 
-- Create a new Metric Definition
+
 - Register your Project
+- Create a new Provider through the API
 - Correlate Providers with the registered Project
-- Use a Provider from EOSC-Portal or create a new Provider through AS API
 - Create a new Installation
+- Create a new Metric Definition
 
 Once you have completed the above steps, you can submit a new metric in the
 Accounting System.
@@ -23,6 +24,7 @@ The Metric consists of the following attributes:
 | Field           | Description                          |
 |------------------ |---------------------------------------- |
 | id              | Unique ID of the Metric.          |
+| [installation_id](./installation.md)|Points to Installation ID.|
 | [metric_definition_id](./metric_definition.md)|Points to Metric Definition ID.|
 | time_period_start | Timestamp of the starting date time (Zulu timestamp). |
 | time_period_end       |Timestamp of the end date time (Zulu timestamp).|
