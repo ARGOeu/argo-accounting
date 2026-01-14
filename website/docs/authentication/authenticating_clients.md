@@ -1,7 +1,7 @@
 ---
 id: authenticating_clients
 title: Authentication through default OIDC Provider
-sidebar_position: 1
+sidebar_position: 2
 ---
 
 # Authentication using the default OIDC Provider
