@@ -9,8 +9,7 @@ sidebar_position: 4
 As Provider, we refer to the Organisation that offers at least one installation
 to a specific project.
 
-The Provider can either be registered by communicating with EOSC Resource
-Catalogue, or you can create a new Provider by using the endpoints the
+You can create a new Provider by using the endpoints the
 Accounting Service provides.
 
 ## Registering Provider through Accounting System API
@@ -76,9 +75,6 @@ Success Response `200 OK`
    "message": "Provider has been deleted successfully."
 }
 ```
-
-**Finally, it should be noted that deleting Providers which derive from the
-EOSC Resource Catalogue  is not allowed.**
 
 ## [PATCH] - Update an existing Provider
 
@@ -322,44 +318,59 @@ Success Response `200 OK`
 }
 ```
 
-## [POST] - Access Control Entry for a particular Provider of a specific Project (legacy)
+## Access Control Entry for a specific Provider
 
-Any client can have different responsibilities at different Providers. The
-actions the client can perform at each Provider are determined by the role
-and the permissions it has.
+### [POST] – Creation of a new entitlement
 
-To grant a role to a client on a specific Provider of a Project, you have to
-execute the following request:
+The general endpoint responsible for creating an Access Control entry for a Provider, via the “Create a new entitlement” operation, is as follows:
 
 ```
-POST /accounting-system/projects/{project_id}/providers/{provider_id}/acl/{who}
+POST /accounting-system/admin/entitlements
 
-Content-Type: application/json
 Authorization: Bearer {token}
 
 {
-  "roles":[
-     {role_name}
-  ]
+  "name": "{namespace}:group:accounting:{project_id}:{provider_id}:role=admin"
 }
 ```
 
-where `{who}` is the client ID in which the roles will be assigned.
+where `{project_id}` and `{provider_id}` refers to the previously registered project and provider respectively as the the provided `{namespace}` as well, e.g. `urn:geant:sandbox.eosc-beyond.eu:core:integration`.
 
-The response is :
+The response is:
+
+Success Response `201 OK`
+```
+{
+   "code": 201,
+   "message": "Entitlement created successfully."
+}
+```
+### [POST] – Association of an entitlement with a client/actor
+
+The general endpoint responsible for the association of an entitlement with a client/actor is as follows:
+
+```
+POST /accounting-system/admin/entitlements/{id}/assign/{actor_id}
+
+Authorization: Bearer {token}
+```
+
+where `{id}` refers to the previously registered entitlement, and `{actor_id}` refers to the previously registered client/actor.
+
+The response is:
 
 Success Response `200 OK`
-
 ```
 {
    "code": 200,
-   "message": "Provider Access Control was successfully created."
+   "message": "Entitlement was assigned successfully."
 }
 ```
+A client can have different roles across different Projects. The actions a client can perform for each Provider are determined by the assigned role and its associated permissions.
 
 ### Note
 
-See [Mapping of Roles to Entitlements](../authorization/accounting_system_roles#mapping-of-roles-to-entitlements) for new role assignment mechanism.
+See [Mapping of Roles to Entitlements](../authorization/accounting_system_roles#mapping-of-roles-to-entitlements) for assigning a role to a client/actor.
 
 
 ## [POST] - Search for Providers
@@ -370,6 +381,7 @@ criteria. Providers  can be searched by executing the following request:
 ```
 POST accounting-system/providers/search
 Content-Type: application/json
+Authorization: Bearer {token}
 ```
 
 ### Example 1
@@ -410,7 +422,7 @@ Content-Type: application/json
 ```
 
 The context of the request should be a JSON object. The syntax of the JSON
-object is described [**here**](https://argoeu.github.io/argo-accounting/docs/guides/search-filter).
+object is described [**here**](../guides/api_actions/search-filter).
 If the operation is successful, you get a list of providers.
 
 ```
@@ -448,7 +460,7 @@ assigned a role containing the Provider Acl permission.
 The report includes aggregated metric values grouped by metric definitions for all Installations belonging
 to a specific Provider.
 
-You can retrieve a report for a specific **Provider** within a defined time period:
+You can retrieve a report for a specific **Provider** within a defined time period. When capacities are defined for the selected time period, the report also includes usage percentages broken down by the capacity-defined time periods.
 
 ```
 GET /accounting-system/projects/{project_id}/providers/{provider_id}/report
@@ -456,6 +468,13 @@ GET /accounting-system/projects/{project_id}/providers/{provider_id}/report
 Authorization: Bearer {token}
 ```
 
+or by using the `externalId` instead.
+
+```
+GET /accounting-system/providers/external/report
+
+Authorization: Bearer {token}
+```
 
 **Parameters**
 
@@ -471,44 +490,52 @@ Authorization: Bearer {token}
 **Success Response `200 OK`**
 
 ```json
-{
-  "provider_id": "grnet",
-  "name": "Swedish Infrastructure for Ecosystem Science",
-  "website": "https://www.fieldsites.se/en-GB",
-  "abbreviation": "SITES",
-  "logo": "https://dst15js82dk7j.cloudfront.net/231546/95187636-P5q11.png",
-  "aggregated_metrics": [
-    {
-      "metric_definition_id": "507f1f77bcf86cd799439011",
-      "metric_name": "weight",
-      "metric_description": "The weight of a person",
-      "unit_type": "kg",
-      "metric_type": "aggregated",
-      "total_value": 1234.56
-    }
-  ],
-  "data": [
-    {
-      "installation_id": "507f1f77bcf86cd799439011",
-      "project": "447535",
-      "provider": "grnet",
-      "installation": "GRNET-KNS",
-      "infrastructure": "okeanos-knossos",
-      "resource": "unitartu.ut.rocket",
-      "external_id": "installation-45583",
-      "data": [
-        {
-          "metric_definition_id": "507f1f77bcf86cd799439011",
-          "metric_name": "weight",
-          "metric_description": "The weight of a person",
-          "unit_type": "kg",
-          "metric_type": "aggregated",
-          "total_value": 1234.56
-        }
-      ]
-    }
-  ]
-}
+  {
+    "provider_id": "grnet",
+    "name": "National Infrastructures for Research and Technology",
+    "website": "https://www.grnet.gr",
+    "abbreviation": "GRNET",
+    "logo": "https://grnet.gr/wp-content/uploads/2023/01/01_EDYTE_LOGO_COLOR-1.png",
+    "aggregated_metrics": [
+      {
+        "metric_definition_id": "507f1f77bcf86cd799439011",
+        "metric_name": "storage",
+        "metric_description": "The storage of the facility",
+        "unit_type": "TB hours",
+        "metric_type": "aggregated",
+        "total_value": 1234.56
+      }
+    ],
+    "data": [
+      {
+        "installation_id": "507f1f77bcf86cd799439011",
+        "project": "447535",
+        "provider": "grnet",
+        "installation": "GRNET-KNS",
+        "infrastructure": "okeanos-knossos",
+        "resource": "cloud",
+        "external_id": "installation-45583",
+        "data": [
+          {
+            "metric_definition_id": "507f1f77bcf86cd799439011",
+            "metric_name": "storage",
+            "metric_description": "The storage of the facility",
+            "unit_type": "TB hours",
+            "metric_type": "aggregated",
+            "periods": [
+               {
+                "from": "2022-01-05T09:13:07Z",
+                "to": "2022-01-05T09:13:07Z",
+                "total_value": 1234.56,
+                "capacity_value": 1000,
+                "usage_percentage": 75
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
 ```
 
 ## [GET] - Get Global Provider Report
@@ -516,7 +543,7 @@ Authorization: Bearer {token}
 The report includes aggregated metric values grouped by metric definitions for all Installations belonging
 to a specific Provider, independently of a Project.
 
-You can retrieve a report for a specific **Provider** within a defined time period:
+You can retrieve a report for a specific **Provider** within a defined time period. When capacities are defined for the selected time period, the report also includes usage percentages broken down by the capacity-defined time periods.
 
 ```
 GET /accounting-system/providers/{provider_id}/report
@@ -536,46 +563,94 @@ Authorization: Bearer {token}
 **Success Response `200 OK`**
 
 ```json
-[
-  {
-    "provider_id": "grnet",
-    "name": "Swedish Infrastructure for Ecosystem Science",
-    "website": "https://www.fieldsites.se/en-GB",
-    "abbreviation": "SITES",
-    "logo": "https://dst15js82dk7j.cloudfront.net/231546/95187636-P5q11.png",
-    "aggregated_metrics": [
-      {
-        "metric_definition_id": "507f1f77bcf86cd799439011",
-        "metric_name": "weight",
-        "metric_description": "The weight of a person",
-        "unit_type": "kg",
-        "metric_type": "aggregated",
-        "total_value": 1234.56
-      }
-    ],
-    "data": [
-      {
-        "installation_id": "507f1f77bcf86cd799439011",
-        "project": "447535",
-        "provider": "grnet",
-        "installation": "GRNET-KNS",
-        "infrastructure": "okeanos-knossos",
-        "resource": "unitartu.ut.rocket",
-        "external_id": "installation-45583",
-        "data": [
-          {
-            "metric_definition_id": "507f1f77bcf86cd799439011",
-            "metric_name": "weight",
-            "metric_description": "The weight of a person",
-            "unit_type": "kg",
-            "metric_type": "aggregated",
-            "total_value": 1234.56
-          }
-        ]
-      }
-    ]
-  }
-]
+{
+  "reports": [
+    {
+      "provider_id": "grnet",
+      "name": "National Infrastructures for Research and Technology",
+      "website": "https://www.grnet.gr",
+      "abbreviation": "GRNET",
+      "logo": "https://grnet.gr/wp-content/uploads/2023/01/01_EDYTE_LOGO_COLOR-1.png",
+      "external_id": null,
+      "aggregated_metrics": [
+        {
+          "metric_definition_id": "507f1f77bcf86cd799439011",
+          "metric_name": "storage",
+          "metric_description": "The storage of the facility",
+          "unit_type": "TB hours",
+          "metric_type": "aggregated",
+          "total_value": 2469.12
+        }
+      ],
+      "data": [
+        {
+          "installation_id": "507f1f77bcf86cd799439011",
+          "project": "447535",
+          "provider": "grnet",
+          "installation": "GRNET-KNS",
+          "infrastructure": "okeanos-knossos",
+          "resource": "cloud",
+          "external_id": "installation-45583",
+          "data": [
+            {
+              "metric_definition_id": "507f1f77bcf86cd799439011",
+              "metric_name": "storage",
+              "metric_description": "The storage of the facility",
+              "unit_type": "TB hours",
+              "metric_type": "aggregated",
+              "periods": [
+                {
+                  "from": "2022-01-05T09:13:07Z",
+                  "to": "2022-01-05T09:13:07Z",
+                  "total_value": 1234.56,
+                  "capacity_value": 1000,
+                  "usage_percentage": 75
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "installation_id": "507f1f77bcf86cd799439012",
+          "project": "447536",
+          "provider": "grnet",
+          "installation": "GRNET-KNS",
+          "infrastructure": "okeanos-knossos",
+          "resource": "cloud",
+          "external_id": "installation-45584",
+          "data": [
+            {
+              "metric_definition_id": "507f1f77bcf86cd799439011",
+              "metric_name": "storage",
+              "metric_description": "The storage of the facility",
+              "unit_type": "TB hours",
+              "metric_type": "aggregated",
+              "periods": [
+                {
+                  "from": "2022-02-01T00:00:00Z",
+                  "to": "2022-02-28T23:59:59Z",
+                  "total_value": 1234.56,
+                  "capacity_value": 1000,
+                  "usage_percentage": 80
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "aggregated_metrics": [
+    {
+      "metric_definition_id": "507f1f77bcf86cd799439011",
+      "metric_name": "storage",
+      "metric_description": "The storage of the facility",
+      "unit_type": "TB hours",
+      "metric_type": "aggregated",
+      "total_value": 2469.12
+    }
+  ]
+}
 ```
 
 ## Errors

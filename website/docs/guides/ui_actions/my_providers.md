@@ -6,13 +6,13 @@ sidebar_position: 2
 
 # My Providers
 
-In the [My Providers tab](https://accounting.eosc-portal.eu/myProviders), you
+In the [My Providers](https://ui.acc.argo.grnet.gr/myProviders) tab, you
 can find all the Providers associated with a Project, and you have been granted
-rights to them either as **Project Admin** or **Provider Admin**.
+rights to them either as `Project Admin` or `Provider Admin`.
 
 ## View all the Providers you have access to
 
-To view all the Providers you have access to, visit the [My Providers tab](https://accounting.eosc-portal.eu/myProviders)
+To view all the Providers you have access to, visit the [My Providers](https://ui.acc.argo.grnet.gr/myProviders) tab
 on the Accounting User Interface.
 Then, all the aforementioned Providers are displayed.
 

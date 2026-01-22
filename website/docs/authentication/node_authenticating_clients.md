@@ -1,7 +1,7 @@
 ---
 id: node_authenticating_clients
 title: Authentication through Node's OIDC Provider
-sidebar_position: 2
+sidebar_position: 3
 ---
 
 # Authentication using the Node's OIDC Provider

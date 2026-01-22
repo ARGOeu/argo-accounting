@@ -7,7 +7,7 @@ sidebar_position: 4
 # Metric Definitions
 
 To manage the Metric Definitions via a website, please visit the
-[Metric Definition tab](https://accounting.eosc-portal.eu/metrics-definitions)
+[Metric Definition](https://ui.acc.argo.grnet.gr/metrics-definitions) tab
 on the Accounting User Interface.
 
 Please note that all available actions are described in this section. The role
@@ -19,7 +19,7 @@ for more details.
 ## View all the Metric Definitions
 
 To view all the Metric Definitions, visit the
-[Metric Definition tab](https://accounting.eosc-portal.eu/metrics-definitions)
+[Metric Definition](https://ui.acc.argo.grnet.gr/metrics-definitions) tab
 on the Accounting User Interface.
 Then, all the created Metric Definitions by any client are displayed.
 
