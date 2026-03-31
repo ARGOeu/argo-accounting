@@ -29,6 +29,7 @@ public class ServiceCatalogueMessage {
 
     @Getter
     @Setter
+    @JsonIgnoreProperties(ignoreUnknown = true)
     public static class Identifiers {
         private String originalId;
         private String pid;
@@ -36,6 +37,7 @@ public class ServiceCatalogueMessage {
 
     @Getter
     @Setter
+    @JsonIgnoreProperties(ignoreUnknown = true)
     public static class ActionInfo {
         private String actionType;
         private String comment;
@@ -48,6 +50,7 @@ public class ServiceCatalogueMessage {
 
     @Getter
     @Setter
+    @JsonIgnoreProperties(ignoreUnknown = true)
     public static class Metadata {
         private String modifiedAt;
         private String modifiedBy;
@@ -59,12 +62,14 @@ public class ServiceCatalogueMessage {
 
     @Getter
     @Setter
+    @JsonIgnoreProperties(ignoreUnknown = true)
     public static class ResourceExtras {
         private String eoscIFGuidelines;
     }
 
     @Getter
     @Setter
+    @JsonIgnoreProperties(ignoreUnknown = true)
     public static class Service {
         private String abbreviation;
         private List<String> accessModes;
@@ -126,6 +131,7 @@ public class ServiceCatalogueMessage {
 
         @Getter
         @Setter
+        @JsonIgnoreProperties(ignoreUnknown = true)
         public static class Category {
             private String category;
             private String subcategory;
@@ -133,6 +139,7 @@ public class ServiceCatalogueMessage {
 
         @Getter
         @Setter
+        @JsonIgnoreProperties(ignoreUnknown = true)
         public static class Contact {
             private String email;
             private String firstName;
@@ -144,6 +151,7 @@ public class ServiceCatalogueMessage {
 
         @Getter
         @Setter
+        @JsonIgnoreProperties(ignoreUnknown = true)
         public static class ScientificDomain {
             private String scientificDomain;
             private String scientificSubdomain;
@@ -152,6 +160,7 @@ public class ServiceCatalogueMessage {
 
     @Getter
     @Setter
+    @JsonIgnoreProperties(ignoreUnknown = true)
     public class Provider {
         private String id;
         private String abbreviation;
@@ -188,6 +197,7 @@ public class ServiceCatalogueMessage {
 
     @Getter
     @Setter
+    @JsonIgnoreProperties(ignoreUnknown = true)
     public static class Location {
         private String streetNameAndNumber;
         private String postalCode;
@@ -198,6 +208,7 @@ public class ServiceCatalogueMessage {
 
     @Getter
     @Setter
+    @JsonIgnoreProperties(ignoreUnknown = true)
     public static class Contact {
         private String firstName;
         private String lastName;
@@ -208,6 +219,7 @@ public class ServiceCatalogueMessage {
 
     @Getter
     @Setter
+    @JsonIgnoreProperties(ignoreUnknown = true)
     public static class User {
         private String id;
         private String email;
