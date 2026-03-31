@@ -45,11 +45,11 @@ public class AmsListener {
             throw new ForbiddenException("You cannot perform this operation");
         }
 
-        amsService.consumeAmsMessage(message);
+        var responseMessage = amsService.consumeAmsMessage(message);
 
         var response = new InformativeResponse();
         response.code = 200;
-        response.message = "AMS message has been successfully consumed";
+        response.message = responseMessage;
 
         return Response.ok().entity(response).build();
     }

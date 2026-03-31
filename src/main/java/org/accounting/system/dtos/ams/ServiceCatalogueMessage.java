@@ -1,5 +1,6 @@
 package org.accounting.system.dtos.ams;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import lombok.Getter;
@@ -143,6 +144,13 @@ public class ServiceCatalogueMessage {
         @Setter
         @JsonIgnoreProperties(ignoreUnknown = true)
         public static class Contact {
+            public Contact() {}
+
+            @JsonCreator
+            public Contact(String email) {
+                this.email = email;
+            }
+
             private String email;
             private String firstName;
             private String lastName;
