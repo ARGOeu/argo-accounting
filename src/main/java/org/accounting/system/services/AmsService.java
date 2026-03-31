@@ -4,7 +4,6 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
-import jakarta.ws.rs.BadRequestException;
 import jakarta.ws.rs.ServerErrorException;
 import org.accounting.system.dtos.ams.AmsMessage;
 import org.accounting.system.dtos.ams.ServiceCatalogueMessage;
@@ -41,7 +40,7 @@ public class AmsService {
 
     private static final Logger LOG = Logger.getLogger(AmsService.class);
 
-    public void consumeAmsMessage(AmsMessage message) {
+    public String consumeAmsMessage(AmsMessage message) {
 
         var toBeUsed = projectService.findByIdOptional(project);
 
@@ -69,22 +68,21 @@ public class AmsService {
             if(Objects.isNull(serviceCatalogueMessage.getStatus())){
 
                 LOG.error("Service catalogue message status is empty.");
-                throw new BadRequestException("Service catalogue message status is empty.");
+                return "Service catalogue message status is empty.";
             } else if(serviceCatalogueMessage.getStatus().equals(AMSMessageStatus.CREATE_PROVIDER.getValue())){
 
                 LOG.info("Creating a new Provider with id : "+serviceCatalogueMessage.getProvider().getId());
                 createProvider(serviceCatalogueMessage.getProvider());
+                return "AMS message has been successfully consumed";
             } else if(serviceCatalogueMessage.getStatus().equals(AMSMessageStatus.CREATE_INSTALLATION.getValue())){
 
                 LOG.info("Creating a new Installation with id : "+serviceCatalogueMessage.getService().getId());
                 createInstallation(serviceCatalogueMessage.getService());
+                return "AMS message has been successfully consumed";
             } else {
-
                 LOG.error("Unknown service catalogue status : "+serviceCatalogueMessage.getStatus());
-                throw new BadRequestException("Unknown service catalogue status : "+serviceCatalogueMessage.getStatus());
+                return "Unknown service catalogue status : "+serviceCatalogueMessage.getStatus();
             }
-
-            LOG.info("Service catalogue message id : "+serviceCatalogueMessage.getId());
         } catch (JsonProcessingException e) {
             throw new ServerErrorException(e.getMessage(), 500);
         }
