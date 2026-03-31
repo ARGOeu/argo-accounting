@@ -1,6 +1,7 @@
 package org.accounting.system.dtos.ams;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -74,6 +75,7 @@ public class ServiceCatalogueMessage {
         private String abbreviation;
         private List<String> accessModes;
         private String accessPolicy;
+        @JsonDeserialize(using = StringToListDeserializer.class)
         private List<String> accessTypes;
         private Object alternativeIdentifiers;
         private String catalogueId;
