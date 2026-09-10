@@ -37,7 +37,8 @@ import org.grnet.creditmanagement.pagination.PageResource;
 import org.grnet.creditmanagement.security.CreditManagementSecured;
 import org.grnet.creditmanagement.services.CreditAllocationService;
 
-import java.time.Instant;
+import java.time.LocalDate;
+import java.time.ZoneOffset;
 import java.util.List;
 
 @Path("/projects")
@@ -138,15 +139,17 @@ public class CreditAllocationEndpoint {
                     schema = @Schema(type = SchemaType.STRING, implementation = String.class, example = "group-42"))
             @PathParam("group_id") String groupId,
 
-            @Parameter(name = "at", description = "The point in time to evaluate, ISO-8601 timestamp.", required = true,
-                    schema = @Schema(type = SchemaType.STRING, example = "2026-08-15T12:00:00Z"))
-            @QueryParam("at") Instant at) {
+            @Parameter(name = "at", description = "The point in time to evaluate, ISO-8601 date.", required = true,
+                    schema = @Schema(type = SchemaType.STRING, format = "date", example = "2026-08-15"))
+            @QueryParam("at") LocalDate at) {
 
         if (at == null) {
             throw new BadRequestException("The 'at' query parameter is required and must be a valid ISO-8601 timestamp.");
         }
 
-        var response = creditAllocationService.getEffectiveAllocation(projectId, groupId, at);
+        var instant = at.atStartOfDay(ZoneOffset.UTC).toInstant();
+
+        var response = creditAllocationService.getEffectiveAllocation(projectId, groupId, instant);
 
         return Response.ok(response).build();
     }

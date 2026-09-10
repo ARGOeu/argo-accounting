@@ -79,15 +79,6 @@ public class RatingPolicyRepository implements PanacheMongoRepositoryBase<Rating
     }
 
     /**
-     * Finds a Rating Policy entry by id. Returns empty if
-     * the id doesn't exist, or exists.
-     */
-    public Optional<RatingPolicyEntity> findByIdOptional(String policyId) {
-
-        return findByIdOptional(policyId);
-    }
-
-    /**
      * All Rating Policy entries for the given installation and metric
      * definition, ordered by valid_from ascending — including entries
      * outside any particular reporting window, since the earliest ones
