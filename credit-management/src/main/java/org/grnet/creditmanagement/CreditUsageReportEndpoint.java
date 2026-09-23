@@ -119,31 +119,32 @@ public class CreditUsageReportEndpoint {
 
     @Tag(name = "Credit Management")
     @Operation(
-            summary = "Retrieve the credit balance of a group under a project over a time range.",
-            description = "Returns allocated_credits (the sum of the full total_credits of every Credit Allocation for this " +
-                    "group whose period overlaps the given window — not prorated, since an allocation represents a " +
-                    "closed budget for its whole period), consumed_credits (the total credits accrued by this " +
-                    "group across every Installation under the project during the window), balance " +
-                    "(allocated_credits - consumed_credits), and the full per-Installation, per-Metric-Definition " +
-                    "consumption breakdown backing consumed_credits — in the same shape as the credit usage " +
-                    "report endpoint. Credit Allocations only ever apply at the group_id level — there is no " +
-                    "per-user or per-installation allocation.")
+            summary = "Retrieve the credit balance of a group under a project as of a point in time.",
+            description = "Computes balance as of the end of a given calendar date, 'at' (defaults to today " +
+                    "if omitted) — resolved internally to the start of the day AFTER 'at' (00:00:00 UTC), so " +
+                    "the entire 'at' day is included. The wallet resets with each new Credit Allocation: the " +
+                    "balance is always based on the most recently started allocation whose valid_from is on " +
+                    "or before that resolved instant — found by looking backwards in time, even if that " +
+                    "allocation's own valid_to has already passed. allocated_credits is that allocation's " +
+                    "full total_credits (0 if none was ever registered). consumed_credits is the total " +
+                    "consumed by this group across all installations under the project, from that " +
+                    "allocation's valid_from up to the resolved instant. balance = allocated_credits - " +
+                    "consumed_credits, and can go negative: this endpoint does not prevent overdraft, it " +
+                    "only reports it, with a reason: 'allocated credits exhausted' if an allocation was still " +
+                    "in effect but fully consumed, or 'no allocation policy in effect' if none covered that " +
+                    "point in time at all. When 'at' is explicitly provided, the response is flagged as a " +
+                    "snapshot: it reflects only what had happened by then and does not represent the " +
+                    "current, true balance.")
     @APIResponse(
             responseCode = "200",
-            description = "The credit balance for this group over the given window.",
+            description = "The credit balance as of 'at'.",
             content = @Content(schema = @Schema(implementation = CreditBalanceResponseDto.class)))
     @APIResponse(
-            responseCode = "400",
-            description = "The 'from'/'to' parameters are missing or 'from' is after 'to'.",
-            content = @Content(schema = @Schema(type = SchemaType.OBJECT, implementation = RatingPolicyConflictExceptionMapper.ErrorResponse.class)))
-    @APIResponse(
             responseCode = "404",
-            description = "The Project does not exist.",
-            content = @Content(schema = @Schema(type = SchemaType.OBJECT, implementation = RatingPolicyConflictExceptionMapper.ErrorResponse.class)))
+            description = "The Project does not exist.")
     @APIResponse(
             responseCode = "500",
-            description = "Internal Server Error.",
-            content = @Content(schema = @Schema(type = SchemaType.OBJECT, implementation = RatingPolicyConflictExceptionMapper.ErrorResponse.class)))
+            description = "Internal Server Error.")
     @SecurityRequirement(name = "Authentication")
     @GET
     @Path("/{project_id}/groups/{group_id}/balance")
@@ -159,15 +160,11 @@ public class CreditUsageReportEndpoint {
                     schema = @Schema(type = SchemaType.STRING, implementation = String.class, example = "group-42"))
             @PathParam("group_id") String groupId,
 
-            @Parameter(name = "from", description = "The first calendar date (inclusive) of the window, format yyyy-MM-dd.", required = true,
-                    schema = @Schema(type = SchemaType.STRING, example = "2026-08-01"))
-            @QueryParam("from") LocalDate from,
+            @Parameter(name = "at", description = "The calendar date to evaluate the balance as of (inclusive), format yyyy-MM-dd. Defaults to today if omitted.",
+                    schema = @Schema(type = SchemaType.STRING, example = "2026-08-20"))
+            @QueryParam("at") LocalDate at) {
 
-            @Parameter(name = "to", description = "The last calendar date (inclusive) of the window, format yyyy-MM-dd.", required = true,
-                    schema = @Schema(type = SchemaType.STRING, example = "2026-08-31"))
-            @QueryParam("to") LocalDate to) {
-
-        var response = creditBalanceService.getBalance(projectId, groupId, from, to);
+        var response = creditBalanceService.getBalance(projectId, groupId, at);
 
         return Response.ok(response).build();
     }

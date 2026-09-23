@@ -81,4 +81,18 @@ public class CreditAllocationRepository implements PanacheMongoRepositoryBase<Cr
                 .firstResultOptional()
                 .isPresent();
     }
+
+    /**
+     * The most recently started stored allocation for the given
+     * project_id/group_id whose valid_from is on or before 'at' — the
+     * allocation whose "wallet" is in effect (or was, if since expired) as
+     * of 'at'. Always looks backwards in time, regardless of whether 'at'
+     * falls before, within, or after that allocation's own valid_to.
+     */
+    public Optional<CreditAllocationEntity> findLatestStartingOnOrBefore(String projectId, String groupId, Instant at) {
+
+        return find("projectId = ?1 and groupId = ?2 and validFrom <= ?3",
+                Sort.by("validFrom").descending(), projectId, groupId, at)
+                .firstResultOptional();
+    }
 }
