@@ -1,5 +1,6 @@
 package org.grnet.creditmanagement.services;
 
+
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.BadRequestException;
@@ -36,11 +37,9 @@ public class CreditUsageReportService {
     RatingPolicyRepository ratingPolicyRepository;
 
     /**
-     * from/to are calendar dates, both inclusive, since Rating Policies
-     * always take effect at the start of a day and Metric events are
-     * daily. Internally converted to a half-open [from, to) Instant window:
-     * from = start of the 'from' day (UTC), to = start of the day AFTER
-     * the 'to' day (UTC), so the 'to' day itself is fully covered.
+     * Calendar-date entry point (used directly by the credit usage report
+     * endpoint): from/to are both-inclusive calendar dates, converted to a
+     * half-open Instant window and delegated to the Instant-based variant.
      */
     public CreditUsageReportResponseDto generateReport(String projectId,
                                                        LocalDate fromDate,
@@ -60,6 +59,32 @@ public class CreditUsageReportService {
 
         var from = fromDate.atStartOfDay(ZoneOffset.UTC).toInstant();
         var to = toDate.plusDays(1).atStartOfDay(ZoneOffset.UTC).toInstant();
+
+        return generateReport(projectId, from, to, installationIdFilter, metricDefinitionIdFilter, userId, groupId);
+    }
+
+    /**
+     * Instant-windowed entry point (used by the credit balance endpoint,
+     * whose window is anchored to an allocation's valid_from and an
+     * arbitrary point-in-time 'at', not calendar dates). from == to is
+     * allowed (an empty window, e.g. querying exactly at an allocation's
+     * own start); from > to is rejected.
+     */
+    public CreditUsageReportResponseDto generateReport(String projectId,
+                                                       Instant from,
+                                                       Instant to,
+                                                       String installationIdFilter,
+                                                       String metricDefinitionIdFilter,
+                                                       String userId,
+                                                       String groupId) {
+
+        if (from == null || to == null) {
+            throw new BadRequestException("Both 'from' and 'to' are required.");
+        }
+
+        if (from.isAfter(to)) {
+            throw new BadRequestException("'from' must not be after 'to'.");
+        }
 
         if (!externalEntityLookupRepository.projectExists(projectId)) {
             throw new NotFoundException("Project not found: " + projectId);
@@ -203,13 +228,6 @@ public class CreditUsageReportService {
         return metricDto;
     }
 
-    /**
-     * Sums the prorated value of every event that overlaps [segmentStart,
-     * segmentEnd), attributing to this segment only the fraction of each
-     * event's value proportional to the time overlap. For daily metrics
-     * whose boundaries align with rating policy valid_from values (both at
-     * midnight), this always resolves to a clean 0% or 100% attribution.
-     */
     private double prorateEventsForSegment(List<MetricEvent> events, Instant segmentStart, Instant segmentEnd) {
 
         double sum = 0;
