@@ -1,6 +1,5 @@
 package org.grnet.creditmanagement.services;
 
-
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.NotFoundException;
@@ -26,30 +25,37 @@ public class CreditBalanceService {
     CreditUsageReportService creditUsageReportService;
 
     /**
-     * Balance as of a single point in time 'at' (defaults to now if null,
-     * in which case the result is not treated as a snapshot).
+     * Balance as of the end of a calendar date 'atDate' (defaults to today
+     * if null, in which case the result is not treated as a snapshot).
+     * 'atDate' is resolved to the start of the day AFTER it (00:00:00 UTC),
+     * so the entire 'atDate' day is included in the window.
      *
-     * The basis is always the most recently started allocation whose
-     * valid_from is <= at ("the wallet resets with each new policy"), found
-     * by looking backwards regardless of whether that allocation's own
-     * valid_to has already passed. Consumption is summed from that
-     * allocation's valid_from up to 'at'; if no such allocation exists at
-     * all, consumption is summed from the beginning of recorded history.
+     * The basis is the most recently started allocation whose valid_from is
+     * <= the resolved instant, found by looking backwards.
+     * - If it is still in effect (resolved instant < valid_to): budget is
+     *   its total_credits, consumption is counted from its valid_from.
+     * - If it has expired: budget is 0 and only consumption after its
+     *   valid_to counts (consumption during its period used the budget
+     *   that was valid then; the wallet closes at valid_to).
+     * - If there is none: budget is 0 and all recorded consumption counts.
      */
     public CreditBalanceResponseDto getBalance(String projectId, String groupId, LocalDate atDate) {
-
-        if (!externalEntityLookupRepository.projectExists(projectId)) {
-            throw new NotFoundException("Project not found: " + projectId);
-        }
 
         var isSnapshot = atDate != null;
 
         var resolvedAtDate = atDate != null ? atDate : LocalDate.now(ZoneOffset.UTC);
         var effectiveAt = resolvedAtDate.plusDays(1).atStartOfDay(ZoneOffset.UTC).toInstant();
 
+        if (!externalEntityLookupRepository.projectExists(projectId)) {
+            throw new NotFoundException("Project not found: " + projectId);
+        }
+
         var basisAllocation = creditAllocationRepository
                 .findLatestStartingOnOrBefore(projectId, groupId, effectiveAt)
                 .orElse(null);
+
+        var allocationInEffect = basisAllocation != null
+                && effectiveAt.isBefore(basisAllocation.getValidTo());
 
         Instant windowStart;
         double allocatedCredits;
@@ -57,13 +63,18 @@ public class CreditBalanceService {
 
         if (basisAllocation != null) {
 
-            windowStart = basisAllocation.getValidFrom();
-            allocatedCredits = basisAllocation.getTotalCredits();
-
             basisDto = new BasisAllocationDto();
             basisDto.allocationId = basisAllocation.getId();
             basisDto.validFrom = basisAllocation.getValidFrom();
             basisDto.validTo = basisAllocation.getValidTo();
+
+            if (allocationInEffect) {
+                windowStart = basisAllocation.getValidFrom();
+                allocatedCredits = basisAllocation.getTotalCredits();
+            } else {
+                windowStart = basisAllocation.getValidTo();
+                allocatedCredits = 0.0;
+            }
 
         } else {
             windowStart = Instant.EPOCH;
@@ -83,12 +94,7 @@ public class CreditBalanceService {
         String reason = null;
 
         if (balance < 0) {
-
-            var policyCurrentlyInEffect = basisAllocation != null
-                    && !effectiveAt.isBefore(basisAllocation.getValidFrom())
-                    && effectiveAt.isBefore(basisAllocation.getValidTo());
-
-            reason = policyCurrentlyInEffect ? "allocated credits exhausted" : "no allocation policy in effect";
+            reason = allocationInEffect ? "allocated credits exhausted" : "no allocation policy in effect";
         }
 
         var response = new CreditBalanceResponseDto();
@@ -99,6 +105,7 @@ public class CreditBalanceService {
         response.warning = isSnapshot
                 ? "This balance reflects a snapshot as of the specified point in time and says nothing about the current (true) balance."
                 : null;
+        response.allocationInEffect = allocationInEffect;
         response.basisAllocation = basisDto;
         response.allocatedCredits = allocatedCredits;
         response.consumedCredits = consumedCredits;
