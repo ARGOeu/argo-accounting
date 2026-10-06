@@ -132,7 +132,10 @@ public class CreditUsageReportEndpoint {
                     "consumed_credits, and can go negative: this endpoint does not prevent overdraft, it " +
                     "only reports it, with a reason: 'allocated credits exhausted' if an allocation was still " +
                     "in effect but fully consumed, or 'no allocation policy in effect' if none covered that " +
-                    "point in time at all. When 'at' is explicitly provided, the response is flagged as a " +
+                    "point in time at all. The response also states whether an allocation is in effect (allocation_in_effect): if the most " +
+                    "recent allocation has already ended, allocated_credits is 0, the basis_allocation is still " +
+                    "returned for reference, and only consumption after its valid_to counts against the balance. " +
+                    "When 'at' is explicitly provided, the response is flagged as a " +
                     "snapshot: it reflects only what had happened by then and does not represent the " +
                     "current, true balance.")
     @APIResponse(
