@@ -7,7 +7,7 @@ import org.eclipse.microprofile.openapi.annotations.media.Schema;
 
 import java.time.Instant;
 
-@JsonPropertyOrder({ "allocation_id", "valid_from", "valid_to" })
+@JsonPropertyOrder({ "allocation_id", "valid_from", "valid_to", "total_credits" })
 public class BasisAllocationDto {
 
     @Schema(type = SchemaType.STRING, description = "The id of the Credit Allocation this balance is based on.", example = "64f1a2b3c4d5e6f7a8b9c0d1")
@@ -21,4 +21,9 @@ public class BasisAllocationDto {
     @Schema(type = SchemaType.STRING, description = "The end of this allocation's period (exclusive).", example = "2026-09-01T00:00:00Z")
     @JsonProperty("valid_to")
     public Instant validTo;
+
+    @Schema(type = SchemaType.NUMBER, description = "The credits granted by this allocation, whether or not it is still in effect.", example = "1000.0")
+    @JsonProperty("total_credits")
+    public double totalCredits;
+
 }
