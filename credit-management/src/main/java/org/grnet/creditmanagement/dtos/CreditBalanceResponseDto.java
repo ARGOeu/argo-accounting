@@ -8,7 +8,8 @@ import org.eclipse.microprofile.openapi.annotations.media.Schema;
 import java.time.Instant;
 import java.util.List;
 
-@JsonPropertyOrder({ "project_id", "group_id", "at", "is_snapshot", "warning", "allocation_in_effect",
+@JsonPropertyOrder({ "project_id", "group_id", "at", "is_snapshot", "warning", "status",
+        "balance_message", "allocation_message", "allocation_in_effect",
         "basis_allocation", "allocated_credits", "consumed_credits", "balance", "reason", "installations" })
 public class CreditBalanceResponseDto {
 
@@ -54,4 +55,22 @@ public class CreditBalanceResponseDto {
 
     @Schema(description = "The per-installation, per-metric consumption breakdown backing consumed_credits.")
     public List<InstallationReportDto> installations;
+
+    @Schema(type = SchemaType.STRING,
+            description = "ALLOCATION_POLICY_IN_EFFECT if an allocation covers 'at', otherwise NO_ALLOCATION_POLICY_IN_EFFECT.",
+            example = "ALLOCATION_POLICY_IN_EFFECT")
+    public String status;
+
+    @Schema(type = SchemaType.STRING,
+            description = "Human-readable statement of the balance. With an allocation in effect: remaining credits until its end date, or the overdraft with 'Allocated amount exhausted'. Without one: 'Balance: 0 credits', or the unallocated consumption.",
+            example = "Balance: 78.6 remaining credits until 2026-09-30")
+    @JsonProperty("balance_message")
+    public String balanceMessage;
+
+    @Schema(type = SchemaType.STRING,
+            description = "Human-readable statement of the allocation policy: the one in effect, or the last one that was in effect ('none' if there never was one).",
+            example = "Allocation Policy: 6ac365b83cd3030bde1bf030 in effect 2026-09-01 - 2026-09-30. 100 credits allocated.")
+    @JsonProperty("allocation_message")
+    public String allocationMessage;
+
 }

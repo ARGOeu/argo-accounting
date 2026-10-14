@@ -5,12 +5,16 @@ import jakarta.inject.Inject;
 import jakarta.ws.rs.NotFoundException;
 import org.grnet.creditmanagement.dtos.BasisAllocationDto;
 import org.grnet.creditmanagement.dtos.CreditBalanceResponseDto;
+import org.grnet.creditmanagement.entities.CreditAllocationEntity;
 import org.grnet.creditmanagement.repositories.CreditAllocationRepository;
 import org.grnet.creditmanagement.repositories.ExternalEntityLookupRepository;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneOffset;
+import java.time.format.DateTimeFormatter;
 
 @ApplicationScoped
 public class CreditBalanceService {
@@ -67,6 +71,7 @@ public class CreditBalanceService {
             basisDto.allocationId = basisAllocation.getId();
             basisDto.validFrom = basisAllocation.getValidFrom();
             basisDto.validTo = basisAllocation.getValidTo();
+            basisDto.totalCredits = basisAllocation.getTotalCredits();
 
             if (allocationInEffect) {
                 windowStart = basisAllocation.getValidFrom();
@@ -111,8 +116,50 @@ public class CreditBalanceService {
         response.consumedCredits = consumedCredits;
         response.balance = balance;
         response.reason = reason;
+        response.status = allocationInEffect ? "ALLOCATION_POLICY_IN_EFFECT" : "NO_ALLOCATION_POLICY_IN_EFFECT";
+        response.balanceMessage = buildBalanceMessage(allocationInEffect, balance, basisAllocation);
+        response.allocationMessage = buildAllocationMessage(allocationInEffect, basisAllocation);
         response.installations = usageReport.installations;
 
         return response;
+    }
+
+    private String buildBalanceMessage(boolean allocationInEffect, double balance, CreditAllocationEntity basis) {
+
+        var rounded = toCredits(balance);
+        var negative = rounded.signum() < 0;
+        var amount = rounded.stripTrailingZeros().toPlainString();
+
+        if (allocationInEffect) {
+            return negative
+                    ? "Negative Balance: " + amount + " credits in overdraft. Allocated amount exhausted."
+                    : "Balance: " + amount + " remaining credits until " + formatDate(basis.getValidTo());
+        }
+
+        return negative
+                ? "Negative Balance: " + amount + " credits of unallocated consumption."
+                : "Balance: 0 credits";
+    }
+
+    private String buildAllocationMessage(boolean allocationInEffect, CreditAllocationEntity basis) {
+
+        if (basis == null) {
+            return "Last in effect Allocation Policy: none";
+        }
+
+        var period = formatDate(basis.getValidFrom()) + " - " + formatDate(basis.getValidTo());
+        var credits = toCredits(basis.getTotalCredits()).stripTrailingZeros().toPlainString();
+
+        return allocationInEffect
+                ? "Allocation Policy: " + basis.getId() + " in effect " + period + ". " + credits + " credits allocated."
+                : "Last in effect Allocation Policy: " + basis.getId() + " " + period + ". " + credits + " credits allocated.";
+    }
+
+    private BigDecimal toCredits(double value) {
+        return BigDecimal.valueOf(value).setScale(2, RoundingMode.HALF_UP);
+    }
+
+    private String formatDate(Instant instant) {
+        return DateTimeFormatter.ISO_LOCAL_DATE.format(instant.atZone(ZoneOffset.UTC));
     }
 }
