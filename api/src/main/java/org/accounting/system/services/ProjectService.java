@@ -23,11 +23,10 @@ import org.accounting.system.entities.projections.normal.ProjectProjection;
 import org.accounting.system.mappers.InstallationMapper;
 import org.accounting.system.mappers.MetricDefinitionMapper;
 import org.accounting.system.repositories.project.ProjectRepository;
-import org.accounting.system.services.groupmanagement.EntitlementServiceFactory;
-import org.accounting.system.services.groupmanagement.GroupManagementSelection;
 import org.accounting.system.util.QueryParser;
 import org.accounting.system.util.Utility;
 import org.bson.conversions.Bson;
+import org.grnet.endpoint.scanner.runtime.entitlements.EntitlementProvider;
 import org.jboss.logging.Logger;
 
 import java.util.ArrayList;
@@ -48,13 +47,7 @@ public class ProjectService {
     QueryParser queryParser;
 
     @Inject
-    GroupManagementSelection groupManagementSelection;
-
-    @Inject
     ProviderService providerService;
-
-    @Inject
-    EntitlementServiceFactory entitlementServiceFactory;
 
     @Inject
     ClientService clientService;
@@ -65,6 +58,8 @@ public class ProjectService {
     @Inject
     Utility utility;
 
+    @Inject
+    EntitlementProvider entitlementProvider;
     /**
      * This method correlates the given Providers with a specific Project and creates a hierarchical structure with root
      * the given Project and children the given Providers.
@@ -76,15 +71,6 @@ public class ProjectService {
     public void associateProjectWithProvider(String projectId, String providerId){
 
         projectRepository.associateProjectWithProvider(projectId, providerId);
-
-        try{
-
-            groupManagementSelection.from().choose().createAssociationGroup(projectId, providerId);
-        } catch (Exception e){
-
-            projectRepository.dissociateProviderFromProject(projectId, providerId);
-            LOG.error("Group creation failed with error : " + e.getMessage());
-        }
     }
 
     /**
@@ -96,8 +82,6 @@ public class ProjectService {
     public void dissociateProviderFromProject(String projectId, String providerId){
 
         projectRepository.dissociateProviderFromProject(projectId, providerId);
-
-        groupManagementSelection.from().choose().deleteAssociationGroup(projectId, providerId);
     }
 
     public ProjectProjection getById(final String id) {
@@ -204,11 +188,11 @@ public class ProjectService {
 
     public PageResource<ProjectProjectionWithPermissions> getClientPermissions(int page, int size, UriInfo uriInfo){
 
-        var entitlements = entitlementServiceFactory.from().fetchEntitlements();
+        var entitlements = entitlementProvider.fetchEntitlements();
 
         var list = new ArrayList<ProjectProjectionWithPermissions>();
 
-        if(requestUserContext.getOidcTenantConfig().isEmpty() && entitlementServiceFactory.from().hasAccess(requestUserContext.getParent(), "admin", List.of())){
+        if(requestUserContext.getOidcTenantConfig().isEmpty()){
 
             var db = projectRepository.fetchClientPermissions(page, size);
 

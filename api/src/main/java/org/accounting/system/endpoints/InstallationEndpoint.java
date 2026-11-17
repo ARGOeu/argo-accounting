@@ -8,24 +8,12 @@ import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
-import jakarta.ws.rs.BadRequestException;
-import jakarta.ws.rs.Consumes;
-import jakarta.ws.rs.DELETE;
-import jakarta.ws.rs.DefaultValue;
-import jakarta.ws.rs.GET;
-import jakarta.ws.rs.PATCH;
-import jakarta.ws.rs.POST;
-import jakarta.ws.rs.Path;
-import jakarta.ws.rs.PathParam;
-import jakarta.ws.rs.Produces;
-import jakarta.ws.rs.QueryParam;
+import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.UriInfo;
 import org.accounting.system.beans.RequestUserContext;
-import org.accounting.system.constraints.AccessInstallation;
-import org.accounting.system.constraints.AccessProvider;
 import org.accounting.system.constraints.CheckDateFormat;
 import org.accounting.system.constraints.NotFoundEntity;
 import org.accounting.system.dtos.CapacityDto;
@@ -42,13 +30,10 @@ import org.accounting.system.dtos.pagination.PageResource;
 import org.accounting.system.entities.HierarchicalRelation;
 import org.accounting.system.entities.projections.InstallationReport;
 import org.accounting.system.entities.projections.MetricProjection;
-import org.accounting.system.interceptors.annotations.AccessResource;
 import org.accounting.system.repositories.CapacityRepository;
 import org.accounting.system.repositories.metric.MetricRepository;
 import org.accounting.system.repositories.metricdefinition.MetricDefinitionRepository;
-import org.accounting.system.services.CapacityService;
-import org.accounting.system.services.HierarchicalRelationService;
-import org.accounting.system.services.MetricService;
+import org.accounting.system.services.*;
 import org.accounting.system.services.installation.InstallationService;
 import org.accounting.system.util.AccountingUriInfo;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
@@ -67,6 +52,9 @@ import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
 import org.eclipse.microprofile.openapi.annotations.security.SecurityRequirement;
 import org.eclipse.microprofile.openapi.annotations.security.SecurityScheme;
 import org.eclipse.microprofile.openapi.annotations.tags.Tag;
+import org.grnet.endpoint.scanner.runtime.ParamRef;
+import org.grnet.endpoint.scanner.runtime.ParamType;
+import org.grnet.endpoint.scanner.runtime.SecuredEndpoint;
 
 import java.text.ParseException;
 import java.time.LocalDate;
@@ -104,6 +92,10 @@ public class InstallationEndpoint {
 
     @Inject
     CapacityService capacityService;
+    @Inject
+    ProjectService projectService;
+    @Inject
+    ProviderService providerService;
 
     @Tag(name = "Installation")
     @Operation(
@@ -162,8 +154,25 @@ public class InstallationEndpoint {
     @POST
     @Produces(value = MediaType.APPLICATION_JSON)
     @Consumes(value = MediaType.APPLICATION_JSON)
-    @AccessProvider(roles = {"admin"})
-    public Response save(InstallationRequestDto installationRequestDto, @Context UriInfo uriInfo) {
+    @SecuredEndpoint(
+            params = {
+                    @ParamRef(
+                            param = "project",
+                            type = ParamType.BODY,
+                            referTo = ProjectResource.class
+                    ),
+                    @ParamRef(
+                            param = "organisation",
+                            type = ParamType.BODY,
+                            referTo = InstallationResource.class
+                    )
+            }
+    )
+    public Response save(@Valid @NotNull(message = "The request body is empty.") InstallationRequestDto installationRequestDto, @Context UriInfo uriInfo) {
+
+        projectService.findByIdOptional(installationRequestDto.project).orElseThrow(()->new NotFoundException("There is no Project with the following id: "+installationRequestDto.project));
+
+        providerService.fetchById(installationRequestDto.organisation).orElseThrow(()->new NotFoundException("There is no Provider with the following id: "+installationRequestDto.organisation));
 
         var serverInfo = new AccountingUriInfo(serverUrl.concat(basePath).concat(uriInfo.getPath()));
 
@@ -217,14 +226,14 @@ public class InstallationEndpoint {
     @DELETE()
     @Path("/{id}")
     @Produces(value = MediaType.APPLICATION_JSON)
+    @SecuredEndpoint
     public Response delete(@Parameter(
             description = "The Installation to be deleted.",
             required = true,
             example = "507f1f77bcf86cd799439011",
             schema = @Schema(type = SchemaType.STRING))
                            @PathParam("id")
-                               @Valid
-                               @AccessInstallation(roles = {"admin"}) String id) {
+                               @Valid String id) {
 
         installationService.delete(id);
 
@@ -275,14 +284,14 @@ public class InstallationEndpoint {
     @GET
     @Path("/{id}")
     @Produces(value = MediaType.APPLICATION_JSON)
+    @SecuredEndpoint
     public Response get(
             @Parameter(
                     description = "The Installation to be retrieved.",
                     required = true,
                     example = "507f1f77bcf86cd799439011",
                     schema = @Schema(type = SchemaType.STRING))
-            @PathParam("id") @Valid
-            @AccessInstallation(roles = {"admin", "viewer"}) String id) {
+            @PathParam("id") @Valid String id) {
 
         var response = installationService.installationToResponse(id);
 
@@ -353,14 +362,14 @@ public class InstallationEndpoint {
     @Path("/{id}")
     @Produces(value = MediaType.APPLICATION_JSON)
     @Consumes(value = MediaType.APPLICATION_JSON)
+    @SecuredEndpoint
     public Response update(
             @Parameter(
                     description = "The Installation to be updated.",
                     required = true,
                     example = "507f1f77bcf86cd799439011",
                     schema = @Schema(type = SchemaType.STRING))
-            @PathParam("id") @Valid
-            @AccessInstallation(roles = {"admin"}) String id, @Valid @NotNull(message = "The request body is empty.") UpdateInstallationRequestDto updateInstallationRequestDto) {
+            @PathParam("id") @Valid String id, @Valid @NotNull(message = "The request body is empty.") UpdateInstallationRequestDto updateInstallationRequestDto) {
 
         var response = installationService.update(id, updateInstallationRequestDto);
 
@@ -415,6 +424,7 @@ public class InstallationEndpoint {
     @Timed(name = "checksMetricInsertion", description = "A measure of how long it takes to insert a new Metric.", unit = MetricUnits.MILLISECONDS)
     @Produces(value = MediaType.APPLICATION_JSON)
     @Consumes(value = MediaType.APPLICATION_JSON)
+    @SecuredEndpoint
     public Response save(
             @Parameter(
                     description = "The Installation to which Metric will be assigned.",
@@ -422,8 +432,7 @@ public class InstallationEndpoint {
                     example = "507f1f77bcf86cd799439011",
                     schema = @Schema(type = SchemaType.STRING))
             @PathParam("installation_id")
-            @Valid
-            @AccessInstallation(roles = {"admin"}) String installationId,
+            @Valid String installationId,
             @Valid @NotNull(message = "The request body is empty.") MetricRequestDto metricRequestDto, @Context UriInfo uriInfo) {
 
         var serverInfo = new AccountingUriInfo(serverUrl.concat(basePath).concat(uriInfo.getPath()));
@@ -466,6 +475,7 @@ public class InstallationEndpoint {
     @DELETE
     @Path("/{installation_id}/metrics/{id}")
     @Produces(value = MediaType.APPLICATION_JSON)
+    @SecuredEndpoint
     public Response delete(
             @Parameter(
                     description = "The Installation to which the Metric belongs.",
@@ -473,8 +483,7 @@ public class InstallationEndpoint {
                     example = "507f1f77bcf86cd799439011",
                     schema = @Schema(type = SchemaType.STRING))
             @PathParam("installation_id")
-            @Valid
-            @AccessInstallation(roles = {"admin"}) String installationId,
+            @Valid String installationId,
             @Parameter(
                     description = "The Metric to be deleted.",
                     required = true,
@@ -544,6 +553,7 @@ public class InstallationEndpoint {
     @Path("/{installation_id}/metrics/{id}")
     @Produces(value = MediaType.APPLICATION_JSON)
     @Consumes(value = MediaType.APPLICATION_JSON)
+    @SecuredEndpoint
     public Response update(
             @Parameter(
                     description = "The Installation to which the Metric belongs.",
@@ -551,8 +561,7 @@ public class InstallationEndpoint {
                     example = "507f1f77bcf86cd799439011",
                     schema = @Schema(type = SchemaType.STRING))
             @PathParam("installation_id")
-            @Valid
-            @AccessInstallation(roles = {"admin"}) String installationId,
+            @Valid String installationId,
             @Parameter(
                     description = "The Metric to be updated.",
                     required = true,
@@ -597,6 +606,7 @@ public class InstallationEndpoint {
     @GET
     @Path("/{installation_id}/metrics/{id}")
     @Produces(value = MediaType.APPLICATION_JSON)
+    @SecuredEndpoint
     public Response getMetric(
             @Parameter(
                     description = "The Installation to which the Metric belongs.",
@@ -604,8 +614,7 @@ public class InstallationEndpoint {
                     example = "507f1f77bcf86cd799439011",
                     schema = @Schema(type = SchemaType.STRING))
             @PathParam("installation_id")
-            @Valid
-            @AccessInstallation(roles = {"admin"}) String installationId,
+            @Valid String installationId,
             @Parameter(
                     description = "The Metric to be retrieved.",
                     required = true,
@@ -653,13 +662,14 @@ public class InstallationEndpoint {
     @Path("/{installation_id}/metrics")
     @Timed(name = "checksMetricRetrievalOfInstallation", description = "A measure of how long it takes to retrieve Metrics under an Installation.", unit = MetricUnits.MILLISECONDS)
     @Produces(value = MediaType.APPLICATION_JSON)
+    @SecuredEndpoint
     public Response getAllMetricsUnderAnInstallation(
             @Parameter(
                     description = "Τhe Installation id with which you can request all the Metrics that have been assigned to it.",
                     required = true,
                     example = "507f1f77bcf86cd799439011",
                     schema = @Schema(type = SchemaType.STRING))
-            @PathParam("installation_id") @Valid @AccessInstallation(roles = {"admin", "viewer"}) String installationId,
+            @PathParam("installation_id") @Valid String installationId,
             @Parameter(name = "page", in = QUERY,
                     description = "Indicates the page number. Page number must be >= 1.") @DefaultValue("1") @Min(value = 1, message = "Page number must be >= 1.") @QueryParam("page") int page,
             @Parameter(name = "size", in = QUERY,
@@ -710,13 +720,14 @@ public class InstallationEndpoint {
     @GET
     @Path("/{installation_id}/metric-definitions")
     @Produces(value = MediaType.APPLICATION_JSON)
+    @SecuredEndpoint
     public Response getAllInstallationMetricDefinitions(
             @Parameter(
                     description = "Τhe Installation id.",
                     required = true,
                     example = "507f1f77bcf86cd799439011",
                     schema = @Schema(type = SchemaType.STRING))
-            @PathParam("installation_id") @Valid @AccessInstallation(roles = {"admin", "viewer"}) String id,
+            @PathParam("installation_id") @Valid String id,
             @Parameter(name = "page", in = QUERY,
                     description = "Indicates the page number. Page number must be >= 1.") @DefaultValue("1") @Min(value = 1, message = "Page number must be >= 1.") @QueryParam("page") int page,
             @Parameter(name = "size", in = QUERY,
@@ -777,7 +788,7 @@ public class InstallationEndpoint {
     @Path("/search")
     @Produces(value = MediaType.APPLICATION_JSON)
     @Consumes(value = MediaType.APPLICATION_JSON)
-    @AccessResource
+    @SecuredEndpoint
     public Response search(
             @NotEmpty(message = "The request body is empty.") @RequestBody(content = @Content(
                     schema = @Schema(implementation = String.class),
@@ -870,6 +881,7 @@ public class InstallationEndpoint {
     @Path("/all")
     @Produces(value = MediaType.APPLICATION_JSON)
     @Consumes(value = MediaType.APPLICATION_JSON)
+    @SecuredEndpoint
     public Response getAll(
             @Parameter(name = "page", in = QUERY,
                     description = "Indicates the page number. Page number must be >= 1.") @DefaultValue("1") @Min(value = 1, message = "Page number must be >= 1.") @QueryParam("page") int page,
@@ -922,13 +934,14 @@ public class InstallationEndpoint {
     @GET
     @Path("/{installation_id}/report")
     @Produces(value = MediaType.APPLICATION_JSON)
+    @SecuredEndpoint
     public Response report(
             @Parameter(
                     description = "The ID of the installation.",
                     required = true,
                     example = "507f1f77bcf86cd799439011",
                     schema = @Schema(type = SchemaType.STRING))
-            @PathParam("installation_id") @Valid @AccessInstallation(roles = {"admin", "viewer"}) String installationId,
+            @PathParam("installation_id") @Valid String installationId,
 
             @Parameter(
                     name = "start",
@@ -1012,6 +1025,7 @@ public class InstallationEndpoint {
     @Path("/{installation_id}/capacities")
     @Produces(value = MediaType.APPLICATION_JSON)
     @Consumes(value = MediaType.APPLICATION_JSON)
+    @SecuredEndpoint
     public Response registerCapacity(
             @Parameter(
                     description = "The Installation id.",
@@ -1019,8 +1033,7 @@ public class InstallationEndpoint {
                     example = "507f1f77bcf86cd799439011",
                     schema = @Schema(type = SchemaType.STRING))
             @PathParam("installation_id")
-            @Valid
-            @AccessInstallation(roles = {"admin"}) String installationId,
+            @Valid String installationId,
             @Valid @NotNull(message = "The request body is empty.") CapacityRequest capacityRequest) {
 
         capacityService.register(installationId, capacityRequest);
@@ -1064,6 +1077,7 @@ public class InstallationEndpoint {
     @GET
     @Path("/{installation_id}/capacities")
     @Produces(value = MediaType.APPLICATION_JSON)
+    @SecuredEndpoint
     public Response fetchCapacities(
             @Parameter(
                     description = "The Installation id.",
@@ -1071,8 +1085,7 @@ public class InstallationEndpoint {
                     example = "507f1f77bcf86cd799439011",
                     schema = @Schema(type = SchemaType.STRING))
             @PathParam("installation_id")
-            @Valid
-            @AccessInstallation(roles = {"admin"}) String installationId,
+            @Valid String installationId,
             @Parameter(name = "page", in = QUERY,
                     description = "Indicates the page number. Page number must be >= 1.") @DefaultValue("1") @Min(value = 1, message = "Page number must be >= 1.") @QueryParam("page") int page,
             @Parameter(name = "size", in = QUERY,
@@ -1145,14 +1158,14 @@ public class InstallationEndpoint {
     @Path("/{id}/capacities/{capacity_id}")
     @Produces(value = MediaType.APPLICATION_JSON)
     @Consumes(value = MediaType.APPLICATION_JSON)
+    @SecuredEndpoint
     public Response updateCapacity(
     @Parameter(
             description = "The Installation id.",
             required = true,
             example = "507f1f77bcf86cd799439011",
             schema = @Schema(type = SchemaType.STRING))
-    @PathParam("id") @Valid
-    @AccessInstallation(roles = {"admin"}) String id,
+    @PathParam("id") @Valid String id,
     @Parameter(
             description = "The Capacity to be updated.",
             required = true,

@@ -5,12 +5,9 @@ import io.quarkus.mongodb.panache.PanacheQuery;
 import io.vavr.collection.Array;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
-import jakarta.validation.Payload;
 import jakarta.ws.rs.ForbiddenException;
 import jakarta.ws.rs.NotFoundException;
-import jakarta.ws.rs.ServerErrorException;
 import jakarta.ws.rs.core.UriInfo;
-import org.accounting.system.constraints.AccessProvider;
 import org.accounting.system.dtos.installation.InstallationResponseDto;
 import org.accounting.system.dtos.metricdefinition.MetricDefinitionResponseDto;
 import org.accounting.system.dtos.pagination.PageResource;
@@ -33,15 +30,12 @@ import org.accounting.system.mappers.ProviderMapper;
 import org.accounting.system.repositories.installation.InstallationRepository;
 import org.accounting.system.repositories.metric.MetricRepository;
 import org.accounting.system.repositories.provider.ProviderRepository;
-import org.accounting.system.services.groupmanagement.GroupManagementSelection;
 import org.accounting.system.util.QueryParser;
-import org.accounting.system.validators.AccessProviderValidator;
 import org.apache.commons.lang3.StringUtils;
 import org.bson.conversions.Bson;
 import org.bson.types.ObjectId;
 import org.jboss.logging.Logger;
 
-import java.lang.annotation.Annotation;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -62,9 +56,6 @@ public class ProviderService {
     HierarchicalRelationService hierarchicalRelationService;
     @Inject
     QueryParser queryParser;
-
-    @Inject
-    GroupManagementSelection groupManagementSelection;
 
     @Inject
     MetricRepository metricRepository;
@@ -124,17 +115,6 @@ public class ProviderService {
 
         providerRepository.save(provider);
 
-        try {
-
-            groupManagementSelection.from().choose().createProviderGroup(provider.getId());
-
-        } catch (Exception e) {
-
-            LOG.error("Group creation failed with error : " + e.getMessage());
-            providerRepository.deleteById(provider.getId());
-            throw new ServerErrorException("Group creation failed with error : " + e.getMessage(), 500);
-        }
-
         return ProviderMapper.INSTANCE.providerToResponse(provider);
     }
 
@@ -170,8 +150,6 @@ public class ProviderService {
         if (hierarchicalRelationService.providerBelongsToAnyProject(providerId)) {
             throw new ForbiddenException("You cannot delete a Provider which belongs to a Project.");
         }
-
-        groupManagementSelection.from().choose().deleteProviderGroup(provider.getId());
 
         return providerRepository.deleteEntityById(providerId);
     }
@@ -313,10 +291,6 @@ public class ProviderService {
 
         var provider = optional.get();
 
-        var validator = getAccessProviderValidator(new String[]{"admin", "viewer"});
-
-        validator.isValid(new String[]{projectId, provider.getId()}, null);
-
         return providerReport(projectId, provider.getId(), start, end);
     }
 
@@ -330,52 +304,20 @@ public class ProviderService {
 
         var provider = optional.get();
 
-        var validator = getAccessProviderValidator(new String[]{"admin", "viewer"});
-
-        validator.isValid(new String[]{projectId, provider.getId()}, null);
-
         var projection = metricRepository.findByExternalId(projectId + HierarchicalRelation.PATH_SEPARATOR + provider.getId(), page, size, start, end, metricDefinitionId);
 
         return new PageResource<>(projection, projection.list(), uriInfo);
     }
 
-    private static AccessProviderValidator getAccessProviderValidator(String[] roles) {
-        var accessProvider = new AccessProvider() {
-
-            @Override
-            public Class<? extends Annotation> annotationType() {
-                return AccessProvider.class;
-            }
-
-            @Override
-            public String message() {
-                return "The authenticated client is not permitted to perform the requested operation.";
-            }
-
-            @Override
-            public Class<?>[] groups() {
-                return new Class[0];
-            }
-
-            @Override
-            public Class<? extends Payload>[] payload() {
-                return new Class[0];
-            }
-
-            @Override
-            public String[] roles() {
-                return roles;
-            }
-        };
-
-        var validator = new AccessProviderValidator();
-        validator.initialize(accessProvider);
-        return validator;
-    }
 
     public Optional<Provider> fetchByExternalId(String externalId) {
 
         return providerRepository.findByExternalId(externalId);
+    }
+
+    public Optional<Provider> fetchById(String id) {
+
+        return providerRepository.findByIdOptional(id);
     }
 
     public GenericProviderReport providerReport(String providerId, String start, String end) {

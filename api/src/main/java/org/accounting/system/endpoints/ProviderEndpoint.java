@@ -12,7 +12,6 @@ import jakarta.ws.rs.BadRequestException;
 import jakarta.ws.rs.Consumes;
 import jakarta.ws.rs.DELETE;
 import jakarta.ws.rs.DefaultValue;
-import jakarta.ws.rs.ForbiddenException;
 import jakarta.ws.rs.GET;
 import jakarta.ws.rs.NotFoundException;
 import jakarta.ws.rs.PATCH;
@@ -35,10 +34,8 @@ import org.accounting.system.dtos.provider.ProviderResponseDto;
 import org.accounting.system.dtos.provider.UpdateProviderRequestDto;
 import org.accounting.system.entities.projections.GenericProviderReport;
 import org.accounting.system.entities.projections.ProviderProjectionWithProjectInfo;
-import org.accounting.system.interceptors.annotations.AccessResource;
 import org.accounting.system.repositories.provider.ProviderRepository;
 import org.accounting.system.services.ProviderService;
-import org.accounting.system.services.groupmanagement.EntitlementServiceFactory;
 import org.accounting.system.util.AccountingUriInfo;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.eclipse.microprofile.openapi.annotations.Operation;
@@ -54,6 +51,7 @@ import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
 import org.eclipse.microprofile.openapi.annotations.security.SecurityRequirement;
 import org.eclipse.microprofile.openapi.annotations.security.SecurityScheme;
 import org.eclipse.microprofile.openapi.annotations.tags.Tag;
+import org.grnet.endpoint.scanner.runtime.SecuredEndpoint;
 
 import java.text.ParseException;
 import java.time.LocalDate;
@@ -80,9 +78,6 @@ public class ProviderEndpoint {
 
     @Inject
     ProviderService providerService;
-
-    @Inject
-    EntitlementServiceFactory entitlementServiceFactory;
 
     @Inject
     RequestUserContext requestInformation;
@@ -133,7 +128,7 @@ public class ProviderEndpoint {
     @SecurityRequirement(name = "Authentication")
     @GET
     @Produces(value = MediaType.APPLICATION_JSON)
-    @AccessResource(roles = {"admin", "viewer"})
+    @SecuredEndpoint
     public Response get(@Parameter(name = "page", in = QUERY,
             description = "Indicates the page number. Page number must be >= 1.") @DefaultValue("1") @Min(value = 1, message = "Page number must be >= 1.") @QueryParam("page") int page,
                         @Parameter(name = "size", in = QUERY,
@@ -193,7 +188,7 @@ public class ProviderEndpoint {
     @POST
     @Produces(value = MediaType.APPLICATION_JSON)
     @Consumes(value = MediaType.APPLICATION_JSON)
-    @AccessResource(roles = {"admin"})
+    @SecuredEndpoint
     public Response save(@Valid @NotNull(message = "The request body is empty.") ProviderRequestDto providerRequestDto, @Context UriInfo uriInfo) {
 
         var serverInfo = new AccountingUriInfo(serverUrl.concat(basePath).concat(uriInfo.getPath()));
@@ -251,7 +246,7 @@ public class ProviderEndpoint {
     @DELETE()
     @Path("/{id}")
     @Produces(value = MediaType.APPLICATION_JSON)
-    @AccessResource(roles = {"admin"})
+    @SecuredEndpoint
     public Response delete(@Parameter(
             description = "The Provider to be deleted.",
             required = true,
@@ -333,7 +328,7 @@ public class ProviderEndpoint {
     @Path("/{id}")
     @Produces(value = MediaType.APPLICATION_JSON)
     @Consumes(value = MediaType.APPLICATION_JSON)
-    @AccessResource(roles = {"admin"})
+    @SecuredEndpoint
     public Response update(
             @Parameter(
                     description = "The Provider to be updated.",
@@ -385,7 +380,7 @@ public class ProviderEndpoint {
     @GET
     @Path("/{id}")
     @Produces(value = MediaType.APPLICATION_JSON)
-    @AccessResource(roles = {"admin", "viewer"})
+    @SecuredEndpoint
     public Response get(
             @Parameter(
                     description = "The Provider to be retrieved.",
@@ -437,7 +432,7 @@ public class ProviderEndpoint {
     @GET
     @Path("/external")
     @Produces(value = MediaType.APPLICATION_JSON)
-    @AccessResource(roles = {"admin", "viewer"})
+    @SecuredEndpoint
     public Response getByExternalId(
             @Parameter(name = "externalId", in = QUERY, required = true, example = "sites", allowReserved = true,
                     description = "The external provider id.", schema = @Schema(type = SchemaType.STRING)) @QueryParam("externalId") @NotEmpty(message = "externalId may not be empty.") String externalId) {
@@ -480,7 +475,7 @@ public class ProviderEndpoint {
     @Path("/search")
     @Produces(value = MediaType.APPLICATION_JSON)
     @Consumes(value = MediaType.APPLICATION_JSON)
-    @AccessResource(roles = {"admin", "viewer"})
+    @SecuredEndpoint
     public Response search(
             @Valid @NotNull(message = "The request body is empty.") @RequestBody(content = @Content(
                     schema = @Schema(implementation = String.class),
@@ -536,7 +531,7 @@ public class ProviderEndpoint {
     @Path("/all")
     @Produces(value = MediaType.APPLICATION_JSON)
     @Consumes(value = MediaType.APPLICATION_JSON)
-    @AccessResource(roles = {"admin", "viewer"})
+    @SecuredEndpoint
     public Response getProvidersAssigned(
 
             @Parameter(name = "page", in = QUERY,
@@ -590,6 +585,7 @@ public class ProviderEndpoint {
     @GET
     @Path("/{provider_id}/report")
     @Produces(value = MediaType.APPLICATION_JSON)
+    @SecuredEndpoint
     public Response providerReport(
             @Parameter(
                     description = "Τhe Provider id.",
@@ -622,11 +618,6 @@ public class ProviderEndpoint {
         if (LocalDate.parse(start).isAfter(LocalDate.parse(end))) {
 
             throw new BadRequestException("Start date must be before or equal to end date.");
-        }
-
-        if(!entitlementServiceFactory.from().hasAccess(requestInformation.getParent(),"admin", List.of("roles", "provider", providerId))){
-
-            throw new ForbiddenException("You have no access to execute this operation.");
         }
 
         var response = providerService.providerReport(providerId, start, end);
@@ -672,6 +663,7 @@ public class ProviderEndpoint {
     @GET
     @Path("/report/external")
     @Produces(value = MediaType.APPLICATION_JSON)
+    @SecuredEndpoint
     public Response providerReportByExternalId(
             @Parameter(name = "externalId", in = QUERY, required = true, example = "sites", allowReserved = true,
                     description = "The external provider id.", schema = @Schema(type = SchemaType.STRING)) @QueryParam("externalId") @NotEmpty(message = "externalId may not be empty.") String externalId,
@@ -708,11 +700,6 @@ public class ProviderEndpoint {
         }
 
         var provider = optional.get();
-
-        if(!entitlementServiceFactory.from().hasAccess(requestInformation.getParent(),"admin", List.of("roles", "provider", provider.getId()))){
-
-            throw new ForbiddenException("You have no access to execute this operation.");
-        }
 
         var response = providerService.providerReport(provider.getId(), start, end);
 

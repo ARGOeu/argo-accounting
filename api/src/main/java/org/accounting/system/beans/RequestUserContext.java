@@ -12,11 +12,12 @@ import org.accounting.system.repositories.OidcTenantConfigRepository;
 import org.accounting.system.repositories.SettingRepository;
 import org.apache.commons.lang3.StringUtils;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
+import org.grnet.endpoint.scanner.runtime.entitlements.UserContextInterface;
 
 import java.util.Optional;
 
 @RequestScoped
-public class RequestUserContext {
+public class RequestUserContext implements UserContextInterface {
 
 
     @ConfigProperty(name = "person.key.to.retrieve.id.from.access.token")
@@ -27,10 +28,10 @@ public class RequestUserContext {
     @Getter
     String serviceKey;
 
-    @ConfigProperty(name = "api.group.management.namespace")
+    @ConfigProperty(name = "api.auth.entitlements.namespace")
     String namespace;
 
-    @ConfigProperty(name = "api.group.management.parent")
+    @ConfigProperty(name = "api.auth.entitlements.parent-group")
     String parent;
 
     @Inject

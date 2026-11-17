@@ -16,7 +16,18 @@
   <properties>
     <credit.management.classifier></credit.management.classifier>
   </properties>
-
+  <repositories>
+    <repository>
+      <id>github</id>
+      <url>https://maven.pkg.github.com/ARGOeu/quarkus-auth</url>
+      <releases>
+        <enabled>true</enabled>
+      </releases>
+      <snapshots>
+        <enabled>true</enabled>
+      </snapshots>
+    </repository>
+  </repositories>
   <dependencies>
     <dependency>
       <groupId>io.quarkus</groupId>
@@ -168,8 +179,12 @@
       <artifactId>commons-codec</artifactId>
       <version>1.18.0</version>
     </dependency>
+    <dependency>
+      <groupId>org.grnet</groupId>
+      <artifactId>quarkus-auth</artifactId>
+      <version>1.0.1-SNAPSHOT</version>
+    </dependency>
   </dependencies>
-
   <build>
     <finalName>${project.artifactId}-${project.version}${credit.management.classifier}</finalName>
     <resources>

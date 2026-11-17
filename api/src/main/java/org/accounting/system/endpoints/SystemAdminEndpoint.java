@@ -41,7 +41,6 @@ import org.accounting.system.dtos.tenant.OidcTenantConfigResponse;
 import org.accounting.system.dtos.tenant.UpdateOidcTenantConfig;
 import org.accounting.system.entities.HierarchicalRelation;
 import org.accounting.system.entities.projections.normal.ProjectProjection;
-import org.accounting.system.interceptors.annotations.AccessResource;
 import org.accounting.system.repositories.OidcTenantConfigRepository;
 import org.accounting.system.repositories.ResourceRepository;
 import org.accounting.system.repositories.groupmanagement.ActorRepository;
@@ -65,6 +64,7 @@ import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
 import org.eclipse.microprofile.openapi.annotations.security.SecurityRequirement;
 import org.eclipse.microprofile.openapi.annotations.security.SecurityScheme;
 import org.eclipse.microprofile.openapi.annotations.tags.Tag;
+import org.grnet.endpoint.scanner.runtime.SecuredEndpoint;
 
 import java.text.SimpleDateFormat;
 import java.util.List;
@@ -147,7 +147,7 @@ public class SystemAdminEndpoint {
     @Path("/register-projects")
     @Produces(value = MediaType.APPLICATION_JSON)
     @Consumes(value = MediaType.APPLICATION_JSON)
-    @AccessResource
+    @SecuredEndpoint
     public Response assignProjects(@Valid @NotNull(message = "The request body is empty." ) ProjectRegistrationRequest request) {
 
         var response = systemAdminService.registerProjectsToAccountingService(request.projects, requestUserContext.getId());
@@ -200,7 +200,7 @@ public class SystemAdminEndpoint {
     @Path("/projects")
     @Produces(value = MediaType.APPLICATION_JSON)
     @Consumes(value = MediaType.APPLICATION_JSON)
-    @AccessResource
+    @SecuredEndpoint
     public Response createProject(@Valid @NotNull(message = "The request body is empty." ) ProjectRequest request, @Context UriInfo uriInfo) {
 
         if(request.id.contains(HierarchicalRelation.PATH_SEPARATOR)){
@@ -253,7 +253,7 @@ public class SystemAdminEndpoint {
     @DELETE
     @Path("/projects/{id}")
     @Produces(value = MediaType.APPLICATION_JSON)
-    @AccessResource
+    @SecuredEndpoint
     public Response deleteProject(@Parameter(
             description = "The Project to be deleted.",
             required = true,
@@ -316,7 +316,7 @@ public class SystemAdminEndpoint {
     @Path("/resources")
     @Produces(value = MediaType.APPLICATION_JSON)
     @Consumes(value = MediaType.APPLICATION_JSON)
-    @AccessResource
+    @SecuredEndpoint
     public Response createResource(@Valid @NotNull(message = "The request body is empty." ) ResourceRequest request, @Context UriInfo uriInfo) {
 
         var serverInfo = new AccountingUriInfo(serverUrl.concat(basePath).concat(uriInfo.getPath()));
@@ -364,7 +364,7 @@ public class SystemAdminEndpoint {
     @DELETE
     @Path("/resources/{id}")
     @Produces(value = MediaType.APPLICATION_JSON)
-    @AccessResource
+    @SecuredEndpoint
     public Response deleteResource(@Parameter(
             description = "The Resource to be deleted.",
             required = true,
@@ -434,7 +434,7 @@ public class SystemAdminEndpoint {
     @Path("/projects/{id}")
     @Produces(value = MediaType.APPLICATION_JSON)
     @Consumes(value = MediaType.APPLICATION_JSON)
-    @AccessResource
+    @SecuredEndpoint
     public Response update(
             @Parameter(
                     description = "The Project to be updated.",
@@ -480,7 +480,7 @@ public class SystemAdminEndpoint {
     @GET
     @Path("/version")
     @Produces(value = MediaType.APPLICATION_JSON)
-    @AccessResource
+    @SecuredEndpoint
     public Response version() {
 
         var versionDto = new VersionDto();
@@ -527,7 +527,7 @@ public class SystemAdminEndpoint {
     @GET
     @Path("/metrics")
     @Produces(value = MediaType.APPLICATION_JSON)
-    @AccessResource
+    @SecuredEndpoint
     public Response getDocuments(@Parameter(description = "Start date in YYYY-MM-DD format.", required = true, example = "2024-03-01") @QueryParam("startDate") String start,
                                  @Parameter(description = "End date in YYYY-MM-DD format.", required = true, example = "2024-03-10") @QueryParam("endDate") String end){
 
@@ -603,7 +603,7 @@ public class SystemAdminEndpoint {
     @Path("/projects")
     @Produces(value = MediaType.APPLICATION_JSON)
     @Consumes(value = MediaType.APPLICATION_JSON)
-    @AccessResource
+    @SecuredEndpoint
     public Response getAll(
             @Parameter(name = "page", in = QUERY,
                     description = "Indicates the page number. Page number must be >= 1.") @DefaultValue("1") @Min(value = 1, message = "Page number must be >= 1.") @QueryParam("page") int page,
@@ -664,7 +664,7 @@ public class SystemAdminEndpoint {
     @Path("/oidc-tenants")
     @Produces(value = MediaType.APPLICATION_JSON)
     @Consumes(value = MediaType.APPLICATION_JSON)
-    @AccessResource
+    @SecuredEndpoint
     public Response createOidcTenantConfig(@Valid @NotNull(message = "The request body is empty." ) OidcTenantConfigRequest request, @Context UriInfo uriInfo) {
 
         var serverInfo = new AccountingUriInfo(serverUrl.concat(basePath).concat(uriInfo.getPath()));
@@ -707,7 +707,7 @@ public class SystemAdminEndpoint {
     @GET
     @Path("/oidc-tenants")
     @Produces(value = MediaType.APPLICATION_JSON)
-    @AccessResource
+    @SecuredEndpoint
     public Response getOidcTenantConfig(@Parameter(name = "page", in = QUERY,
             description = "Indicates the page number. Page number must be >= 1.") @DefaultValue("1") @Min(value = 1, message = "Page number must be >= 1.") @QueryParam("page") int page,
                                @Parameter(name = "size", in = QUERY,
@@ -758,7 +758,7 @@ public class SystemAdminEndpoint {
     @GET
     @Path("/oidc-tenants/{id}")
     @Produces(value = MediaType.APPLICATION_JSON)
-    @AccessResource
+    @SecuredEndpoint
     public Response get(
             @Parameter(
                     description = "The OIDC tenant configuration to be retrieved.",
@@ -810,7 +810,7 @@ public class SystemAdminEndpoint {
     @DELETE
     @Path("/oidc-tenants/{id}")
     @Produces(value = MediaType.APPLICATION_JSON)
-    @AccessResource
+    @SecuredEndpoint
     public Response deleteOidcTenantConfig(@Parameter(
             description = "The OIDC tenant configuration to be deleted.",
             required = true,
@@ -886,7 +886,7 @@ public class SystemAdminEndpoint {
     @Path("/oidc-tenants/{id}")
     @Produces(value = MediaType.APPLICATION_JSON)
     @Consumes(value = MediaType.APPLICATION_JSON)
-    @AccessResource
+    @SecuredEndpoint
     public Response updateOidcTenantConfig(
             @Parameter(
                     description = "The OIDC tenant configuration to be updated.",
@@ -934,7 +934,7 @@ public class SystemAdminEndpoint {
     @Path("/actors")
     @Produces(value = MediaType.APPLICATION_JSON)
     @Consumes(value = MediaType.APPLICATION_JSON)
-    @AccessResource
+    @SecuredEndpoint
     public Response getAllActors(
 
             @Parameter(name = "page", in = QUERY,
@@ -983,7 +983,7 @@ public class SystemAdminEndpoint {
     @GET
     @Path("/actors/entitlements")
     @Produces(value = MediaType.APPLICATION_JSON)
-    @AccessResource
+    @SecuredEndpoint
     public Response getAllActorsEntitlements(
 
             @Parameter(name = "page", in = QUERY,
@@ -1032,7 +1032,7 @@ public class SystemAdminEndpoint {
     @GET
     @Path("/actors/{actor_id}/entitlements")
     @Produces(value = MediaType.APPLICATION_JSON)
-    @AccessResource
+    @SecuredEndpoint
     public Response getAllActorEntitlements(
             @Parameter(
                     description = "The actor id.",
@@ -1086,7 +1086,7 @@ public class SystemAdminEndpoint {
     @GET
     @Path("/entitlements")
     @Produces(value = MediaType.APPLICATION_JSON)
-    @AccessResource
+    @SecuredEndpoint
     public Response getAllEntitlements(
 
             @Parameter(name = "page", in = QUERY,
@@ -1154,7 +1154,7 @@ public class SystemAdminEndpoint {
     @Path("/entitlements")
     @Produces(value = MediaType.APPLICATION_JSON)
     @Consumes(value = MediaType.APPLICATION_JSON)
-    @AccessResource
+    @SecuredEndpoint
     public Response createEntitlement(@Valid @NotNull(message = "The request body is empty." ) EntitlementRequest request, @Context UriInfo uriInfo) {
 
         var serverInfo = new AccountingUriInfo(serverUrl.concat(basePath).concat(uriInfo.getPath()));
@@ -1202,7 +1202,7 @@ public class SystemAdminEndpoint {
     @GET
     @Path("/entitlements/{id}")
     @Produces(value = MediaType.APPLICATION_JSON)
-    @AccessResource
+    @SecuredEndpoint
     public Response getEntitlement(
             @Parameter(
                     description = "The entitlement to be retrieved.",
@@ -1274,7 +1274,7 @@ public class SystemAdminEndpoint {
     @Path("/entitlements/{id}")
     @Produces(value = MediaType.APPLICATION_JSON)
     @Consumes(value = MediaType.APPLICATION_JSON)
-    @AccessResource
+    @SecuredEndpoint
     public Response updateEntitlement(
             @Parameter(
                     description = "The entitlement to be updated.",
@@ -1333,7 +1333,7 @@ public class SystemAdminEndpoint {
     @DELETE
     @Path("/entitlements/{id}")
     @Produces(value = MediaType.APPLICATION_JSON)
-    @AccessResource
+    @SecuredEndpoint
     public Response deleteEntitlement(
             @Parameter(
                     description = "The entitlement to be deleted.",
@@ -1395,7 +1395,7 @@ public class SystemAdminEndpoint {
     @POST
     @Path("/entitlements/{id}/assign/{actor_id}")
     @Produces(value = MediaType.APPLICATION_JSON)
-    @AccessResource
+    @SecuredEndpoint
     public Response assignEntitlement(
             @Parameter(
                     description = "The entitlement to be assigned.",
@@ -1464,7 +1464,7 @@ public class SystemAdminEndpoint {
     @POST
     @Path("/entitlements/{id}/dissociate/{actor_id}")
     @Produces(value = MediaType.APPLICATION_JSON)
-    @AccessResource
+    @SecuredEndpoint
     public Response dissociateEntitlement(
             @Parameter(
                     description = "The entitlement to be dissociated.",

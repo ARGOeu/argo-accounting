@@ -23,7 +23,6 @@ import org.accounting.system.dtos.SettingMetadata;
 import org.accounting.system.dtos.UpdateSetting;
 import org.accounting.system.dtos.pagination.PageResource;
 import org.accounting.system.enums.APISetting;
-import org.accounting.system.interceptors.annotations.AccessResource;
 import org.accounting.system.services.SettingService;
 import org.accounting.system.util.AccountingUriInfo;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
@@ -38,6 +37,7 @@ import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
 import org.eclipse.microprofile.openapi.annotations.security.SecurityRequirement;
 import org.eclipse.microprofile.openapi.annotations.security.SecurityScheme;
 import org.eclipse.microprofile.openapi.annotations.tags.Tag;
+import org.grnet.endpoint.scanner.runtime.SecuredEndpoint;
 
 import java.util.List;
 
@@ -93,8 +93,8 @@ public class SystemAdminSettingsEndpoint {
     @SecurityRequirement(name = "Authentication")
     @GET
     @Path("/metadata")
-    @AccessResource
     @Produces(value = MediaType.APPLICATION_JSON)
+    @SecuredEndpoint
     public Response getMetadata(
             @Parameter(name = "page", in = QUERY,
                     description = "Indicates the page number. Page number must be >= 1.") @DefaultValue("1") @Min(value = 1, message = "Page number must be >= 1.") @QueryParam("page") int page,
@@ -150,7 +150,7 @@ public class SystemAdminSettingsEndpoint {
     @Path("/{key}")
     @Produces(value = MediaType.APPLICATION_JSON)
     @Consumes(value = MediaType.APPLICATION_JSON)
-    @AccessResource
+    @SecuredEndpoint
     public Response updateSetting(
             @Parameter(
                     description = "The key of the setting to update. Must match a valid APISetting enum constant.",

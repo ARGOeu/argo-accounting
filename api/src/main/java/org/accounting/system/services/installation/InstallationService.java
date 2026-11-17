@@ -9,7 +9,6 @@ import jakarta.ws.rs.ForbiddenException;
 import jakarta.ws.rs.NotFoundException;
 import jakarta.ws.rs.ServerErrorException;
 import jakarta.ws.rs.core.UriInfo;
-import org.accounting.system.constraints.AccessInstallation;
 import org.accounting.system.dtos.installation.InstallationRequestDto;
 import org.accounting.system.dtos.installation.InstallationResponseDto;
 import org.accounting.system.dtos.installation.UpdateInstallationRequestDto;
@@ -35,9 +34,7 @@ import org.accounting.system.repositories.metric.MetricRepository;
 import org.accounting.system.repositories.provider.ProviderRepository;
 import org.accounting.system.services.HierarchicalRelationService;
 import org.accounting.system.services.ResourceService;
-import org.accounting.system.services.groupmanagement.GroupManagementSelection;
 import org.accounting.system.util.QueryParser;
-import org.accounting.system.validators.AccessInstallationValidator;
 import org.apache.commons.lang3.StringUtils;
 import org.jboss.logging.Logger;
 
@@ -72,9 +69,6 @@ public class InstallationService {
     ResourceService resourceService;
 
     @Inject
-    GroupManagementSelection groupManagementSelection;
-
-    @Inject
     MetricRepository metricRepository;
 
     @Inject
@@ -107,16 +101,6 @@ public class InstallationService {
 
         var installation = installationRepository.save(request, creatorId);
 
-        try{
-
-            groupManagementSelection.from().choose().createInstallationGroup(request.project, request.organisation, installation.getId());
-        } catch (Exception e){
-
-            LOG.error("Group creation failed with error : " + e.getMessage());
-            delete(installation.getId());
-            throw new ServerErrorException("Group creation failed with error : " + e.getMessage(), 500);
-        }
-
         var installationProjection = fetchInstallationProjection(installation.getProject(), installation.getOrganisation(), installation.getId());
 
         return InstallationMapper.INSTANCE.installationProjectionToResponse(installationProjection);
@@ -130,18 +114,16 @@ public class InstallationService {
      */
     public void delete(String installationId) {
 
+        var installation = fetchInstallationProjection(installationId);
+
         if(hierarchicalRelationRepository.hasRelationMetrics(installationId)){
 
             throw new ForbiddenException("Deleting an Installation is not allowed if there are Metrics assigned to it.");
         }
 
-        var installation = fetchInstallationProjection(installationId);
-
         installationRepository.deleteInstallation(installation.getProject(), installation.getOrganisation(), installation.getId());
 
         hierarchicalRelationRepository.delete("externalId", installationId);
-
-        groupManagementSelection.from().choose().deleteInstallationGroup(installation.getProject(), installation.getOrganisation(), installation.getId());
 
         capacityRepository.deleteByInstallationId(installationId);
     }
@@ -170,6 +152,10 @@ public class InstallationService {
 
         var hierarchicalRelation = hierarchicalRelationRepository.find("externalId", id).firstResult();
 
+        if(hierarchicalRelation == null){
+            throw new NotFoundException("There is no Installation with the following id: "+id);
+        }
+
         var ids = hierarchicalRelation.id.split(Pattern.quote(HierarchicalRelation.PATH_SEPARATOR));
 
         return fetchInstallationProjection(ids[0], ids[1], ids[2]);
@@ -185,6 +171,10 @@ public class InstallationService {
     public Installation fetchInstallation(String id) {
 
         var hierarchicalRelation = hierarchicalRelationRepository.find("externalId", id).firstResult();
+
+        if(hierarchicalRelation == null){
+            throw new NotFoundException("There is no Installation with the following id: "+id);
+        }
 
         var ids = hierarchicalRelation.id.split(Pattern.quote(HierarchicalRelation.PATH_SEPARATOR));
 
@@ -207,10 +197,6 @@ public class InstallationService {
 
         var ids = optional.get().id.split(Pattern.quote(HierarchicalRelation.PATH_SEPARATOR));
 
-        var validator = getAccessInstallationValidator(new String[] {"admin", "viewer"});
-
-        validator.isValid(ids[2], null);
-
         var installation = fetchInstallationProjection(ids[0], ids[1], ids[2]);
 
         return InstallationMapper.INSTANCE.installationProjectionToResponse(installation);
@@ -231,11 +217,6 @@ public class InstallationService {
             throw new ForbiddenException("Deleting an Installation is not allowed if there are Metrics assigned to it.");
         }
 
-        var validator = getAccessInstallationValidator(new String[] {"admin"});
-
-        validator.isValid(ids[2], null);
-
-
         var installation = fetchInstallationProjection(ids[0], ids[1], ids[2]);
 
         installationRepository.deleteInstallation(installation.getProject(), installation.getOrganisation(), installation.getId());
@@ -252,10 +233,6 @@ public class InstallationService {
         }
 
         var ids = optional.get().id.split(Pattern.quote(HierarchicalRelation.PATH_SEPARATOR));
-
-        var validator = getAccessInstallationValidator(new String[] {"admin"});
-
-        validator.isValid(ids[2], null);
 
         if(hierarchicalRelationRepository.hasRelationMetrics(ids[2])){
 
@@ -297,10 +274,6 @@ public class InstallationService {
 
         var ids = optional.get().id.split(Pattern.quote(HierarchicalRelation.PATH_SEPARATOR));
 
-        var validator = getAccessInstallationValidator(new String[] {"admin", "viewer"});
-
-        validator.isValid(ids[2], null);
-
         return installationReport(ids[2], start, end);
     }
 
@@ -313,10 +286,6 @@ public class InstallationService {
         }
 
         var ids = optional.get().id.split(Pattern.quote(HierarchicalRelation.PATH_SEPARATOR));
-
-        var validator = getAccessInstallationValidator(new String[] {"admin"});
-
-        validator.isValid(ids[2], null);
 
         var metric = hierarchicalRelationService.assignMetric(ids[2], request);
 
@@ -333,47 +302,9 @@ public class InstallationService {
 
         var ids = optional.get().id.split(Pattern.quote(HierarchicalRelation.PATH_SEPARATOR));
 
-        var validator = getAccessInstallationValidator(new String[] {"admin", "viewer"});
-
-        validator.isValid(ids[2], null);
-
         var projection = metricRepository.findByExternalId(ids[0] + HierarchicalRelation.PATH_SEPARATOR + ids[1] + HierarchicalRelation.PATH_SEPARATOR + ids[2], page, size, start, end, metricDefinitionId);
 
         return new PageResource<>(projection, projection.list(), uriInfo);
-    }
-
-    private static AccessInstallationValidator getAccessInstallationValidator(String[] roles) {
-        var accessInstallation = new AccessInstallation(){
-
-            @Override
-            public Class<? extends Annotation> annotationType() {
-                return AccessInstallation.class;
-            }
-
-            @Override
-            public String message() {
-                return "The authenticated client is not permitted to perform the requested operation.";
-            }
-
-            @Override
-            public Class<?>[] groups() {
-                return new Class[0];
-            }
-
-            @Override
-            public Class<? extends Payload>[] payload() {
-                return new Class[0];
-            }
-
-            @Override
-            public String[] roles() {
-                return roles;
-            }
-        };
-
-        var validator = new AccessInstallationValidator();
-        validator.initialize(accessInstallation);
-        return validator;
     }
 
     /**

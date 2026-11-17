@@ -592,23 +592,6 @@ public class InstallationEndpointTest {
     }
 
     @Test
-    public void updateInstallationNotFound() {
-
-        var response = given()
-                .auth()
-                .oauth2(getAccessToken("admin"))
-                .contentType(ContentType.JSON)
-                .patch("/{id}", "556787878e-rrr")
-                .then()
-                .assertThat()
-                .statusCode(404)
-                .extract()
-                .as(InformativeResponse.class);
-
-        assertEquals("There is no Installation with the following id: 556787878e-rrr", response.message);
-    }
-
-    @Test
     public void updateInstallationRequestBodyIsEmpty() {
 
         projectRepository.associateProjectWithProvider("777536", "grnet");

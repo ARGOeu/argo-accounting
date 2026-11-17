@@ -20,8 +20,6 @@ import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.UriInfo;
-import org.accounting.system.constraints.AccessProject;
-import org.accounting.system.constraints.AccessProvider;
 import org.accounting.system.constraints.CheckDateFormat;
 import org.accounting.system.constraints.NotFoundEntity;
 import org.accounting.system.dtos.InformativeResponse;
@@ -32,7 +30,6 @@ import org.accounting.system.entities.projections.MetricProjection;
 import org.accounting.system.entities.projections.ProjectReport;
 import org.accounting.system.entities.projections.ProviderReport;
 import org.accounting.system.entities.projections.normal.ProjectProjection;
-import org.accounting.system.interceptors.annotations.AccessResource;
 import org.accounting.system.repositories.metricdefinition.MetricDefinitionRepository;
 import org.accounting.system.repositories.provider.ProviderRepository;
 import org.accounting.system.services.MetricService;
@@ -55,6 +52,9 @@ import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
 import org.eclipse.microprofile.openapi.annotations.security.SecurityRequirement;
 import org.eclipse.microprofile.openapi.annotations.security.SecurityScheme;
 import org.eclipse.microprofile.openapi.annotations.tags.Tag;
+import org.grnet.endpoint.scanner.runtime.ParamRef;
+import org.grnet.endpoint.scanner.runtime.ParamType;
+import org.grnet.endpoint.scanner.runtime.SecuredEndpoint;
 
 import java.text.ParseException;
 import java.time.LocalDate;
@@ -129,6 +129,15 @@ public class ProjectEndpoint {
     @Path("/{project_id}/metrics")
     @Timed(name = "checksMetricRetrievalOfProject", description = "A measure of how long it takes to retrieve Metrics under a Project.", unit = MetricUnits.MILLISECONDS)
     @Produces(value = MediaType.APPLICATION_JSON)
+    @SecuredEndpoint(
+            params = {
+                    @ParamRef(
+                            param = "project_id",
+                            type = ParamType.PATH,
+                            referTo = ProjectResource.class
+                    )
+            }
+    )
     public Response getAllMetricsUnderAProject(
             @Parameter(
                     description = "Τhe Project id with which you can request all the Metrics that have been assigned to it.",
@@ -136,8 +145,7 @@ public class ProjectEndpoint {
                     example = "704029",
                     schema = @Schema(type = SchemaType.STRING))
             @PathParam("project_id")
-            @Valid
-            @AccessProject(roles = {"admin", "viewer"}) String id,
+            @Valid String id,
             @Parameter(name = "page", in = QUERY,
                     description = "Indicates the page number. Page number must be >= 1.") @DefaultValue("1") @Min(value = 1, message = "Page number must be >= 1.") @QueryParam("page") int page,
             @Parameter(name = "size", in = QUERY,
@@ -197,6 +205,15 @@ public class ProjectEndpoint {
     @GET
     @Path("/projects/{project_id}/groups/{group_id}/metrics")
     @Produces(value = MediaType.APPLICATION_JSON)
+    @SecuredEndpoint(
+            params = {
+                    @ParamRef(
+                            param = "project_id",
+                            type = ParamType.PATH,
+                            referTo = ProjectResource.class
+                    )
+            }
+    )
     public Response getAllMetricsUnderSpecificProjectRelatedToSpecificGroup(
             @Parameter(
                     description = "The ID of the project",
@@ -204,8 +221,7 @@ public class ProjectEndpoint {
                     example = "704029",
                     schema = @Schema(type = SchemaType.STRING))
             @PathParam("project_id")
-            @Valid
-            @AccessProject(roles = {"admin", "viewer"}) String id,
+            @Valid String id,
             @Parameter(
                     description = "The ID of the group.",
                     required = true,
@@ -268,6 +284,15 @@ public class ProjectEndpoint {
     @GET
     @Path("/projects/{project_id}/groups/{group_id}/report")
     @Produces(value = MediaType.APPLICATION_JSON)
+    @SecuredEndpoint(
+            params = {
+                    @ParamRef(
+                            param = "project_id",
+                            type = ParamType.PATH,
+                            referTo = ProjectResource.class
+                    )
+            }
+    )
     public Response getProjectReportByGroupId(
             @Parameter(
                     description = "The ID of the project",
@@ -275,8 +300,7 @@ public class ProjectEndpoint {
                     example = "704029",
                     schema = @Schema(type = SchemaType.STRING))
             @PathParam("project_id")
-            @Valid
-            @AccessProject(roles = {"admin", "viewer"}) String id,
+            @Valid String id,
             @Parameter(
                     description = "The ID of the group.",
                     required = true,
@@ -347,6 +371,15 @@ public class ProjectEndpoint {
     @GET
     @Path("/projects/{project_id}/users/{user_id}/report")
     @Produces(value = MediaType.APPLICATION_JSON)
+    @SecuredEndpoint(
+            params = {
+                    @ParamRef(
+                            param = "project_id",
+                            type = ParamType.PATH,
+                            referTo = ProjectResource.class
+                    )
+            }
+    )
     public Response getProjectReportByUserId(
             @Parameter(
                     description = "The ID of the project",
@@ -354,8 +387,7 @@ public class ProjectEndpoint {
                     example = "704029",
                     schema = @Schema(type = SchemaType.STRING))
             @PathParam("project_id")
-            @Valid
-            @AccessProject(roles = {"admin", "viewer"}) String id,
+            @Valid String id,
             @Parameter(
                     description = "The ID of the user id.",
                     required = true,
@@ -427,6 +459,15 @@ public class ProjectEndpoint {
     @GET
     @Path("/projects/{project_id}/users/{user_id}/metrics")
     @Produces(value = MediaType.APPLICATION_JSON)
+    @SecuredEndpoint(
+            params = {
+                    @ParamRef(
+                            param = "project_id",
+                            type = ParamType.PATH,
+                            referTo = ProjectResource.class
+                    )
+            }
+    )
     public Response getAllMetricsUnderSpecificProjectRelatedToSpecificUser(
             @Parameter(
                     description = "The ID of the project",
@@ -434,8 +475,7 @@ public class ProjectEndpoint {
                     example = "704029",
                     schema = @Schema(type = SchemaType.STRING))
             @PathParam("project_id")
-            @Valid
-            @AccessProject(roles = {"admin", "viewer"}) String id,
+            @Valid String id,
             @Parameter(
                     description = "The ID of the user.",
                     required = true,
@@ -489,6 +529,15 @@ public class ProjectEndpoint {
     @GET
     @Path("/{project_id}/metric-definitions")
     @Produces(value = MediaType.APPLICATION_JSON)
+    @SecuredEndpoint(
+            params = {
+                    @ParamRef(
+                            param = "project_id",
+                            type = ParamType.PATH,
+                            referTo = ProjectResource.class
+                    )
+            }
+    )
     public Response getAllProjectMetricDefinitions(
             @Parameter(
                     description = "Τhe Project id.",
@@ -496,8 +545,7 @@ public class ProjectEndpoint {
                     example = "704029",
                     schema = @Schema(type = SchemaType.STRING))
             @PathParam("project_id")
-            @Valid
-            @AccessProject(roles = {"admin", "viewer"}) String id,
+            @Valid String id,
             @Parameter(name = "page", in = QUERY,
                     description = "Indicates the page number. Page number must be >= 1.") @DefaultValue("1") @Min(value = 1, message = "Page number must be >= 1.") @QueryParam("page") int page,
             @Parameter(name = "size", in = QUERY,
@@ -552,7 +600,15 @@ public class ProjectEndpoint {
     @Path("/{project_id}/providers/{provider_id}/metrics")
     @Timed(name = "checksMetricRetrievalOfProvider", description = "A measure of how long it takes to retrieve Metrics under a Provider.", unit = MetricUnits.MILLISECONDS)
     @Produces(value = MediaType.APPLICATION_JSON)
-    @AccessProvider(roles = {"admin", "viewer"})
+    @SecuredEndpoint(
+            params = {
+                    @ParamRef(
+                            param = "project_id",
+                            type = ParamType.PATH,
+                            referTo = ProjectResource.class
+                    )
+            }
+    )
     public Response getAllMetricsUnderAProvider(
             @Parameter(
                     description = "Τhe Project id to which the Provider belongs.",
@@ -624,7 +680,15 @@ public class ProjectEndpoint {
     @GET
     @Path("/{project_id}/providers/{provider_id}/report")
     @Produces(value = MediaType.APPLICATION_JSON)
-    @AccessProvider(roles = {"admin", "viewer"})
+    @SecuredEndpoint(
+            params = {
+                    @ParamRef(
+                            param = "project_id",
+                            type = ParamType.PATH,
+                            referTo = ProjectResource.class
+                    )
+            }
+    )
     public Response providerReport(
             @Parameter(
                     description = "Τhe Project id.",
@@ -707,6 +771,15 @@ public class ProjectEndpoint {
     @GET
     @Path("/{project_id}/providers/external/report")
     @Produces(value = MediaType.APPLICATION_JSON)
+    @SecuredEndpoint(
+            params = {
+                    @ParamRef(
+                            param = "project_id",
+                            type = ParamType.PATH,
+                            referTo = ProjectResource.class
+                    )
+            }
+    )
     public Response providerReportByExternalId(
             @Parameter(
                     description = "Τhe Project id.",
@@ -786,6 +859,15 @@ public class ProjectEndpoint {
     @GET
     @Path("/{project_id}/providers/external/metrics")
     @Produces(value = MediaType.APPLICATION_JSON)
+    @SecuredEndpoint(
+            params = {
+                    @ParamRef(
+                            param = "project_id",
+                            type = ParamType.PATH,
+                            referTo = ProjectResource.class
+                    )
+            }
+    )
     public Response getAllMetricsUnderAProviderByExternalId(
             @Parameter(
                     description = "Τhe Project id to which the Provider belongs.",
@@ -843,7 +925,15 @@ public class ProjectEndpoint {
     @GET
     @Path("/{project_id}/providers/{provider_id}/metric-definitions")
     @Produces(value = MediaType.APPLICATION_JSON)
-    @AccessProvider(roles = {"admin", "viewer"})
+    @SecuredEndpoint(
+            params = {
+                    @ParamRef(
+                            param = "project_id",
+                            type = ParamType.PATH,
+                            referTo = ProjectResource.class
+                    )
+            }
+    )
     public Response getAllProviderMetricDefinitions(
             @Parameter(
                     description = "Τhe Project id to which the Provider belongs.",
@@ -922,6 +1012,15 @@ public class ProjectEndpoint {
     @Path("/{id}/associate/provider/{provider_id}")
     @Produces(value = MediaType.APPLICATION_JSON)
     @Consumes(value = MediaType.APPLICATION_JSON)
+    @SecuredEndpoint(
+            params = {
+                    @ParamRef(
+                            param = "id",
+                            type = ParamType.PATH,
+                            referTo = ProjectResource.class
+                    )
+            }
+    )
     public Response associateProjectWithProviders(
             @Parameter(
                     description = "The Project in which the Provider will be associated with.",
@@ -929,8 +1028,7 @@ public class ProjectEndpoint {
                     example = "888743",
                     schema = @Schema(type = SchemaType.STRING))
             @PathParam("id")
-            @Valid
-            @AccessProject(roles = {"admin"}) String id,
+            @Valid String id,
             @Parameter(
             description = "The Provider to be associated.",
             required = true,
@@ -999,14 +1097,22 @@ public class ProjectEndpoint {
     @Path("/{id}/dissociate/provider/{provider_id}")
     @Produces(value = MediaType.APPLICATION_JSON)
     @Consumes(value = MediaType.APPLICATION_JSON)
+    @SecuredEndpoint(
+            params = {
+                    @ParamRef(
+                            param = "id",
+                            type = ParamType.PATH,
+                            referTo = ProjectResource.class
+                    )
+            }
+    )
     public Response dissociateProvidersFromProject(
             @Parameter(
                     description = "The Project from which the Providers will be dissociated.",
                     required = true,
                     example = "447535",
                     schema = @Schema(type = SchemaType.STRING))
-            @PathParam("id") @Valid
-            @AccessProject(roles= {"admin"}) String id,
+            @PathParam("id") @Valid String id,
             @Parameter(
                     description = "The Provider to be associated.",
                     required = true,
@@ -1060,6 +1166,15 @@ public class ProjectEndpoint {
     @Path("/{id}")
     @Produces(value = MediaType.APPLICATION_JSON)
     @SecurityRequirement(name = "Authentication")
+    @SecuredEndpoint(
+            params = {
+                    @ParamRef(
+                            param = "id",
+                            type = ParamType.PATH,
+                            referTo = ProjectResource.class
+                    )
+            }
+    )
     public Response getProjectHierarchicalStructure(
             @Parameter(
                     description = "The Project ID.",
@@ -1067,7 +1182,6 @@ public class ProjectEndpoint {
                     example = "447535",
                     schema = @Schema(type = SchemaType.STRING))
             @Valid
-            @AccessProject(roles = {"admin", "viewer"})
             @PathParam("id") String id) {
 
         var response = projectService.getById(id);
@@ -1108,6 +1222,15 @@ public class ProjectEndpoint {
     @GET
     @Path("/{project_id}/installations")
     @Produces(value = MediaType.APPLICATION_JSON)
+    @SecuredEndpoint(
+            params = {
+                    @ParamRef(
+                            param = "project_id",
+                            type = ParamType.PATH,
+                            referTo = ProjectResource.class
+                    )
+            }
+    )
     public Response getAllProjectInstallations(
             @Parameter(
                     description = "The Project that the Installations belongs to.",
@@ -1115,7 +1238,6 @@ public class ProjectEndpoint {
                     example = "704567",
                     schema = @Schema(type = SchemaType.STRING))
             @Valid
-            @AccessProject(roles = {"admin", "viewer"})
             @PathParam("project_id") String projectId,
             @Parameter(name = "page", in = QUERY,
                     description = "Indicates the page number. Page number must be >= 1.") @DefaultValue("1") @Min(value = 1, message = "Page number must be >= 1.") @QueryParam("page") int page,
@@ -1162,7 +1284,15 @@ public class ProjectEndpoint {
     @GET
     @Path("/{project_id}/providers/{provider_id}/installations")
     @Produces(value = MediaType.APPLICATION_JSON)
-    @AccessProvider(roles = {"admin", "viewer"})
+    @SecuredEndpoint(
+            params = {
+                    @ParamRef(
+                            param = "project_id",
+                            type = ParamType.PATH,
+                            referTo = ProjectResource.class
+                    )
+            }
+    )
     public Response getAllProviderInstallations(
             @Parameter(
                     description = "The Project ID that the Provider belongs to.",
@@ -1235,7 +1365,7 @@ public class ProjectEndpoint {
     @Path("/search")
     @Produces(value = MediaType.APPLICATION_JSON)
     @Consumes(value = MediaType.APPLICATION_JSON)
-    @AccessResource
+    @SecuredEndpoint()
     public Response search(
             @NotEmpty(message = "The request body is empty.") @RequestBody(content = @Content(
                     schema = @Schema(implementation = String.class),
@@ -1384,6 +1514,15 @@ public class ProjectEndpoint {
     @GET
     @Path("/{project_id}/report")
     @Produces(value = MediaType.APPLICATION_JSON)
+    @SecuredEndpoint(
+            params = {
+                    @ParamRef(
+                            param = "project_id",
+                            type = ParamType.PATH,
+                            referTo = ProjectResource.class
+                    )
+            }
+    )
     public Response projectReport(
             @Parameter(
                     description = "Τhe Project id.",
@@ -1391,8 +1530,7 @@ public class ProjectEndpoint {
                     example = "704029",
                     schema = @Schema(type = SchemaType.STRING))
             @PathParam("project_id")
-            @Valid
-            @AccessProject(roles = {"admin", "viewer"}) String projectId,
+            @Valid String projectId,
             @Parameter(
                     name = "start",
                     description = "Start date in yyyy-MM-dd format",
