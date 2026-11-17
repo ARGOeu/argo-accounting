@@ -27,7 +27,6 @@ import org.accounting.system.dtos.metricdefinition.MetricDefinitionRequestDto;
 import org.accounting.system.dtos.metricdefinition.MetricDefinitionResponseDto;
 import org.accounting.system.dtos.metricdefinition.UpdateMetricDefinitionRequestDto;
 import org.accounting.system.dtos.pagination.PageResource;
-import org.accounting.system.interceptors.annotations.AccessResource;
 import org.accounting.system.repositories.metricdefinition.MetricDefinitionRepository;
 import org.accounting.system.services.MetricDefinitionService;
 import org.accounting.system.util.AccountingUriInfo;
@@ -46,6 +45,7 @@ import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
 import org.eclipse.microprofile.openapi.annotations.security.SecurityRequirement;
 import org.eclipse.microprofile.openapi.annotations.security.SecurityScheme;
 import org.eclipse.microprofile.openapi.annotations.tags.Tag;
+import org.grnet.endpoint.scanner.runtime.SecuredEndpoint;
 import org.json.simple.parser.ParseException;
 
 import java.util.List;
@@ -142,7 +142,7 @@ public class MetricDefinitionEndpoint {
     @POST
     @Produces(value = MediaType.APPLICATION_JSON)
     @Consumes(value = MediaType.APPLICATION_JSON)
-    @AccessResource(roles = {"admin"})
+    @SecuredEndpoint
     public Response save(@Valid @NotNull(message = "The request body is empty.") MetricDefinitionRequestDto metricDefinitionRequestDto, @Context UriInfo uriInfo) {
 
         var serverInfo = new AccountingUriInfo(serverUrl.concat(basePath).concat(uriInfo.getPath()));
@@ -185,7 +185,7 @@ public class MetricDefinitionEndpoint {
     @SecurityRequirement(name = "Authentication")
     @GET
     @Produces(value = MediaType.APPLICATION_JSON)
-    @AccessResource(roles = {"admin", "viewer"})
+    @SecuredEndpoint
     public Response getAll(@Parameter(name = "page", in = QUERY,
             description = "Indicates the page number. Page number must be >= 1.") @DefaultValue("1") @Min(value = 1, message = "Page number must be >= 1.") @QueryParam("page") int page,
                            @Parameter(name = "size", in = QUERY,
@@ -236,7 +236,7 @@ public class MetricDefinitionEndpoint {
     @GET
     @Path("/{id}")
     @Produces(value = MediaType.APPLICATION_JSON)
-    @AccessResource(roles = {"admin", "viewer"})
+    @SecuredEndpoint
     public Response get(
             @Parameter(
                     description = "The Metric Definition to be retrieved.",
@@ -309,7 +309,7 @@ public class MetricDefinitionEndpoint {
     @Path("/{id}")
     @Produces(value = MediaType.APPLICATION_JSON)
     @Consumes(value = MediaType.APPLICATION_JSON)
-    @AccessResource(roles = {"admin"})
+    @SecuredEndpoint
     public Response update(
             @Parameter(
                     description = "The Metric Definition to be updated.",
@@ -363,7 +363,7 @@ public class MetricDefinitionEndpoint {
     @DELETE
     @Path("/{id}")
     @Produces(value = MediaType.APPLICATION_JSON)
-    @AccessResource(roles = {"admin"})
+    @SecuredEndpoint
     public Response delete(@Parameter(
             description = "The Metric Definition to be deleted.",
             required = true,
@@ -421,7 +421,7 @@ public class MetricDefinitionEndpoint {
     @Path("/search")
     @Produces(value = MediaType.APPLICATION_JSON)
     @Consumes(value = MediaType.APPLICATION_JSON)
-    @AccessResource(roles = {"admin", "viewer"})
+    @SecuredEndpoint
     public Response search(@Valid @NotNull(message = "The request body is empty.") @DefaultValue("")   @RequestBody(description = "a json object to describe the search criteria",
 
 

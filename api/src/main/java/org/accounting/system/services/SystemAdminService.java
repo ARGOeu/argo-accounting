@@ -31,7 +31,6 @@ import org.accounting.system.repositories.installation.InstallationRepository;
 import org.accounting.system.repositories.metric.MetricRepository;
 import org.accounting.system.repositories.project.ProjectModulator;
 import org.accounting.system.repositories.project.ProjectRepository;
-import org.accounting.system.services.groupmanagement.GroupManagementSelection;
 import org.apache.commons.lang3.StringUtils;
 import org.bson.types.ObjectId;
 import org.eclipse.microprofile.rest.client.inject.RestClient;
@@ -68,9 +67,6 @@ public class SystemAdminService {
 
     @Inject
     OidcTenantConfigRepository oidcTenantConfigRepository;
-
-    @Inject
-    GroupManagementSelection groupManagementSelection;
 
     /**
      * This method is responsible for registering several Projects into Accounting Service.
@@ -137,8 +133,6 @@ public class SystemAdminService {
         metricRepository.deleteByProjectId(id);
         hierarchicalRelationRepository.deleteByProjectId(id);
         projectRepository.deleteById(id);
-
-        groupManagementSelection.from().choose().deleteProjectGroup(id);
     }
 
     public void deleteResource(String id){
@@ -187,16 +181,6 @@ public class SystemAdminService {
         project.setRegisteredOn(LocalDateTime.now());
 
         projectRepository.persist(project);
-
-        try{
-
-            groupManagementSelection.from().choose().createProjectGroup(project.getId());
-        } catch (Exception e){
-
-            LOG.error("Group creation failed with error : " + e.getMessage());
-            deleteProject(project.getId());
-            throw new ServerErrorException("Group creation failed with error : " + e.getMessage(), 500);
-        }
 
         return projectRepository.fetchById(project.getId());
     }

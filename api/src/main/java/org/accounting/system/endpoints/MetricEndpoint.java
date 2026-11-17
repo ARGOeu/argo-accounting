@@ -32,6 +32,7 @@ import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
 import org.eclipse.microprofile.openapi.annotations.security.SecurityRequirement;
 import org.eclipse.microprofile.openapi.annotations.security.SecurityScheme;
 import org.eclipse.microprofile.openapi.annotations.tags.Tag;
+import org.grnet.endpoint.scanner.runtime.SecuredEndpoint;
 
 import java.text.ParseException;
 
@@ -106,6 +107,7 @@ public class MetricEndpoint {
     @Path("/search")
     @Produces(value = MediaType.APPLICATION_JSON)
     @Consumes(value = MediaType.APPLICATION_JSON)
+    @SecuredEndpoint
     public Response search(@Valid @NotNull(message = "The request body is empty.") @RequestBody(content = @Content(
             schema = @Schema(implementation = String.class),
             mediaType = MediaType.APPLICATION_JSON,

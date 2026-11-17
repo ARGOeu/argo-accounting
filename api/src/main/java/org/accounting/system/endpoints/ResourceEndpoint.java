@@ -30,6 +30,7 @@ import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
 import org.eclipse.microprofile.openapi.annotations.security.SecurityRequirement;
 import org.eclipse.microprofile.openapi.annotations.security.SecurityScheme;
 import org.eclipse.microprofile.openapi.annotations.tags.Tag;
+import org.grnet.endpoint.scanner.runtime.SecuredEndpoint;
 
 import java.util.List;
 
@@ -91,6 +92,7 @@ public class ResourceEndpoint {
     @SecurityRequirement(name = "Authentication")
     @GET
     @Produces(value = MediaType.APPLICATION_JSON)
+    @SecuredEndpoint
     public Response getAllEoscResources(@Parameter(name = "page", in = QUERY,
             description = "Indicates the page number. Page number must be >= 1.") @DefaultValue("1") @Min(value = 1, message = "Page number must be >= 1.") @QueryParam("page") int page,
                                         @Parameter(name = "size", in = QUERY,

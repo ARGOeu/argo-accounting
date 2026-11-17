@@ -1,6 +1,9 @@
 package org.accounting.system.dtos.installation;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import jakarta.validation.constraints.NotEmpty;
+import org.accounting.system.constraints.NotFoundEntity;
+import org.accounting.system.repositories.metricdefinition.MetricDefinitionRepository;
 import org.eclipse.microprofile.openapi.annotations.enums.SchemaType;
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
 
@@ -15,6 +18,7 @@ public class InstallationRequestDto {
             required = true
     )
     @JsonProperty("project")
+    @NotEmpty(message = "project may not be empty.")
     public String project;
 
     @Schema(
@@ -25,6 +29,7 @@ public class InstallationRequestDto {
             required = true
     )
     @JsonProperty("organisation")
+    @NotEmpty(message = "organisation may not be empty.")
     public String organisation;
 
     @Schema(
@@ -53,6 +58,7 @@ public class InstallationRequestDto {
             required = true
     )
     @JsonProperty("installation")
+    @NotEmpty(message = "installation may not be empty.")
     public String installation;
 
     @Schema(
@@ -73,5 +79,6 @@ public class InstallationRequestDto {
             example = "507f1f77bcf86cd799439011"
     )
     @JsonProperty("unit_of_access")
+    @NotFoundEntity(repository = MetricDefinitionRepository.class, message = "There is no Metric Definition with the following id:")
     public String unitOfAccess;
 }
