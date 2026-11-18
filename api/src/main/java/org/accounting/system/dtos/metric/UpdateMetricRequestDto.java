@@ -67,4 +67,13 @@ public class UpdateMetricRequestDto {
     )
     @JsonProperty("user_id")
     public String userId;
+
+    @Schema(
+            type = SchemaType.STRING,
+            implementation = String.class,
+            description = "Order ID associated with a metric.",
+            example = "order id"
+    )
+    @JsonProperty("order_id")
+    public String orderId;
 }

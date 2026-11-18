@@ -56,4 +56,8 @@ public class Metric extends Entity {
 
     @BsonProperty("group_id")
     private String groupId;
+
+    @BsonProperty("order_id")
+    private String orderId;
+
 }
