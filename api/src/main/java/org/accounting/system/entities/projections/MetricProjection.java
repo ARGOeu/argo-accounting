@@ -129,6 +129,18 @@ public class MetricProjection {
     )
     private String userId;
 
+    @JsonProperty("order_id")
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    @BsonProperty("order_id")
+    @Schema(
+          type = SchemaType.STRING,
+          implementation = String.class,
+          description = "Order ID associated with a metric.",
+          example = "Order ID"
+    )
+    private String orderId;
+
+
     @JsonProperty("metric_definition")
     @Schema(
             type = SchemaType.OBJECT,
@@ -230,19 +242,27 @@ public class MetricProjection {
         this.resource = resource;
     }
 
- public String getGroupId() {
+    public String getGroupId() {
   return groupId;
  }
 
- public void setGroupId(String groupId) {
+    public void setGroupId(String groupId) {
   this.groupId = groupId;
  }
 
- public String getUserId() {
-  return userId;
- }
+    public String getUserId() {
+       return userId;
+    }
 
- public void setUserId(String userId) {
+    public void setUserId(String userId) {
   this.userId = userId;
  }
+
+    public String getOrderId() {
+        return orderId;
+    }
+
+    public void setOrderId(String orderId) {
+        this.orderId = orderId;
+    }
 }

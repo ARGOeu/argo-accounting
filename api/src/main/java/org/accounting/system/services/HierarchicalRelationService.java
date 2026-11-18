@@ -62,6 +62,7 @@ public class HierarchicalRelationService {
         metric.setInstallationId(storedInstallation.getId());
         metric.setGroupId(request.groupId);
         metric.setUserId(request.userId);
+        metric.setOrderId(request.orderId);
 
         try{
             metricRepository.persist(metric);

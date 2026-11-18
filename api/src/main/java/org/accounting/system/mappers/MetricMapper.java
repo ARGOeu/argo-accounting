@@ -44,6 +44,7 @@ public interface MetricMapper {
     @Mapping(target = "value", expression = "java(Objects.nonNull(request.value) ? request.value : metric.getValue())")
     @Mapping(target = "userId", expression = "java(Objects.nonNull(request.userId) ? request.userId : metric.getUserId())")
     @Mapping(target = "groupId", expression = "java(Objects.nonNull(request.groupId) ? request.groupId : metric.getGroupId())")
+    @Mapping(target = "orderId", expression = "java(Objects.nonNull(request.orderId) ? request.orderId : metric.getOrderId())")
     void updateMetricFromDto(UpdateMetricRequestDto request, @MappingTarget Metric metric);
 
     @IterableMapping(qualifiedByName = "metricToDto")

@@ -76,5 +76,13 @@ public class MetricResponseDto {
     @JsonInclude(JsonInclude.Include.NON_NULL)
     public String userId;
 
-
+    @Schema(
+            type = SchemaType.STRING,
+            implementation = String.class,
+            description = "Order ID associated with a metric.",
+            example = "order id"
+    )
+    @JsonProperty("order_id")
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    public String orderId;
 }
